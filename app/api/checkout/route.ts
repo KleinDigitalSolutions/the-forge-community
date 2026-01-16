@@ -24,22 +24,15 @@ export async function POST(req: Request) {
     const plans = {
         starter: {
             name: 'The Forge - Starter Membership',
-            amount: 6900, // 69.00 EUR
-            description: '69€/Mo + 15% Share',
-            productId: 'prod_TnuhZOYvur5WON',
-            taxCode: 'txcd_10103001',
+            priceId: 'price_1SqIrhAmspxoSxsTXdvAw6zG',
         },
         growth: {
             name: 'The Forge - Growth Membership',
-            amount: 9900, // 99.00 EUR
-            description: '99€/Mo + 2€/Order + 10% Share',
-            taxCode: 'txcd_10103001',
+            priceId: 'price_1SqIsqAmspxoSxsTG0vKQ1jQ',
         },
         premium: {
             name: 'The Forge - Premium Membership',
-            amount: 14900, // 149.00 EUR
-            description: '149€/Mo + 5% Share',
-            taxCode: 'txcd_10103001',
+            priceId: 'price_1SqItkAmspxoSxsTyFOgpHXC', // Your specific Premium Price ID
         },
     };
 
@@ -49,22 +42,23 @@ export async function POST(req: Request) {
       mode: 'subscription',
       customer_email: session.user.email,
       client_reference_id: founder.id,
-      automatic_tax: { enabled: true }, // Enable automatic tax calculation
+      automatic_tax: { enabled: true },
       line_items: [
         {
-          price_data: {
+          // Use price ID if it exists (Starter), otherwise create inline (Growth/Premium)
+          price: (selectedPlan as any).priceId,
+          price_data: !(selectedPlan as any).priceId ? {
             currency: 'eur',
-            product: selectedPlan.productId, // Use existing Product ID if available
-            product_data: !selectedPlan.productId ? {
+            product_data: {
               name: selectedPlan.name,
-              description: selectedPlan.description,
-              tax_code: selectedPlan.taxCode,
-            } : undefined,
-            unit_amount: selectedPlan.amount,
+              description: (selectedPlan as any).description,
+              tax_code: (selectedPlan as any).taxCode,
+            },
+            unit_amount: (selectedPlan as any).amount,
             recurring: {
               interval: 'month',
             },
-          },
+          } : undefined,
           quantity: 1,
         },
       ],
