@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import Header from '@/app/components/Header';
+import AuthGuard from '@/app/components/AuthGuard';
 import { Bell, AlertCircle, CheckCircle, Calendar } from 'lucide-react';
 
 interface Announcement {
@@ -68,143 +69,109 @@ export default function UpdatesPage() {
   const categories = ['All', 'Milestone', 'Deadline', 'Decision', 'General'];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="text-xl font-semibold text-gray-900">THE FORGE</div>
-          </Link>
-          <nav className="flex gap-6">
-            <Link href="/" className="text-sm text-gray-600 hover:text-gray-900">
-              Home
-            </Link>
-            <Link href="/dashboard" className="text-sm text-gray-600 hover:text-gray-900">
-              Dashboard
-            </Link>
-            <Link href="/transparency" className="text-sm text-gray-600 hover:text-gray-900">
-              Transparency
-            </Link>
-            <Link href="/forum" className="text-sm text-gray-600 hover:text-gray-900">
-              Forum
-            </Link>
-            <Link href="/updates" className="text-sm text-gray-900 font-medium">
-              Updates
-            </Link>
-            <Link href="/tasks" className="text-sm text-gray-600 hover:text-gray-900">
-              Tasks
-            </Link>
-            <Link href="/resources" className="text-sm text-gray-600 hover:text-gray-900">
-              Resources
-            </Link>
-            <Link href="/calendar" className="text-sm text-gray-600 hover:text-gray-900">
-              Calendar
-            </Link>
-          </nav>
-        </div>
-      </header>
+    <AuthGuard>
+      <div className="min-h-screen bg-gray-50">
+        <Header />
 
-      <div className="max-w-5xl mx-auto px-6 py-12">
-        {/* Hero */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-3">
-            <Bell className="w-8 h-8 text-gray-700" />
-            <h1 className="text-4xl font-bold text-gray-900">Updates & Announcements</h1>
+        <div className="max-w-5xl mx-auto px-6 py-12 pt-32">
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-3">
+              <Bell className="w-8 h-8 text-gray-700" />
+              <h1 className="text-4xl font-bold text-gray-900">Updates & Announcements</h1>
+            </div>
+            <p className="text-lg text-gray-600">
+              Wichtige Updates vom Core Team zu Milestones, Deadlines und Entscheidungen.
+            </p>
           </div>
-          <p className="text-lg text-gray-600">
-            Wichtige Updates vom Core Team zu Milestones, Deadlines und Entscheidungen.
-          </p>
-        </div>
 
-        {/* Filter */}
-        <div className="mb-6 flex gap-2 flex-wrap">
-          {categories.map((category) => (
-            <button
-              key={category}
-              onClick={() => setFilter(category)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                filter === category
-                  ? 'bg-gray-900 text-white'
-                  : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
-              }`}
-            >
-              {category}
-            </button>
-          ))}
-        </div>
+          <div className="mb-6 flex gap-2 flex-wrap">
+            {categories.map((category) => (
+              <button
+                key={category}
+                onClick={() => setFilter(category)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  filter === category
+                    ? 'bg-gray-900 text-white'
+                    : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                }`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
 
-        {/* Announcements */}
-        {loading ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-sm text-gray-500">
-            Lade Updates...
-          </div>
-        ) : filteredAnnouncements.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-sm text-gray-500">
-            Noch keine Updates vorhanden.
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {filteredAnnouncements.map((announcement) => {
-              const Icon = categoryIcons[announcement.category];
-              return (
-                <div
-                  key={announcement.id}
-                  className={`bg-white rounded-xl border border-gray-200 p-6 hover:border-gray-300 transition-colors ${
-                    priorityColors[announcement.priority]
-                  }`}
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                          categoryColors[announcement.category]
-                        }`}
-                      >
-                        <Icon className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h2 className="text-xl font-semibold text-gray-900">
-                          {announcement.title}
-                        </h2>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-sm text-gray-500">
-                            {new Date(announcement.publishedDate).toLocaleDateString('de-DE')}
-                          </span>
-                          <span className="text-sm text-gray-400">•</span>
-                          <span className="text-sm text-gray-500">{announcement.author}</span>
+          {loading ? (
+            <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-sm text-gray-500">
+              Lade Updates...
+            </div>
+          ) : filteredAnnouncements.length === 0 ? (
+            <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-sm text-gray-500">
+              Noch keine Updates vorhanden.
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredAnnouncements.map((announcement) => {
+                const Icon = categoryIcons[announcement.category];
+                return (
+                  <div
+                    key={announcement.id}
+                    className={`bg-white rounded-xl border border-gray-200 p-6 hover:border-gray-300 transition-colors ${
+                      priorityColors[announcement.priority]
+                    }`}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                            categoryColors[announcement.category]
+                          }`}
+                        >
+                          <Icon className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h2 className="text-xl font-semibold text-gray-900">
+                            {announcement.title}
+                          </h2>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-sm text-gray-500">
+                              {new Date(announcement.publishedDate).toLocaleDateString('de-DE')}
+                            </span>
+                            <span className="text-sm text-gray-400">•</span>
+                            <span className="text-sm text-gray-500">{announcement.author}</span>
+                          </div>
                         </div>
                       </div>
+                      <div className="flex gap-2">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium ${
+                            categoryColors[announcement.category]
+                          }`}
+                        >
+                          {announcement.category}
+                        </span>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium ${
+                            announcement.priority === 'High'
+                              ? 'bg-red-100 text-red-700'
+                              : announcement.priority === 'Medium'
+                              ? 'bg-yellow-100 text-yellow-700'
+                              : 'bg-gray-100 text-gray-700'
+                          }`}
+                        >
+                          {announcement.priority}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium ${
-                          categoryColors[announcement.category]
-                        }`}
-                      >
-                        {announcement.category}
-                      </span>
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium ${
-                          announcement.priority === 'High'
-                            ? 'bg-red-100 text-red-700'
-                            : announcement.priority === 'Medium'
-                            ? 'bg-yellow-100 text-yellow-700'
-                            : 'bg-gray-100 text-gray-700'
-                        }`}
-                      >
-                        {announcement.priority}
-                      </span>
-                    </div>
+                    <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                      {announcement.content}
+                    </p>
                   </div>
-                  <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                    {announcement.content}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        )}
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </AuthGuard>
   );
 }

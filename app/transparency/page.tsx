@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import Header from '@/app/components/Header';
 import {
   TrendingUp,
   DollarSign,
@@ -153,43 +153,9 @@ export default function TransparencyPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="text-xl font-semibold text-gray-900">THE FORGE</div>
-          </Link>
-          <nav className="flex gap-6">
-            <Link href="/" className="text-sm text-gray-600 hover:text-gray-900">
-              Home
-            </Link>
-            <Link href="/dashboard" className="text-sm text-gray-600 hover:text-gray-900">
-              Dashboard
-            </Link>
-            <Link href="/transparency" className="text-sm text-gray-900 font-medium">
-              Transparency
-            </Link>
-            <Link href="/forum" className="text-sm text-gray-600 hover:text-gray-900">
-              Forum
-            </Link>
-            <Link href="/updates" className="text-sm text-gray-600 hover:text-gray-900">
-              Updates
-            </Link>
-            <Link href="/tasks" className="text-sm text-gray-600 hover:text-gray-900">
-              Tasks
-            </Link>
-            <Link href="/resources" className="text-sm text-gray-600 hover:text-gray-900">
-              Resources
-            </Link>
-            <Link href="/calendar" className="text-sm text-gray-600 hover:text-gray-900">
-              Calendar
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        {/* Hero */}
+      <div className="max-w-7xl mx-auto px-6 pt-32 pb-20">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
             Radikale Transparenz
@@ -199,7 +165,6 @@ export default function TransparencyPage() {
           </p>
         </div>
 
-        {/* Key Metrics */}
         <div className="grid md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <div className="flex items-center gap-2 text-green-600 mb-2">
@@ -242,7 +207,6 @@ export default function TransparencyPage() {
           </div>
         </div>
 
-        {/* Capital Progress */}
         <div className="bg-white rounded-xl border border-gray-200 p-8 mb-8">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-gray-900">Kapital Progress</h2>
@@ -265,9 +229,7 @@ export default function TransparencyPage() {
           </p>
         </div>
 
-        {/* Charts Row */}
         <div className="grid lg:grid-cols-2 gap-8 mb-8">
-          {/* Expense Breakdown */}
           <div className="bg-white rounded-xl border border-gray-200 p-8">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">Ausgaben nach Kategorie</h2>
 
@@ -280,7 +242,7 @@ export default function TransparencyPage() {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, percent }) => `${name} ${percent ? (percent * 100).toFixed(0) : 0}%`}
+                      label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
@@ -290,12 +252,7 @@ export default function TransparencyPage() {
                       ))}
                     </Pie>
                     <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'white',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '8px',
-                      }}
-                      formatter={(value: number | undefined) => value !== undefined ? `€${value.toLocaleString()}` : '€0'}
+                      formatter={(value: any) => `€${Number(value || 0).toLocaleString()}`}
                     />
                   </RechartsPie>
                 </ResponsiveContainer>
@@ -322,7 +279,6 @@ export default function TransparencyPage() {
             )}
           </div>
 
-          {/* Milestones */}
           <div className="bg-white rounded-xl border border-gray-200 p-8">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">Roadmap & Milestones</h2>
 
@@ -351,7 +307,6 @@ export default function TransparencyPage() {
           </div>
         </div>
 
-        {/* Recent Transactions */}
         <div className="bg-white rounded-xl border border-gray-200 p-8">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold text-gray-900">Alle Transaktionen</h2>
@@ -381,7 +336,7 @@ export default function TransparencyPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {transactions.map((transaction, i) => (
+                  {transactions.map((transaction) => (
                     <tr key={transaction.id} className="border-b border-gray-100 hover:bg-gray-50">
                       <td className="py-4 text-sm text-gray-600">
                         {new Date(transaction.date).toLocaleDateString('de-DE')}
@@ -419,7 +374,6 @@ export default function TransparencyPage() {
           )}
         </div>
 
-        {/* Trust Message */}
         <div className="mt-12 text-center bg-blue-50 border border-blue-200 rounded-xl p-8">
           <h3 className="text-xl font-semibold text-gray-900 mb-2">
             100% Transparent. 100% Ehrlich.

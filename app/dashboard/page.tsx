@@ -6,6 +6,8 @@ import { useSearchParams } from 'next/navigation';
 import { PricingTable } from '@/app/components/PricingTable';
 import MarginCalculator from '@/app/components/MarginCalculator';
 import AiAdvisor from '@/app/components/AiAdvisor';
+import Header from '@/app/components/Header';
+import AuthGuard from '@/app/components/AuthGuard';
 import {
   Users,
   Vote,
@@ -246,44 +248,12 @@ function DashboardContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 bg-[#f8f4f0]/90 backdrop-blur-md border-b border-[var(--border)] z-50">
-        <div className="w-full px-8 md:px-12 lg:px-16 py-2 flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-full border border-[var(--border)] bg-white/70 flex items-center justify-center font-display text-[0.6rem] tracking-[0.32em] text-[var(--foreground)]">
-              S&S
-            </div>
-            <div className="leading-tight">
-              <div className="text-[0.7rem] uppercase tracking-[0.4em] text-[var(--secondary)]">
-                Stake &amp; Scale
-              </div>
-              <div className="text-xs text-[var(--secondary)]">Dashboard</div>
-            </div>
-          </Link>
-          <nav className="hidden md:flex gap-6 items-center text-[0.7rem] uppercase tracking-[0.28em] text-[var(--secondary)]">
-            <Link href="/" className="hover:text-[var(--foreground)] transition-colors">
-              Home
-            </Link>
-            <Link href="/transparency" className="hover:text-[var(--foreground)] transition-colors">
-              Transparenz
-            </Link>
-            <Link href="/forum" className="hover:text-[var(--foreground)] transition-colors">
-              Forum
-            </Link>
-            <Link href="/tasks" className="hover:text-[var(--foreground)] transition-colors">
-              Tasks
-            </Link>
-            <div className="h-4 w-px bg-[var(--border)]" />
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-[var(--accent)]" />
-              <span className="text-[0.6rem]">Status: {currentUser?.status || 'Active'}</span>
-            </div>
-          </nav>
-        </div>
-      </header>
+    <AuthGuard>
+      <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+        {/* Header */}
+        <Header />
 
-      <div className="max-w-7xl mx-auto px-6 pt-32 pb-20">
+        <div className="max-w-7xl mx-auto px-6 pt-32 pb-20">
         
         {paymentStatus === 'success' && (
           <div className="mb-8 bg-[var(--accent-glow)] border border-[var(--accent-soft)] rounded-2xl p-6 flex items-start gap-4 animate-fade-in">
@@ -507,6 +477,7 @@ function DashboardContent() {
       </div>
       <AiAdvisor />
     </div>
+    </AuthGuard>
   );
 }
 

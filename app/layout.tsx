@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Bodoni_Moda, Sora } from "next/font/google";
+import { Providers } from "@/app/components/Providers";
 import "./globals.css";
 
 const sora = Sora({
@@ -29,7 +30,9 @@ export default function RootLayout({
       <body
         className={`${sora.variable} ${bodoniModa.variable} antialiased`}
       >
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

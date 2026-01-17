@@ -13,7 +13,7 @@ const databaseId = process.env.NOTION_DATABASE_ID || '';
 
 type NotionSource = {
   type: 'database' | 'data_source';
-  properties: Set<string>;
+  properties: Map<string, string>; // Name -> Type
 };
 
 const sourceCache = new Map<string, NotionSource>();
@@ -31,31 +31,64 @@ async function resolveNotionSource(id: string): Promise<NotionSource> {
   try {
     const dataSource = await (notion as any).dataSources.retrieve({ data_source_id: id });
     if (dataSource && 'properties' in dataSource) {
+      const properties = new Map<string, string>();
+      Object.entries(dataSource.properties || {}).forEach(([name, prop]: [string, any]) => {
+        properties.set(name, prop.type);
+      });
       const resolved: NotionSource = {
         type: 'data_source',
-        properties: new Set(Object.keys(dataSource.properties || {})),
+        properties,
       };
       sourceCache.set(id, resolved);
       return resolved;
     }
   } catch (error) {
-    console.warn('Data source lookup failed, falling back to database ID.', error);
+    // console.warn('Data source lookup failed, falling back to database ID.', error.message);
   }
 
   const database = await notion.databases.retrieve({ database_id: id });
   if (!('properties' in database)) {
     throw new Error('Database properties not found (partial response)');
   }
+  
+  const properties = new Map<string, string>();
+  Object.entries(database.properties || {}).forEach(([name, prop]: [string, any]) => {
+    properties.set(name, prop.type);
+  });
+  
   const resolved: NotionSource = {
     type: 'database',
-    properties: new Set(Object.keys(database.properties || {})),
+    properties,
   };
   sourceCache.set(id, resolved);
   return resolved;
 }
 
-function selectPropertyName(available: Set<string>, candidates: string[]): string | null {
+function selectPropertyName(available: Map<string, string>, candidates: string[]): string | null {
   return candidates.find((name) => available.has(name)) || null;
+}
+
+function getProperty(page: any, available: Map<string, string>, candidates: string[]): any {
+  const name = selectPropertyName(available, candidates);
+  return name ? page.properties[name] : null;
+}
+
+function getText(property: any): string {
+  if (!property) return '';
+  if (property.title) return property.title.map((t: any) => t.plain_text).join('');
+  if (property.rich_text) return property.rich_text.map((t: any) => t.plain_text).join('');
+  if (property.people) return property.people.map((p: any) => p.name || p.id).join(', ');
+  if (property.email) return property.email;
+  if (property.phone_number) return property.phone_number;
+  if (property.url) return property.url;
+  return '';
+}
+
+function getStatus(property: any): string {
+  if (!property) return '';
+  if (property.status) return property.status.name;
+  if (property.select) return property.select.name;
+  return '';
 }
 
 export interface Founder {
@@ -73,10 +106,12 @@ export interface Founder {
 export async function getFounders(): Promise<Founder[]> {
   try {
     const source = await resolveNotionSource(databaseId);
+    const founderNumberProp = selectPropertyName(source.properties, ['Founder Number', 'Gründernummer']) || 'Name';
+    
     const query = {
       sorts: [
         {
-          property: 'Founder Number',
+          property: founderNumberProp,
           direction: 'ascending' as const,
         },
       ],
@@ -86,27 +121,19 @@ export async function getFounders(): Promise<Founder[]> {
         ? await (notion as any).dataSources.query({ data_source_id: databaseId, ...query })
         : await (notion as any).databases.query({ database_id: databaseId, ...query });
 
-    return data.results.map((page: {
-      id: string;
-      properties: {
-        Name: { title: { plain_text: string }[] };
-        Email: { email: string };
-        'Founder Number': { number: number };
-        'Joined Date': { date: { start: string } };
-        Status: { select: { name: 'pending' | 'active' | 'inactive' } };
-        'Investment Paid': { checkbox: boolean };
-        Group?: { relation: { id: string }[] }; 
+    return data.results.map((page: any) => {
+      const props = source.properties;
+      return {
+        id: page.id,
+        name: getText(getProperty(page, props, ['Name', 'Titel'])),
+        email: getProperty(page, props, ['Email', 'E-Mail'])?.email || '',
+        founderNumber: getProperty(page, props, ['Founder Number', 'Gründernummer'])?.number || 0,
+        joinedDate: getProperty(page, props, ['Joined Date', 'Beitrittsdatum'])?.date?.start || '',
+        status: getStatus(getProperty(page, props, ['Status'])) as any || 'pending',
+        investmentPaid: getProperty(page, props, ['Investment Paid', 'Investment bezahlt'])?.checkbox || false,
+        groupId: getProperty(page, props, ['Group', 'Gruppe'])?.relation?.[0]?.id || undefined,
       };
-    }) => ({
-      id: page.id,
-      name: page.properties.Name?.title?.[0]?.plain_text || '',
-      email: page.properties.Email?.email || '',
-      founderNumber: page.properties['Founder Number']?.number || 0,
-      joinedDate: page.properties['Joined Date']?.date?.start || '',
-      status: page.properties.Status?.select?.name || 'pending',
-      investmentPaid: page.properties['Investment Paid']?.checkbox || false,
-      groupId: page.properties.Group?.relation?.[0]?.id || undefined,
-    }));
+    });
   } catch (error) {
     console.error('Error fetching founders:', error);
     return [];
@@ -116,25 +143,29 @@ export async function getFounders(): Promise<Founder[]> {
 export async function getFounderByEmail(email: string): Promise<Founder | null> {
   try {
     const source = await resolveNotionSource(databaseId);
+    const emailProp = selectPropertyName(source.properties, ['Email', 'E-Mail']);
+    
+    if (!emailProp) {
+        console.error('Email property not found in Founders database');
+        return null;
+    }
+
+    const filter = {
+        property: emailProp,
+        email: {
+          equals: email,
+        },
+    };
+
     const data =
       source.type === 'data_source'
         ? await (notion as any).dataSources.query({
             data_source_id: databaseId,
-            filter: {
-              property: 'Email',
-              email: {
-                equals: email,
-              },
-            },
+            filter,
           })
         : await (notion as any).databases.query({
             database_id: databaseId,
-            filter: {
-              property: 'Email',
-              email: {
-                equals: email,
-              },
-            },
+            filter,
           });
 
     if (!data.results || data.results.length === 0) {
@@ -142,10 +173,12 @@ export async function getFounderByEmail(email: string): Promise<Founder | null> 
     }
 
     const page = data.results[0] as any;
+    const props = source.properties;
     
     // Fetch group details if a relation exists
     let groupName = undefined;
-    const groupId = page.properties.Group?.relation?.[0]?.id;
+    const groupProp = getProperty(page, props, ['Group', 'Gruppe']);
+    const groupId = groupProp?.relation?.[0]?.id;
     
     if (groupId) {
         try {
@@ -158,12 +191,12 @@ export async function getFounderByEmail(email: string): Promise<Founder | null> 
 
     return {
       id: page.id,
-      name: page.properties.Name?.title?.[0]?.plain_text || '',
-      email: page.properties.Email?.email || '',
-      founderNumber: page.properties['Founder Number']?.number || 0,
-      joinedDate: page.properties['Joined Date']?.date?.start || '',
-      status: page.properties.Status?.select?.name || 'pending',
-      investmentPaid: page.properties['Investment Paid']?.checkbox || false,
+      name: getText(getProperty(page, props, ['Name', 'Titel'])),
+      email: getProperty(page, props, ['Email', 'E-Mail'])?.email || '',
+      founderNumber: getProperty(page, props, ['Founder Number', 'Gründernummer'])?.number || 0,
+      joinedDate: getProperty(page, props, ['Joined Date', 'Beitrittsdatum'])?.date?.start || '',
+      status: getStatus(getProperty(page, props, ['Status'])) as any || 'pending',
+      investmentPaid: getProperty(page, props, ['Investment Paid', 'Investment bezahlt'])?.checkbox || false,
       groupId,
       groupName
     };
@@ -188,19 +221,29 @@ export async function addFounder(data: {
     const nextFounderNumber = founders.length + 1;
 
     const source = await resolveNotionSource(databaseId);
+    const nameProperty = selectPropertyName(source.properties, ['Name', 'Titel']) || 'Name';
+    const emailProperty = selectPropertyName(source.properties, ['Email', 'E-Mail']) || 'Email';
+    const numberProperty = selectPropertyName(source.properties, ['Founder Number', 'Gründernummer']) || 'Founder Number';
+    const dateProperty = selectPropertyName(source.properties, ['Joined Date', 'Beitrittsdatum']) || 'Joined Date';
+    const statusProperty = selectPropertyName(source.properties, ['Status']) || 'Status';
+    const investmentProperty = selectPropertyName(source.properties, ['Investment Paid', 'Investment bezahlt']) || 'Investment Paid';
+
     const phoneProperty = selectPropertyName(source.properties, ['Phone', 'Telefon']);
     const instagramProperty = selectPropertyName(source.properties, ['Instagram', 'Instagram Handle']);
     const whyProperty = selectPropertyName(source.properties, ['Why Join', 'Why do you want to join?']);
     const roleProperty = selectPropertyName(source.properties, ['Role', 'Rolle']);
     const capitalProperty = selectPropertyName(source.properties, ['Capital', 'Kapital']);
     const skillProperty = selectPropertyName(source.properties, ['Skill', 'Skills']);
+    
     const parent =
       source.type === 'data_source'
         ? { data_source_id: databaseId }
         : { database_id: databaseId };
 
+    const statusPropType = statusProperty ? source.properties.get(statusProperty) : 'select';
+
     const properties: Record<string, any> = {
-      Name: {
+      [nameProperty]: {
         title: [
           {
             text: {
@@ -209,23 +252,23 @@ export async function addFounder(data: {
           },
         ],
       },
-      Email: {
+      [emailProperty]: {
         email: data.email,
       },
-      'Founder Number': {
+      [numberProperty]: {
         number: nextFounderNumber,
       },
-      'Joined Date': {
+      [dateProperty]: {
         date: {
           start: new Date().toISOString(),
         },
       },
-      Status: {
-        select: {
+      [statusProperty]: {
+        [statusPropType === 'status' ? 'status' : 'select']: {
           name: 'pending',
         },
       },
-      'Investment Paid': {
+      [investmentProperty]: {
         checkbox: false,
       },
     };
@@ -311,20 +354,26 @@ export async function updateFounderStatus(
 ): Promise<any> {
   try {
     const source = await resolveNotionSource(databaseId);
+    const statusProperty = selectPropertyName(source.properties, ['Status']) || 'Status';
+    const statusPropType = source.properties.get(statusProperty) || 'select';
+
     const properties: any = {
-      Status: {
-        select: {
+      [statusProperty]: {
+        [statusPropType === 'status' ? 'status' : 'select']: {
           name: status,
         },
       },
     };
 
-    if (plan && source.properties.has('Plan')) {
-      properties['Plan'] = {
-        select: {
-          name: plan.charAt(0).toUpperCase() + plan.slice(1), // Capitalize (starter -> Starter)
-        },
-      };
+    if (plan) {
+      const planProp = selectPropertyName(source.properties, ['Plan']);
+      if (planProp) {
+        properties[planProp] = {
+          select: {
+            name: plan.charAt(0).toUpperCase() + plan.slice(1), // Capitalize (starter -> Starter)
+          },
+        };
+      }
     }
 
     const response = await notion.pages.update({
@@ -385,46 +434,41 @@ export async function getVotes(): Promise<Vote[]> {
       return [];
     }
 
-    const response = await fetch(`https://api.notion.com/v1/databases/${votesDatabaseId}/query`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.NOTION_API_KEY}`,
-        'Notion-Version': '2022-06-28',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        sorts: [
-          {
-            property: 'Votes',
-            direction: 'descending',
-          },
-        ],
-      }),
-    });
+    const source = await resolveNotionSource(votesDatabaseId);
+    const props = source.properties;
+    const votesProp = selectPropertyName(props, ['Votes', 'Stimmen']) || 'Votes';
 
-    const data = await response.json();
+    const query = {
+      sorts: [
+        {
+          property: votesProp,
+          direction: 'descending' as const,
+        },
+      ],
+    };
 
-    if (!response.ok) {
-      throw new Error(`Notion API error: ${data.message}`);
-    }
+    const data =
+      source.type === 'data_source'
+        ? await (notion as any).dataSources.query({ data_source_id: votesDatabaseId, ...query })
+        : await (notion as any).databases.query({ database_id: votesDatabaseId, ...query });
 
     return data.results.map((page: any) => {
-      const metricsRaw = getRichTextValue(page.properties.Metrics);
-      const highlightsRaw = getRichTextValue(page.properties.Highlights);
-      const timelineRaw = getRichTextValue(page.properties.Timeline);
+      const metricsRaw = getText(getProperty(page, props, ['Metrics', 'Kennzahlen']));
+      const highlightsRaw = getText(getProperty(page, props, ['Highlights', 'Glanzlichter']));
+      const timelineRaw = getText(getProperty(page, props, ['Timeline', 'Zeitplan']));
 
       return {
         id: page.id,
-        name: page.properties.Name?.title?.[0]?.plain_text || '',
-        description: getRichTextValue(page.properties.Description),
-        votes: page.properties.Votes?.number || 0,
-        status: page.properties.Status?.select?.name || 'active',
+        name: getText(getProperty(page, props, ['Name', 'Titel'])),
+        description: getText(getProperty(page, props, ['Description', 'Beschreibung'])),
+        votes: getProperty(page, props, ['Votes', 'Stimmen'])?.number || 0,
+        status: getStatus(getProperty(page, props, ['Status'])) as any || 'active',
         createdDate: page.created_time || '',
         metrics: parseMetrics(metricsRaw),
         highlights: splitLines(highlightsRaw),
         timeline: splitLines(timelineRaw),
-        startDate: page.properties['Start Date']?.date?.start || '',
-        endDate: page.properties['End Date']?.date?.start || '',
+        startDate: getProperty(page, props, ['Start Date', 'Startdatum'])?.date?.start || '',
+        endDate: getProperty(page, props, ['End Date', 'Enddatum'])?.date?.start || '',
       };
     });
   } catch (error) {
@@ -436,13 +480,15 @@ export async function getVotes(): Promise<Vote[]> {
 export async function updateVoteCount(id: string, delta: number): Promise<number> {
   try {
     const page = await notion.pages.retrieve({ page_id: id });
-    const currentVotes = (page as any).properties?.Votes?.number || 0;
+    const props = (page as any).properties;
+    const votesPropName = Object.keys(props).find(key => key.toLowerCase() === 'votes' || key === 'Stimmen') || 'Votes';
+    const currentVotes = props[votesPropName]?.number || 0;
     const nextVotes = Math.max(0, currentVotes + delta);
 
     await notion.pages.update({
       page_id: id,
       properties: {
-        Votes: {
+        [votesPropName]: {
           number: nextVotes,
         },
       },
@@ -489,39 +535,34 @@ export async function getTransactions(): Promise<Transaction[]> {
       return [];
     }
 
-    const response = await fetch(`https://api.notion.com/v1/databases/${transactionsDatabaseId}/query`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.NOTION_API_KEY}`,
-        'Notion-Version': '2022-06-28',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        sorts: [
-          {
-            property: 'Date',
-            direction: 'descending',
-          },
-        ],
-      }),
-    });
+    const source = await resolveNotionSource(transactionsDatabaseId);
+    const props = source.properties;
+    const dateProp = selectPropertyName(props, ['Date', 'Datum']) || 'Date';
 
-    const data = await response.json();
+    const query = {
+      sorts: [
+        {
+          property: dateProp,
+          direction: 'descending' as const,
+        },
+      ],
+    };
 
-    if (!response.ok) {
-      throw new Error(`Notion API error: ${data.message}`);
-    }
+    const data =
+      source.type === 'data_source'
+        ? await (notion as any).dataSources.query({ data_source_id: transactionsDatabaseId, ...query })
+        : await (notion as any).databases.query({ database_id: transactionsDatabaseId, ...query });
 
     return data.results.map((page: any) => ({
       id: page.id,
-      description: page.properties.Description?.title?.[0]?.plain_text || '',
-      amount: page.properties.Amount?.number || 0,
-      category: page.properties.Category?.select?.name || 'Other',
-      type: page.properties.Type?.select?.name || 'Expense',
-      date: page.properties.Date?.date?.start || '',
-      status: page.properties.Status?.select?.name || 'Pending',
-      receiptUrl: page.properties['Receipt URL']?.url || '',
-      notes: page.properties.Notes?.rich_text?.[0]?.plain_text || '',
+      description: getText(getProperty(page, props, ['Description', 'Beschreibung'])),
+      amount: getProperty(page, props, ['Amount', 'Betrag'])?.number || 0,
+      category: getStatus(getProperty(page, props, ['Category', 'Kategorie'])) as any || 'Other',
+      type: getStatus(getProperty(page, props, ['Type', 'Typ'])) as any || 'Expense',
+      date: getProperty(page, props, ['Date', 'Datum'])?.date?.start || '',
+      status: getStatus(getProperty(page, props, ['Status'])) as any || 'Pending',
+      receiptUrl: getProperty(page, props, ['Receipt URL', 'Beleg-URL'])?.url || '',
+      notes: getText(getProperty(page, props, ['Notes', 'Notizen'])),
     }));
   } catch (error) {
     console.error('Error fetching transactions:', error);
@@ -544,60 +585,76 @@ export async function addTransaction(data: {
       throw new Error('NOTION_TRANSACTIONS_DATABASE_ID not set');
     }
 
+    const source = await resolveNotionSource(transactionsDatabaseId);
+    const props = source.properties;
+    
+    const descProp = selectPropertyName(props, ['Description', 'Beschreibung']) || 'Description';
+    const amountProp = selectPropertyName(props, ['Amount', 'Betrag']) || 'Amount';
+    const categoryProp = selectPropertyName(props, ['Category', 'Kategorie']) || 'Category';
+    const typeProp = selectPropertyName(props, ['Type', 'Typ']) || 'Type';
+    const dateProp = selectPropertyName(props, ['Date', 'Datum']) || 'Date';
+    const statusProp = selectPropertyName(props, ['Status']) || 'Status';
+    const receiptProp = selectPropertyName(props, ['Receipt URL', 'Beleg-URL']) || 'Receipt URL';
+    const notesProp = selectPropertyName(props, ['Notes', 'Notizen']) || 'Notes';
+
+    const properties: Record<string, any> = {
+      [descProp]: {
+        title: [
+          {
+            text: {
+              content: data.description,
+            },
+          },
+        ],
+      },
+      [amountProp]: {
+        number: data.amount,
+      },
+      [categoryProp]: {
+        select: {
+          name: data.category,
+        },
+      },
+      [typeProp]: {
+        select: {
+          name: data.type,
+        },
+      },
+      [dateProp]: {
+        date: {
+          start: data.date,
+        },
+      },
+      [statusProp]: {
+        select: {
+          name: data.status || 'Pending',
+        },
+      },
+    };
+
+    if (data.receiptUrl) {
+      properties[receiptProp] = {
+        url: data.receiptUrl,
+      };
+    }
+
+    if (data.notes) {
+      properties[notesProp] = {
+        rich_text: [
+          {
+            text: {
+              content: data.notes,
+            },
+          },
+        ],
+      };
+    }
+
     const response = await notion.pages.create({
       parent: {
         database_id: transactionsDatabaseId,
       },
-      properties: {
-        Description: {
-          title: [
-            {
-              text: {
-                content: data.description,
-              },
-            },
-          ],
-        },
-        Amount: {
-          number: data.amount,
-        },
-        Category: {
-          select: {
-            name: data.category,
-          },
-        },
-        Type: {
-          select: {
-            name: data.type,
-          },
-        },
-        Date: {
-          date: {
-            start: data.date,
-          },
-        },
-        Status: {
-          select: {
-            name: data.status || 'Pending',
-          },
-        },
-        ...(data.receiptUrl && {
-          'Receipt URL': {
-            url: data.receiptUrl,
-          },
-        }),
-        ...(data.notes && {
-          Notes: {
-            rich_text: [
-              {
-                text: {
-                  content: data.notes,
-                },
-              },
-            ],
-          },
-        }),
-      },
+      properties,
     });
 
     return response;
@@ -686,36 +743,30 @@ export async function getForumPosts(): Promise<ForumPost[]> {
       return [];
     }
 
-    const response = await fetch(`https://api.notion.com/v1/databases/${forumDatabaseId}/query`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.NOTION_API_KEY}`,
-        'Notion-Version': '2022-06-28',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        sorts: [
-          {
-            timestamp: 'created_time',
-            direction: 'descending',
-          },
-        ],
-      }),
-    });
+    const source = await resolveNotionSource(forumDatabaseId);
+    const props = source.properties;
 
-    const data = await response.json();
+    const query = {
+      sorts: [
+        {
+          timestamp: 'created_time',
+          direction: 'descending' as const,
+        },
+      ],
+    };
 
-    if (!response.ok) {
-      throw new Error(`Notion API error: ${data.message}`);
-    }
+    const data =
+      source.type === 'data_source'
+        ? await (notion as any).dataSources.query({ data_source_id: forumDatabaseId, ...query })
+        : await (notion as any).databases.query({ database_id: forumDatabaseId, ...query });
 
     return data.results.map((page: any) => ({
       id: page.id,
-      author: getRichTextValue(page.properties.Author),
-      founderNumber: page.properties['Founder Number']?.number || 0,
-      content: getRichTextValue(page.properties.Content),
-      category: page.properties.Category?.select?.name || 'General',
-      likes: page.properties.Likes?.number || 0,
+      author: getText(getProperty(page, props, ['Author', 'Autor'])),
+      founderNumber: getProperty(page, props, ['Founder Number', 'Gründernummer'])?.number || 0,
+      content: getText(getProperty(page, props, ['Content', 'Inhalt'])),
+      category: getStatus(getProperty(page, props, ['Category', 'Kategorie'])) || 'General',
+      likes: getProperty(page, props, ['Likes'])?.number || 0,
       createdTime: page.created_time || '',
     }));
   } catch (error) {
@@ -735,52 +786,64 @@ export async function addForumPost(data: {
       throw new Error('NOTION_FORUM_DATABASE_ID not set');
     }
 
+    const source = await resolveNotionSource(forumDatabaseId);
+    const props = source.properties;
+    
+    const nameProp = selectPropertyName(props, ['Name', 'Titel']) || 'Name';
+    const contentProp = selectPropertyName(props, ['Content', 'Inhalt']) || 'Content';
+    const authorProp = selectPropertyName(props, ['Author', 'Autor']) || 'Author';
+    const numberProp = selectPropertyName(props, ['Founder Number', 'Gründernummer']) || 'Founder Number';
+    const categoryProp = selectPropertyName(props, ['Category', 'Kategorie']) || 'Category';
+    const likesProp = selectPropertyName(props, ['Likes']) || 'Likes';
+
     const title = data.content.trim().slice(0, 80);
+
+    const properties: Record<string, any> = {
+      [nameProp]: {
+        title: [
+          {
+            text: {
+              content: title || 'Forum Post',
+            },
+          },
+        ],
+      },
+      [contentProp]: {
+        rich_text: [
+          {
+            text: {
+              content: data.content,
+            },
+          },
+        ],
+      },
+      [authorProp]: {
+        rich_text: [
+          {
+            text: {
+              content: data.author,
+            },
+          },
+        ],
+      },
+      [numberProp]: {
+        number: data.founderNumber || 0,
+      },
+      [categoryProp]: {
+        select: {
+          name: data.category,
+        },
+      },
+      [likesProp]: {
+        number: 0,
+      },
+    };
 
     const response = await notion.pages.create({
       parent: {
         database_id: forumDatabaseId,
       },
-      properties: {
-        Name: {
-          title: [
-            {
-              text: {
-                content: title || 'Forum Post',
-              },
-            },
-          ],
-        },
-        Content: {
-          rich_text: [
-            {
-              text: {
-                content: data.content,
-              },
-            },
-          ],
-        },
-        Author: {
-          rich_text: [
-            {
-              text: {
-                content: data.author,
-              },
-            },
-          ],
-        },
-        'Founder Number': {
-          number: data.founderNumber || 0,
-        },
-        Category: {
-          select: {
-            name: data.category,
-          },
-        },
-        Likes: {
-          number: 0,
-        },
-      },
+      properties,
     });
 
     return response;
@@ -793,13 +856,15 @@ export async function addForumPost(data: {
 export async function updateForumPostLikes(id: string, delta: number): Promise<number> {
   try {
     const page = await notion.pages.retrieve({ page_id: id });
-    const currentLikes = (page as any).properties?.Likes?.number || 0;
+    const props = (page as any).properties;
+    const likesPropName = Object.keys(props).find(key => key.toLowerCase() === 'likes') || 'Likes';
+    const currentLikes = props[likesPropName]?.number || 0;
     const nextLikes = Math.max(0, currentLikes + delta);
 
     await notion.pages.update({
       page_id: id,
       properties: {
-        Likes: {
+        [likesPropName]: {
           number: nextLikes,
         },
       },
@@ -835,37 +900,32 @@ export async function getAnnouncements(): Promise<Announcement[]> {
       return [];
     }
 
-    const response = await fetch(`https://api.notion.com/v1/databases/${announcementsDatabaseId}/query`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.NOTION_API_KEY}`,
-        'Notion-Version': '2022-06-28',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        sorts: [
-          {
-            property: 'Veröffentlichungsdatum',
-            direction: 'descending',
-          },
-        ],
-      }),
-    });
+    const source = await resolveNotionSource(announcementsDatabaseId);
+    const props = source.properties;
+    const dateProp = selectPropertyName(props, ['Veröffentlichungsdatum', 'Published Date', 'Date']) || 'Date';
 
-    const data = await response.json();
+    const query = {
+      sorts: [
+        {
+          property: dateProp,
+          direction: 'descending' as const,
+        },
+      ],
+    };
 
-    if (!response.ok) {
-      throw new Error(`Notion API error: ${data.message}`);
-    }
+    const data =
+      source.type === 'data_source'
+        ? await (notion as any).dataSources.query({ data_source_id: announcementsDatabaseId, ...query })
+        : await (notion as any).databases.query({ database_id: announcementsDatabaseId, ...query });
 
     return data.results.map((page: any) => ({
       id: page.id,
-      title: page.properties.Titel?.title?.[0]?.plain_text || '',
-      content: getRichTextValue(page.properties.Inhalt),
-      category: page.properties.Kategorie?.select?.name || 'General',
-      priority: page.properties.Priorität?.select?.name || 'Medium',
-      publishedDate: page.properties.Veröffentlichungsdatum?.date?.start || '',
-      author: getRichTextValue(page.properties.Autor),
+      title: getText(getProperty(page, props, ['Titel', 'Title', 'Name'])),
+      content: getText(getProperty(page, props, ['Inhalt', 'Content', 'Description'])),
+      category: getStatus(getProperty(page, props, ['Kategorie', 'Category'])) as any || 'General',
+      priority: getStatus(getProperty(page, props, ['Priorität', 'Priority'])) as any || 'Medium',
+      publishedDate: getProperty(page, props, ['Veröffentlichungsdatum', 'Published Date', 'Date'])?.date?.start || '',
+      author: getText(getProperty(page, props, ['Autor', 'Author'])),
     }));
   } catch (error) {
     console.error('Error fetching announcements:', error);
@@ -885,54 +945,66 @@ export async function addAnnouncement(data: {
       throw new Error('NOTION_ANNOUNCEMENTS_DATABASE_ID not set');
     }
 
+    const source = await resolveNotionSource(announcementsDatabaseId);
+    const props = source.properties;
+    
+    const titleProp = selectPropertyName(props, ['Titel', 'Title', 'Name']) || 'Title';
+    const contentProp = selectPropertyName(props, ['Inhalt', 'Content', 'Description']) || 'Content';
+    const categoryProp = selectPropertyName(props, ['Kategorie', 'Category']) || 'Category';
+    const priorityProp = selectPropertyName(props, ['Priorität', 'Priority']) || 'Priority';
+    const dateProp = selectPropertyName(props, ['Veröffentlichungsdatum', 'Published Date', 'Date']) || 'Date';
+    const authorProp = selectPropertyName(props, ['Autor', 'Author']) || 'Author';
+
+    const properties: Record<string, any> = {
+      [titleProp]: {
+        title: [
+          {
+            text: {
+              content: data.title,
+            },
+          },
+        ],
+      },
+      [contentProp]: {
+        rich_text: [
+          {
+            text: {
+              content: data.content,
+            },
+          },
+        ],
+      },
+      [categoryProp]: {
+        select: {
+          name: data.category,
+        },
+      },
+      [priorityProp]: {
+        select: {
+          name: data.priority,
+        },
+      },
+      [dateProp]: {
+        date: {
+          start: new Date().toISOString(),
+        },
+      },
+      [authorProp]: {
+        rich_text: [
+          {
+            text: {
+              content: data.author,
+            },
+          },
+        ],
+      },
+    };
+
     const response = await notion.pages.create({
       parent: {
         database_id: announcementsDatabaseId,
       },
-      properties: {
-        Titel: {
-          title: [
-            {
-              text: {
-                content: data.title,
-              },
-            },
-          ],
-        },
-        Inhalt: {
-          rich_text: [
-            {
-              text: {
-                content: data.content,
-              },
-            },
-          ],
-        },
-        Kategorie: {
-          select: {
-            name: data.category,
-          },
-        },
-        Priorität: {
-          select: {
-            name: data.priority,
-          },
-        },
-        Veröffentlichungsdatum: {
-          date: {
-            start: new Date().toISOString(),
-          },
-        },
-        Autor: {
-          rich_text: [
-            {
-              text: {
-                content: data.author,
-              },
-            },
-          ],
-        },
-      },
+      properties,
     });
 
     return response;
@@ -966,38 +1038,33 @@ export async function getTasks(): Promise<Task[]> {
       return [];
     }
 
-    const response = await fetch(`https://api.notion.com/v1/databases/${tasksDatabaseId}/query`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.NOTION_API_KEY}`,
-        'Notion-Version': '2022-06-28',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        sorts: [
-          {
-            property: 'Due Date',
-            direction: 'ascending',
-          },
-        ],
-      }),
-    });
+    const source = await resolveNotionSource(tasksDatabaseId);
+    const props = source.properties;
+    const dateProp = selectPropertyName(props, ['Due Date', 'Fälligkeitsdatum', 'Date']) || 'Due Date';
 
-    const data = await response.json();
+    const query = {
+      sorts: [
+        {
+          property: dateProp,
+          direction: 'ascending' as const,
+        },
+      ],
+    };
 
-    if (!response.ok) {
-      throw new Error(`Notion API error: ${data.message}`);
-    }
+    const data =
+      source.type === 'data_source'
+        ? await (notion as any).dataSources.query({ data_source_id: tasksDatabaseId, ...query })
+        : await (notion as any).databases.query({ database_id: tasksDatabaseId, ...query });
 
     return data.results.map((page: any) => ({
       id: page.id,
-      task: page.properties.Task?.title?.[0]?.plain_text || '',
-      description: getRichTextValue(page.properties.Description),
-      assignedTo: getRichTextValue(page.properties['Assigned To']),
-      status: page.properties.Status?.select?.name || 'To Do',
-      priority: page.properties.Priority?.select?.name || 'Medium',
-      dueDate: page.properties['Due Date']?.date?.start || '',
-      category: page.properties.Category?.select?.name || 'Operations',
+      task: getText(getProperty(page, props, ['Task', 'Aufgabe', 'Name'])),
+      description: getText(getProperty(page, props, ['Description', 'Beschreibung'])),
+      assignedTo: getText(getProperty(page, props, ['Assigned To', 'Zugewiesen an'])),
+      status: getStatus(getProperty(page, props, ['Status'])) as any || 'To Do',
+      priority: getStatus(getProperty(page, props, ['Priority', 'Priorität', 'Priority Level'])) as any || 'Medium',
+      dueDate: getProperty(page, props, ['Due Date', 'Fälligkeitsdatum', 'Date'])?.date?.start || '',
+      category: getStatus(getProperty(page, props, ['Category', 'Kategorie'])) as any || 'Operations',
     }));
   } catch (error) {
     console.error('Error fetching tasks:', error);
@@ -1019,59 +1086,72 @@ export async function addTask(data: {
       throw new Error('NOTION_TASKS_DATABASE_ID not set');
     }
 
+    const source = await resolveNotionSource(tasksDatabaseId);
+    const props = source.properties;
+    
+    const taskProp = selectPropertyName(props, ['Task', 'Aufgabe', 'Name']) || 'Task';
+    const descProp = selectPropertyName(props, ['Description', 'Beschreibung']) || 'Description';
+    const assignProp = selectPropertyName(props, ['Assigned To', 'Zugewiesen an']) || 'Assigned To';
+    const statusProp = selectPropertyName(props, ['Status']) || 'Status';
+    const priorityProp = selectPropertyName(props, ['Priority', 'Priorität', 'Priority Level']) || 'Priority';
+    const dateProp = selectPropertyName(props, ['Due Date', 'Fälligkeitsdatum', 'Date']) || 'Due Date';
+    const catProp = selectPropertyName(props, ['Category', 'Kategorie']) || 'Category';
+
+    const properties: Record<string, any> = {
+      [taskProp]: {
+        title: [
+          {
+            text: {
+              content: data.task,
+            },
+          },
+        ],
+      },
+      [descProp]: {
+        rich_text: [
+          {
+            text: {
+              content: data.description,
+            },
+          },
+        ],
+      },
+      [assignProp]: {
+        rich_text: [
+          {
+            text: {
+              content: data.assignedTo,
+            },
+          },
+        ],
+      },
+      [statusProp]: {
+        select: {
+          name: data.status || 'To Do',
+        },
+      },
+      [priorityProp]: {
+        select: {
+          name: data.priority,
+        },
+      },
+      [dateProp]: {
+        date: {
+          start: data.dueDate,
+        },
+      },
+      [catProp]: {
+        select: {
+          name: data.category,
+        },
+      },
+    };
+
     const response = await notion.pages.create({
       parent: {
         database_id: tasksDatabaseId,
       },
-      properties: {
-        Task: {
-          title: [
-            {
-              text: {
-                content: data.task,
-              },
-            },
-          ],
-        },
-        Description: {
-          rich_text: [
-            {
-              text: {
-                content: data.description,
-              },
-            },
-          ],
-        },
-        'Assigned To': {
-          rich_text: [
-            {
-              text: {
-                content: data.assignedTo,
-              },
-            },
-          ],
-        },
-        Status: {
-          select: {
-            name: data.status || 'To Do',
-          },
-        },
-        Priority: {
-          select: {
-            name: data.priority,
-          },
-        },
-        'Due Date': {
-          date: {
-            start: data.dueDate,
-          },
-        },
-        Category: {
-          select: {
-            name: data.category,
-          },
-        },
-      },
+      properties,
     });
 
     return response;
@@ -1083,10 +1163,14 @@ export async function addTask(data: {
 
 export async function updateTaskStatus(id: string, status: Task['status']): Promise<any> {
   try {
+    const page = await notion.pages.retrieve({ page_id: id });
+    const props = (page as any).properties;
+    const statusPropName = Object.keys(props).find(key => key.toLowerCase() === 'status') || 'Status';
+
     const response = await notion.pages.update({
       page_id: id,
       properties: {
-        Status: {
+        [statusPropName]: {
           select: {
             name: status,
           },
@@ -1124,37 +1208,32 @@ export async function getDocuments(): Promise<Document[]> {
       return [];
     }
 
-    const response = await fetch(`https://api.notion.com/v1/databases/${documentsDatabaseId}/query`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.NOTION_API_KEY}`,
-        'Notion-Version': '2022-06-28',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        sorts: [
-          {
-            property: 'Upload Date',
-            direction: 'descending',
-          },
-        ],
-      }),
-    });
+    const source = await resolveNotionSource(documentsDatabaseId);
+    const props = source.properties;
+    const dateProp = selectPropertyName(props, ['Upload Date', 'Hochladedatum', 'Date']) || 'Upload Date';
 
-    const data = await response.json();
+    const query = {
+      sorts: [
+        {
+          property: dateProp,
+          direction: 'descending' as const,
+        },
+      ],
+    };
 
-    if (!response.ok) {
-      throw new Error(`Notion API error: ${data.message}`);
-    }
+    const data =
+      source.type === 'data_source'
+        ? await (notion as any).dataSources.query({ data_source_id: documentsDatabaseId, ...query })
+        : await (notion as any).databases.query({ database_id: documentsDatabaseId, ...query });
 
     return data.results.map((page: any) => ({
       id: page.id,
-      name: page.properties.Name?.title?.[0]?.plain_text || '',
-      description: getRichTextValue(page.properties.Description),
-      category: page.properties.Category?.select?.name || 'Guide',
-      url: page.properties.URL?.url || '',
-      uploadDate: page.properties['Upload Date']?.date?.start || '',
-      accessLevel: page.properties['Access Level']?.select?.name || 'All Founders',
+      name: getText(getProperty(page, props, ['Name', 'Titel'])),
+      description: getText(getProperty(page, props, ['Description', 'Beschreibung'])),
+      category: getStatus(getProperty(page, props, ['Category', 'Kategorie'])) as any || 'Guide',
+      url: getProperty(page, props, ['URL'])?.url || '',
+      uploadDate: getProperty(page, props, ['Upload Date', 'Hochladedatum', 'Date'])?.date?.start || '',
+      accessLevel: getStatus(getProperty(page, props, ['Access Level', 'Zugriffsebene'])) as any || 'All Founders',
     }));
   } catch (error) {
     console.error('Error fetching documents:', error);
@@ -1174,48 +1253,60 @@ export async function addDocument(data: {
       throw new Error('NOTION_DOCUMENTS_DATABASE_ID not set');
     }
 
+    const source = await resolveNotionSource(documentsDatabaseId);
+    const props = source.properties;
+    
+    const nameProp = selectPropertyName(props, ['Name', 'Titel']) || 'Name';
+    const descProp = selectPropertyName(props, ['Description', 'Beschreibung']) || 'Description';
+    const catProp = selectPropertyName(props, ['Category', 'Kategorie']) || 'Category';
+    const urlProp = selectPropertyName(props, ['URL']) || 'URL';
+    const dateProp = selectPropertyName(props, ['Upload Date', 'Hochladedatum', 'Date']) || 'Upload Date';
+    const accessProp = selectPropertyName(props, ['Access Level', 'Zugriffsebene']) || 'Access Level';
+
+    const properties: Record<string, any> = {
+      [nameProp]: {
+        title: [
+          {
+            text: {
+              content: data.name,
+            },
+          },
+        ],
+      },
+      [descProp]: {
+        rich_text: [
+          {
+            text: {
+              content: data.description,
+            },
+          },
+        ],
+      },
+      [catProp]: {
+        select: {
+          name: data.category,
+        },
+      },
+      [urlProp]: {
+        url: data.url,
+      },
+      [dateProp]: {
+        date: {
+          start: new Date().toISOString(),
+        },
+      },
+      [accessProp]: {
+        select: {
+          name: data.accessLevel,
+        },
+      },
+    };
+
     const response = await notion.pages.create({
       parent: {
         database_id: documentsDatabaseId,
       },
-      properties: {
-        Name: {
-          title: [
-            {
-              text: {
-                content: data.name,
-              },
-            },
-          ],
-        },
-        Description: {
-          rich_text: [
-            {
-              text: {
-                content: data.description,
-              },
-            },
-          ],
-        },
-        Category: {
-          select: {
-            name: data.category,
-          },
-        },
-        URL: {
-          url: data.url,
-        },
-        'Upload Date': {
-          date: {
-            start: new Date().toISOString(),
-          },
-        },
-        'Access Level': {
-          select: {
-            name: data.accessLevel,
-          },
-        },
-      },
+      properties,
     });
 
     return response;
@@ -1247,36 +1338,31 @@ export async function getEvents(): Promise<Event[]> {
       return [];
     }
 
-    const response = await fetch(`https://api.notion.com/v1/databases/${eventsDatabaseId}/query`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.NOTION_API_KEY}`,
-        'Notion-Version': '2022-06-28',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        sorts: [
-          {
-            property: 'Date',
-            direction: 'ascending',
-          },
-        ],
-      }),
-    });
+    const source = await resolveNotionSource(eventsDatabaseId);
+    const props = source.properties;
+    const dateProp = selectPropertyName(props, ['Date', 'Datum']) || 'Date';
 
-    const data = await response.json();
+    const query = {
+      sorts: [
+        {
+          property: dateProp,
+          direction: 'ascending' as const,
+        },
+      ],
+    };
 
-    if (!response.ok) {
-      throw new Error(`Notion API error: ${data.message}`);
-    }
+    const data =
+      source.type === 'data_source'
+        ? await (notion as any).dataSources.query({ data_source_id: eventsDatabaseId, ...query })
+        : await (notion as any).databases.query({ database_id: eventsDatabaseId, ...query });
 
     return data.results.map((page: any) => ({
       id: page.id,
-      eventName: page.properties['Event Name']?.title?.[0]?.plain_text || '',
-      description: getRichTextValue(page.properties.Description),
-      date: page.properties.Date?.date?.start || '',
-      type: page.properties.Type?.select?.name || 'Meeting',
-      locationLink: page.properties['Location/Link']?.url || '',
+      eventName: getText(getProperty(page, props, ['Event Name', 'Event-Name', 'Name'])),
+      description: getText(getProperty(page, props, ['Description', 'Beschreibung'])),
+      date: getProperty(page, props, ['Date', 'Datum'])?.date?.start || '',
+      type: getStatus(getProperty(page, props, ['Type', 'Typ'])) as any || 'Meeting',
+      locationLink: getProperty(page, props, ['Location/Link', 'Ort/Link'])?.url || '',
     }));
   } catch (error) {
     console.error('Error fetching events:', error);
@@ -1296,51 +1382,107 @@ export async function addEvent(data: {
       throw new Error('NOTION_EVENTS_DATABASE_ID not set');
     }
 
+    const source = await resolveNotionSource(eventsDatabaseId);
+    const props = source.properties;
+    
+    const nameProp = selectPropertyName(props, ['Event Name', 'Event-Name', 'Name']) || 'Event Name';
+    const descProp = selectPropertyName(props, ['Description', 'Beschreibung']) || 'Description';
+    const dateProp = selectPropertyName(props, ['Date', 'Datum']) || 'Date';
+    const typeProp = selectPropertyName(props, ['Type', 'Typ']) || 'Type';
+    const locProp = selectPropertyName(props, ['Location/Link', 'Ort/Link']) || 'Location/Link';
+
+    const properties: Record<string, any> = {
+      [nameProp]: {
+        title: [
+          {
+            text: {
+              content: data.eventName,
+            },
+          },
+        ],
+      },
+      [descProp]: {
+        rich_text: [
+          {
+            text: {
+              content: data.description,
+            },
+          },
+        ],
+      },
+      [dateProp]: {
+        date: {
+          start: data.date,
+        },
+      },
+      [typeProp]: {
+        select: {
+          name: data.type,
+        },
+      },
+    };
+
+    if (data.locationLink) {
+      properties[locProp] = {
+        url: data.locationLink,
+      };
+    }
+
     const response = await notion.pages.create({
       parent: {
         database_id: eventsDatabaseId,
       },
-      properties: {
-        'Event Name': {
-          title: [
-            {
-              text: {
-                content: data.eventName,
-              },
-            },
-          ],
-        },
-        Description: {
-          rich_text: [
-            {
-              text: {
-                content: data.description,
-              },
-            },
-          ],
-        },
-        Date: {
-          date: {
-            start: data.date,
-          },
-        },
-        Type: {
-          select: {
-            name: data.type,
-          },
-        },
-        ...(data.locationLink && {
-          'Location/Link': {
-            url: data.locationLink,
-          },
-        }),
-      },
+      properties,
     });
 
     return response;
   } catch (error) {
     console.error('Error adding event:', error);
     throw error;
+  }
+}
+
+// ========================================
+// GROUPS (SQUADS)
+// ========================================
+
+const groupsDatabaseId = process.env.NOTION_GROUPS_DATABASE_ID || '';
+
+export interface Group {
+  id: string;
+  name: string;
+  targetCapital: string;
+  status: string;
+  maxFounders: number;
+  startDate: string;
+}
+
+export async function getGroups(): Promise<Group[]> {
+  try {
+    if (!groupsDatabaseId) {
+      console.error('NOTION_GROUPS_DATABASE_ID not set');
+      return [];
+    }
+
+    const source = await resolveNotionSource(groupsDatabaseId);
+    const props = source.properties;
+
+    const data =
+      source.type === 'data_source'
+        ? await (notion as any).dataSources.query({ data_source_id: groupsDatabaseId })
+        : await (notion as any).databases.query({ database_id: groupsDatabaseId });
+
+    return data.results.map((page: any) => ({
+      id: page.id,
+      name: getText(getProperty(page, props, ['Name', 'Titel'])),
+      targetCapital: getStatus(getProperty(page, props, ['Target Capital', 'Zielkapital'])) || '25k',
+      status: getStatus(getProperty(page, props, ['Status'])) || 'Recruiting',
+      maxFounders: getProperty(page, props, ['Max Founders', 'Maximale Gründer'])?.number || 0,
+      startDate: getProperty(page, props, ['Start Date', 'Startdatum'])?.date?.start || '',
+    }));
+  } catch (error) {
+    console.error('Error fetching groups:', error);
+    return [];
   }
 }
 

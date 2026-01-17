@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { getFounders, updateFounderStatus, notion } from '@/lib/notion';
+import { getFounders, updateFounderStatus, getGroups, notion } from '@/lib/notion';
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
@@ -16,37 +16,16 @@ export async function GET() {
   const applicants = allFounders.filter(f => f.status === 'pending');
 
   // Also fetch groups for the assignment dropdown
-  const groupsDbId = process.env.NOTION_GROUPS_DATABASE_ID;
-  let groups = [];
-  if (groupsDbId && process.env.NOTION_API_KEY) {
-      try {
-        const response = await fetch(`https://api.notion.com/v1/databases/${groupsDbId}/query`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${process.env.NOTION_API_KEY}`,
-            'Notion-Version': '2022-06-28',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            sorts: [{ property: 'Name', direction: 'ascending' }],
-          }),
-        });
+  const groups = await getGroups();
+  
+  const mappedGroups = groups.map(g => ({
+      id: g.id,
+      name: g.name,
+      currentCount: 0, // Todo: calculate
+      target: g.targetCapital
+  }));
 
-        if (response.ok) {
-          const data = await response.json();
-          groups = data.results.map((page: any) => ({
-              id: page.id,
-              name: page.properties.Name?.title?.[0]?.plain_text || 'Unnamed Group',
-              currentCount: 0, // Todo: calculate
-              target: page.properties['Target Capital']?.select?.name || '25k'
-          }));
-        }
-      } catch (e) {
-          console.error('Error fetching groups:', e);
-      }
-  }
-
-  return NextResponse.json({ applicants, groups });
+  return NextResponse.json({ applicants, groups: mappedGroups });
 }
 
 export async function POST(req: Request) {
@@ -64,10 +43,21 @@ export async function POST(req: Request) {
         
         // 2. Assign to Group (if provided)
         if (groupId && process.env.NOTION_DATABASE_ID) {
+            // Find the correct property name for Group relation
+            const response = await notion.databases.retrieve({ database_id: process.env.NOTION_DATABASE_ID });
+            
+            let groupPropName = 'Group';
+            if ('properties' in response) {
+                const props = response.properties as Record<string, any>;
+                groupPropName = Object.keys(props).find(key => 
+                    key.toLowerCase() === 'group' || key === 'Gruppe' || props[key].type === 'relation'
+                ) || 'Group';
+            }
+
             await notion.pages.update({
                 page_id: founderId,
                 properties: {
-                    'Group': {
+                    [groupPropName]: {
                         relation: [
                             { id: groupId }
                         ]
