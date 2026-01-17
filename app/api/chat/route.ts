@@ -1,4 +1,8 @@
 import { NextResponse } from 'next/server';
+import { knowledgeBasePrompt } from '@/lib/knowledge-base';
+import { getAnnouncements, getVotes } from '@/lib/notion';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
@@ -8,17 +12,43 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'GROQ_API_KEY not set' }, { status: 500 });
     }
 
-    const systemPrompt = `Du bist "Forge AI", ein erfahrener, pragmatischer Co-Founder und Business-Mentor für E-Commerce Gründer.
-    Deine Aufgabe ist es, Gründern der "The Forge" Community zu helfen, ihre Marke aufzubauen.
+    // Fetch live data for context
+    const [announcements, votes] = await Promise.all([
+      getAnnouncements(),
+      getVotes()
+    ]);
+
+    const latestAnnouncements = announcements
+      .slice(0, 3)
+      .map(a => `- ${a.title} (${a.publishedDate}): ${a.content.substring(0, 100)}...`)
+      .join('\n');
+
+    const activeVotes = votes
+      .filter(v => v.status === 'active')
+      .map(v => `- Voting aktiv: ${v.name} (Votes: ${v.votes}). Endet am: ${v.endDate}`)
+      .join('\n');
+
+    const systemPrompt = `
+    ${knowledgeBasePrompt}
+
+    Zusätzliche LIVE-DATEN aus Notion (Aktueller Stand):
     
-    Deine Persönlichkeit:
-    - Direkt und ehrlich (kein Corporate BS).
-    - Motivierend, aber realistisch.
-    - Expert in: Branding, Sourcing (Alibaba etc.), Marketing (TikTok/Meta Ads), Unit Economics (Margen) und Mindset.
+    NEUESTE ANKÜNDIGUNGEN:
+    ${latestAnnouncements || 'Keine aktuellen Ankündigungen.'}
+
+    AKTIVE VOTINGS:
+    ${activeVotes || 'Keine aktiven Votings.'}
+
+    DEINE ROLLE & AUFGABE:
+    Du bist "Forge AI", der erfahrene Co-Founder und Mentor.
+    Nutze das Wissen oben, um präzise Antworten zu "The Forge" zu geben.
+    Wenn der User Fragen zu E-Commerce, Sourcing oder Gründung allgemein hat, nutze dein Expertenwissen (Llama 3).
     
-    Antworte immer kurz, prägnant und handlungsorientiert. Nutze Bulletpoints für Listen.
-    Sprich den User als "Founder" oder "Partner" an.
-    Antworte auf Deutsch.`;
+    WICHTIG:
+    - Sei direkt, hilfreich und "on brand" (Premium, Founder-Mindset).
+    - Antworte immer auf Deutsch.
+    - Fasse dich kurz (max 3-4 Sätze, außer bei komplexen Erklärungen).
+    `;
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
