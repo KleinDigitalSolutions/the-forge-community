@@ -40,12 +40,18 @@ export default function Home() {
   const [chatInput, setChatInput] = useState('');
   const [chatStatus, setChatStatus] = useState<'idle' | 'loading'>('idle');
   const chatEndRef = useRef<HTMLDivElement | null>(null);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [role, setRole] = useState<'investor' | 'builder' | null>(null);
+  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
     instagram: '',
     why: '',
+    capital: '',
+    commitment: '',
+    skill: '',
   });
   const [formStatus, setFormStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [formMessage, setFormMessage] = useState('');
@@ -102,9 +108,23 @@ export default function Home() {
     setIsChatOpen(false);
   };
 
+  const handleNextStep = () => {
+    setCurrentStep(prev => prev + 1);
+  };
+
+  const handlePrevStep = () => {
+    setCurrentStep(prev => prev - 1);
+  };
+
+  const handleSelectRole = (selectedRole: 'investor' | 'builder') => {
+    setRole(selectedRole);
+    setFormData(prev => ({ ...prev, capital: selectedRole === 'builder' ? '0€ (Sweat Equity)' : '' }));
+    handleNextStep();
+  };
+
   const handleFormChange =
     (field: keyof typeof formData) =>
-    (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
       setFormData((prev) => ({ ...prev, [field]: event.target.value }));
     };
 
@@ -175,11 +195,8 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: formData.name.trim(),
-          email: formData.email.trim(),
-          phone: formData.phone.trim(),
-          instagram: formData.instagram.trim(),
-          why: formData.why.trim(),
+          ...formData,
+          role, // Send the role too
         }),
       });
 
@@ -189,14 +206,7 @@ export default function Home() {
 
       setFormStatus('success');
       setFormMessage('Danke! Deine Bewerbung ist eingegangen. Wir melden uns in Kürze.');
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        instagram: '',
-        why: '',
-      });
-      refreshFoundersCount();
+      // Reset form after delay or show success screen
     } catch (error) {
       console.error('Error submitting form:', error);
       setFormStatus('error');
@@ -321,10 +331,6 @@ export default function Home() {
               Stake &amp; Scale
               <span className="h-px w-8 bg-[var(--border)] sm:w-10" />
             </div>
-            <div className="flex items-center gap-2 text-[0.65rem] text-[var(--secondary)] tracking-[0.14em] uppercase sm:gap-3 sm:text-[0.8rem] sm:tracking-[0.18em]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
-              {foundersCount} Founders bereits dabei
-            </div>
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-display text-[var(--foreground)] mb-5 leading-[1.1] tracking-[-0.02em] sm:mb-6 sm:leading-[1.05]">
@@ -333,8 +339,8 @@ export default function Home() {
             In flexiblen Gruppen.
           </h1>
 
-          <p className="text-base sm:text-lg md:text-xl text-[var(--secondary)] mb-6 max-w-2xl mx-auto sm:mb-8 sm:max-w-3xl">
-            STAKE & SCALE verbindet Founder-Gruppen, die gemeinsam profitable Projekte bauen.
+          <p className="text-base sm:text-lg md:text-xl text-[var(--secondary)] mb-6 max-w-2xl mx-auto sm:mb-8 sm:max-w-3xl leading-relaxed">
+            STAKE & SCALE verbindet Founder-Gruppen, die gemeinsam profitable Projekte bauen.<br className="hidden sm:block" />
             Flexible Startkapital-Tiers, professionelle Infrastruktur, klare Prozesse.
           </p>
 
@@ -392,9 +398,10 @@ export default function Home() {
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-display text-[var(--foreground)] mb-4">
               So funktioniert's
             </h2>
-            <p className="text-base sm:text-lg text-[var(--secondary)] max-w-2xl mx-auto">
-              Drei Start-Tiers: 25k / 50k / 100k. Maximal 25 Founder pro Gruppe. Beitrag =
-              Zielkapital ÷ Mitgliederzahl.
+            <p className="text-base sm:text-lg text-[var(--secondary)] max-w-2xl mx-auto leading-relaxed">
+              Drei Start-Tiers: 25k / 50k / 100k.<br />
+              Maximal 25 Founder pro Gruppe.<br />
+              <span className="font-medium text-[var(--foreground)]">Beitrag = Zielkapital ÷ Mitgliederzahl.</span>
             </p>
           </div>
 
@@ -818,107 +825,201 @@ export default function Home() {
             <div className="absolute -inset-1 bg-gradient-to-b from-[var(--border)] to-transparent rounded-[2.5rem] opacity-50" />
             <form
               onSubmit={handleSubmit}
-              className="relative bg-[var(--surface)] rounded-[2rem] border border-[var(--border)] p-10 md:p-16 shadow-xl"
+              className="relative bg-[var(--surface)] rounded-[2rem] border border-[var(--border)] p-8 md:p-12 shadow-xl min-h-[500px] flex flex-col justify-center"
             >
-              <div className="grid md:grid-cols-2 gap-8 mb-8">
-                <div className="space-y-2">
-                  <label className="text-[0.65rem] uppercase tracking-[0.2em] text-[var(--secondary)] ml-1">
-                    Vollständiger Name
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={handleFormChange('name')}
-                    className="w-full px-6 py-4 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:ring-1 focus:ring-[var(--accent)] focus:border-[var(--accent)] outline-none transition-all text-sm"
-                    placeholder="John Doe"
-                    required
-                  />
+              {formStatus === 'success' ? (
+                <div className="text-center animate-fade-in">
+                  <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Check className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-2xl font-display mb-4">Bewerbung empfangen</h3>
+                  <p className="text-[var(--secondary)]">
+                    Wir melden uns innerhalb von 48 Stunden bei dir.<br/>
+                    Halte deine E-Mails im Blick.
+                  </p>
                 </div>
+              ) : (
+                <>
+                  {/* Step Indicators */}
+                  <div className="flex justify-center gap-2 mb-10">
+                    {[1, 2, 3].map(step => (
+                      <div 
+                        key={step} 
+                        className={`h-1.5 rounded-full transition-all duration-300 ${
+                          currentStep >= step ? 'w-8 bg-[var(--accent)]' : 'w-2 bg-[var(--border)]'
+                        }`} 
+                      />
+                    ))}
+                  </div>
 
-                <div className="space-y-2">
-                  <label className="text-[0.65rem] uppercase tracking-[0.2em] text-[var(--secondary)] ml-1">
-                    E-Mail Adresse
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={handleFormChange('email')}
-                    className="w-full px-6 py-4 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:ring-1 focus:ring-[var(--accent)] focus:border-[var(--accent)] outline-none transition-all text-sm"
-                    placeholder="john@venture.com"
-                    required
-                  />
-                </div>
+                  {/* STEP 1: ROLE */}
+                  {currentStep === 1 && (
+                    <div className="animate-fade-in">
+                      <h3 className="text-xl font-display text-center mb-8">Wie willst du einsteigen?</h3>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <button
+                          type="button"
+                          onClick={() => handleSelectRole('investor')}
+                          className="p-6 rounded-xl border border-[var(--border)] hover:border-[var(--accent)] hover:bg-[var(--surface-muted)] transition-all text-left group"
+                        >
+                          <div className="w-10 h-10 bg-[var(--accent-glow)] rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <TrendingUp className="w-5 h-5 text-[var(--accent)]" />
+                          </div>
+                          <div className="font-bold mb-1">Capital Partner</div>
+                          <div className="text-xs text-[var(--secondary)] leading-relaxed">
+                            Ich investiere meinen Anteil am Gruppen-Ziel (z.B. 1.000€ bei 25k Ziel & 25 Foundern).
+                          </div>
+                        </button>
 
-                <div className="space-y-2">
-                  <label className="text-[0.65rem] uppercase tracking-[0.2em] text-[var(--secondary)] ml-1">
-                    LinkedIn / Instagram
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.instagram}
-                    onChange={handleFormChange('instagram')}
-                    className="w-full px-6 py-4 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:ring-1 focus:ring-[var(--accent)] focus:border-[var(--accent)] outline-none transition-all text-sm"
-                    placeholder="linkedin.com/in/username"
-                  />
-                </div>
+                        <button
+                          type="button"
+                          onClick={() => handleSelectRole('builder')}
+                          className="p-6 rounded-xl border border-[var(--border)] hover:border-[var(--accent)] hover:bg-[var(--surface-muted)] transition-all text-left group"
+                        >
+                          <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <Zap className="w-5 h-5 text-blue-600" />
+                          </div>
+                          <div className="font-bold mb-1">Builder (Sweat Equity)</div>
+                          <div className="text-xs text-[var(--secondary)] leading-relaxed">
+                            Ich habe kein Kapital, aber Skills & Zeit (15h+/Woche). Ich zahle mit Leistung.
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
-                <div className="space-y-2">
-                  <label className="text-[0.65rem] uppercase tracking-[0.2em] text-[var(--secondary)] ml-1">
-                    Expertise
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.phone}
-                    onChange={handleFormChange('phone')}
-                    className="w-full px-6 py-4 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:ring-1 focus:ring-[var(--accent)] focus:border-[var(--accent)] outline-none transition-all text-sm"
-                    placeholder="z.B. Marketing, Tech, Sales"
-                  />
-                </div>
-              </div>
+                  {/* STEP 2: DETAILS */}
+                  {currentStep === 2 && (
+                    <div className="animate-fade-in space-y-6">
+                      <h3 className="text-xl font-display text-center mb-6">
+                        {role === 'investor' ? 'Dein Profil' : 'Deine Skills'}
+                      </h3>
+                      
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-[0.6rem] uppercase tracking-[0.2em] text-[var(--secondary)] ml-1">Name</label>
+                          <input
+                            type="text"
+                            value={formData.name}
+                            onChange={handleFormChange('name')}
+                            className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl outline-none focus:border-[var(--accent)] transition-all"
+                            placeholder="Dein Name"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[0.6rem] uppercase tracking-[0.2em] text-[var(--secondary)] ml-1">E-Mail</label>
+                          <input
+                            type="email"
+                            value={formData.email}
+                            onChange={handleFormChange('email')}
+                            className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl outline-none focus:border-[var(--accent)] transition-all"
+                            placeholder="mail@example.com"
+                          />
+                        </div>
+                      </div>
 
-              <div className="mb-10 space-y-2">
-                <label className="text-[0.65rem] uppercase tracking-[0.2em] text-[var(--secondary)] ml-1">
-                  Was bringst du in die Gruppe ein?
-                </label>
-                <textarea
-                  value={formData.why}
-                  onChange={handleFormChange('why')}
-                  rows={4}
-                  className="w-full px-6 py-4 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:ring-1 focus:ring-[var(--accent)] focus:border-[var(--accent)] outline-none transition-all text-sm resize-none"
-                  placeholder="Beschreibe kurz deinen Hintergrund und deine Motivation..."
-                />
-              </div>
+                      {role === 'investor' ? (
+                         <div className="space-y-1">
+                           <label className="text-[0.6rem] uppercase tracking-[0.2em] text-[var(--secondary)] ml-1">Präferiertes Gruppen-Ziel</label>
+                           <select
+                              value={formData.capital}
+                              onChange={handleFormChange('capital')}
+                              className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl outline-none focus:border-[var(--accent)] transition-all appearance-none"
+                           >
+                             <option value="">Bitte wählen...</option>
+                             <option value="25k">25.000 € Gruppe (Starter)</option>
+                             <option value="50k">50.000 € Gruppe (Growth)</option>
+                             <option value="100k">100.000 € Gruppe (Pro)</option>
+                           </select>
+                         </div>
+                      ) : (
+                        <div className="space-y-1">
+                          <label className="text-[0.6rem] uppercase tracking-[0.2em] text-[var(--secondary)] ml-1">Dein stärkster Skill</label>
+                          <input
+                            type="text"
+                            value={formData.skill}
+                            onChange={handleFormChange('skill')}
+                            className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl outline-none focus:border-[var(--accent)] transition-all"
+                            placeholder="z.B. Frontend Dev, Performance Marketing, Sales"
+                          />
+                        </div>
+                      )}
 
-              {formMessage && (
-                <div
-                  className={`mb-8 p-4 rounded-xl text-sm text-center animate-fade-in ${
-                    formStatus === 'success'
-                      ? 'bg-[var(--accent-glow)] text-[var(--accent)] border border-[var(--accent-soft)]'
-                      : 'bg-red-50 text-red-800 border border-red-100'
-                  }`}
-                >
-                  {formMessage}
-                </div>
+                      <div className="flex gap-4 pt-4">
+                        <button 
+                          type="button" 
+                          onClick={handlePrevStep}
+                          className="flex-1 py-3 rounded-xl border border-[var(--border)] hover:bg-[var(--surface-muted)]"
+                        >
+                          Zurück
+                        </button>
+                        <button 
+                          type="button" 
+                          onClick={handleNextStep}
+                          disabled={!formData.name || !formData.email}
+                          className="flex-1 py-3 rounded-xl bg-[var(--accent)] text-white hover:bg-[#0b2f24] disabled:opacity-50"
+                        >
+                          Weiter
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* STEP 3: MOTIVATION */}
+                  {currentStep === 3 && (
+                    <div className="animate-fade-in space-y-6">
+                      <h3 className="text-xl font-display text-center mb-6">Dein Pitch</h3>
+                      
+                      <div className="space-y-1">
+                        <label className="text-[0.6rem] uppercase tracking-[0.2em] text-[var(--secondary)] ml-1">
+                          {role === 'builder' 
+                            ? 'Warum sollten wir in DICH investieren? (Sweat Equity)' 
+                            : 'Was erwartest du von der Gruppe?'}
+                        </label>
+                        <textarea
+                          value={formData.why}
+                          onChange={handleFormChange('why')}
+                          rows={4}
+                          className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl outline-none focus:border-[var(--accent)] transition-all resize-none"
+                          placeholder={role === 'builder' ? "Überzeuge uns. Keine Standardfloskeln." : "Deine Ziele und Vision..."}
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[0.6rem] uppercase tracking-[0.2em] text-[var(--secondary)] ml-1">Instagram / LinkedIn (Optional)</label>
+                        <input
+                            type="text"
+                            value={formData.instagram}
+                            onChange={handleFormChange('instagram')}
+                            className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl outline-none focus:border-[var(--accent)] transition-all"
+                            placeholder="Link zum Profil"
+                          />
+                      </div>
+
+                      {formMessage && (
+                        <p className="text-center text-red-500 text-sm">{formMessage}</p>
+                      )}
+
+                      <div className="flex gap-4 pt-4">
+                        <button 
+                          type="button" 
+                          onClick={handlePrevStep}
+                          className="flex-1 py-3 rounded-xl border border-[var(--border)] hover:bg-[var(--surface-muted)]"
+                        >
+                          Zurück
+                        </button>
+                        <button 
+                          type="submit" 
+                          disabled={formStatus === 'loading'}
+                          className="flex-1 py-3 rounded-xl bg-[var(--accent)] text-white hover:bg-[#0b2f24] disabled:opacity-50 shadow-lg"
+                        >
+                          {formStatus === 'loading' ? 'Sende...' : 'Bewerbung absenden'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
-
-              <button
-                type="submit"
-                disabled={formStatus === 'loading'}
-                className="w-full bg-[var(--accent)] text-white py-5 rounded-xl hover:bg-[#0b2f24] transition-all text-[0.7rem] tracking-[0.4em] uppercase disabled:opacity-60 disabled:cursor-not-allowed shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
-              >
-                {formStatus === 'loading' ? 'Prüfe Kapazität...' : 'Bewerbung zur Auswahl absenden'}
-              </button>
-
-              <div className="mt-8 flex items-center justify-center gap-6 text-[0.6rem] text-[var(--secondary)] uppercase tracking-[0.2em]">
-                <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
-                  Keine Gebühren bei Ablehnung
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
-                  Antwort innerhalb 48h
-                </div>
-              </div>
             </form>
           </div>
         </div>
@@ -977,7 +1078,6 @@ export default function Home() {
                   Recruiting aktiv
                 </div>
                 <div>Flexible Gruppengrößen</div>
-                <div>{foundersCount} Total Founders</div>
               </div>
             </div>
           </div>

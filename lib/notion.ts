@@ -66,6 +66,8 @@ export interface Founder {
   joinedDate: string;
   status: 'pending' | 'active' | 'inactive';
   investmentPaid: boolean;
+  groupId?: string;
+  groupName?: string;
 }
 
 export async function getFounders(): Promise<Founder[]> {
@@ -93,6 +95,7 @@ export async function getFounders(): Promise<Founder[]> {
         'Joined Date': { date: { start: string } };
         Status: { select: { name: 'pending' | 'active' | 'inactive' } };
         'Investment Paid': { checkbox: boolean };
+        Group?: { relation: { id: string }[] }; 
       };
     }) => ({
       id: page.id,
@@ -102,6 +105,7 @@ export async function getFounders(): Promise<Founder[]> {
       joinedDate: page.properties['Joined Date']?.date?.start || '',
       status: page.properties.Status?.select?.name || 'pending',
       investmentPaid: page.properties['Investment Paid']?.checkbox || false,
+      groupId: page.properties.Group?.relation?.[0]?.id || undefined,
     }));
   } catch (error) {
     console.error('Error fetching founders:', error);
@@ -138,6 +142,20 @@ export async function getFounderByEmail(email: string): Promise<Founder | null> 
     }
 
     const page = data.results[0] as any;
+    
+    // Fetch group details if a relation exists
+    let groupName = undefined;
+    const groupId = page.properties.Group?.relation?.[0]?.id;
+    
+    if (groupId) {
+        try {
+            const groupPage = await notion.pages.retrieve({ page_id: groupId });
+            groupName = (groupPage as any).properties?.Name?.title?.[0]?.plain_text;
+        } catch (e) {
+            console.error('Error fetching group details:', e);
+        }
+    }
+
     return {
       id: page.id,
       name: page.properties.Name?.title?.[0]?.plain_text || '',
@@ -146,6 +164,8 @@ export async function getFounderByEmail(email: string): Promise<Founder | null> 
       joinedDate: page.properties['Joined Date']?.date?.start || '',
       status: page.properties.Status?.select?.name || 'pending',
       investmentPaid: page.properties['Investment Paid']?.checkbox || false,
+      groupId,
+      groupName
     };
   } catch (error) {
     console.error('Error fetching founder by email:', error);
@@ -159,6 +179,9 @@ export async function addFounder(data: {
   phone?: string;
   instagram?: string;
   why?: string;
+  role?: 'investor' | 'builder';
+  capital?: string;
+  skill?: string;
 }): Promise<any> {
   try {
     const founders = await getFounders();
@@ -168,6 +191,9 @@ export async function addFounder(data: {
     const phoneProperty = selectPropertyName(source.properties, ['Phone', 'Telefon']);
     const instagramProperty = selectPropertyName(source.properties, ['Instagram', 'Instagram Handle']);
     const whyProperty = selectPropertyName(source.properties, ['Why Join', 'Why do you want to join?']);
+    const roleProperty = selectPropertyName(source.properties, ['Role', 'Rolle']);
+    const capitalProperty = selectPropertyName(source.properties, ['Capital', 'Kapital']);
+    const skillProperty = selectPropertyName(source.properties, ['Skill', 'Skills']);
     const parent =
       source.type === 'data_source'
         ? { data_source_id: databaseId }
@@ -228,6 +254,38 @@ export async function addFounder(data: {
           {
             text: {
               content: data.why || '',
+            },
+          },
+        ],
+      };
+    }
+
+    if (roleProperty && data.role) {
+      properties[roleProperty] = {
+        select: {
+          name: data.role === 'investor' ? 'Investor' : 'Builder',
+        },
+      };
+    }
+
+    if (capitalProperty && data.capital) {
+      properties[capitalProperty] = {
+        rich_text: [
+          {
+            text: {
+              content: data.capital,
+            },
+          },
+        ],
+      };
+    }
+
+    if (skillProperty && data.skill) {
+      properties[skillProperty] = {
+        rich_text: [
+          {
+            text: {
+              content: data.skill,
             },
           },
         ],
