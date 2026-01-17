@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { PricingTable } from '@/app/components/PricingTable';
 import MarginCalculator from '@/app/components/MarginCalculator';
+import AiAdvisor from '@/app/components/AiAdvisor';
 import {
   Users,
   Vote,
@@ -504,6 +505,7 @@ function DashboardContent() {
           )}
         </div>
       </div>
+      <AiAdvisor />
     </div>
   );
 }
