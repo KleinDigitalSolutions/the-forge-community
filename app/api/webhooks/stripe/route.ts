@@ -33,15 +33,16 @@ export async function POST(req: Request) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
         const founderId = session.client_reference_id;
+        const plan = session.metadata?.plan; // Get the plan from metadata
         
         if (founderId) {
-            console.log(`Processing checkout for founder ${founderId}`);
-            // 1. Activate Founder
-            await updateFounderStatus(founderId, 'active');
+            console.log(`Processing checkout for founder ${founderId} with plan ${plan}`);
+            // 1. Activate Founder & Set Plan
+            await updateFounderStatus(founderId, 'active', plan);
             
             // 2. Add Transaction
             await addTransaction({
-                description: `Membership Fee (First Payment)`,
+                description: `Membership Fee (${plan ? plan.toUpperCase() : 'Standard'}) - First Payment`,
                 amount: (session.amount_total || 0) / 100,
                 category: 'Membership Fee',
                 type: 'Income',

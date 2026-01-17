@@ -244,60 +244,61 @@ function DashboardContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="text-xl font-semibold text-gray-900">THE FORGE</div>
+      <header className="fixed top-0 left-0 right-0 bg-[#f8f4f0]/90 backdrop-blur-md border-b border-[var(--border)] z-50">
+        <div className="w-full px-8 md:px-12 lg:px-16 py-2 flex justify-between items-center">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-full border border-[var(--border)] bg-white/70 flex items-center justify-center font-display text-[0.6rem] tracking-[0.32em] text-[var(--foreground)]">
+              S&S
+            </div>
+            <div className="leading-tight">
+              <div className="text-[0.7rem] uppercase tracking-[0.4em] text-[var(--secondary)]">
+                Stake &amp; Scale
+              </div>
+              <div className="text-xs text-[var(--secondary)]">Dashboard</div>
+            </div>
           </Link>
-          <nav className="flex gap-6">
-            <Link href="/" className="text-sm text-gray-600 hover:text-gray-900">
+          <nav className="hidden md:flex gap-6 items-center text-[0.7rem] uppercase tracking-[0.28em] text-[var(--secondary)]">
+            <Link href="/" className="hover:text-[var(--foreground)] transition-colors">
               Home
             </Link>
-            <Link href="/dashboard" className="text-sm text-gray-900 font-medium">
-              Dashboard
+            <Link href="/transparency" className="hover:text-[var(--foreground)] transition-colors">
+              Transparenz
             </Link>
-            <Link href="/transparency" className="text-sm text-gray-600 hover:text-gray-900">
-              Transparency
-            </Link>
-            <Link href="/forum" className="text-sm text-gray-600 hover:text-gray-900">
+            <Link href="/forum" className="hover:text-[var(--foreground)] transition-colors">
               Forum
             </Link>
-            <Link href="/updates" className="text-sm text-gray-600 hover:text-gray-900">
-              Updates
-            </Link>
-            <Link href="/tasks" className="text-sm text-gray-600 hover:text-gray-900">
+            <Link href="/tasks" className="hover:text-[var(--foreground)] transition-colors">
               Tasks
             </Link>
-            <Link href="/resources" className="text-sm text-gray-600 hover:text-gray-900">
-              Resources
-            </Link>
-            <Link href="/calendar" className="text-sm text-gray-600 hover:text-gray-900">
-              Calendar
-            </Link>
+            <div className="h-4 w-px bg-[var(--border)]" />
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-[var(--accent)]" />
+              <span className="text-[0.6rem]">Status: {currentUser?.status || 'Active'}</span>
+            </div>
           </nav>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="max-w-7xl mx-auto px-6 pt-32 pb-20">
         
         {paymentStatus === 'success' && (
-          <div className="mb-8 bg-green-50 border border-green-200 rounded-xl p-6 flex items-start gap-4 animate-fade-in">
-            <CheckCircle className="w-6 h-6 text-green-600 mt-1" />
+          <div className="mb-8 bg-[var(--accent-glow)] border border-[var(--accent-soft)] rounded-2xl p-6 flex items-start gap-4 animate-fade-in">
+            <CheckCircle className="w-6 h-6 text-[var(--accent)] mt-1" />
             <div>
-              <h3 className="text-lg font-semibold text-green-800">Zahlung erfolgreich!</h3>
-              <p className="text-green-700">Willkommen im Inner Circle. Dein Status ist jetzt aktiv.</p>
+              <h3 className="text-lg font-display text-[var(--accent)]">Zahlung erfolgreich!</h3>
+              <p className="text-sm text-[var(--secondary)]">Willkommen im Inner Circle. Dein Status ist jetzt aktiv.</p>
             </div>
           </div>
         )}
 
         {paymentStatus === 'cancelled' && (
-           <div className="mb-8 bg-red-50 border border-red-200 rounded-xl p-6 flex items-start gap-4">
+           <div className="mb-8 bg-red-50 border border-red-100 rounded-2xl p-6 flex items-start gap-4">
             <AlertCircle className="w-6 h-6 text-red-600 mt-1" />
             <div>
-              <h3 className="text-lg font-semibold text-red-800">Zahlung abgebrochen</h3>
-              <p className="text-red-700">Der Vorgang wurde nicht abgeschlossen. Bitte versuche es erneut.</p>
+              <h3 className="text-lg font-display text-red-800">Zahlung abgebrochen</h3>
+              <p className="text-sm text-red-700">Der Vorgang wurde nicht abgeschlossen. Bitte versuche es erneut.</p>
             </div>
           </div>
         )}
@@ -305,10 +306,9 @@ function DashboardContent() {
         {currentUser && currentUser.status === 'pending' && paymentStatus !== 'success' && (
           <div className="mb-12">
              <div className="text-center mb-10">
-               <h2 className="text-3xl font-bold text-gray-900 mb-4">Wähle dein Membership-Modell</h2>
-               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+               <h2 className="text-3xl font-display text-[var(--foreground)] mb-4">Wähle dein Membership-Modell</h2>
+               <p className="text-lg text-[var(--secondary)] max-w-2xl mx-auto">
                  Faire Preise, die mit deinem Erfolg wachsen. Starte klein oder skaliere direkt.
-                 Jeder Plan beinhaltet vollen Zugriff auf die Community & Votes.
                </p>
              </div>
              <PricingTable onSelectPlan={handlePlanSelect} isLoading={isCheckoutLoading} />
@@ -316,216 +316,183 @@ function DashboardContent() {
         )}
 
         {/* Welcome */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Founder Dashboard</h1>
-          <p className="text-lg text-gray-600">
-            Willkommen zurück! Hier siehst du alle wichtigen Updates.
+        <div className="mb-12">
+          <div className="flex items-center gap-3 text-[0.6rem] uppercase tracking-[0.3em] text-[var(--secondary)] mb-2">
+            <span className="h-px w-8 bg-[var(--border)]" />
+            Venture Hub
+          </div>
+          <h1 className="text-4xl font-display text-[var(--foreground)] mb-2">Founder Dashboard</h1>
+          <p className="text-lg text-[var(--secondary)]">
+            Willkommen zurück{currentUser ? `, ${currentUser.name}` : ''}. Dein Projekt-Fortschritt auf einen Blick.
           </p>
         </div>
 
         {/* Stats */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5 text-blue-600" />
+        <div className="grid md:grid-cols-3 gap-6 mb-12">
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-8 shadow-sm">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-[var(--accent-glow)] rounded-xl flex items-center justify-center">
+                <Users className="w-5 h-5 text-[var(--accent)]" />
               </div>
-              <span className="text-sm font-medium text-gray-600">Founders</span>
+              <span className="text-[0.65rem] uppercase tracking-[0.2em] text-[var(--secondary)]">Founders</span>
             </div>
-            <div className="text-3xl font-bold text-gray-900">
-              {foundersCount}/{MAX_GROUP_SIZE}
+            <div className="text-4xl font-display text-[var(--foreground)]">
+              {foundersCount}<span className="text-xl text-[var(--secondary)] opacity-50">/{MAX_GROUP_SIZE}</span>
             </div>
-            <p className="text-sm text-gray-500 mt-1">
-              Max. {MAX_GROUP_SIZE} pro Gruppe · {Math.max(0, MAX_GROUP_SIZE - foundersCount)} Plätze offen
+            <p className="text-xs text-[var(--secondary)] mt-2">
+              {Math.max(0, MAX_GROUP_SIZE - foundersCount)} Plätze verfügbar
             </p>
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-green-600" />
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-8 shadow-sm">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-[var(--accent-glow)] rounded-xl flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-[var(--accent)]" />
               </div>
-              <span className="text-sm font-medium text-gray-600">Kapital</span>
+              <span className="text-[0.65rem] uppercase tracking-[0.2em] text-[var(--secondary)]">Kapital</span>
             </div>
-            <div className="text-3xl font-bold text-gray-900">
+            <div className="text-4xl font-display text-[var(--foreground)]">
               €{capitalRaised.toLocaleString()}
             </div>
-            <p className="text-sm text-gray-500 mt-1">von €{capitalTarget.toLocaleString()}</p>
+            <p className="text-xs text-[var(--secondary)] mt-2">Ziel: €{capitalTarget.toLocaleString()}</p>
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Vote className="w-5 h-5 text-purple-600" />
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-8 shadow-sm">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-[var(--accent-glow)] rounded-xl flex items-center justify-center">
+                <Vote className="w-5 h-5 text-[var(--accent)]" />
               </div>
-              <span className="text-sm font-medium text-gray-600">Aktive Votes</span>
+              <span className="text-[0.65rem] uppercase tracking-[0.2em] text-[var(--secondary)]">Status</span>
             </div>
-            <div className="text-3xl font-bold text-gray-900">{activeVotesCount}</div>
-            <p className="text-sm text-gray-500 mt-1">{votingStatusLabel}</p>
+            <div className="text-xl font-display text-[var(--foreground)]">
+              {votingStatusLabel}
+            </div>
+            <p className="text-xs text-[var(--secondary)] mt-2">{activeVotesCount} aktive Abstimmungen</p>
           </div>
         </div>
 
         {/* Product Voting */}
-        <div className="bg-white rounded-xl border border-gray-200 p-8 mb-8">
-          <div className="flex justify-between items-center mb-6">
+        <div className="bg-[var(--surface)] rounded-3xl border border-[var(--border)] p-8 md:p-12 mb-12 shadow-sm">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
             <div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-1">Projekt-Voting #1</h2>
-              <p className="text-sm text-gray-600">
-                Erstes echtes Projekt: SmartStore (Community Fulfillment Hub)
+              <div className="inline-flex items-center gap-2 bg-[var(--accent-glow)] text-[var(--accent)] px-3 py-1 rounded-full text-[0.6rem] uppercase tracking-[0.2em] mb-3 font-medium">
+                Voting #1
+              </div>
+              <h2 className="text-3xl font-display text-[var(--foreground)]">Projekt-Auswahl</h2>
+              <p className="text-[var(--secondary)]">
+                SmartStore: Unser erstes Community Fulfillment Hub
               </p>
             </div>
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
-              {votingStatusLabel}
-            </span>
           </div>
 
           {visibleVotes.length === 0 ? (
-            <div className="border border-dashed border-gray-200 rounded-lg p-6 text-center text-sm text-gray-500">
-              Kein Voting aktiv. Lege ein Voting in Notion an, um es hier zu sehen.
+            <div className="border border-dashed border-[var(--border)] rounded-2xl p-12 text-center">
+              <p className="text-sm text-[var(--secondary)]">Kein aktives Voting vorhanden.</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {visibleVotes.map(vote => {
                 const totalVotes = Math.max(1, foundersCount || 0);
                 const percentage = totalVotes ? (vote.votes / totalVotes) * 100 : 0;
                 return (
                   <div
                     key={vote.id}
-                    className="border border-gray-200 rounded-lg p-5 hover:border-gray-300 transition-colors"
+                    className="group border border-[var(--border)] rounded-2xl p-6 hover:border-[var(--accent-soft)] transition-all bg-white/50"
                   >
-                    <div className="flex justify-between items-start mb-4">
+                    <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
                       <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 mb-1">{vote.name}</h3>
-                        <p className="text-sm text-gray-600">{vote.description}</p>
+                        <h3 className="text-xl font-display text-[var(--foreground)] mb-2">{vote.name}</h3>
+                        <p className="text-sm text-[var(--secondary)] leading-relaxed">{vote.description}</p>
                       </div>
                       <button
                         onClick={() => handleVote(vote.id)}
-                        className={`ml-4 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        className={`w-full md:w-auto px-8 py-3 rounded-full text-[0.7rem] uppercase tracking-[0.25em] transition-all ${
                           vote.isVoted
-                            ? 'bg-gray-900 text-white hover:bg-gray-800'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-[var(--accent)] text-white'
+                            : 'border border-[var(--accent)] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-white'
                         }`}
                       >
-                        {vote.isVoted ? 'Voted' : 'Vote'}
+                        {vote.isVoted ? 'Bestätigt' : 'Stimme abgeben'}
                       </button>
                     </div>
 
-                    <div className="grid md:grid-cols-3 gap-3 mb-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
                       {vote.metrics.map(metric => (
                         <div
                           key={metric.label}
-                          className="bg-gray-50 border border-gray-200 rounded-lg p-3"
+                          className="bg-[var(--surface-muted)] rounded-xl p-4"
                         >
-                          <div className="text-xs text-gray-500">{metric.label}</div>
-                          <div className="text-sm font-semibold text-gray-900">{metric.value}</div>
+                          <div className="text-[0.6rem] uppercase tracking-[0.15em] text-[var(--secondary)] mb-1">{metric.label}</div>
+                          <div className="text-sm font-medium text-[var(--foreground)]">{metric.value}</div>
                         </div>
                       ))}
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-4 mb-4">
-                      <div>
-                        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                          Highlights
-                        </div>
-                        <ul className="space-y-2 text-sm text-gray-600 list-disc pl-5">
-                          {vote.highlights.map(item => (
-                            <li key={item}>{item}</li>
-                          ))}
-                        </ul>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center text-[0.65rem] uppercase tracking-[0.2em] text-[var(--secondary)]">
+                        <span>Zustimmung</span>
+                        <span>{vote.votes} Founder</span>
                       </div>
-                      <div>
-                        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                          Roadmap 0–6 Monate
-                        </div>
-                        <ol className="space-y-2 text-sm text-gray-600 list-decimal pl-5">
-                          {vote.timeline.map(item => (
-                            <li key={item}>{item}</li>
-                          ))}
-                        </ol>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
+                      <div className="h-1.5 w-full bg-[var(--border)] rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-blue-600 transition-all duration-300"
+                          className="h-full bg-[var(--accent)] transition-all duration-1000"
                           style={{ width: `${percentage}%` }}
                         />
                       </div>
-                      <span className="text-sm font-medium text-gray-700 w-20 text-right">
-                        {vote.votes} Votes
-                      </span>
                     </div>
                   </div>
                 );
               })}
             </div>
           )}
-
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-sm text-gray-600 mb-4">
-              Hast du eine eigene Projektidee? Reiche sie ein!
-            </p>
-            <Link
-              href="/forum#new-post"
-              className="inline-flex items-center gap-2 text-sm text-gray-900 font-medium hover:text-gray-700"
-            >
-              Projekt vorschlagen
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
         </div>
 
         {/* Founders List */}
-        <div className="bg-white rounded-xl border border-gray-200 p-8">
-          <div className="flex justify-between items-center mb-6">
+        <div className="bg-[var(--surface)] rounded-3xl border border-[var(--border)] p-8 md:p-12 shadow-sm">
+          <div className="flex justify-between items-center mb-10">
             <div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-1">Alle Founders</h2>
-              <p className="text-sm text-gray-600">{foundersCount} Founders bereits dabei</p>
+              <h2 className="text-3xl font-display text-[var(--foreground)] mb-2">The Circle</h2>
+              <p className="text-sm text-[var(--secondary)]">{foundersCount} aktive Partner im Studio</p>
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {founders.map(founder => (
               <div
                 key={founder.founderNumber}
-                className="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors"
+                className="group border border-[var(--border)] rounded-2xl p-6 hover:bg-[var(--surface-muted)] transition-colors flex items-center justify-between"
               >
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-semibold text-gray-700">
-                        #{founder.founderNumber}
-                      </span>
-                    </div>
-                    <div>
-                      <div className="font-medium text-gray-900">{founder.name}</div>
-                      <div className="text-xs text-gray-500">
-                        {new Date(founder.joinedDate).toLocaleDateString('de-DE')}
-                      </div>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full border border-[var(--border)] bg-white flex items-center justify-center font-display text-xs text-[var(--secondary)]">
+                    #{founder.founderNumber}
+                  </div>
+                  <div>
+                    <div className="font-medium text-[var(--foreground)] text-sm">{founder.name}</div>
+                    <div className="text-[0.6rem] uppercase tracking-[0.1em] text-[var(--secondary)]">
+                      Dabei seit {new Date(founder.joinedDate).toLocaleDateString('de-DE', { month: 'short', year: 'numeric' })}
                     </div>
                   </div>
-                  {founder.status === 'active' && (
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                  )}
                 </div>
+                {founder.status === 'active' && (
+                  <div className="h-2 w-2 rounded-full bg-[var(--accent)]" />
+                )}
               </div>
             ))}
           </div>
 
           {foundersCount < MAX_GROUP_SIZE && (
-            <div className="mt-6 pt-6 border-t border-gray-200 text-center">
-              <p className="text-sm text-gray-600 mb-4">
-                Noch {Math.max(0, MAX_GROUP_SIZE - foundersCount)} Plätze bis zur Maximalgröße. Lade Freunde ein!
+            <div className="mt-12 pt-12 border-t border-[var(--border)] text-center">
+              <p className="text-sm text-[var(--secondary)] mb-6">
+                Noch {Math.max(0, MAX_GROUP_SIZE - foundersCount)} Plätze offen. Hilf uns zu wachsen.
               </p>
               <button
                 onClick={handleCopyInvite}
-                className="inline-flex items-center gap-2 text-sm bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
+                className="bg-[var(--accent)] text-white px-8 py-3 rounded-full text-[0.7rem] uppercase tracking-[0.3em] hover:bg-[#0b2f24] transition-colors"
               >
                 Einladungslink kopieren
               </button>
               {inviteStatus && (
-                <p className="text-xs text-gray-500 mt-2">{inviteStatus}</p>
+                <p className="text-xs text-[var(--accent)] mt-3 font-medium">{inviteStatus}</p>
               )}
             </div>
           )}
@@ -537,7 +504,7 @@ function DashboardContent() {
 
 export default function Dashboard() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center font-display text-sm tracking-widest text-gray-500 uppercase">Lade Dashboard...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[var(--background)] flex items-center justify-center font-display text-sm tracking-[0.4em] text-[var(--secondary)] uppercase">Lade Dashboard...</div>}>
       <DashboardContent />
     </Suspense>
   );

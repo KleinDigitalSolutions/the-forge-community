@@ -11,6 +11,48 @@ const notion = new Client({
 
 const databaseId = process.env.NOTION_DATABASE_ID || '';
 
+type NotionSource = {
+  type: 'database' | 'data_source';
+  properties: Set<string>;
+};
+
+const sourceCache = new Map<string, NotionSource>();
+
+async function resolveNotionSource(id: string): Promise<NotionSource> {
+  const cached = sourceCache.get(id);
+  if (cached) {
+    return cached;
+  }
+
+  if (!id) {
+    throw new Error('NOTION_DATABASE_ID not set');
+  }
+
+  try {
+    const dataSource = await notion.dataSources.retrieve({ data_source_id: id });
+    const resolved: NotionSource = {
+      type: 'data_source',
+      properties: new Set(Object.keys(dataSource.properties || {})),
+    };
+    sourceCache.set(id, resolved);
+    return resolved;
+  } catch (error) {
+    console.warn('Data source lookup failed, falling back to database ID.', error);
+  }
+
+  const database = await notion.databases.retrieve({ database_id: id });
+  const resolved: NotionSource = {
+    type: 'database',
+    properties: new Set(Object.keys(database.properties || {})),
+  };
+  sourceCache.set(id, resolved);
+  return resolved;
+}
+
+function selectPropertyName(available: Set<string>, candidates: string[]): string | null {
+  return candidates.find((name) => available.has(name)) || null;
+}
+
 export interface Founder {
   id: string;
   name: string;
@@ -23,29 +65,19 @@ export interface Founder {
 
 export async function getFounders(): Promise<Founder[]> {
   try {
-    // Use fetch API directly since notion SDK has issues
-    const response = await fetch(`https://api.notion.com/v1/databases/${databaseId}/query`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.NOTION_API_KEY}`,
-        'Notion-Version': '2022-06-28',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        sorts: [
-          {
-            property: 'Founder Number',
-            direction: 'ascending',
-          },
-        ],
-      }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(`Notion API error: ${data.message}`);
-    }
+    const source = await resolveNotionSource(databaseId);
+    const query = {
+      sorts: [
+        {
+          property: 'Founder Number',
+          direction: 'ascending' as const,
+        },
+      ],
+    };
+    const data =
+      source.type === 'data_source'
+        ? await notion.dataSources.query({ data_source_id: databaseId, ...query })
+        : await notion.databases.query({ database_id: databaseId, ...query });
 
     return data.results.map((page: {
       id: string;
@@ -74,30 +106,33 @@ export async function getFounders(): Promise<Founder[]> {
 
 export async function getFounderByEmail(email: string): Promise<Founder | null> {
   try {
-    const response = await fetch(`https://api.notion.com/v1/databases/${databaseId}/query`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.NOTION_API_KEY}`,
-        'Notion-Version': '2022-06-28',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        filter: {
-          property: 'Email',
-          email: {
-            equals: email,
-          },
-        },
-      }),
-    });
+    const source = await resolveNotionSource(databaseId);
+    const data =
+      source.type === 'data_source'
+        ? await notion.dataSources.query({
+            data_source_id: databaseId,
+            filter: {
+              property: 'Email',
+              email: {
+                equals: email,
+              },
+            },
+          })
+        : await notion.databases.query({
+            database_id: databaseId,
+            filter: {
+              property: 'Email',
+              email: {
+                equals: email,
+              },
+            },
+          });
 
-    const data = await response.json();
-
-    if (!response.ok || !data.results || data.results.length === 0) {
+    if (!data.results || data.results.length === 0) {
       return null;
     }
 
-    const page = data.results[0];
+    const page = data.results[0] as any;
     return {
       id: page.id,
       name: page.properties.Name?.title?.[0]?.plain_text || '',
@@ -124,61 +159,79 @@ export async function addFounder(data: {
     const founders = await getFounders();
     const nextFounderNumber = founders.length + 1;
 
+    const source = await resolveNotionSource(databaseId);
+    const phoneProperty = selectPropertyName(source.properties, ['Phone', 'Telefon']);
+    const instagramProperty = selectPropertyName(source.properties, ['Instagram', 'Instagram Handle']);
+    const whyProperty = selectPropertyName(source.properties, ['Why Join', 'Why do you want to join?']);
+    const parent =
+      source.type === 'data_source'
+        ? { data_source_id: databaseId }
+        : { database_id: databaseId };
+
+    const properties: Record<string, any> = {
+      Name: {
+        title: [
+          {
+            text: {
+              content: data.name,
+            },
+          },
+        ],
+      },
+      Email: {
+        email: data.email,
+      },
+      'Founder Number': {
+        number: nextFounderNumber,
+      },
+      'Joined Date': {
+        date: {
+          start: new Date().toISOString(),
+        },
+      },
+      Status: {
+        select: {
+          name: 'pending',
+        },
+      },
+      'Investment Paid': {
+        checkbox: false,
+      },
+    };
+
+    if (phoneProperty) {
+      properties[phoneProperty] = {
+        phone_number: data.phone || '',
+      };
+    }
+
+    if (instagramProperty) {
+      properties[instagramProperty] = {
+        rich_text: [
+          {
+            text: {
+              content: data.instagram || '',
+            },
+          },
+        ],
+      };
+    }
+
+    if (whyProperty) {
+      properties[whyProperty] = {
+        rich_text: [
+          {
+            text: {
+              content: data.why || '',
+            },
+          },
+        ],
+      };
+    }
+
     const response = await notion.pages.create({
-      parent: {
-        database_id: databaseId,
-      },
-      properties: {
-        Name: {
-          title: [
-            {
-              text: {
-                content: data.name,
-              },
-            },
-          ],
-        },
-        Email: {
-          email: data.email,
-        },
-        'Founder Number': {
-          number: nextFounderNumber,
-        },
-        'Joined Date': {
-          date: {
-            start: new Date().toISOString(),
-          },
-        },
-        Status: {
-          select: {
-            name: 'pending',
-          },
-        },
-        'Investment Paid': {
-          checkbox: false,
-        },
-        Phone: {
-          phone_number: data.phone || '',
-        },
-        Instagram: {
-          rich_text: [
-            {
-              text: {
-                content: data.instagram || '',
-              },
-            },
-          ],
-        },
-        'Why Join': {
-          rich_text: [
-            {
-              text: {
-                content: data.why || '',
-              },
-            },
-          ],
-        },
-      },
+      parent,
+      properties,
     });
 
     return response;
@@ -188,17 +241,32 @@ export async function addFounder(data: {
   }
 }
 
-export async function updateFounderStatus(id: string, status: 'pending' | 'active' | 'inactive'): Promise<any> {
+export async function updateFounderStatus(
+  id: string, 
+  status: 'pending' | 'active' | 'inactive',
+  plan?: string
+): Promise<any> {
   try {
-    const response = await notion.pages.update({
-      page_id: id,
-      properties: {
-        Status: {
-          select: {
-            name: status,
-          },
+    const source = await resolveNotionSource(databaseId);
+    const properties: any = {
+      Status: {
+        select: {
+          name: status,
         },
       },
+    };
+
+    if (plan && source.properties.has('Plan')) {
+      properties['Plan'] = {
+        select: {
+          name: plan.charAt(0).toUpperCase() + plan.slice(1), // Capitalize (starter -> Starter)
+        },
+      };
+    }
+
+    const response = await notion.pages.update({
+      page_id: id,
+      properties: properties,
     });
     return response;
   } catch (error) {
