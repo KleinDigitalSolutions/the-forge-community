@@ -1,8 +1,14 @@
+require('dotenv').config({ path: '.env.local' });
+
 const databases = [
-  { name: 'Announcements', id: '2ea69398-3794-8043-9fc0-e5817a7439b7' },
-  { name: 'Tasks', id: '2ea69398-3794-8029-9e62-f76b588f1578' },
-  { name: 'Documents', id: '2ea69398-3794-80dc-91a0-c07eb49e7952' },
-  { name: 'Events', id: '2ea69398-3794-805c-a887-d4647cf7a3ea' },
+  { name: 'Founders', id: process.env.NOTION_DATABASE_ID },
+  { name: 'Forum', id: process.env.NOTION_FORUM_DATABASE_ID },
+  { name: 'Announcements', id: process.env.NOTION_ANNOUNCEMENTS_DATABASE_ID },
+  { name: 'Tasks', id: process.env.NOTION_TASKS_DATABASE_ID },
+  { name: 'Documents', id: process.env.NOTION_DOCUMENTS_DATABASE_ID },
+  { name: 'Events', id: process.env.NOTION_EVENTS_DATABASE_ID },
+  { name: 'Votes', id: process.env.NOTION_VOTES_DATABASE_ID },
+  { name: 'Transactions', id: process.env.NOTION_TRANSACTIONS_DATABASE_ID },
 ];
 
 async function checkSchema() {

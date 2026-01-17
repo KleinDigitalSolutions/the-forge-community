@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { PricingTable } from '@/app/components/PricingTable';
+import MarginCalculator from '@/app/components/MarginCalculator';
 import {
   Users,
   Vote,
@@ -445,6 +446,11 @@ function DashboardContent() {
               })}
             </div>
           )}
+        </div>
+
+        {/* Brand Tools - Margin Calculator */}
+        <div className="mb-12">
+          <MarginCalculator />
         </div>
 
         {/* Founders List */}
