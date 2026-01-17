@@ -29,18 +29,23 @@ async function resolveNotionSource(id: string): Promise<NotionSource> {
   }
 
   try {
-    const dataSource = await notion.dataSources.retrieve({ data_source_id: id });
-    const resolved: NotionSource = {
-      type: 'data_source',
-      properties: new Set(Object.keys(dataSource.properties || {})),
-    };
-    sourceCache.set(id, resolved);
-    return resolved;
+    const dataSource = await (notion as any).dataSources.retrieve({ data_source_id: id });
+    if (dataSource && 'properties' in dataSource) {
+      const resolved: NotionSource = {
+        type: 'data_source',
+        properties: new Set(Object.keys(dataSource.properties || {})),
+      };
+      sourceCache.set(id, resolved);
+      return resolved;
+    }
   } catch (error) {
     console.warn('Data source lookup failed, falling back to database ID.', error);
   }
 
   const database = await notion.databases.retrieve({ database_id: id });
+  if (!('properties' in database)) {
+    throw new Error('Database properties not found (partial response)');
+  }
   const resolved: NotionSource = {
     type: 'database',
     properties: new Set(Object.keys(database.properties || {})),
@@ -76,8 +81,8 @@ export async function getFounders(): Promise<Founder[]> {
     };
     const data =
       source.type === 'data_source'
-        ? await notion.dataSources.query({ data_source_id: databaseId, ...query })
-        : await notion.databases.query({ database_id: databaseId, ...query });
+        ? await (notion as any).dataSources.query({ data_source_id: databaseId, ...query })
+        : await (notion as any).databases.query({ database_id: databaseId, ...query });
 
     return data.results.map((page: {
       id: string;
@@ -109,7 +114,7 @@ export async function getFounderByEmail(email: string): Promise<Founder | null> 
     const source = await resolveNotionSource(databaseId);
     const data =
       source.type === 'data_source'
-        ? await notion.dataSources.query({
+        ? await (notion as any).dataSources.query({
             data_source_id: databaseId,
             filter: {
               property: 'Email',
@@ -118,7 +123,7 @@ export async function getFounderByEmail(email: string): Promise<Founder | null> 
               },
             },
           })
-        : await notion.databases.query({
+        : await (notion as any).databases.query({
             database_id: databaseId,
             filter: {
               property: 'Email',

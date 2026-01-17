@@ -442,70 +442,90 @@ export default function Home() {
       </section>
 
       {/* Erstes Projekt: SmartStore */}
-      <section className="py-14 px-5 sm:py-20 sm:px-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-8 sm:mb-12">
-            <div className="inline-flex items-center gap-2 bg-[var(--accent-glow)] text-[var(--accent)] px-4 py-2 rounded-full text-[0.6rem] sm:text-xs uppercase tracking-[0.25em] sm:tracking-[0.3em] mb-4 font-medium">
-              <Sparkles className="w-4 h-4" />
-              Aktuelles Projekt – Voting läuft jetzt
+      <section className="py-20 px-5 sm:py-32 sm:px-6 bg-[var(--surface)] overflow-hidden">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col lg:flex-row gap-12 lg:items-center mb-16">
+            <div className="lg:w-1/2">
+              <div className="inline-flex items-center gap-2 bg-[var(--accent-glow)] text-[var(--accent)] px-4 py-2 rounded-full text-[0.6rem] uppercase tracking-[0.3em] mb-6 font-medium">
+                <Sparkles className="w-4 h-4" />
+                Live Opportunity
+              </div>
+              <h2 className="text-4xl sm:text-5xl font-display text-[var(--foreground)] mb-6 leading-tight">
+                SmartStore:<br />
+                <span className="text-[var(--secondary)] italic">The 3PL Revolution</span>
+              </h2>
+              <p className="text-lg text-[var(--secondary)] leading-relaxed mb-8">
+                Wir bauen nicht nur ein Business – wir lösen ein echtes Problem. Kleine E-Commerce Brands werden von großen Logistikern ignoriert oder überbezahlt. SmartStore ist das Boutique-Fulfillment, das mitskaliert.
+              </p>
+              
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <div className="text-2xl font-display text-[var(--foreground)] mb-1">€12k+</div>
+                  <div className="text-[0.6rem] uppercase tracking-[0.2em] text-[var(--secondary)]">Target MRR (6 Mo)</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-display text-[var(--foreground)] mb-1">2.5x</div>
+                  <div className="text-[0.6rem] uppercase tracking-[0.2em] text-[var(--secondary)]">Est. Exit Multiple</div>
+                </div>
+              </div>
             </div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-display text-[var(--foreground)] mb-4">
-              SmartStore: Dein erster Exit wartet
-            </h2>
-            <p className="text-base sm:text-lg text-[var(--secondary)] max-w-2xl mx-auto">
-              Ein profitables 3PL Fulfillment Business. Echte Kunden, echte Revenue, echtes Wachstum.
-              Das ist kein Hobby-Projekt – das wird dein erster erfolgreicher Exit.
-            </p>
+
+            <div className="lg:w-1/2 relative">
+              <div className="absolute -inset-4 bg-[var(--accent-glow)] rounded-[2rem] -rotate-2 opacity-50" />
+              <div className="relative bg-[var(--accent)] rounded-[2rem] p-8 md:p-10 text-white shadow-2xl">
+                <h3 className="text-xl font-display mb-8 flex items-center gap-3">
+                  <Target className="w-5 h-5 text-[var(--accent-soft)]" />
+                  Path to Exit
+                </h3>
+                
+                <div className="space-y-8 relative">
+                  <div className="absolute left-[11px] top-2 bottom-2 w-px bg-white/20" />
+                  
+                  {[
+                    { month: '01-02', title: 'Infrastructure', desc: 'Setup Warehouse & Software-Integration.' },
+                    { month: '03-04', title: 'Beta Launch', desc: 'Onboarding der ersten 5 Ankerkunden.' },
+                    { month: '05-06', title: 'Scaling', desc: 'Automatisierung & Expansion auf 15+ Kunden.' }
+                  ].map((step, i) => (
+                    <div key={i} className="flex gap-6 relative">
+                      <div className="h-6 w-6 rounded-full bg-[var(--accent)] border-2 border-[var(--accent-soft)] flex-shrink-0 z-10" />
+                      <div>
+                        <div className="text-[0.6rem] uppercase tracking-[0.2em] text-[var(--accent-soft)] mb-1">Monat {step.month}</div>
+                        <div className="font-display text-lg mb-1">{step.title}</div>
+                        <div className="text-sm text-white/60 leading-relaxed">{step.desc}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="bg-gradient-to-br from-[var(--accent)] to-[#0b2f24] rounded-2xl p-6 sm:p-8 md:p-12 text-white shadow-xl">
-            <div className="grid md:grid-cols-2 gap-6 sm:gap-8 mb-6 sm:mb-8">
-              <div>
-                <h3 className="text-lg sm:text-xl font-display mb-3 sm:mb-4">Warum das funktioniert</h3>
-                <p className="text-sm sm:text-base text-white/80">
-                  Kleine Brands zahlen 3PLs ein Vermögen für schlechten Service. Wir bieten
-                  professionelles Fulfillment zu fairen Preisen. Keine Mindestabnahme, keine versteckten Kosten.
-                </p>
-              </div>
-              <div>
-                <h3 className="text-lg sm:text-xl font-display mb-3 sm:mb-4">Der Plan</h3>
-                <p className="text-sm sm:text-base text-white/80">
-                  10 Kunden in 6 Monaten. 1.200+ Orders/Monat. Profitabel ab Monat 4.
-                  Das ist kein "vielleicht" – das ist ein klarer Path to Revenue.
-                </p>
-              </div>
+          <div className="grid md:grid-cols-3 gap-4">
+            <div className="bg-white border border-[var(--border)] rounded-2xl p-6 hover:border-[var(--accent-soft)] transition-colors">
+              <TrendingUp className="w-5 h-5 text-[var(--accent)] mb-4" />
+              <h4 className="font-display text-lg mb-2">High Margin</h4>
+              <p className="text-xs text-[var(--secondary)]">Durch optimierte Prozesse und dezentrale Lagerhaltung erzielen wir Margen von über 35%.</p>
             </div>
+            <div className="bg-white border border-[var(--border)] rounded-2xl p-6 hover:border-[var(--accent-soft)] transition-colors">
+              <Shield className="w-5 h-5 text-[var(--accent)] mb-4" />
+              <h4 className="font-display text-lg mb-2">Asset Light</h4>
+              <p className="text-xs text-[var(--secondary)]">Wir nutzen bestehende Infrastruktur-Partner, um das Risiko und das gebundene Kapital minimal zu halten.</p>
+            </div>
+            <div className="bg-white border border-[var(--border)] rounded-2xl p-6 hover:border-[var(--accent-soft)] transition-colors">
+              <Zap className="w-5 h-5 text-[var(--accent)] mb-4" />
+              <h4 className="font-display text-lg mb-2">Ready to Scale</h4>
+              <p className="text-xs text-[var(--secondary)]">Das Modell ist blaupausen-fähig. Sobald Standort #1 läuft, können wir in weitere Städte expandieren.</p>
+            </div>
+          </div>
 
-            <div className="grid md:grid-cols-3 gap-3 sm:gap-4">
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4 border border-white/10">
-                <div className="text-xl sm:text-2xl font-display mb-1">10 Kunden</div>
-                <div className="text-[0.55rem] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.25em] text-white/70">
-                  Ziel in 6 Monaten
-                </div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4 border border-white/10">
-                <div className="text-xl sm:text-2xl font-display mb-1">1.200+</div>
-                <div className="text-[0.55rem] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.25em] text-white/70">
-                  Orders/Monat geplant
-                </div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4 border border-white/10">
-                <div className="text-xl sm:text-2xl font-display mb-1">25k / 50k / 100k</div>
-                <div className="text-[0.55rem] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.25em] text-white/70">
-                  Startkapital je Gruppe
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 sm:mt-8">
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center gap-2 sm:gap-3 bg-[#f8f4f0] text-[var(--accent)] px-5 py-3 sm:px-6 rounded-full hover:bg-white transition-colors text-[0.65rem] sm:text-sm tracking-[0.2em] sm:tracking-[0.25em] uppercase"
-              >
-                Zum Voting
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-            </div>
+          <div className="mt-12 text-center">
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-3 bg-[var(--accent)] text-white px-10 py-4 rounded-full hover:bg-[#0b2f24] transition-all text-sm tracking-[0.3em] uppercase group"
+            >
+              Business Case ansehen
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
           </div>
         </div>
       </section>
@@ -777,119 +797,130 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section id="apply" className="py-20 px-6">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-display text-[var(--foreground)] mb-4">
-              Noch {Math.max(0, MAX_GROUP_SIZE - foundersCount)} Plätze bis zur Maximalgröße
+      <section id="apply" className="py-24 px-6 bg-[var(--background)] relative overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-[var(--border)] to-transparent" />
+        
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 text-[var(--accent)] mb-4">
+              <Shield className="w-5 h-5" />
+              <span className="text-[0.65rem] uppercase tracking-[0.4em]">Limited Partnership</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-display text-[var(--foreground)] mb-6">
+              Werde Teil des Circles.
             </h2>
-            <p className="text-lg text-[var(--secondary)]">
-              Bewirb dich jetzt. Wenn du reinkommst, zahlst du deinen Beitrag und bist Teil der ersten Gruppe.
-              Let's build something real.
+            <p className="text-lg text-[var(--secondary)] max-w-2xl mx-auto leading-relaxed">
+              Wir suchen keine passiven Investoren. Wir suchen Macher, Visionäre und Experten, die Skin in the Game wollen. Aktuell sind noch <span className="text-[var(--foreground)] font-semibold">{Math.max(0, MAX_GROUP_SIZE - foundersCount)} von {MAX_GROUP_SIZE} Plätzen</span> in der aktuellen Gruppe verfügbar.
             </p>
           </div>
 
-          <form
-            onSubmit={handleSubmit}
-            className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-8 shadow-sm"
-          >
-            <div className="grid md:grid-cols-2 gap-6 mb-6">
-              <div>
-                <label className="block text-sm font-medium text-[var(--secondary)] mb-2">
-                  Name *
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={handleFormChange('name')}
-                  className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] outline-none bg-white/80"
-                  placeholder="Dein vollständiger Name"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-[var(--secondary)] mb-2">
-                  E-Mail *
-                </label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={handleFormChange('email')}
-                  className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] outline-none bg-white/80"
-                  placeholder="deine@email.com"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-[var(--secondary)] mb-2">Telefon</label>
-                <input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={handleFormChange('phone')}
-                  className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] outline-none bg-white/80"
-                  placeholder="+49 123 456789"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-[var(--secondary)] mb-2">Instagram</label>
-                <input
-                  type="text"
-                  value={formData.instagram}
-                  onChange={handleFormChange('instagram')}
-                  className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] outline-none bg-white/80"
-                  placeholder="@deinusername"
-                />
-              </div>
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-[var(--secondary)] mb-2">
-                Warum willst du dabei sein?
-              </label>
-              <textarea
-                value={formData.why}
-                onChange={handleFormChange('why')}
-                rows={4}
-                className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] outline-none resize-none bg-white/80"
-                placeholder="Erzähl uns kurz, warum du Teil von STAKE & SCALE werden möchtest..."
-              />
-            </div>
-
-            {formMessage && (
-              <div
-                className={`mb-6 p-4 rounded-lg ${
-                  formStatus === 'success'
-                    ? 'bg-[var(--accent-glow)] text-[var(--accent)] border border-[var(--accent-soft)]'
-                    : 'bg-[#f7e3e1] text-[#7d2b20] border border-[#e7b9b2]'
-                }`}
-              >
-                {formMessage}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={formStatus === 'loading'}
-              className="w-full bg-[var(--accent)] text-white py-3 rounded-full hover:bg-[#0b2f24] transition-colors text-sm tracking-[0.3em] uppercase disabled:opacity-60 disabled:cursor-not-allowed"
+          <div className="relative">
+            <div className="absolute -inset-1 bg-gradient-to-b from-[var(--border)] to-transparent rounded-[2.5rem] opacity-50" />
+            <form
+              onSubmit={handleSubmit}
+              className="relative bg-[var(--surface)] rounded-[2rem] border border-[var(--border)] p-10 md:p-16 shadow-xl"
             >
-              {formStatus === 'loading' ? 'Wird gesendet...' : 'Bewerbung absenden'}
-            </button>
+              <div className="grid md:grid-cols-2 gap-8 mb-8">
+                <div className="space-y-2">
+                  <label className="text-[0.65rem] uppercase tracking-[0.2em] text-[var(--secondary)] ml-1">
+                    Vollständiger Name
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={handleFormChange('name')}
+                    className="w-full px-6 py-4 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:ring-1 focus:ring-[var(--accent)] focus:border-[var(--accent)] outline-none transition-all text-sm"
+                    placeholder="John Doe"
+                    required
+                  />
+                </div>
 
-            <p className="text-xs text-[var(--secondary)] mt-4 text-center">
-              Mit der Bewerbung akzeptierst du unsere{' '}
-              <Link href="/legal/agb" className="underline hover:text-[var(--accent)]">
-                AGB
-              </Link>{' '}
-              und{' '}
-              <Link href="/legal/datenschutz" className="underline hover:text-[var(--accent)]">
-                Datenschutzerklärung
-              </Link>
-              .
-            </p>
-          </form>
+                <div className="space-y-2">
+                  <label className="text-[0.65rem] uppercase tracking-[0.2em] text-[var(--secondary)] ml-1">
+                    E-Mail Adresse
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={handleFormChange('email')}
+                    className="w-full px-6 py-4 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:ring-1 focus:ring-[var(--accent)] focus:border-[var(--accent)] outline-none transition-all text-sm"
+                    placeholder="john@venture.com"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[0.65rem] uppercase tracking-[0.2em] text-[var(--secondary)] ml-1">
+                    LinkedIn / Instagram
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.instagram}
+                    onChange={handleFormChange('instagram')}
+                    className="w-full px-6 py-4 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:ring-1 focus:ring-[var(--accent)] focus:border-[var(--accent)] outline-none transition-all text-sm"
+                    placeholder="linkedin.com/in/username"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[0.65rem] uppercase tracking-[0.2em] text-[var(--secondary)] ml-1">
+                    Expertise
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.phone}
+                    onChange={handleFormChange('phone')}
+                    className="w-full px-6 py-4 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:ring-1 focus:ring-[var(--accent)] focus:border-[var(--accent)] outline-none transition-all text-sm"
+                    placeholder="z.B. Marketing, Tech, Sales"
+                  />
+                </div>
+              </div>
+
+              <div className="mb-10 space-y-2">
+                <label className="text-[0.65rem] uppercase tracking-[0.2em] text-[var(--secondary)] ml-1">
+                  Was bringst du in die Gruppe ein?
+                </label>
+                <textarea
+                  value={formData.why}
+                  onChange={handleFormChange('why')}
+                  rows={4}
+                  className="w-full px-6 py-4 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:ring-1 focus:ring-[var(--accent)] focus:border-[var(--accent)] outline-none transition-all text-sm resize-none"
+                  placeholder="Beschreibe kurz deinen Hintergrund und deine Motivation..."
+                />
+              </div>
+
+              {formMessage && (
+                <div
+                  className={`mb-8 p-4 rounded-xl text-sm text-center animate-fade-in ${
+                    formStatus === 'success'
+                      ? 'bg-[var(--accent-glow)] text-[var(--accent)] border border-[var(--accent-soft)]'
+                      : 'bg-red-50 text-red-800 border border-red-100'
+                  }`}
+                >
+                  {formMessage}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={formStatus === 'loading'}
+                className="w-full bg-[var(--accent)] text-white py-5 rounded-xl hover:bg-[#0b2f24] transition-all text-[0.7rem] tracking-[0.4em] uppercase disabled:opacity-60 disabled:cursor-not-allowed shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+              >
+                {formStatus === 'loading' ? 'Prüfe Kapazität...' : 'Bewerbung zur Auswahl absenden'}
+              </button>
+
+              <div className="mt-8 flex items-center justify-center gap-6 text-[0.6rem] text-[var(--secondary)] uppercase tracking-[0.2em]">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
+                  Keine Gebühren bei Ablehnung
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
+                  Antwort innerhalb 48h
+                </div>
+              </div>
+            </form>
+          </div>
         </div>
       </section>
 
