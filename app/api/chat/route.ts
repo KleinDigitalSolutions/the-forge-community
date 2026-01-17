@@ -12,21 +12,35 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'GROQ_API_KEY not set' }, { status: 500 });
     }
 
-    // Fetch live data for context
-    const [announcements, votes] = await Promise.all([
-      getAnnouncements(),
-      getVotes()
-    ]);
+    // Fetch live data for context (fail-safe)
+    let latestAnnouncements = '';
+    let activeVotes = '';
 
-    const latestAnnouncements = announcements
-      .slice(0, 3)
-      .map(a => `- ${a.title} (${a.publishedDate}): ${a.content.substring(0, 100)}...`)
-      .join('\n');
+    try {
+      const [announcements, votes] = await Promise.all([
+        getAnnouncements().catch(e => {
+            console.error('Failed to fetch announcements for chat:', e);
+            return [];
+        }),
+        getVotes().catch(e => {
+            console.error('Failed to fetch votes for chat:', e);
+            return [];
+        })
+      ]);
 
-    const activeVotes = votes
-      .filter(v => v.status === 'active')
-      .map(v => `- Voting aktiv: ${v.name} (Votes: ${v.votes}). Endet am: ${v.endDate}`)
-      .join('\n');
+      latestAnnouncements = announcements
+        .slice(0, 3)
+        .map(a => `- ${a.title} (${a.publishedDate}): ${a.content.substring(0, 100)}...`)
+        .join('\n');
+
+      activeVotes = votes
+        .filter(v => v.status === 'active')
+        .map(v => `- Voting aktiv: ${v.name} (Votes: ${v.votes}). Endet am: ${v.endDate}`)
+        .join('\n');
+    } catch (err) {
+      console.error('Error preparing context data:', err);
+      // Continue without live data
+    }
 
     const systemPrompt = `
     ${knowledgeBasePrompt}
@@ -61,7 +75,7 @@ export async function POST(req: Request) {
           { role: 'system', content: systemPrompt },
           { role: 'user', content: message },
         ],
-        model: 'llama3-70b-8192',
+        model: 'llama-3.3-70b-versatile',
         temperature: 0.7,
         max_tokens: 1024,
       }),

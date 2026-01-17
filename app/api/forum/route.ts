@@ -57,7 +57,7 @@ export async function POST(request: Request) {
                         },
                         { role: 'user', content: `Kategorie: ${category}\nInhalt: ${content}` },
                     ],
-                    model: 'llama3-70b-8192',
+                    model: 'llama-3.3-70b-versatile',
                 }),
             });
 
