@@ -173,14 +173,14 @@ export default function Home() {
       
       {/* Integrated Hero & Header */}
       <ResponsiveHeroBanner 
-        badgeLabel="REKRUTIERUNG"
-        badgeText="Batch #001 - Werde Teil der Schmiede"
-        title="Echter Wert."
-        titleLine2="Die Zukunft bauen."
-        description="The Forge ist das erste Community Venture Studio. Wir bündeln Kapital, Skills und Execution um profitable Businesses zu schmieden, die uns allen gehören."
-        primaryButtonText="Reise Starten"
+        badgeLabel="SYSTEM-UPDATE"
+        badgeText="Das Ende des einsamen Founders ist hier."
+        title="Hör auf, alleine"
+        titleLine2="zu kämpfen."
+        description="Warum 100k riskieren, wenn du mit 50 Experten ein profitables Imperium schmieden kannst? Wir bündeln Kapital, Skills und Execution. Echte Brands. Echte Anteile. Dein Squad wartet."
+        primaryButtonText="SEQUENZ STARTEN"
         primaryButtonHref="#apply"
-        secondaryButtonText="Manifest ansehen"
+        secondaryButtonText="PROTOKOLL ANSEHEN"
         secondaryButtonHref="#"
         navLinks={[
           { label: "Dashboard", href: "/dashboard" },
@@ -188,7 +188,7 @@ export default function Home() {
           { label: "Squads", href: "/squads" },
           { label: "Impressum", href: "/legal/impressum" }
         ]}
-        ctaButtonText="Bewerben"
+        ctaButtonText="BEWERBEN"
         ctaButtonHref="#apply"
       />
 
