@@ -173,22 +173,22 @@ export default function Home() {
       
       {/* Integrated Hero & Header */}
       <ResponsiveHeroBanner 
-        badgeLabel="Recruiting"
-        badgeText="Batch #001 - Join the Forge"
-        title="Forge Real Value."
-        titleLine2="Build the Future."
+        badgeLabel="REKRUTIERUNG"
+        badgeText="Batch #001 - Werde Teil der Schmiede"
+        title="Echter Wert."
+        titleLine2="Die Zukunft bauen."
         description="The Forge ist das erste Community Venture Studio. Wir bündeln Kapital, Skills und Execution um profitable Businesses zu schmieden, die uns allen gehören."
-        primaryButtonText="Start Your Journey"
+        primaryButtonText="Reise Starten"
         primaryButtonHref="#apply"
-        secondaryButtonText="Watch Manifesto"
+        secondaryButtonText="Manifest ansehen"
         secondaryButtonHref="#"
         navLinks={[
           { label: "Dashboard", href: "/dashboard" },
           { label: "Forum", href: "/forum" },
           { label: "Squads", href: "/squads" },
-          { label: "Legal", href: "/legal/impressum" }
+          { label: "Impressum", href: "/legal/impressum" }
         ]}
-        ctaButtonText="Apply"
+        ctaButtonText="Bewerben"
         ctaButtonHref="#apply"
       />
 
@@ -197,10 +197,10 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { label: 'Available Seats', value: `${Math.max(0, MAX_GROUP_SIZE - foundersCount)}`, sub: 'of 25 Total' },
-              { label: 'Capital Target', value: '25k€', sub: 'Pre-Seed' },
-              { label: 'Equity Split', value: 'Equal', sub: '1 Vote / Member' },
-              { label: 'Transparency', value: '100%', sub: 'Open Ledger' },
+              { label: 'Verfügbare Plätze', value: `${Math.max(0, MAX_GROUP_SIZE - foundersCount)}`, sub: 'von 25 Gesamt' },
+              { label: 'Kapitalziel', value: '25k€', sub: 'Pre-Seed' },
+              { label: 'Equity Split', value: 'Gleich', sub: '1 Stimme / Mitglied' },
+              { label: 'Transparenz', value: '100%', sub: 'Open Ledger' },
             ].map((stat, i) => (
               <div key={i} className="glass-card backdrop-blur-2xl p-8 rounded-3xl border border-white/10 flex flex-col items-center justify-center hover:border-[var(--accent)]/50 transition-all duration-700 group overflow-hidden relative shadow-2xl">
                 <div className="absolute inset-0 bg-gradient-to-b from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -238,17 +238,17 @@ export default function Home() {
             {[
               {
                 icon: Users,
-                title: "Collective Ownership",
+                title: "Kollektives Eigentum",
                 desc: "Keine stillen Teilhaber. Jeder Founder hält Anteile, jeder hat Stimmrecht. Das Projekt gehört uns."
               },
               {
                 icon: Layers,
-                title: "Meritocratic Stack",
+                title: "Meritokratischer Stack",
                 desc: "Die besten Ideen gewinnen. Wir nutzen Voting-Mechanismen um Produktentscheidungen zu treffen."
               },
               {
                 icon: Shield,
-                title: "Risk Mitigation",
+                title: "Risiko-Minimierung",
                 desc: "Statt 50k alleine zu riskieren, splitten wir das Risiko. Maximale Hebelwirkung bei minimalem Einsatz."
               }
             ].map((feature, i) => (
@@ -274,7 +274,7 @@ export default function Home() {
              <div className="relative z-10">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 text-[10px] font-bold text-[var(--accent)] uppercase tracking-[0.3em] mb-8">
                   <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
-                  Active Mission
+                  Aktive Mission
                 </div>
                 <h2 className="text-5xl md:text-7xl font-instrument-serif text-white mb-8">SmartStore<br/>Fulfillment</h2>
                 <p className="text-lg text-white/50 mb-12 leading-relaxed">
@@ -284,11 +284,11 @@ export default function Home() {
                 <div className="grid grid-cols-2 gap-6">
                   <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-sm">
                     <div className="text-3xl font-instrument-serif text-white mb-1">€12k</div>
-                    <div className="text-[9px] text-white/30 uppercase tracking-[0.2em] font-bold">Target MRR (6 Mo)</div>
+                    <div className="text-[9px] text-white/30 uppercase tracking-[0.2em] font-bold">Ziel MRR (6 Mo)</div>
                   </div>
                   <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-sm">
                     <div className="text-3xl font-instrument-serif text-[var(--accent)] mb-1">35%</div>
-                    <div className="text-[9px] text-white/30 uppercase tracking-[0.2em] font-bold">EBITDA Margin</div>
+                    <div className="text-[9px] text-white/30 uppercase tracking-[0.2em] font-bold">EBITDA Marge</div>
                   </div>
                 </div>
              </div>
@@ -307,10 +307,10 @@ export default function Home() {
                    </div>
                    <div className="space-y-8 relative z-10">
                       {[
-                        { step: '01', title: 'Formation', status: 'COMPLETED' },
-                        { step: '02', title: 'Legal & Banking', status: 'PROCESSING' },
-                        { step: '03', title: 'Tech Stack Setup', status: 'QUEUED' },
-                        { step: '04', title: 'Customer Onboarding', status: 'QUEUED' }
+                        { step: '01', title: 'Gründung', status: 'ABGESCHLOSSEN' },
+                        { step: '02', title: 'Rechtliches & Banking', status: 'IN BEARBEITUNG' },
+                        { step: '03', title: 'Tech Stack Setup', status: 'WARTESCHLANGE' },
+                        { step: '04', title: 'Kunden-Onboarding', status: 'WARTESCHLANGE' }
                       ].map((item, i) => (
                         <div key={i} className="flex items-center gap-6">
                            <div className="font-mono text-[10px] text-white/20">{item.step}</div>
@@ -337,9 +337,9 @@ export default function Home() {
         
         <div className="max-w-7xl mx-auto flex flex-col items-center relative z-10">
           <div className="text-center mb-20">
-            <h2 className="text-5xl md:text-7xl font-instrument-serif text-white mb-6 tracking-tighter">Core Principles</h2>
+            <h2 className="text-5xl md:text-7xl font-instrument-serif text-white mb-6 tracking-tighter">Grundprinzipien</h2>
             <p className="text-white/40 uppercase tracking-[0.3em] text-[10px] font-bold">
-              How we forge success from the ground up.
+              Wie wir Erfolg von Grund auf schmieden.
             </p>
           </div>
           
@@ -352,8 +352,8 @@ export default function Home() {
          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[var(--accent)]/5 rounded-full blur-[150px] pointer-events-none" />
          <div className="max-w-7xl mx-auto relative z-10">
             <div className="text-center mb-32">
-               <h2 className="text-5xl md:text-7xl font-instrument-serif text-white mb-6">Membership Options</h2>
-               <p className="text-white/40 uppercase tracking-[0.3em] text-[10px] font-bold">Choose your level of involvement.</p>
+               <h2 className="text-5xl md:text-7xl font-instrument-serif text-white mb-6">Mitgliedschaften</h2>
+               <p className="text-white/40 uppercase tracking-[0.3em] text-[10px] font-bold">Wähle dein Level an Beteiligung.</p>
             </div>
             <PricingTable 
               isLoading={false} 
@@ -366,8 +366,8 @@ export default function Home() {
       <section id="apply" className="py-40 px-4 relative">
         <div className="max-w-3xl mx-auto relative z-10">
           <div className="mb-20 text-center">
-            <h2 className="text-5xl md:text-6xl font-instrument-serif text-white mb-6">Initiate Sequence</h2>
-            <p className="text-white/40 uppercase tracking-[0.3em] text-[10px] font-bold">Request access to the foundry.</p>
+            <h2 className="text-5xl md:text-6xl font-instrument-serif text-white mb-6">Sequenz Starten</h2>
+            <p className="text-white/40 uppercase tracking-[0.3em] text-[10px] font-bold">Zugang zur Schmiede anfordern.</p>
           </div>
 
           <div className="bg-[#0F1113] border border-white/10 rounded-3xl shadow-2xl overflow-hidden relative group transition-all duration-700 hover:border-[var(--accent)]/30">
@@ -402,15 +402,15 @@ export default function Home() {
 
                         {currentStep === 1 && (
                            <div className="animate-fade-in-up">
-                              <label className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold mb-8 block">Select Operator Mode</label>
+                              <label className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold mb-8 block">Operator Modus wählen</label>
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                  <button
                                     type="button"
                                     onClick={() => handleSelectRole('investor')}
                                     className="p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-[var(--accent)]/50 hover:bg-[var(--accent)]/5 transition-all text-left group"
                                  >
-                                    <div className="font-instrument-serif text-2xl text-white mb-2 group-hover:text-[var(--accent)] transition-colors">Capital Partner</div>
-                                    <div className="text-xs text-white/40 leading-relaxed">Passive stake. Financial contribution only.</div>
+                                    <div className="font-instrument-serif text-2xl text-white mb-2 group-hover:text-[var(--accent)] transition-colors">Kapital-Partner</div>
+                                    <div className="text-xs text-white/40 leading-relaxed">Passive Beteiligung. Rein finanzieller Beitrag.</div>
                                  </button>
                                  <button
                                     type="button"
@@ -418,7 +418,7 @@ export default function Home() {
                                     className="p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-[var(--accent)]/50 hover:bg-[var(--accent)]/5 transition-all text-left group"
                                  >
                                     <div className="font-instrument-serif text-2xl text-white mb-2 group-hover:text-[var(--accent)] transition-colors">Builder</div>
-                                    <div className="text-xs text-white/40 leading-relaxed">Active stake. Sweat equity & skills.</div>
+                                    <div className="text-xs text-white/40 leading-relaxed">Aktive Beteiligung. Sweat Equity & Skills.</div>
                                  </button>
                               </div>
                            </div>
@@ -426,21 +426,21 @@ export default function Home() {
 
                         {currentStep === 2 && (
                            <div className="animate-fade-in-up space-y-8">
-                              <label className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold block">Identity Config</label>
+                              <label className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold block">Identitäts-Konfig</label>
                               <div className="grid gap-4">
                                  <input
                                     type="text"
                                     value={formData.name}
                                     onChange={handleFormChange('name')}
                                     className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-white/20"
-                                    placeholder="Full Name"
+                                    placeholder="Vollständiger Name"
                                  />
                                  <input
                                     type="email"
                                     value={formData.email}
                                     onChange={handleFormChange('email')}
                                     className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-white/20"
-                                    placeholder="Email Address"
+                                    placeholder="E-Mail Adresse"
                                  />
                                  {role === 'investor' && (
                                      <select
@@ -448,7 +448,7 @@ export default function Home() {
                                        onChange={handleFormChange('capital')}
                                        className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all"
                                      >
-                                        <option value="">Select Capital Target...</option>
+                                        <option value="">Kapitalziel wählen...</option>
                                         <option value="25k">25k Tier</option>
                                         <option value="50k">50k Tier</option>
                                         <option value="100k">100k Tier</option>
@@ -460,26 +460,26 @@ export default function Home() {
                                        value={formData.skill}
                                        onChange={handleFormChange('skill')}
                                        className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-white/20"
-                                       placeholder="Primary Skill (e.g. Next.js, Growth)"
+                                       placeholder="Kern-Skill (z.B. Next.js, Marketing)"
                                     />
                                  )}
                               </div>
                               <div className="flex justify-between pt-4">
-                                 <button type="button" onClick={handlePrevStep} className="text-[10px] font-bold text-white/40 hover:text-white uppercase tracking-widest">BACK</button>
-                                 <button type="button" onClick={handleNextStep} disabled={!formData.name || !formData.email} className="text-[10px] font-bold text-[var(--accent)] hover:opacity-80 disabled:opacity-30 uppercase tracking-widest">CONTINUE</button>
+                                 <button type="button" onClick={handlePrevStep} className="text-[10px] font-bold text-white/40 hover:text-white uppercase tracking-widest">ZURÜCK</button>
+                                 <button type="button" onClick={handleNextStep} disabled={!formData.name || !formData.email} className="text-[10px] font-bold text-[var(--accent)] hover:opacity-80 disabled:opacity-30 uppercase tracking-widest">WEITER</button>
                               </div>
                            </div>
                         )}
 
                         {currentStep === 3 && (
                            <div className="animate-fade-in-up space-y-8">
-                              <label className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold block">Manifesto</label>
+                              <label className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold block">Manifest</label>
                               <textarea
                                  value={formData.why}
                                  onChange={handleFormChange('why')}
                                  rows={4}
                                  className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-white/20 resize-none"
-                                 placeholder="Tell us why you belong here."
+                                 placeholder="Erzähl uns, warum du hierher gehörst."
                               />
                                <input
                                     type="text"
@@ -492,13 +492,13 @@ export default function Home() {
                               {formMessage && <p className="text-red-500 text-[10px] text-center uppercase tracking-widest">{formMessage}</p>}
 
                               <div className="flex justify-between pt-4">
-                                 <button type="button" onClick={handlePrevStep} className="text-[10px] font-bold text-white/40 hover:text-white uppercase tracking-widest">BACK</button>
+                                 <button type="button" onClick={handlePrevStep} className="text-[10px] font-bold text-white/40 hover:text-white uppercase tracking-widest">ZURÜCK</button>
                                  <button 
                                     type="submit" 
                                     disabled={formStatus === 'loading'}
                                     className="px-8 py-3 bg-[var(--accent)] text-[var(--accent-foreground)] rounded-xl text-[10px] font-bold hover:brightness-110 transition-all disabled:opacity-30 uppercase tracking-[0.2em]"
                                  >
-                                    {formStatus === 'loading' ? 'TRANSMITTING...' : 'SUBMIT APPLICATION'}
+                                    {formStatus === 'loading' ? 'ÜBERTRAGE...' : 'BEWERBUNG ABSCHICKEN'}
                                  </button>
                               </div>
                            </div>
@@ -516,9 +516,9 @@ export default function Home() {
          <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8 relative z-10">
             <div className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/20">© 2026 THE FORGE SYSTEM</div>
             <div className="flex gap-12">
-               <Link href="/imprint" className="text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-[var(--accent)] transition-colors">Imprint</Link>
-               <Link href="/privacy" className="text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-[var(--accent)] transition-colors">Privacy</Link>
-               <Link href="/terms" className="text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-[var(--accent)] transition-colors">Terms</Link>
+               <Link href="/imprint" className="text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-[var(--accent)] transition-colors">Impressum</Link>
+               <Link href="/privacy" className="text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-[var(--accent)] transition-colors">Datenschutz</Link>
+               <Link href="/terms" className="text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-[var(--accent)] transition-colors">AGB</Link>
             </div>
          </div>
       </footer>
@@ -548,13 +548,13 @@ export default function Home() {
                    </div>
                 </div>
              ))}
-             {chatStatus === 'loading' && <div className="text-[10px] font-bold uppercase tracking-widest text-white/30 animate-pulse">Orion is processing...</div>}
+             {chatStatus === 'loading' && <div className="text-[10px] font-bold uppercase tracking-widest text-white/30 animate-pulse">Orion verarbeitet...</div>}
              <div ref={chatEndRef} />
          </div>
          <form onSubmit={handleChatSubmit} className="p-4 border-t border-white/10 flex gap-3 bg-white/[0.01]">
             <input 
                className="flex-1 bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-xs focus:border-[var(--accent)] outline-none text-white transition-all placeholder:text-white/20"
-               placeholder="Enter protocol query..."
+               placeholder="Protokoll-Anfrage eingeben..."
                value={chatInput}
                onChange={(e) => setChatInput(e.target.value)}
             />

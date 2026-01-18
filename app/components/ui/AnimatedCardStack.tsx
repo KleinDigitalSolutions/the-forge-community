@@ -12,22 +12,22 @@ interface Card {
 
 const cardData = {
   1: {
-    title: "The Vision",
-    description: "Forging the future of collective entrepreneurship.",
+    title: "Die Vision",
+    description: "Die Zukunft des kollektiven Unternehmertums schmieden.",
     gradient: "from-amber-500 via-yellow-600 to-orange-700",
     icon: Sparkles,
     font: "font-serif italic",
   },
   2: {
-    title: "THE STRATEGY",
-    description: "Institutional grade risk management for the community.",
+    title: "DIE STRATEGIE",
+    description: "Institutionelles Risikomanagement für die Gemeinschaft.",
     gradient: "from-blue-600 via-indigo-600 to-violet-700",
     icon: Target,
     font: "font-sans font-black tracking-tighter",
   },
   3: {
     title: "Execution.exe",
-    description: "Turning raw capital and skills into high-margin products.",
+    description: "Kapital und Skills in hochprofitable Produkte verwandeln.",
     gradient: "from-emerald-500 via-teal-600 to-cyan-700",
     icon: Zap,
     font: "font-mono uppercase tracking-widest",
@@ -79,7 +79,7 @@ function CardContent({ contentType }: { contentType: 1 | 2 | 3 }) {
         </div>
 
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest">
-          <span>Read Protocol</span>
+          <span>Protokoll lesen</span>
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </div>
       </div>
@@ -157,7 +157,7 @@ export default function AnimatedCardStack() {
           onClick={handleAnimate}
           className="btn-shimmer flex h-12 cursor-pointer select-none items-center justify-center gap-3 overflow-hidden rounded-full bg-[var(--foreground)] px-8 text-sm font-bold uppercase tracking-widest text-[var(--background)] transition-all active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
         >
-          Forge Next Level
+          Nächstes Level schmieden
           <Zap className="w-4 h-4 fill-current" />
         </button>
       </div>

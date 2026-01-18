@@ -222,7 +222,7 @@ export default function Forum() {
               </div>
               <input
                 type="text"
-                placeholder="Share an idea or ask a question..."
+                placeholder="Teile eine Idee oder stelle eine Frage..."
                 onClick={() => { setEditingPost('NEW'); setIsPreview(false); }}
                 readOnly
                 className="flex-1 bg-[var(--background)] border border-[var(--border)] hover:border-[var(--accent)] rounded-lg px-4 py-2.5 text-sm outline-none transition-all cursor-pointer text-[var(--foreground)]"
@@ -252,13 +252,13 @@ export default function Forum() {
                           onClick={() => setIsPreview(false)}
                           className={`flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full transition-all ${!isPreview ? 'bg-[var(--accent)] text-[var(--accent-foreground)]' : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'}`}
                         >
-                          <Edit2 className="w-3.5 h-3.5" /> Post
+                          <Edit2 className="w-3.5 h-3.5" /> Beitrag
                         </button>
                         <button 
                           onClick={() => setIsPreview(true)}
                           className={`flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full transition-all ${isPreview ? 'bg-[var(--accent)] text-[var(--accent-foreground)]' : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'}`}
                         >
-                          <Eye className="w-3.5 h-3.5" /> Preview
+                          <Eye className="w-3.5 h-3.5" /> Vorschau
                         </button>
                       </div>
                       <button onClick={() => setEditingPost(null)} className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] text-xl font-light">✕</button>
@@ -289,7 +289,7 @@ export default function Forum() {
                             autoFocus
                             value={content}
                             onChange={e => setContent(e.target.value)}
-                            placeholder="Markdown supported: **bold**, *italic*, # header..."
+                            placeholder="Markdown unterstützt: **fett**, *kursiv*, # Überschrift..."
                             className="w-full min-h-[300px] p-4 text-sm font-mono bg-[var(--surface)] border border-[var(--border)] rounded-xl outline-none focus:border-[var(--accent)] transition-all resize-none text-[var(--foreground)]"
                           />
                         </>
@@ -307,13 +307,13 @@ export default function Forum() {
                           onClick={() => setEditingPost(null)}
                           className="px-6 py-2 text-sm font-bold text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all"
                         >
-                          Cancel
+                          Abbrechen
                         </button>
                         <button 
                           onClick={handleSubmit} disabled={isSubmitting || !content.trim()}
                           className="bg-[var(--accent)] hover:brightness-110 text-[var(--accent-foreground)] px-10 py-2 rounded-full font-bold text-sm disabled:opacity-50 transition-all shadow-lg active:scale-95 uppercase tracking-widest"
                         >
-                          {isSubmitting ? 'Posting...' : 'Post Now'}
+                          {isSubmitting ? 'Poste...' : 'Jetzt posten'}
                         </button>
                       </div>
                     </div>
@@ -348,7 +348,7 @@ export default function Forum() {
                     <div className="flex items-center gap-3 text-[10px] mb-4 text-[var(--muted-foreground)] font-bold uppercase tracking-widest">
                       <span className="text-[var(--accent)] bg-[var(--accent)]/10 px-2 py-1 rounded tracking-tighter border border-[var(--accent)]/20">{post.category}</span>
                       <span className="opacity-30">•</span>
-                      <span>Posted by <span className="text-[var(--foreground)] hover:underline cursor-pointer">u/{post.author.replace(/\s+/g, '').toLowerCase()}</span></span>
+                      <span>Gepostet von <span className="text-[var(--foreground)] hover:underline cursor-pointer">u/{post.author.replace(/\s+/g, '').toLowerCase()}</span></span>
                       <span className="bg-[var(--accent)]/10 text-[var(--accent)] px-2 py-1 rounded border border-[var(--accent)]/20">KARMA: {getUserKarma(post.author)}</span>
                       <span className="opacity-30">•</span>
                       <span className="opacity-60">{new Date(post.createdTime).toLocaleDateString()}</span>
@@ -374,7 +374,7 @@ export default function Forum() {
 
                     <div className="flex items-center gap-4">
                       <MicroExpander 
-                        text={`${post.comments?.length || 0} Comments`}
+                        text={`${post.comments?.length || 0} Kommentare`}
                         icon={<MessageSquare className="w-4 h-4" />}
                         variant="ghost"
                         onClick={() => setReplyTo(replyTo === post.id ? null : post.id)}
@@ -382,7 +382,7 @@ export default function Forum() {
                       />
                       
                       <button onClick={() => handleQuote(post)} className="flex items-center gap-2 text-[10px] font-bold text-[var(--muted-foreground)] hover:text-[var(--foreground)] uppercase tracking-widest px-3 py-2 rounded-lg hover:bg-[var(--surface-muted)] transition-all">
-                        <Quote className="w-3.5 h-3.5" /> Quote
+                        <Quote className="w-3.5 h-3.5" /> Zitieren
                       </button>
 
                       {user?.name === post.author && (
@@ -467,7 +467,7 @@ export default function Forum() {
                     onClick={() => setEditingPost('NEW')} 
                     className="w-full btn-shimmer bg-[var(--foreground)] text-[var(--background)] py-4 rounded-xl font-bold text-xs uppercase tracking-[0.2em] transition-all shadow-lg active:scale-[0.98]"
                   >
-                    Create New Post
+                    Neuen Beitrag erstellen
                   </button>
                 </div>
               </div>
@@ -475,9 +475,9 @@ export default function Forum() {
 
             {/* Guidelines Card */}
             <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 glass-card">
-               <h4 className="text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-[0.3em] mb-4">Forum Guidelines</h4>
+               <h4 className="text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-[0.3em] mb-4">Forum Richtlinien</h4>
                <ul className="space-y-3">
-                  {['Be Respectful', 'Add Value', 'Keep it Professional', 'Share Knowledge'].map((g, i) => (
+                  {['Respektvoll sein', 'Mehrwert bieten', 'Professionell bleiben', 'Wissen teilen'].map((g, i) => (
                     <li key={i} className="flex items-center gap-3 text-[11px] font-medium text-[var(--foreground)]">
                        <div className="w-1 h-1 rounded-full bg-[var(--accent)]" />
                        {g}
