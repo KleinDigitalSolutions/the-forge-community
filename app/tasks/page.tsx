@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import PageShell from '@/app/components/PageShell';
 import AuthGuard from '@/app/components/AuthGuard';
-import { CheckSquare, Circle, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
+import { CheckSquare, Circle, Clock, CheckCircle2, AlertCircle, Shield, Target, Zap } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface Task {
   id: string;
@@ -23,37 +24,35 @@ const statusIcons = {
 };
 
 const statusColors = {
-  'To Do': 'bg-zinc-100 text-zinc-600',
-  'In Progress': 'bg-blue-50 text-blue-600',
-  'Done': 'bg-green-50 text-green-600',
+  'To Do': 'text-white/20',
+  'In Progress': 'text-blue-500 bg-blue-500/10 border-blue-500/20',
+  'Done': 'text-green-500 bg-green-500/10 border-green-500/20',
 };
 
 const priorityColors = {
-  High: 'border-l-4 border-red-500',
-  Medium: 'border-l-4 border-amber-400',
-  Low: 'border-l-4 border-zinc-200',
+  High: 'border-l-4 border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.05)]',
+  Medium: 'border-l-4 border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.05)]',
+  Low: 'border-l-4 border-white/5 shadow-none',
 };
 
 const categoryColors = {
-  Legal: 'bg-purple-50 text-purple-700 border border-purple-100',
-  WMS: 'bg-blue-50 text-blue-700 border border-blue-100',
-  Marketing: 'bg-pink-50 text-pink-700 border border-pink-100',
-  Operations: 'bg-emerald-50 text-emerald-700 border border-emerald-100',
+  Legal: 'bg-purple-500/10 text-purple-400 border border-purple-500/20',
+  WMS: 'bg-blue-500/10 text-blue-400 border border-blue-500/20',
+  Marketing: 'bg-pink-500/10 text-pink-400 border border-pink-500/20',
+  Operations: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
 };
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<string>('All');
+  const [filter, setFilter] = useState<string>('Alle');
 
   useEffect(() => {
     async function fetchTasks() {
       try {
         setLoading(true);
         const response = await fetch('/api/tasks');
-        if (!response.ok) {
-          throw new Error('Failed to fetch tasks');
-        }
+        if (!response.ok) throw new Error('Failed to fetch tasks');
         const data = await response.json();
         setTasks(Array.isArray(data) ? data : []);
       } catch (error) {
@@ -63,7 +62,6 @@ export default function TasksPage() {
         setLoading(false);
       }
     }
-
     fetchTasks();
   }, []);
 
@@ -83,10 +81,24 @@ export default function TasksPage() {
     }
   };
 
-  const filteredTasks =
-    filter === 'All' ? tasks : tasks.filter((t) => t.status === filter);
+  const translatedFilterMap: Record<string, string> = {
+    'Alle': 'All',
+    'Offen': 'To Do',
+    'Läuft': 'In Progress',
+    'Fertig': 'Done'
+  };
 
-  const filters = ['All', 'To Do', 'In Progress', 'Done'];
+  const reverseFilterMap: Record<string, string> = {
+    'All': 'Alle',
+    'To Do': 'Offen',
+    'In Progress': 'Läuft',
+    'Done': 'Fertig'
+  };
+
+  const filteredTasks =
+    filter === 'Alle' ? tasks : tasks.filter((t) => t.status === translatedFilterMap[filter]);
+
+  const filters = ['Alle', 'Offen', 'Läuft', 'Fertig'];
 
   const toDoCount = tasks.filter((t) => t.status === 'To Do').length;
   const inProgressCount = tasks.filter((t) => t.status === 'In Progress').length;
@@ -95,44 +107,30 @@ export default function TasksPage() {
   return (
     <AuthGuard>
       <PageShell>
-        <header className="mb-12">
-          <h1 className="text-4xl font-black text-zinc-900 tracking-tight mb-2">Mission Control</h1>
-          <p className="text-zinc-500 font-medium">Alle Aufgaben und Verantwortlichkeiten im Überblick.</p>
+        <header className="mb-16 relative">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 text-[10px] font-bold text-[var(--accent)] uppercase tracking-[0.3em] mb-6">
+            <Target className="w-3 h-3" />
+            Operations-Management
+          </div>
+          <h1 className="text-5xl md:text-6xl font-instrument-serif text-white tracking-tight mb-4">Mission Control</h1>
+          <p className="text-white/40 uppercase tracking-[0.2em] text-xs font-bold">Alle Aufgaben und Verantwortlichkeiten im Überblick.</p>
         </header>
 
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-2xl border border-zinc-200 p-6 shadow-sm">
-            <div className="flex items-center gap-3 mb-2">
-              <Circle className="w-5 h-5 text-zinc-400" />
-              <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">To Do</span>
-            </div>
-            <div className="text-3xl font-black text-zinc-900">{toDoCount}</div>
-          </div>
-          <div className="bg-white rounded-2xl border border-zinc-200 p-6 shadow-sm">
-            <div className="flex items-center gap-3 mb-2">
-              <Clock className="w-5 h-5 text-blue-500" />
-              <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">In Progress</span>
-            </div>
-            <div className="text-3xl font-black text-zinc-900">{inProgressCount}</div>
-          </div>
-          <div className="bg-white rounded-2xl border border-zinc-200 p-6 shadow-sm">
-            <div className="flex items-center gap-3 mb-2">
-              <CheckCircle2 className="w-5 h-5 text-green-500" />
-              <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Done</span>
-            </div>
-            <div className="text-3xl font-black text-zinc-900">{doneCount}</div>
-          </div>
+        <div className="grid md:grid-cols-3 gap-6 mb-12">
+          <StatCard title="Offen" value={toDoCount} icon={Circle} color="text-white/20" />
+          <StatCard title="In Bearbeitung" value={inProgressCount} icon={Clock} color="text-blue-500" />
+          <StatCard title="Abgeschlossen" value={doneCount} icon={CheckCircle2} color="text-green-500" />
         </div>
 
-        <div className="mb-8 flex gap-2 flex-wrap p-1 bg-zinc-100 rounded-xl w-fit">
+        <div className="mb-12 flex gap-3 flex-wrap">
           {filters.map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-5 py-2 rounded-lg text-xs font-bold transition-all ${
+              className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 border ${
                 filter === f
-                  ? 'bg-white text-zinc-900 shadow-sm'
-                  : 'text-zinc-500 hover:text-zinc-900'
+                  ? 'bg-[var(--accent)] text-black border-[var(--accent)]'
+                  : 'bg-white/5 text-white/40 border-white/5 hover:text-white hover:border-white/10'
               }`}
             >
               {f}
@@ -141,16 +139,17 @@ export default function TasksPage() {
         </div>
 
         {loading ? (
-          <div className="bg-white rounded-3xl border border-zinc-200 p-12 text-center text-sm text-zinc-400 font-medium animate-pulse">
-            Lade Missionen...
+          <div className="p-24 text-center">
+            <div className="w-10 h-10 border-2 border-[var(--accent)]/20 border-t-[var(--accent)] rounded-full animate-spin mx-auto mb-6" />
+            <p className="text-white/20 text-[10px] font-bold uppercase tracking-widest animate-pulse">Lade Missionen...</p>
           </div>
         ) : filteredTasks.length === 0 ? (
-          <div className="bg-white rounded-3xl border border-dashed border-zinc-300 p-20 text-center text-zinc-400 font-bold">
-            Keine Aufgaben gefunden.
+          <div className="glass-card rounded-[2rem] border border-dashed border-white/10 p-24 text-center">
+            <p className="text-white/20 font-black uppercase tracking-[0.4em] text-sm">Keine aktiven Aufgaben gefunden.</p>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredTasks.map((task) => {
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredTasks.map((task, idx) => {
               const Icon = statusIcons[task.status];
               const isOverdue =
                 task.status !== 'Done' &&
@@ -158,47 +157,67 @@ export default function TasksPage() {
                 new Date(task.dueDate) < new Date();
 
               return (
-                <div
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                   key={task.id}
-                  className={`bg-white rounded-2xl border border-zinc-200 p-6 hover:border-zinc-300 hover:shadow-md transition-all group ${priorityColors[task.priority]}`}
+                  className={`glass-card rounded-3xl border border-white/10 p-8 flex flex-col group hover:border-[var(--accent)]/30 transition-all duration-700 relative overflow-hidden ${priorityColors[task.priority]}`}
                 >
-                  <div className="flex justify-between items-start mb-4">
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${categoryColors[task.category] || 'bg-zinc-100 text-zinc-500'}`}>
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
+                  
+                  <div className="flex justify-between items-start mb-8 relative z-10">
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border ${categoryColors[task.category] || 'bg-white/5 text-white/40'}`}>
                       {task.category}
                     </span>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${statusColors[task.status]}`}>
+                    <div className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-all duration-500 border-white/10 ${task.status === 'Done' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-white/5 text-white/20'}`}>
                       <Icon className="w-4 h-4" />
                     </div>
                   </div>
 
-                  <h3 className="font-bold text-zinc-900 mb-2 leading-tight">{task.task}</h3>
-                  <p className="text-xs text-zinc-500 mb-6 leading-relaxed line-clamp-3">{task.description}</p>
+                  <h3 className="text-xl font-instrument-serif text-white mb-3 leading-tight group-hover:text-[var(--accent)] transition-colors duration-500">{task.task}</h3>
+                  <p className="text-[10px] text-white/30 font-medium uppercase tracking-wider mb-10 leading-relaxed line-clamp-3">{task.description}</p>
 
-                  <div className="border-t border-zinc-100 pt-4 mt-auto">
-                    <div className="flex justify-between items-center text-xs text-zinc-500 mb-4">
-                      <span className="font-medium">{task.assignedTo || 'Unassigned'}</span>
-                      <span className={`${isOverdue ? 'text-red-500 font-bold' : ''}`}>
-                        {isOverdue && <AlertCircle className="w-3 h-3 inline mr-1" />}
-                        {task.dueDate ? new Date(task.dueDate).toLocaleDateString('de-DE', { day: '2-digit', month: 'short' }) : ''}
+                  <div className="mt-auto border-t border-white/5 pt-6 relative z-10">
+                    <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-white/20 mb-6">
+                      <span className="text-white/40">{task.assignedTo || 'Nicht zugewiesen'}</span>
+                      <span className={`${isOverdue ? 'text-red-500 shadow-[0_0_10px_rgba(239,68,68,0.2)]' : ''}`}>
+                        {isOverdue && <AlertCircle className="w-3 h-3 inline mr-1.5" />}
+                        {task.dueDate ? new Date(task.dueDate).toLocaleDateString('de-DE', { day: '2-digit', month: 'short' }) : 'TBA'}
                       </span>
                     </div>
 
                     <select
                       value={task.status}
                       onChange={(e) => handleStatusChange(task.id, e.target.value as Task['status'])}
-                      className="w-full bg-zinc-50 border border-zinc-200 text-zinc-700 text-xs font-bold rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-zinc-900 cursor-pointer"
+                      className="w-full bg-white/[0.03] border border-white/10 text-white text-[10px] font-black uppercase tracking-widest rounded-xl px-4 py-3 outline-none focus:border-[var(--accent)] cursor-pointer transition-all hover:bg-white/5 appearance-none"
                     >
-                      <option value="To Do">To Do</option>
-                      <option value="In Progress">In Progress</option>
-                      <option value="Done">Done</option>
+                      <option value="To Do">Offen</option>
+                      <option value="In Progress">Läuft</option>
+                      <option value="Done">Erledigt</option>
                     </select>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>
         )}
       </PageShell>
     </AuthGuard>
+  );
+}
+
+function StatCard({ title, value, icon: Icon, color }: any) {
+  return (
+    <div className="glass-card p-8 rounded-3xl border border-white/10 relative overflow-hidden group">
+      <div className="absolute inset-0 bg-white/[0.01] pointer-events-none" />
+      <div className="flex items-center gap-4 mb-4">
+        <div className={`p-2 rounded-lg bg-white/5 border border-white/10 ${color}`}>
+          <Icon className="w-4 h-4" />
+        </div>
+        <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/30">{title}</span>
+      </div>
+      <div className="text-4xl font-instrument-serif text-white">{value}</div>
+    </div>
   );
 }

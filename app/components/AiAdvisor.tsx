@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Loader2, Sparkles, X } from 'lucide-react';
+import { Send, Bot, User, Loader2, Sparkles, X, Shield, Zap, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Message {
@@ -12,7 +12,7 @@ interface Message {
 export default function AiAdvisor() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: 'Hi Founder! Ich bin deine Forge AI. Frag mich alles zu Sourcing, Marketing oder deiner Marge. Womit starten wir?' }
+    { role: 'assistant', content: 'Bereit, Operator. Wie kann ich die Effizienz deines Squads steigern?' }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -47,7 +47,7 @@ export default function AiAdvisor() {
       const data = await res.json();
       setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
     } catch (error) {
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, ich habe gerade Verbindungsprobleme. Versuch es gleich nochmal.' }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: 'Verbindung zum Forge-Mainframe unterbrochen. Bitte erneut versuchen.' }]);
     } finally {
       setIsLoading(false);
     }
@@ -60,10 +60,10 @@ export default function AiAdvisor() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-8 right-8 z-40 flex items-center gap-2 px-5 py-4 bg-slate-900 text-white rounded-full shadow-2xl border border-slate-700 hover:bg-slate-800 transition-all ${isOpen ? 'hidden' : 'flex'}`}
+        className={`fixed bottom-8 right-8 z-40 flex items-center gap-3 px-6 py-4 bg-white text-black rounded-2xl shadow-2xl hover:bg-[var(--accent)] transition-all duration-500 border border-white/10 group ${isOpen ? 'hidden' : 'flex'}`}
       >
-        <Sparkles className="w-5 h-5 text-blue-400" />
-        <span className="font-bold tracking-wide">AI Advisor</span>
+        <Zap className="w-5 h-5 text-black group-hover:fill-current" />
+        <span className="text-[10px] font-black uppercase tracking-[0.3em]">AI Advisor</span>
       </motion.button>
 
       {/* Chat Window */}
@@ -73,32 +73,32 @@ export default function AiAdvisor() {
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.9 }}
-            className="fixed bottom-8 right-8 z-50 w-[90vw] md:w-[400px] h-[600px] max-h-[80vh] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden"
+            className="fixed bottom-8 right-8 z-50 w-[90vw] md:w-[400px] h-[600px] max-h-[80vh] glass-card rounded-3xl border border-white/10 shadow-2xl flex flex-col overflow-hidden"
           >
             {/* Header */}
-            <div className="bg-slate-900 p-4 flex justify-between items-center text-white">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                  <Bot className="w-6 h-6 text-white" />
+            <div className="bg-white/[0.03] p-6 flex justify-between items-center border-b border-white/5">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-[var(--accent)] rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(212,175,55,0.3)]">
+                  <Bot className="w-6 h-6 text-black" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm">Forge AI</h3>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                    <span className="text-xs text-slate-300">Online & Ready</span>
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Forge Intelligence</h3>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
+                    <span className="text-[8px] font-bold text-white/30 uppercase tracking-widest">Protocol Active</span>
                   </div>
                 </div>
               </div>
               <button 
                 onClick={() => setIsOpen(false)}
-                className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+                className="p-2 hover:bg-white/5 rounded-lg transition-colors"
               >
-                <X className="w-5 h-5 text-slate-400" />
+                <X className="w-5 h-5 text-white/20 hover:text-white" />
               </button>
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide bg-black/20">
               {messages.map((msg, idx) => (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -107,10 +107,10 @@ export default function AiAdvisor() {
                   className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed ${ 
+                    className={`max-w-[85%] p-4 rounded-2xl text-xs leading-relaxed ${ 
                       msg.role === 'user'
-                        ? 'bg-blue-600 text-white rounded-br-none'
-                        : 'bg-white border border-slate-200 text-slate-700 rounded-bl-none shadow-sm'
+                        ? 'bg-[var(--accent)] text-black font-bold'
+                        : 'bg-white/[0.03] border border-white/5 text-white/80'
                     }`}
                   >
                     {msg.content.split('\n').map((line, i) => (
@@ -121,8 +121,8 @@ export default function AiAdvisor() {
               ))}
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-white border border-slate-200 p-3 rounded-2xl rounded-bl-none shadow-sm">
-                    <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+                  <div className="bg-white/[0.03] border border-white/5 p-4 rounded-2xl">
+                    <Loader2 className="w-4 h-4 text-[var(--accent)] animate-spin" />
                   </div>
                 </div>
               )}
@@ -130,25 +130,25 @@ export default function AiAdvisor() {
             </div>
 
             {/* Input */}
-            <form onSubmit={handleSubmit} className="p-4 bg-white border-t border-slate-100">
-              <div className="relative">
+            <form onSubmit={handleSubmit} className="p-4 border-t border-white/5 bg-white/[0.01]">
+              <div className="relative flex gap-3">
                 <input
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Frag mich nach Strategien, Ideen..."
-                  className="w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all text-sm"
+                  placeholder="Eingabe Protokoll-Query..."
+                  className="flex-1 bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:border-[var(--accent)] outline-none transition-all placeholder:text-white/10"
                 />
                 <button
                   type="submit"
                   disabled={isLoading || !input.trim()}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="p-3 bg-[var(--accent)] text-black rounded-xl hover:brightness-110 disabled:opacity-30 transition-all"
                 >
-                  <Send className="w-4 h-4" />
+                  <ChevronRight className="w-5 h-5" />
                 </button>
               </div>
-              <p className="text-[10px] text-center text-slate-400 mt-2">
-                Powered by Groq Llama 3 • Forge AI kann Fehler machen.
+              <p className="text-[8px] font-bold text-center text-white/10 mt-3 uppercase tracking-widest">
+                AI can forge hallucinations. Verify all protocols.
               </p>
             </form>
           </motion.div>
