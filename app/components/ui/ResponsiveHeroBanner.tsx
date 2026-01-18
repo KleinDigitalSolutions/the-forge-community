@@ -185,14 +185,14 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                         <div className="flex flex-col sm:flex-row sm:gap-4 mt-10 gap-3 items-center justify-center animate-fade-slide-in-4">
                             <Link
                                 href={primaryButtonHref}
-                                className="inline-flex items-center gap-3 hover:bg-[var(--accent)] hover:text-black text-[10px] font-black text-white bg-white/5 ring-white/10 ring-1 rounded-xl py-4 px-8 uppercase tracking-[0.3em] transition-all duration-500 shadow-2xl"
+                                className="inline-flex items-center gap-3 bg-[#D4AF37] text-black hover:brightness-110 text-[10px] font-black rounded-xl py-4 px-8 uppercase tracking-[0.3em] transition-all duration-500 shadow-2xl shadow-[#D4AF37]/20"
                             >
                                 {primaryButtonText}
                                 <ArrowRight className="h-4 w-4" />
                             </Link>
                             <Link
                                 href={secondaryButtonHref}
-                                className="inline-flex items-center gap-3 rounded-xl bg-transparent px-8 py-4 text-[10px] font-black text-white/60 hover:text-white uppercase tracking-[0.3em] transition-all duration-500"
+                                className="inline-flex items-center gap-3 rounded-xl bg-white/10 border border-white/20 px-8 py-4 text-[10px] font-black text-white hover:bg-white/20 uppercase tracking-[0.3em] transition-all duration-500"
                             >
                                 {secondaryButtonText}
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">

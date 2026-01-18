@@ -54,6 +54,12 @@
   --text-300: #a1a1aa;
   --text-400: #71717a;
   --radius: 0.5rem;
+
+  /* Accent color fix for Tailwind v4 */
+  --accent: #D4AF37;
+  --accent-foreground: #08090A;
+  --background: #09090b;
+  --foreground: #fafafa;
 }
 
 @layer base {

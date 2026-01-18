@@ -121,9 +121,9 @@ export function PricingTable({ onSelectPlan, isLoading }: PricingTableProps) {
             disabled={isLoading}
             className={cn(
               "relative z-10 w-full py-4 rounded-xl font-bold uppercase tracking-[0.2em] text-[10px] transition-all duration-500",
-              plan.featured 
-                ? "bg-[var(--accent)] text-[var(--accent-foreground)] shadow-lg hover:brightness-110 active:scale-[0.98]" 
-                : "bg-white/5 text-white border border-white/10 hover:bg-white/10 active:scale-[0.98]"
+              plan.featured
+                ? "bg-[var(--accent)] text-[var(--accent-foreground)] shadow-lg hover:brightness-110 active:scale-[0.98]"
+                : "bg-white/10 text-white border border-white/20 hover:bg-white/15 hover:border-white/30 active:scale-[0.98]"
             )}
           >
             {isLoading ? 'Processing...' : plan.cta}

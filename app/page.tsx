@@ -169,7 +169,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] selection:bg-[var(--accent)] selection:text-[var(--accent-foreground)] overflow-x-hidden">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] selection:bg-[#D4AF37] selection:text-black overflow-x-hidden">
       
       {/* Integrated Hero & Header */}
       <ResponsiveHeroBanner 

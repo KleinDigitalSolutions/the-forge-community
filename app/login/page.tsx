@@ -72,7 +72,7 @@ function LoginForm() {
     <div className="w-full max-w-md relative z-10">
       <div className="text-center mb-12">
         <Link href="/" className="inline-flex flex-col mb-8 group">
-          <span className="font-caveat text-4xl tracking-normal text-white group-hover:text-[var(--accent)] transition-colors lowercase">stake & scale</span>
+          <span className="font-caveat text-4xl tracking-normal text-white group-hover:text-[#D4AF37] transition-colors lowercase">stake & scale</span>
         </Link>
         <h1 className="text-4xl font-instrument-serif text-white mb-3">Founder Login</h1>
         <p className="text-white/40 text-sm uppercase tracking-widest font-bold">
@@ -95,7 +95,7 @@ function LoginForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="founder@theforge.community"
-              className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-6 py-4 text-sm text-white focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-white/10"
+              className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-6 py-4 text-sm text-white focus:border-[#D4AF37] focus:ring-0 outline-none transition-all placeholder:text-white/10"
               disabled={status === 'loading'}
             />
           </div>
@@ -133,7 +133,7 @@ function LoginForm() {
         <div className="mt-10 text-center relative z-10 border-t border-white/5 pt-8">
           <p className="text-xs text-white/30 uppercase tracking-widest font-bold">
             Noch kein Founder?{' '}
-            <Link href="/#apply" className="text-[var(--accent)] hover:underline ml-2">
+            <Link href="/#apply" className="text-[#D4AF37] hover:underline ml-2">
               Jetzt bewerben
             </Link>
           </p>
