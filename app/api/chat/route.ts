@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
 import { knowledgeBasePrompt } from '@/lib/knowledge-base';
 import { getAnnouncements, getVotes } from '@/lib/notion';
+import { RateLimiters } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
+  // SECURITY: Rate limit AI chatbot to prevent abuse
+  const rateLimitResponse = await RateLimiters.aiChatbot(req);
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const { message } = await req.json();
 

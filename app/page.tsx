@@ -202,71 +202,69 @@ export default function Home() {
       {/* Smart Header */}
       <Header />
 
-      {/* Hero Section */}
-      <section className="pt-24 pb-14 px-5 sm:pt-32 sm:pb-20 sm:px-6">
-        <div className="max-w-5xl mx-auto text-center">
-          <div className="mb-5 flex flex-col items-center gap-2 sm:mb-6 sm:gap-3">
-            <div className="flex items-center gap-3 text-[0.6rem] uppercase tracking-[0.3em] text-[var(--secondary)] sm:gap-4 sm:text-[0.7rem] sm:tracking-[0.45em]">
-              <span className="h-px w-8 bg-[var(--border)] sm:w-10" />
-              Stake &amp; Scale
-              <span className="h-px w-8 bg-[var(--border)] sm:w-10" />
+      {/* Hero Section - Premium Dark */}
+      <section className="relative pt-32 pb-20 px-5 sm:pt-40 sm:pb-28 sm:px-6 overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute inset-0 industrial-texture opacity-20" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-gradient-radial from-[var(--accent-glow)] to-transparent opacity-10 blur-3xl" />
+
+        <div className="relative max-w-6xl mx-auto text-center">
+          <div className="mb-8 flex flex-col items-center gap-3 sm:mb-10">
+            <div className="flex items-center gap-4 text-[0.65rem] uppercase tracking-[0.5em] text-[var(--accent)] font-semibold sm:gap-5 sm:text-[0.75rem]">
+              <span className="h-[2px] w-12 bg-gradient-to-r from-transparent via-[var(--accent)] to-transparent sm:w-16" />
+              <span className="gradient-gold">Stake & Scale</span>
+              <span className="h-[2px] w-12 bg-gradient-to-r from-transparent via-[var(--accent)] to-transparent sm:w-16" />
             </div>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-display text-[var(--foreground)] mb-5 leading-[1.1] tracking-[-0.02em] sm:mb-6 sm:leading-[1.05]">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-display text-[var(--foreground)] mb-6 leading-[0.95] tracking-[-0.03em] sm:mb-8">
             Baue echte Projekte.
             <br />
-            In flexiblen Gruppen.
+            <span className="gradient-gold">In flexiblen Gruppen.</span>
           </h1>
 
-          <p className="text-base sm:text-lg md:text-xl text-[var(--secondary)] mb-6 max-w-2xl mx-auto sm:mb-8 sm:max-w-3xl leading-relaxed">
-            STAKE & SCALE verbindet Founder-Gruppen, die gemeinsam profitable Projekte bauen.<br className="hidden sm:block" />
-            Flexible Startkapital-Tiers, professionelle Infrastruktur, klare Prozesse.
+          <p className="text-lg sm:text-xl md:text-2xl text-[var(--muted-foreground)] mb-10 max-w-3xl mx-auto sm:mb-12 leading-relaxed">
+            Wir verbinden Founder-Gruppen, die gemeinsam profitable Businesses bauen.<br className="hidden sm:block" />
+            <span className="text-[var(--accent-soft)]">Flexible Startkapital-Tiers. Professionelle Infrastruktur. Klare Prozesse.</span>
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-10 sm:mb-12">
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 justify-center mb-14 sm:mb-16">
             <a
-            href="#apply"
-              className="inline-flex items-center justify-center gap-2 sm:gap-3 bg-[var(--accent)] text-white px-5 py-3 sm:px-6 rounded-full hover:bg-[#0b2f24] transition-colors text-[0.65rem] sm:text-sm tracking-[0.2em] sm:tracking-[0.25em] uppercase w-full sm:w-auto"
+              href="#apply"
+              className="group relative ember-glow inline-flex items-center justify-center gap-3 bg-[var(--accent)] text-[var(--accent-foreground)] px-8 py-4 sm:px-10 sm:py-5 rounded-2xl hover:shadow-2xl transition-all duration-300 text-sm sm:text-base tracking-[0.15em] uppercase font-bold w-full sm:w-auto overflow-hidden"
             >
-              Jetzt Founder werden
-              <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span className="relative z-10">Jetzt Founder werden</span>
+              <ArrowRight className="relative z-10 h-5 w-5 sm:h-6 sm:w-6 group-hover:translate-x-1 transition-transform" />
             </a>
             <Link
               href="/transparency"
-              className="inline-flex items-center justify-center gap-2 sm:gap-3 border border-[var(--accent)] text-[var(--accent)] px-5 py-3 sm:px-6 rounded-full hover:bg-[var(--accent)] hover:text-white transition-colors text-[0.65rem] sm:text-sm tracking-[0.2em] sm:tracking-[0.25em] uppercase w-full sm:w-auto"
+              className="group inline-flex items-center justify-center gap-3 border-2 border-[var(--accent)] text-[var(--accent)] px-8 py-4 sm:px-10 sm:py-5 rounded-2xl hover:bg-[var(--accent-glow)] transition-all duration-300 text-sm sm:text-base tracking-[0.15em] uppercase font-semibold w-full sm:w-auto"
             >
-              <Shield className="h-4 w-4 sm:h-5 sm:w-5" />
-              Transparenz ansehen
+              <Shield className="h-5 w-5 sm:h-6 sm:w-6 group-hover:rotate-12 transition-transform" />
+              <span>Transparenz</span>
             </Link>
           </div>
 
-          {/* Trust Indicators */}
-          <div className="grid md:grid-cols-3 gap-4 sm:gap-6 max-w-3xl mx-auto">
-            <div className="text-center">
-              <div className="text-2xl sm:text-3xl font-display text-[var(--foreground)] mb-1">
-                Flexibel
+          {/* Trust Indicators - Premium Cards */}
+          <div className="grid md:grid-cols-3 gap-6 sm:gap-8 max-w-4xl mx-auto">
+            {[
+              { label: 'Flexibel', sublabel: 'Startkapital', icon: '⚡' },
+              { label: 'Gleich', sublabel: 'Anteile', icon: '⚖️' },
+              { label: 'Klar', sublabel: 'Struktur', icon: '🎯' }
+            ].map((item, i) => (
+              <div key={i} className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent-glow)] to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl blur-xl" />
+                <div className="relative bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-8 text-center transition-all duration-300 group-hover:border-[var(--accent)] group-hover:-translate-y-1">
+                  <div className="text-4xl mb-3">{item.icon}</div>
+                  <div className="text-3xl sm:text-4xl font-display text-[var(--foreground)] mb-2 gradient-gold">
+                    {item.label}
+                  </div>
+                  <div className="text-[0.65rem] sm:text-[0.7rem] uppercase tracking-[0.3em] text-[var(--muted-foreground)]">
+                    {item.sublabel}
+                  </div>
+                </div>
               </div>
-              <div className="text-[0.6rem] sm:text-[0.7rem] uppercase tracking-[0.2em] sm:tracking-[0.25em] text-[var(--secondary)]">
-                Startkapital
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl sm:text-3xl font-display text-[var(--foreground)] mb-1">
-                Gleich
-              </div>
-              <div className="text-[0.6rem] sm:text-[0.7rem] uppercase tracking-[0.2em] sm:tracking-[0.25em] text-[var(--secondary)]">
-                Anteile
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl sm:text-3xl font-display text-[var(--foreground)] mb-1">
-                Klar
-              </div>
-              <div className="text-[0.6rem] sm:text-[0.7rem] uppercase tracking-[0.2em] sm:tracking-[0.25em] text-[var(--secondary)]">
-                Struktur
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -328,57 +326,79 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Erstes Projekt: SmartStore */}
-      <section className="py-20 px-5 sm:py-32 sm:px-6 bg-[var(--surface)] overflow-hidden">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col lg:flex-row gap-12 lg:items-center mb-16">
+      {/* Erstes Projekt: SmartStore - Dramatic Premium */}
+      <section className="relative py-28 px-5 sm:py-40 sm:px-6 bg-[var(--background)] overflow-hidden">
+        {/* Background effects */}
+        <div className="absolute inset-0 industrial-texture opacity-10" />
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[var(--forge-ember)] opacity-5 blur-[120px]" />
+
+        <div className="relative max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row gap-16 lg:items-center mb-20">
             <div className="lg:w-1/2">
-              <div className="inline-flex items-center gap-2 bg-[var(--accent-glow)] text-[var(--accent)] px-4 py-2 rounded-full text-[0.6rem] uppercase tracking-[0.3em] mb-6 font-medium">
-                <Sparkles className="w-4 h-4" />
-                Live Opportunity
+              <div className="inline-flex items-center gap-3 bg-gradient-to-r from-[var(--forge-ember)]/10 to-[var(--accent-glow)] text-[var(--forge-ember)] border border-[var(--forge-ember)]/20 px-5 py-3 rounded-full text-[0.65rem] uppercase tracking-[0.4em] mb-8 font-bold animate-glow-pulse">
+                <Sparkles className="w-5 h-5" />
+                <span>Live Opportunity</span>
               </div>
-              <h2 className="text-4xl sm:text-5xl font-display text-[var(--foreground)] mb-6 leading-tight">
-                SmartStore:<br />
-                <span className="text-[var(--secondary)] italic">The 3PL Revolution</span>
+
+              <h2 className="text-5xl sm:text-6xl md:text-7xl font-display text-[var(--foreground)] mb-8 leading-[0.9] tracking-tight">
+                SmartStore
+                <span className="block text-[var(--accent)] gradient-gold italic font-light mt-2">The 3PL Revolution</span>
               </h2>
-              <p className="text-lg text-[var(--secondary)] leading-relaxed mb-8">
-                Wir bauen nicht nur ein Business – wir lösen ein echtes Problem. Kleine E-Commerce Brands werden von großen Logistikern ignoriert oder überbezahlt. SmartStore ist das Boutique-Fulfillment, das mitskaliert.
+
+              <p className="text-xl text-[var(--muted-foreground)] leading-relaxed mb-10 max-w-xl">
+                Wir bauen nicht nur ein Business – wir <span className="text-[var(--accent)] font-semibold">lösen ein echtes Problem</span>. Kleine E-Commerce Brands werden von großen Logistikern ignoriert oder überbezahlt.
               </p>
-              
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <div className="text-2xl font-display text-[var(--foreground)] mb-1">€12k+</div>
-                  <div className="text-[0.6rem] uppercase tracking-[0.2em] text-[var(--secondary)]">Target MRR (6 Mo)</div>
+
+              <p className="text-lg text-[var(--accent-soft)] leading-relaxed mb-12">
+                SmartStore ist das Boutique-Fulfillment, das mitskaliert. Von Tag 1 bis Exit.
+              </p>
+
+              <div className="grid grid-cols-2 gap-8">
+                <div className="relative group">
+                  <div className="absolute -inset-2 bg-gradient-to-br from-[var(--accent-glow)] to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl blur-lg" />
+                  <div className="relative bg-[var(--surface)] border border-[var(--border)] rounded-xl p-6 group-hover:border-[var(--accent)] transition-colors">
+                    <div className="text-4xl font-display text-[var(--accent)] mb-2">€12k+</div>
+                    <div className="text-[0.65rem] uppercase tracking-[0.3em] text-[var(--muted-foreground)]">Target MRR<br/>(6 Monate)</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-2xl font-display text-[var(--foreground)] mb-1">2.5x</div>
-                  <div className="text-[0.6rem] uppercase tracking-[0.2em] text-[var(--secondary)]">Est. Exit Multiple</div>
+                <div className="relative group">
+                  <div className="absolute -inset-2 bg-gradient-to-br from-[var(--accent-glow)] to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl blur-lg" />
+                  <div className="relative bg-[var(--surface)] border border-[var(--border)] rounded-xl p-6 group-hover:border-[var(--accent)] transition-colors">
+                    <div className="text-4xl font-display text-[var(--accent)] mb-2">2.5x</div>
+                    <div className="text-[0.65rem] uppercase tracking-[0.3em] text-[var(--muted-foreground)]">Est. Exit<br/>Multiple</div>
+                  </div>
                 </div>
               </div>
             </div>
 
             <div className="lg:w-1/2 relative">
-              <div className="absolute -inset-4 bg-[var(--accent-glow)] rounded-[2rem] -rotate-2 opacity-50" />
-              <div className="relative bg-[var(--accent)] rounded-[2rem] p-8 md:p-10 text-white shadow-2xl">
-                <h3 className="text-xl font-display mb-8 flex items-center gap-3">
-                  <Target className="w-5 h-5 text-[var(--accent-soft)]" />
-                  Path to Exit
+              <div className="absolute -inset-6 bg-gradient-to-br from-[var(--accent)] via-[var(--forge-ember)] to-[var(--accent)] rounded-[3rem] rotate-3 opacity-20 blur-2xl animate-glow-pulse" />
+              <div className="relative bg-gradient-to-br from-[var(--surface)] to-[var(--forge-green)] border-2 border-[var(--accent)] rounded-[2.5rem] p-10 md:p-12 shadow-2xl backdrop-blur-sm">
+                <h3 className="text-2xl font-display mb-10 flex items-center gap-4 text-[var(--foreground)]">
+                  <div className="h-12 w-12 rounded-full bg-[var(--accent-glow)] flex items-center justify-center">
+                    <Target className="w-6 h-6 text-[var(--accent)]" />
+                  </div>
+                  <span className="gradient-gold">Path to Exit</span>
                 </h3>
-                
-                <div className="space-y-8 relative">
-                  <div className="absolute left-[11px] top-2 bottom-2 w-px bg-white/20" />
-                  
+
+                <div className="space-y-10 relative">
+                  <div className="absolute left-[19px] top-4 bottom-4 w-[2px] bg-gradient-to-b from-[var(--accent)] via-[var(--accent-soft)] to-transparent" />
+
                   {[
-                    { month: '01-02', title: 'Infrastructure', desc: 'Setup Warehouse & Software-Integration.' },
-                    { month: '03-04', title: 'Beta Launch', desc: 'Onboarding der ersten 5 Ankerkunden.' },
-                    { month: '05-06', title: 'Scaling', desc: 'Automatisierung & Expansion auf 15+ Kunden.' }
+                    { month: '01-02', title: 'Infrastructure', desc: 'Setup Warehouse & Software-Integration.', icon: '🏗️' },
+                    { month: '03-04', title: 'Beta Launch', desc: 'Onboarding der ersten 5 Ankerkunden.', icon: '🚀' },
+                    { month: '05-06', title: 'Scaling', desc: 'Automatisierung & Expansion auf 15+ Kunden.', icon: '📈' }
                   ].map((step, i) => (
-                    <div key={i} className="flex gap-6 relative">
-                      <div className="h-6 w-6 rounded-full bg-[var(--accent)] border-2 border-[var(--accent-soft)] flex-shrink-0 z-10" />
-                      <div>
-                        <div className="text-[0.6rem] uppercase tracking-[0.2em] text-[var(--accent-soft)] mb-1">Monat {step.month}</div>
-                        <div className="font-display text-lg mb-1">{step.title}</div>
-                        <div className="text-sm text-white/60 leading-relaxed">{step.desc}</div>
+                    <div key={i} className="flex gap-6 relative group">
+                      <div className="relative z-10">
+                        <div className="h-10 w-10 rounded-full bg-[var(--accent)] border-2 border-[var(--background)] flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                          {step.icon}
+                        </div>
+                      </div>
+                      <div className="flex-1 pb-6">
+                        <div className="text-[0.65rem] uppercase tracking-[0.3em] text-[var(--accent)] mb-2 font-semibold">Monat {step.month}</div>
+                        <div className="font-display text-2xl mb-3 text-[var(--foreground)]">{step.title}</div>
+                        <div className="text-base text-[var(--muted-foreground)] leading-relaxed">{step.desc}</div>
                       </div>
                     </div>
                   ))}
@@ -387,31 +407,49 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-4">
-            <div className="bg-white border border-[var(--border)] rounded-2xl p-6 hover:border-[var(--accent-soft)] transition-colors">
-              <TrendingUp className="w-5 h-5 text-[var(--accent)] mb-4" />
-              <h4 className="font-display text-lg mb-2">High Margin</h4>
-              <p className="text-xs text-[var(--secondary)]">Durch optimierte Prozesse und dezentrale Lagerhaltung erzielen wir Margen von über 35%.</p>
-            </div>
-            <div className="bg-white border border-[var(--border)] rounded-2xl p-6 hover:border-[var(--accent-soft)] transition-colors">
-              <Shield className="w-5 h-5 text-[var(--accent)] mb-4" />
-              <h4 className="font-display text-lg mb-2">Asset Light</h4>
-              <p className="text-xs text-[var(--secondary)]">Wir nutzen bestehende Infrastruktur-Partner, um das Risiko und das gebundene Kapital minimal zu halten.</p>
-            </div>
-            <div className="bg-white border border-[var(--border)] rounded-2xl p-6 hover:border-[var(--accent-soft)] transition-colors">
-              <Zap className="w-5 h-5 text-[var(--accent)] mb-4" />
-              <h4 className="font-display text-lg mb-2">Ready to Scale</h4>
-              <p className="text-xs text-[var(--secondary)]">Das Modell ist blaupausen-fähig. Sobald Standort #1 läuft, können wir in weitere Städte expandieren.</p>
-            </div>
+          {/* Feature Cards */}
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                icon: TrendingUp,
+                title: 'High Margin',
+                desc: 'Durch optimierte Prozesse und dezentrale Lagerhaltung erzielen wir Margen von über 35%.'
+              },
+              {
+                icon: Shield,
+                title: 'Asset Light',
+                desc: 'Wir nutzen bestehende Infrastruktur-Partner, um das Risiko und das gebundene Kapital minimal zu halten.'
+              },
+              {
+                icon: Zap,
+                title: 'Ready to Scale',
+                desc: 'Das Modell ist blaupausen-fähig. Sobald Standort #1 läuft, können wir in weitere Städte expandieren.'
+              }
+            ].map((item, i) => {
+              const Icon = item.icon;
+              return (
+                <div key={i} className="group relative">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-[var(--accent-glow)] to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl blur" />
+                  <div className="relative bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-8 hover:border-[var(--accent)] transition-all duration-300 card-hover">
+                    <div className="h-14 w-14 bg-[var(--accent-glow)] rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                      <Icon className="w-7 h-7 text-[var(--accent)]" />
+                    </div>
+                    <h4 className="font-display text-xl mb-3 text-[var(--foreground)]">{item.title}</h4>
+                    <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">{item.desc}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
-          <div className="mt-12 text-center">
+          {/* CTA Button */}
+          <div className="mt-16 text-center">
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-3 bg-[var(--accent)] text-white px-10 py-4 rounded-full hover:bg-[#0b2f24] transition-all text-sm tracking-[0.3em] uppercase group"
+              className="group inline-flex items-center gap-4 bg-[var(--accent)] text-[var(--accent-foreground)] px-12 py-5 rounded-2xl hover:shadow-2xl transition-all duration-300 text-base tracking-[0.2em] uppercase font-bold ember-glow"
             >
-              Business Case ansehen
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <span>Business Case ansehen</span>
+              <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
             </Link>
           </div>
         </div>

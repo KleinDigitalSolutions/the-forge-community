@@ -4,8 +4,15 @@ import { auth } from '@/auth';
 
 export async function GET() {
   const session = await auth();
-  // Nur Admins oder du selbst sollten das ausführen, aber wir machen es einmalig für das Setup
-  
+
+  // SECURITY: Only admin can run database migrations
+  if (!session?.user?.email || session.user.email !== process.env.ADMIN_EMAIL) {
+    return NextResponse.json(
+      { error: 'Unauthorized - Admin access required' },
+      { status: 403 }
+    );
+  }
+
   try {
     // Erweitere die Users Tabelle um die Founder-spezifischen Felder
     await sql`
