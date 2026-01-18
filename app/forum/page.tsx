@@ -445,6 +445,35 @@ export default function Forum() {
           </main>
 
           <aside className="w-full md:w-[312px] space-y-6">
+            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-xl overflow-hidden glass-card">
+              <div className="h-16 bg-gradient-to-r from-[var(--accent)] to-[var(--color-forge-ember)] opacity-80" />
+              <div className="p-6 pt-0 -mt-8 text-center md:text-left">
+                <div className="w-20 h-20 bg-[var(--surface)] rounded-2xl border-4 border-[var(--background)] shadow-2xl flex items-center justify-center font-black text-[var(--accent)] text-3xl mb-4 mx-auto md:mx-0">
+                  {user?.name?.charAt(0).toUpperCase() || 'F'}
+                </div>
+                <h3 className="font-display font-bold text-[var(--foreground)] text-xl mb-1">{user?.name || 'Founder'}</h3>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 mb-6">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
+                  <span className="text-[9px] text-[var(--accent)] font-bold uppercase tracking-widest">KARMA: {user?.name ? getUserKarma(user.name) : 0}</span>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center text-[10px] font-bold py-3 border-y border-[var(--border)] uppercase tracking-widest">
+                    <span className="text-[var(--muted-foreground)]">Founder ID</span>
+                    <span className="text-[var(--foreground)]">#{user?.founderNumber || '000'}</span>
+                  </div>
+                  
+                  <button 
+                    onClick={() => setEditingPost('NEW')} 
+                    className="w-full btn-shimmer bg-[var(--foreground)] text-[var(--background)] py-4 rounded-xl font-bold text-xs uppercase tracking-[0.2em] transition-all shadow-lg active:scale-[0.98]"
+                  >
+                    Create New Post
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Guidelines Card */}
             <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 glass-card">
                <h4 className="text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-[0.3em] mb-4">Forum Guidelines</h4>
                <ul className="space-y-3">

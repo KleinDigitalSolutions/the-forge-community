@@ -21,6 +21,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import ResponsiveHeroBanner from '@/app/components/ui/ResponsiveHeroBanner';
+import AnimatedCardStack from '@/app/components/ui/AnimatedCardStack';
 
 type ChatMessage = {
   role: 'assistant' | 'user';
@@ -31,11 +32,142 @@ export default function Home() {
   const [foundersCount, setFoundersCount] = useState(0);
   const MAX_GROUP_SIZE = 25;
   const [isChatOpen, setIsChatOpen] = useState(false);
-  // ... rest of state
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>(() => [
+    {
+      role: 'assistant',
+      content:
+        'Hi, ich bin Orion. Dein Guide für The Forge. Wie kann ich helfen?',
+    },
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatStatus, setChatStatus] = useState<'idle' | 'loading'>('idle');
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [role, setRole] = useState<'investor' | 'builder' | null>(null);
   
-  // (State logic remains the same)
-  // ...
-  
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    instagram: '',
+    why: '',
+    capital: '',
+    commitment: '',
+    skill: '',
+  });
+  const [formStatus, setFormStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [formMessage, setFormMessage] = useState('');
+
+  const refreshFoundersCount = useCallback(async () => {
+    try {
+      const response = await fetch('/api/founders');
+      if (response.ok) {
+        const data = await response.json();
+        const founders = Array.isArray(data) ? data : data.founders || [];
+        const activeCount =
+          typeof data.count === 'number'
+            ? data.count
+            : founders.filter((f: { status?: string }) => f.status === 'active').length;
+        setFoundersCount(activeCount);
+      }
+    } catch (error) {
+      console.error('Error fetching founders count:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshFoundersCount();
+  }, [refreshFoundersCount]);
+
+  useEffect(() => {
+    if (!isChatOpen) {
+      return;
+    }
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, [chatMessages, isChatOpen]);
+
+  const handleOpenChat = () => setIsChatOpen(true);
+  const handleCloseChat = () => setIsChatOpen(false);
+
+  const handleNextStep = () => setCurrentStep(prev => prev + 1);
+  const handlePrevStep = () => setCurrentStep(prev => prev - 1);
+
+  const handleSelectRole = (selectedRole: 'investor' | 'builder') => {
+    setRole(selectedRole);
+    setFormData(prev => ({ ...prev, capital: selectedRole === 'builder' ? '0€ (Sweat Equity)' : '' }));
+    handleNextStep();
+  };
+
+  const handleFormChange =
+    (field: keyof typeof formData) =>
+    (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+      setFormData((prev) => ({ ...prev, [field]: event.target.value }));
+    };
+
+  const handleChatSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!chatInput.trim() || chatStatus === 'loading') return;
+
+    const message = chatInput.trim();
+    const history = chatMessages.slice(-6).map((entry) => ({
+      role: entry.role,
+      content: entry.content,
+    }));
+
+    setChatMessages((prev) => [...prev, { role: 'user', content: message }]);
+    setChatInput('');
+    setChatStatus('loading');
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, history }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data?.error || 'Chat request failed');
+
+      const reply = data.message?.trim() || 'Danke. Kannst du das präzisieren?';
+      setChatMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
+    } catch (error) {
+      setChatMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: 'Verbindung unterbrochen. Bitte versuche es erneut.' },
+      ]);
+    } finally {
+      setChatStatus('idle');
+    }
+  };
+
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    setFormMessage('');
+
+    if (!formData.name.trim() || !formData.email.trim()) {
+      setFormStatus('error');
+      setFormMessage('Bitte Name und E-Mail ausfüllen.');
+      return;
+    }
+
+    setFormStatus('loading');
+    try {
+      const response = await fetch('/api/founders/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...formData, role }),
+      });
+
+      if (!response.ok) throw new Error('Failed to submit');
+
+      setFormStatus('success');
+      setFormMessage('Empfangen. Wir melden uns.');
+    } catch (error) {
+      setFormStatus('error');
+      setFormMessage('Fehler beim Senden.');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] selection:bg-[var(--accent)] selection:text-[var(--accent-foreground)] overflow-x-hidden">
       
@@ -193,6 +325,24 @@ export default function Home() {
                 </div>
              </div>
            </div>
+        </div>
+      </section>
+
+      {/* Philosophy Interlude - Animated Stack */}
+      <section className="py-24 px-6 relative overflow-hidden border-b border-[var(--border)]">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none opacity-10">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[var(--accent)] rounded-full blur-[120px]" />
+        </div>
+        
+        <div className="max-w-7xl mx-auto flex flex-col items-center">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-5xl font-display font-bold mb-4 uppercase tracking-tighter">Core Principles</h2>
+            <p className="text-[var(--muted-foreground)] max-w-xl mx-auto text-sm font-medium uppercase tracking-widest opacity-60">
+              How we forge success from the ground up.
+            </p>
+          </div>
+          
+          <AnimatedCardStack />
         </div>
       </section>
 

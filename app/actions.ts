@@ -26,13 +26,13 @@ export async function getRoadmapItems() {
     orderBy: { createdAt: 'desc' }
   });
 
-  return items.map(item => ({
+  return items.map((item: any) => ({
     id: item.id,
     title: item.title,
     description: item.description || '',
     status: item.status,
     votes: item._count.votes,
-    hasVoted: item.votes.some(v => v.userId === user.id)
+    hasVoted: item.votes.some((v: any) => v.userId === user.id)
   }));
 }
 
