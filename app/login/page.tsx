@@ -114,7 +114,7 @@ function LoginForm() {
           <button
             type="submit"
             disabled={status === 'loading'}
-            className="w-full bg-[var(--accent)] text-black font-black py-4 rounded-xl hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-30 uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-[var(--accent)]/10"
+            className="w-full bg-[#D4AF37] text-black font-black py-4 rounded-xl hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-30 uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-[#D4AF37]/20"
           >
             {status === 'loading' ? (
               <>
