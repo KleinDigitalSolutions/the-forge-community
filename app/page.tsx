@@ -512,13 +512,76 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="py-20 border-t border-white/5 relative overflow-hidden">
-         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8 relative z-10">
-            <div className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/20">© 2026 THE FORGE SYSTEM</div>
-            <div className="flex gap-12">
-               <Link href="/imprint" className="text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-[var(--accent)] transition-colors">Impressum</Link>
-               <Link href="/privacy" className="text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-[var(--accent)] transition-colors">Datenschutz</Link>
-               <Link href="/terms" className="text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-[var(--accent)] transition-colors">AGB</Link>
+      <footer className="py-32 border-t border-white/5 relative overflow-hidden bg-[#08090A]">
+         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-[var(--accent)]/20 to-transparent" />
+         
+         <div className="max-w-7xl mx-auto px-6 relative z-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 mb-24">
+               {/* Brand Column */}
+               <div className="space-y-8">
+                  <Link href="/" className="flex items-center gap-3 group">
+                    <div className="w-10 h-10 bg-white/10 border border-white/20 rounded-xl flex items-center justify-center text-[var(--accent)] font-black shadow-lg backdrop-blur group-hover:border-[var(--accent)] transition-all">
+                      F
+                    </div>
+                    <span className="font-display font-bold text-xl tracking-tight text-white group-hover:text-[var(--accent)] transition-colors uppercase">THE FORGE</span>
+                  </Link>
+                  <p className="text-sm text-white/40 leading-relaxed">
+                    Das erste Community Venture Studio. Wo Brands gemeinsam geschmiedet werden. 
+                    50 Founders. Eine Mission. Echte Assets.
+                  </p>
+                  <div className="flex items-center gap-3 text-[10px] font-bold text-green-500 uppercase tracking-widest">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
+                    System-Status: Operational
+                  </div>
+               </div>
+
+               {/* Legal Column */}
+               <div>
+                  <h4 className="text-xs font-black uppercase tracking-[0.3em] text-white/20 mb-8">Rechtliches</h4>
+                  <ul className="space-y-4">
+                     <li><Link href="/legal/impressum" className="text-sm text-white/50 hover:text-[var(--accent)] transition-colors">Impressum</Link></li>
+                     <li><Link href="/legal/datenschutz" className="text-sm text-white/50 hover:text-[var(--accent)] transition-colors">Datenschutz</Link></li>
+                     <li><Link href="/legal/agb" className="text-sm text-white/50 hover:text-[var(--accent)] transition-colors">AGB</Link></li>
+                     <li><Link href="/legal/vertrag" className="text-sm text-white/50 hover:text-[var(--accent)] transition-colors">Founder-Vertrag</Link></li>
+                  </ul>
+               </div>
+
+               {/* Navigation Column */}
+               <div>
+                  <h4 className="text-xs font-black uppercase tracking-[0.3em] text-white/20 mb-8">Navigation</h4>
+                  <ul className="space-y-4">
+                     <li><Link href="/dashboard" className="text-sm text-white/50 hover:text-[var(--accent)] transition-colors">Founder Dashboard</Link></li>
+                     <li><Link href="/transparency" className="text-sm text-white/50 hover:text-[var(--accent)] transition-colors">Finanz-Protokoll</Link></li>
+                     <li><Link href="/forum" className="text-sm text-white/50 hover:text-[var(--accent)] transition-colors">Community Forum</Link></li>
+                     <li><Link href="/squads" className="text-sm text-white/50 hover:text-[var(--accent)] transition-colors">Squad Markt</Link></li>
+                  </ul>
+               </div>
+
+               {/* Support Column */}
+               <div>
+                  <h4 className="text-xs font-black uppercase tracking-[0.3em] text-white/20 mb-8">Kommando-Zentrale</h4>
+                  <ul className="space-y-4">
+                     <li><a href="mailto:info@theforge.community" className="text-sm text-white/50 hover:text-[var(--accent)] transition-colors">info@theforge.community</a></li>
+                     <li className="pt-4">
+                        <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+                           <p className="text-[10px] text-white/30 uppercase tracking-widest leading-relaxed">
+                              Anfragen werden innerhalb von 24 Stunden durch die KI oder Operatoren bearbeitet.
+                           </p>
+                        </div>
+                     </li>
+                  </ul>
+               </div>
+            </div>
+
+            <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+               <div className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/20">
+                  © 2026 THE FORGE SYSTEM • ALL RIGHTS RESERVED
+               </div>
+               <div className="flex items-center gap-6 text-[10px] font-bold text-white/20 uppercase tracking-widest">
+                  <span>Made with ❤️ by 50 Founders</span>
+                  <span className="w-1 h-1 rounded-full bg-white/10" />
+                  <span>v1.0.4-stable</span>
+               </div>
             </div>
          </div>
       </footer>
