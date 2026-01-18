@@ -255,57 +255,47 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Was ist STAKE & SCALE? */}
-      <section className="py-14 px-5 sm:py-20 sm:px-6 bg-[var(--surface-muted)]">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-10 sm:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-display text-[var(--foreground)] mb-4">
+      {/* How It Works */}
+      <section className="py-24 px-6 bg-[#FAFAFA]">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-20">
+            <h2 className="text-5xl sm:text-6xl font-semibold text-[var(--foreground)] mb-6">
               So funktioniert's
             </h2>
-            <p className="text-base sm:text-lg text-[var(--secondary)] max-w-2xl mx-auto leading-relaxed">
-              Drei Start-Tiers: 25k / 50k / 100k.<br />
-              Maximal 25 Founder pro Gruppe.<br />
-              <span className="font-medium text-[var(--foreground)]">Beitrag = Zielkapital ÷ Mitgliederzahl.</span>
+            <p className="text-xl text-[var(--muted-foreground)] max-w-3xl mx-auto">
+              Drei Start-Tiers: 25k / 50k / 100k. Maximal 25 Founder pro Gruppe.<br />
+              <span className="font-semibold text-[var(--foreground)]">Beitrag = Zielkapital ÷ Mitgliederzahl</span>
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6 sm:gap-8">
-            <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-6 sm:p-8 shadow-sm">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[var(--accent-glow)] rounded-xl flex items-center justify-center mb-4">
-                <Users className="w-5 h-5 sm:w-6 sm:h-6 text-[var(--accent)]" />
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-[var(--accent)] text-white rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl">
+                1
               </div>
-              <h3 className="text-lg sm:text-xl font-display text-[var(--foreground)] mb-3">
-                Gleichberechtigt
-              </h3>
-              <p className="text-sm sm:text-base text-[var(--secondary)]">
-                Jeder zahlt den gleichen Beitrag in der Gruppe. Anteile werden gleich verteilt
-                (Anteil = 1 ÷ Mitgliederzahl). Keine komplexen Cap Tables, keine Hierarchien.
+              <h3 className="text-2xl font-semibold mb-4">Gleichberechtigt</h3>
+              <p className="text-[var(--muted-foreground)] leading-relaxed">
+                Jeder zahlt den gleichen Beitrag. Anteile werden gleich verteilt. Keine komplexen Cap Tables.
               </p>
             </div>
 
-            <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-6 sm:p-8 shadow-sm">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[var(--accent-glow)] rounded-xl flex items-center justify-center mb-4">
-                <Target className="w-5 h-5 sm:w-6 sm:h-6 text-[var(--accent)]" />
+            <div className="text-center">
+              <div className="w-16 h-16 bg-[var(--accent)] text-white rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl">
+                2
               </div>
-              <h3 className="text-lg sm:text-xl font-display text-[var(--foreground)] mb-3">
-                Demokratisch
-              </h3>
-              <p className="text-sm sm:text-base text-[var(--secondary)]">
+              <h3 className="text-2xl font-semibold mb-4">Demokratisch</h3>
+              <p className="text-[var(--muted-foreground)] leading-relaxed">
                 Alle stimmen ab, welches Projekt gebaut wird. Die besten Ideen gewinnen.
-                Jeder kann mitmachen – von Marketing bis Entwicklung.
               </p>
             </div>
 
-            <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-6 sm:p-8 shadow-sm">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[var(--accent-glow)] rounded-xl flex items-center justify-center mb-4">
-                <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-[var(--accent)]" />
+            <div className="text-center">
+              <div className="w-16 h-16 bg-[var(--accent)] text-white rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl">
+                3
               </div>
-              <h3 className="text-lg sm:text-xl font-display text-[var(--foreground)] mb-3">
-                Transparent
-              </h3>
-              <p className="text-sm sm:text-base text-[var(--secondary)]">
+              <h3 className="text-2xl font-semibold mb-4">Transparent</h3>
+              <p className="text-[var(--muted-foreground)] leading-relaxed">
                 Jeder Euro ist nachvollziehbar. Live-Dashboard zeigt Einnahmen, Ausgaben und Progress.
-                Kein Verstecken, keine Überraschungen.
               </p>
             </div>
           </div>

@@ -11,8 +11,8 @@
   --color-primary: #5B5FEF;
   --color-primary-foreground: #FFFFFF;
 
-  --color-secondary: #F7F7F7;
-  --color-secondary-foreground: #1A1A1A;
+  --color-secondary: #6B6B6B;
+  --color-secondary-foreground: #FFFFFF;
 
   --color-muted: #F7F7F7;
   --color-muted-foreground: #6B6B6B;
@@ -24,6 +24,11 @@
   --color-ring: #5B5FEF;
 
   --radius: 12px;
+
+  /* Legacy support */
+  --color-surface: #FFFFFF;
+  --color-surface-muted: #FAFAFA;
+  --color-accent-glow: rgba(91, 95, 239, 0.1);
 }
 
 @layer base {
