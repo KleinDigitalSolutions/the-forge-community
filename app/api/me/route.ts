@@ -16,7 +16,7 @@ export async function GET() {
     // 2. Daten aus Postgres holen (Dossier: Adresse, BDay, etc.)
     const pgUser = await sql`
       SELECT name, phone, birthday, address_street, address_city, address_zip, address_country, instagram, linkedin, bio, skills, goal
-      FROM users 
+      FROM "User"
       WHERE email = ${session.user.email}
     `;
 

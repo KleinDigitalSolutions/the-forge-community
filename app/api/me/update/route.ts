@@ -13,8 +13,8 @@ export async function POST(request: Request) {
 
     // 1. In Postgres speichern (für die App-Performance)
     await sql`
-      UPDATE users 
-      SET 
+      UPDATE "User"
+      SET
         name = ${data.name},
         phone = ${data.phone},
         birthday = ${data.birthday},
