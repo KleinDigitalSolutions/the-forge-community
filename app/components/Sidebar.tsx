@@ -11,14 +11,15 @@ import {
   FileText, 
   Settings, 
   LogOut,
-  Zap
+  Zap,
+  Target
 } from 'lucide-react';
-import { SignOutButton } from './SignOutButton'; // Wir nutzen den existierenden Button Logik, aber stylen ihn neu
+import { SignOutButton } from './SignOutButton';
 
 const navigation = [
   { name: 'Cockpit', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Forum', href: '/forum', icon: MessageSquare },
-  { name: 'Squad Market', href: '/squads', icon: Users },
+  { name: 'Squad Markt', href: '/squads', icon: Users },
   { name: 'Mission Control', href: '/tasks', icon: CheckSquare },
   { name: 'Finanzen', href: '/transparency', icon: PieChart },
   { name: 'Wissen', href: '/resources', icon: FileText },
@@ -28,20 +29,26 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-zinc-200 flex flex-col z-50">
+    <aside className="fixed left-0 top-0 h-screen w-64 bg-[#08090A] border-r border-white/5 flex flex-col z-50 overflow-hidden">
+      {/* Subtle Sidebar Glow */}
+      <div className="absolute top-0 left-0 w-full h-[300px] bg-gradient-to-b from-[var(--accent)]/5 to-transparent pointer-events-none" />
+
       {/* Brand */}
-      <div className="p-6 border-b border-zinc-100">
-        <Link href="/dashboard" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 bg-zinc-900 rounded-lg flex items-center justify-center text-white font-black shadow-lg group-hover:scale-105 transition-transform">
+      <div className="p-8 relative z-10">
+        <Link href="/dashboard" className="flex items-center gap-3 group">
+          <div className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-[var(--accent)] font-black shadow-2xl backdrop-blur group-hover:border-[var(--accent)] transition-all">
             F
           </div>
-          <span className="font-bold text-lg tracking-tight text-zinc-900">THE FORGE</span>
+          <div className="flex flex-col">
+            <span className="font-display font-bold text-sm tracking-widest text-white group-hover:text-[var(--accent)] transition-colors uppercase">THE FORGE</span>
+            <span className="text-[8px] font-black text-white/20 tracking-[0.3em] uppercase">Operator v1.0</span>
+          </div>
         </Link>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest px-3 mb-2 mt-2">
+      <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto relative z-10 scrollbar-hide">
+        <div className="text-[9px] font-bold text-white/20 uppercase tracking-[0.3em] px-4 mb-4 mt-2">
           Platform
         </div>
         {navigation.map((item) => {
@@ -51,43 +58,44 @@ export default function Sidebar() {
             <Link
               key={item.name}
               href={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all duration-500 group ${
                 isActive 
-                  ? 'bg-zinc-900 text-white shadow-md' 
-                  : 'text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900'
+                  ? 'bg-white/5 text-[var(--accent)] shadow-[0_0_20px_rgba(212,175,55,0.05)] border border-white/10' 
+                  : 'text-white/40 hover:text-white hover:bg-white/[0.02]'
               }`}
             >
-              <Icon className={`w-4 h-4 ${isActive ? 'text-zinc-300' : 'text-zinc-400 group-hover:text-zinc-900'}`} />
+              <Icon className={`w-4 h-4 transition-transform duration-500 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
               {item.name}
             </Link>
           );
         })}
 
-        <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest px-3 mb-2 mt-6">
+        <div className="text-[9px] font-bold text-white/20 uppercase tracking-[0.3em] px-4 mb-4 mt-10">
           Account
         </div>
         <Link
           href="/profile"
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${
+          className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all duration-500 group ${
             pathname === '/profile' 
-              ? 'bg-zinc-900 text-white' 
-              : 'text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900'
+              ? 'bg-white/5 text-[var(--accent)] border border-white/10' 
+              : 'text-white/40 hover:text-white hover:bg-white/[0.02]'
           }`}
         >
-          <Settings className="w-4 h-4 text-zinc-400 group-hover:text-zinc-900" />
+          <Settings className="w-4 h-4 transition-transform duration-500 group-hover:rotate-90" />
           Founder Dossier
         </Link>
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-zinc-100">
-        <div className="bg-zinc-50 rounded-xl p-4 mb-4 border border-zinc-100">
-          <div className="flex items-center gap-2 text-xs font-bold text-zinc-900 mb-1">
-            <Zap className="w-3 h-3 text-amber-500 fill-amber-500" />
-            Pro Status
+      <div className="p-6 border-t border-white/5 relative z-10 bg-black/20">
+        <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-5 mb-6 backdrop-blur-sm relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="flex items-center gap-3 text-[10px] font-bold text-white mb-2 relative z-10">
+            <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
+            Operator Status
           </div>
-          <p className="text-[10px] text-zinc-500 leading-tight">
-            Dein Investment ist aktiv. Zugriff gewährt.
+          <p className="text-[9px] text-white/30 uppercase tracking-widest leading-relaxed relative z-10">
+            Investment aktiv.<br/>Vollständiger Zugriff.
           </p>
         </div>
         <SignOutButton />
