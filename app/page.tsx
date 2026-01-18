@@ -183,10 +183,11 @@ export default function Home() {
         secondaryButtonText="PROTOKOLL ANSEHEN"
         secondaryButtonHref="#"
         navLinks={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Forum", href: "/forum" },
-          { label: "Squads", href: "/squads" },
-          { label: "Impressum", href: "/legal/impressum" }
+          { label: "Philosophie", href: "#philosophy" },
+          { label: "Mission Log", href: "#projects" },
+          { label: "Prinzipien", href: "#principles" },
+          { label: "Preise", href: "#pricing" },
+          { label: "Login", href: "/login" }
         ]}
         ctaButtonText="BEWERBEN"
         ctaButtonHref="#apply"
@@ -220,7 +221,7 @@ export default function Home() {
       </section>
 
       {/* Philosophy / Features */}
-      <section className="py-40 px-6 relative">
+      <section id="philosophy" className="py-40 px-6 relative">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-32">
             <h2 className="text-5xl md:text-7xl font-instrument-serif text-white mb-8 animate-fade-slide-in-1">
@@ -266,7 +267,7 @@ export default function Home() {
       </section>
 
       {/* Featured Project - Mission Log Style */}
-      <section className="py-40 px-6 bg-[#0B0C0E] relative overflow-hidden">
+      <section id="projects" className="py-40 px-6 bg-[#0B0C0E] relative overflow-hidden">
         <div className="absolute inset-0 bg-grid-small opacity-[0.03] pointer-events-none" />
         <div className="max-w-7xl mx-auto">
            <div className="grid lg:grid-cols-2 gap-24 items-center">
@@ -331,7 +332,7 @@ export default function Home() {
       </section>
 
       {/* Philosophy Interlude - Animated Stack */}
-      <section className="py-40 px-6 relative overflow-hidden border-b border-white/5">
+      <section id="principles" className="py-40 px-6 relative overflow-hidden border-b border-white/5">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[var(--accent)]/5 rounded-full blur-[150px] pointer-events-none" />
         
         <div className="max-w-7xl mx-auto flex flex-col items-center relative z-10">
@@ -347,7 +348,7 @@ export default function Home() {
       </section>
 
       {/* Pricing / Join */}
-      <section className="py-40 px-6 relative overflow-hidden">
+      <section id="pricing" className="py-40 px-6 relative overflow-hidden">
          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[var(--accent)]/5 rounded-full blur-[150px] pointer-events-none" />
          <div className="max-w-7xl mx-auto relative z-10">
             <div className="text-center mb-32">

@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
+import { Menu, X, ArrowRight } from 'lucide-react';
 
 interface NavLink {
     label: string;
@@ -54,7 +56,7 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
     primaryButtonHref = "#apply",
     secondaryButtonText = "MEHR ERFAHREN",
     secondaryButtonHref = "#",
-    partnersTitle = "Partnerschaften mit weltweit führenden Raumfahrtagenturen",
+    partnersTitle = "Unterstützt durch führende Technologien",
     partners = [
         { logoUrl: "https://cdn.worldvectorlogo.com/logos/vercel.svg", href: "https://vercel.com" },
         { logoUrl: "https://cdn.worldvectorlogo.com/logos/stripe-2.svg", href: "https://stripe.com" },
@@ -64,6 +66,7 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
     ]
 }) => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const { status } = useSession();
 
     return (
         <section className="w-full isolate min-h-screen overflow-hidden relative">
@@ -79,7 +82,7 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                 <div className="mx-6">
                     <div className="flex items-center justify-between pt-4">
                         <Link href="/" className="flex items-center gap-3 group">
-                          <div className="w-10 h-10 bg-white/10 border border-white/20 rounded-xl flex items-center justify-center text-[var(--accent)] font-black shadow-lg backdrop-blur group-hover:border-[var(--accent)] transition-all text-xs">
+                          <div className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-[var(--accent)] font-black shadow-lg backdrop-blur group-hover:border-[var(--accent)] transition-all text-xs">
                             S&S
                           </div>
                           <span className="font-display font-bold text-xl tracking-tight text-white group-hover:text-[var(--accent)] transition-colors">STAKE & SCALE</span>
@@ -87,26 +90,33 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
 
                         <nav className="hidden md:flex items-center gap-2">
                             <div className="flex items-center gap-1 rounded-full bg-white/5 px-1 py-1 ring-1 ring-white/10 backdrop-blur">
-                                {navLinks.map((link, index) => (
+                                {navLinks?.map((link, index) => (
                                     <Link
                                         key={index}
                                         href={link.href}
-                                        className={`px-3 py-2 text-sm font-medium hover:text-white font-sans transition-colors ${link.isActive ? 'text-white/90' : 'text-white/80'
+                                        className={`px-3 py-2 text-xs font-bold uppercase tracking-widest hover:text-white transition-colors ${link.isActive ? 'text-white' : 'text-white/60'
                                             }`}
                                     >
                                         {link.label}
                                     </Link>
                                 ))}
-                                <Link
-                                    href={ctaButtonHref}
-                                    className="ml-1 inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-2 text-sm font-medium text-neutral-900 hover:bg-white/90 font-sans transition-colors"
-                                >
-                                    {ctaButtonText}
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                                        <path d="M7 7h10v10" />
-                                        <path d="M7 17 17 7" />
-                                    </svg>
-                                </Link>
+                                {status === 'authenticated' ? (
+                                    <Link
+                                        href="/dashboard"
+                                        className="ml-1 inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-4 py-2 text-[10px] font-black text-black hover:brightness-110 transition-all uppercase tracking-[0.2em]"
+                                    >
+                                        Cockpit
+                                        <ArrowRight className="h-3 w-3" />
+                                    </Link>
+                                ) : (
+                                    <Link
+                                        href="/login"
+                                        className="ml-1 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[10px] font-black text-black hover:bg-white/90 transition-all uppercase tracking-[0.2em]"
+                                    >
+                                        Login
+                                        <ArrowRight className="h-3 w-3" />
+                                    </Link>
+                                )}
                             </div>
                         </nav>
 
@@ -116,24 +126,51 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                             aria-expanded={mobileMenuOpen}
                             aria-label="Toggle menu"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-white/90">
-                                <path d="M4 5h16" />
-                                <path d="M4 12h16" />
-                                <path d="M4 19h16" />
-                            </svg>
+                            {mobileMenuOpen ? <X className="h-5 w-5 text-white" /> : (
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-white/90">
+                                    <path d="M4 5h16" />
+                                    <path d="M4 12h16" />
+                                    <path d="M4 19h16" />
+                                </svg>
+                            )}
                         </button>
                     </div>
                 </div>
+
+                {/* Mobile Menu */}
+                {mobileMenuOpen && (
+                    <div className="absolute top-20 left-6 right-6 bg-black/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-6 md:hidden animate-fade-in z-50">
+                        <nav className="flex flex-col gap-4">
+                            {navLinks?.map((link, index) => (
+                                <Link
+                                    key={index}
+                                    href={link.href}
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className="text-xs font-bold uppercase tracking-widest text-white/60 hover:text-white"
+                                >
+                                    {link.label}
+                                </Link>
+                            ))}
+                            <Link
+                                href={status === 'authenticated' ? "/dashboard" : "/login"}
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="w-full py-4 bg-[var(--accent)] text-black rounded-xl text-center font-black uppercase tracking-[0.2em] text-[10px] mt-2"
+                            >
+                                {status === 'authenticated' ? "ZUM COCKPIT" : "LOGIN"}
+                            </Link>
+                        </nav>
+                    </div>
+                )}
             </header>
 
             <div className="z-10 relative">
                 <div className="sm:pt-28 md:pt-32 lg:pt-40 max-w-7xl mx-auto pt-28 px-6 pb-56">
                     <div className="mx-auto max-w-3xl text-center">
                         <div className="mb-6 inline-flex items-center gap-3 rounded-full bg-white/10 px-2.5 py-2 ring-1 ring-white/15 backdrop-blur animate-fade-slide-in-1">
-                            <span className="inline-flex items-center text-xs font-medium text-neutral-900 bg-white/90 rounded-full py-0.5 px-2 font-sans">
+                            <span className="inline-flex items-center text-[10px] font-black uppercase tracking-widest text-black bg-[var(--accent)] rounded-full py-0.5 px-2">
                                 {badgeLabel}
                             </span>
-                            <span className="text-sm font-medium text-white/90 font-sans">
+                            <span className="text-xs font-bold text-white/90 uppercase tracking-[0.2em]">
                                 {badgeText}
                             </span>
                         </div>
@@ -151,17 +188,14 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                         <div className="flex flex-col sm:flex-row sm:gap-4 mt-10 gap-3 items-center justify-center animate-fade-slide-in-4">
                             <Link
                                 href={primaryButtonHref}
-                                className="inline-flex items-center gap-2 hover:bg-white/15 text-sm font-medium text-white bg-white/10 ring-white/15 ring-1 rounded-full py-3 px-5 font-sans transition-colors"
+                                className="inline-flex items-center gap-3 hover:bg-[var(--accent)] hover:text-black text-[10px] font-black text-white bg-white/5 ring-white/10 ring-1 rounded-xl py-4 px-8 uppercase tracking-[0.3em] transition-all duration-500 shadow-2xl"
                             >
                                 {primaryButtonText}
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                                    <path d="M5 12h14" />
-                                    <path d="m12 5 7 7-7 7" />
-                                </svg>
+                                <ArrowRight className="h-4 w-4" />
                             </Link>
                             <Link
                                 href={secondaryButtonHref}
-                                className="inline-flex items-center gap-2 rounded-full bg-transparent px-5 py-3 text-sm font-medium text-white/90 hover:text-white font-sans transition-colors"
+                                className="inline-flex items-center gap-3 rounded-xl bg-transparent px-8 py-4 text-[10px] font-black text-white/60 hover:text-white uppercase tracking-[0.3em] transition-all duration-500"
                             >
                                 {secondaryButtonText}
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
@@ -173,7 +207,7 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
 
                     <div className="mx-auto mt-12 max-w-5xl">
                         <p className="animate-fade-slide-in-1 text-xs font-bold uppercase tracking-[0.3em] text-white/40 text-center">
-                            Unterstützt durch führende Technologien
+                            {partnersTitle}
                         </p>
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 animate-fade-slide-in-2 text-white/30 mt-8 items-center justify-items-center gap-16 opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
                             {partners.map((partner, index) => (
