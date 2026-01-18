@@ -56,11 +56,11 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
     secondaryButtonHref = "#",
     partnersTitle = "Partnerschaften mit weltweit führenden Raumfahrtagenturen",
     partners = [
-        { logoUrl: "https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/f7466370-2832-4fdd-84c2-0932bb0dd850_800w.png", href: "#" },
-        { logoUrl: "https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/0a9a71ec-268b-4689-a510-56f57e9d4f13_1600w.png", href: "#" },
-        { logoUrl: "https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/a9ed4369-748a-49f8-9995-55d6c876bbff_1600w.png", href: "#" },
-        { logoUrl: "https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/0d8966a4-8525-4e11-9d5d-2d7390b2c798_1600w.png", href: "#" },
-        { logoUrl: "https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/2ed33c8b-b8b2-4176-967f-3d785fed07d8_1600w.png", href: "#" }
+        { logoUrl: "https://cdn.worldvectorlogo.com/logos/vercel.svg", href: "https://vercel.com" },
+        { logoUrl: "https://cdn.worldvectorlogo.com/logos/stripe-2.svg", href: "https://stripe.com" },
+        { logoUrl: "https://cdn.worldvectorlogo.com/logos/next-js.svg", href: "https://nextjs.org" },
+        { logoUrl: "https://cdn.worldvectorlogo.com/logos/tailwind-css-2.svg", href: "https://tailwindcss.com" },
+        { logoUrl: "https://cdn.worldvectorlogo.com/logos/prisma-2.svg", href: "https://prisma.io" }
     ]
 }) => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -172,14 +172,15 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
 
                     <div className="mx-auto mt-12 max-w-5xl">
                         <p className="animate-fade-slide-in-1 text-xs font-bold uppercase tracking-[0.3em] text-white/40 text-center">
-                            {partnersTitle}
+                            Unterstützt durch führende Technologien
                         </p>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 animate-fade-slide-in-2 text-white/30 mt-8 items-center justify-items-center gap-8 opacity-50 grayscale hover:grayscale-0 transition-all duration-700">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 animate-fade-slide-in-2 text-white/30 mt-8 items-center justify-items-center gap-12 opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
                             {partners.map((partner, index) => (
                                 <Link
                                     key={index}
                                     href={partner.href}
-                                    className="inline-flex items-center justify-center bg-center w-[120px] h-[36px] bg-cover rounded-full hover:opacity-100 transition-opacity"
+                                    target="_blank"
+                                    className="inline-flex items-center justify-center bg-center w-[100px] h-[32px] bg-contain bg-no-repeat hover:opacity-100 transition-opacity invert brightness-200"
                                     style={{ backgroundImage: `url(${partner.logoUrl})` }}
                                 />
                             ))}
