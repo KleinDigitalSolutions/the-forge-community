@@ -41,6 +41,7 @@
 
   /* Custom Fonts */
   --font-instrument-serif: "Instrument Serif", serif;
+  --font-caveat: var(--font-caveat), cursive;
 }
 
 :root {
@@ -78,6 +79,10 @@
 }
 
 @layer utilities {
+  .font-caveat {
+    font-family: var(--font-caveat);
+  }
+
   .font-instrument-serif {
     font-family: var(--font-instrument-serif);
   }

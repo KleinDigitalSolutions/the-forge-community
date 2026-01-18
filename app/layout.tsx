@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bodoni_Moda, Sora, Instrument_Serif } from "next/font/google";
+import { Bodoni_Moda, Sora, Instrument_Serif, Caveat } from "next/font/google";
 import { Providers } from "@/app/components/Providers";
 import "./globals.css";
 
@@ -21,6 +21,12 @@ const instrumentSerif = Instrument_Serif({
   weight: ["400"],
 });
 
+const caveat = Caveat({
+  variable: "--font-caveat",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
 export const metadata: Metadata = {
   title: "STAKE & SCALE",
   description: "Community Venture Studio fuer ambitionierte Founder",
@@ -34,7 +40,7 @@ export default function RootLayout({
   return (
     <html lang="de">
       <body
-        className={`${sora.variable} ${bodoniModa.variable} ${instrumentSerif.variable} antialiased`}
+        className={`${sora.variable} ${bodoniModa.variable} ${instrumentSerif.variable} ${caveat.variable} antialiased`}
       >
         <Providers>
           {children}

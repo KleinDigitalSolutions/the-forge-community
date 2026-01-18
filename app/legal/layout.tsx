@@ -11,11 +11,8 @@ export default function LegalLayout({
       {/* Header */}
       <header className="border-b border-white/5 sticky top-0 z-50 bg-[var(--background)]/80 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-8 h-8 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-[var(--accent)] font-black shadow-lg backdrop-blur group-hover:border-[var(--accent)] transition-all">
-              F
-            </div>
-            <span className="font-display font-bold text-lg tracking-tight text-white group-hover:text-[var(--accent)] transition-colors uppercase">THE FORGE</span>
+          <Link href="/" className="flex flex-col group">
+            <span className="font-caveat text-2xl tracking-normal text-white group-hover:text-[var(--accent)] transition-colors lowercase">stake & scale</span>
           </Link>
           <nav className="flex gap-8">
             <Link href="/" className="text-[10px] font-bold text-white/40 hover:text-white uppercase tracking-widest transition-colors">

@@ -71,11 +71,8 @@ function LoginForm() {
   return (
     <div className="w-full max-w-md relative z-10">
       <div className="text-center mb-12">
-        <Link href="/" className="inline-flex items-center gap-3 mb-8 group">
-          <div className="w-10 h-10 bg-white/10 border border-white/20 rounded-xl flex items-center justify-center text-[var(--accent)] font-black shadow-lg backdrop-blur group-hover:border-[var(--accent)] transition-all">
-            F
-          </div>
-          <span className="font-display font-bold text-xl tracking-tight text-white group-hover:text-[var(--accent)] transition-colors uppercase">THE FORGE</span>
+        <Link href="/" className="inline-flex flex-col mb-8 group">
+          <span className="font-caveat text-4xl tracking-normal text-white group-hover:text-[var(--accent)] transition-colors lowercase">stake & scale</span>
         </Link>
         <h1 className="text-4xl font-instrument-serif text-white mb-3">Founder Login</h1>
         <p className="text-white/40 text-sm uppercase tracking-widest font-bold">

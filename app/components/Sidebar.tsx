@@ -35,14 +35,9 @@ export default function Sidebar() {
 
       {/* Brand */}
       <div className="p-8 relative z-10">
-        <Link href="/dashboard" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-[var(--accent)] font-black shadow-2xl backdrop-blur group-hover:border-[var(--accent)] transition-all">
-            F
-          </div>
-          <div className="flex flex-col">
-            <span className="font-display font-bold text-sm tracking-widest text-white group-hover:text-[var(--accent)] transition-colors uppercase">THE FORGE</span>
-            <span className="text-[8px] font-black text-white/20 tracking-[0.3em] uppercase">Operator v1.0</span>
-          </div>
+        <Link href="/dashboard" className="flex flex-col group">
+          <span className="font-caveat text-2xl tracking-normal text-white group-hover:text-[var(--accent)] transition-colors lowercase">stake & scale</span>
+          <span className="text-[8px] font-black text-white/20 tracking-[0.3em] uppercase ml-1">Operator v1.0</span>
         </Link>
       </div>
 

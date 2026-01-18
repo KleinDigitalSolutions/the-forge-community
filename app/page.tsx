@@ -519,11 +519,8 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 mb-12">
                {/* Brand Column */}
                <div className="space-y-8">
-                  <Link href="/" className="flex items-center gap-3 group">
-                    <div className="w-10 h-10 bg-white/10 border border-white/20 rounded-xl flex items-center justify-center text-[var(--accent)] font-black shadow-lg backdrop-blur group-hover:border-[var(--accent)] transition-all">
-                      F
-                    </div>
-                    <span className="font-display font-bold text-xl tracking-tight text-white group-hover:text-[var(--accent)] transition-colors uppercase">THE FORGE</span>
+                  <Link href="/" className="flex flex-col group">
+                    <span className="font-caveat text-3xl tracking-normal text-white group-hover:text-[var(--accent)] transition-colors lowercase">stake & scale</span>
                   </Link>
                   <p className="text-sm text-white/40 leading-relaxed">
                     Das erste Community Venture Studio. Wo Brands gemeinsam geschmiedet werden. 
