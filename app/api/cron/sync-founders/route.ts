@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getFounders } from '@/lib/notion';
 import { prisma } from '@/lib/prisma';
-import { Role } from '@prisma/client';
 
 function slugify(text: string) {
   return text.toString().toLowerCase()
@@ -63,13 +62,13 @@ export async function GET(request: Request) {
           email: founder.email,
           name: founder.name,
           notionId: founder.id,
-          role: founder.status === 'active' ? Role.FOUNDER : Role.USER,
+          role: (founder.status === 'active' ? 'FOUNDER' : 'USER') as any,
           squadId: squadId,
         },
         update: {
           name: founder.name,
           notionId: founder.id,
-          role: founder.status === 'active' ? Role.FOUNDER : Role.USER,
+          role: (founder.status === 'active' ? 'FOUNDER' : 'USER') as any,
           squadId: squadId,
         }
       });
