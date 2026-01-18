@@ -1,80 +1,45 @@
 @import "tailwindcss";
 
 @theme {
-  /* FORGE BRAND COLORS - Dark Industrial Premium */
-  --color-background: #0A0E0D;        /* Deep charcoal - industrial strength */
-  --color-foreground: #FAFAF9;        /* Warm white - readable */
+  /* CLEAN PROFESSIONAL - Inspired by Stripe/Linear */
+  --color-background: #FFFFFF;
+  --color-foreground: #0A0A0A;
 
-  --color-card: #141816;               /* Slightly lighter than bg */
-  --color-card-foreground: #FAFAF9;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #0A0A0A;
 
-  --color-popover: #141816;
-  --color-popover-foreground: #FAFAF9;
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: #0A0A0A;
 
-  --color-primary: #D4AF37;            /* Gold - premium accent */
-  --color-primary-foreground: #0A0E0D;
+  --color-primary: #0A0A0A;
+  --color-primary-foreground: #FFFFFF;
 
-  --color-secondary: #78716C;          /* Warm stone gray */
-  --color-secondary-foreground: #FAFAF9;
+  --color-secondary: #F5F5F5;
+  --color-secondary-foreground: #0A0A0A;
 
-  --color-muted: #1C2220;              /* Dark muted green */
-  --color-muted-foreground: #A8A29E;   /* Light stone */
+  --color-muted: #F5F5F5;
+  --color-muted-foreground: #737373;
 
-  --color-accent: #D4AF37;             /* Gold - primary brand */
-  --color-accent-foreground: #0A0E0D;
+  --color-accent: #0A0A0A;
+  --color-accent-foreground: #FFFFFF;
 
-  --color-destructive: #DC2626;        /* Red for errors */
-  --color-destructive-foreground: #FAFAF9;
+  --color-destructive: #DC2626;
+  --color-destructive-foreground: #FFFFFF;
 
-  --color-border: #2D3532;             /* Subtle dark green border */
-  --color-input: #1C2220;
-  --color-ring: #D4AF37;               /* Gold focus rings */
+  --color-border: #E5E5E5;
+  --color-input: #E5E5E5;
+  --color-ring: #0A0A0A;
 
-  --radius: 0.875rem;                  /* Slightly more radius */
+  --radius: 0.5rem;
 
-  /* Custom FORGE palette */
-  --color-surface: #141816;            /* Card surface */
-  --color-surface-muted: #1C2220;      /* Darker sections */
-  --color-accent-glow: rgba(212, 175, 55, 0.1);  /* Gold glow */
-  --color-accent-soft: #B8935C;        /* Softer gold */
-  --color-forge-green: #0E2419;        /* Deep forest green */
-  --color-forge-ember: #FF6B35;        /* Hot ember orange */
+  /* Minimal palette */
+  --color-surface: #FFFFFF;
+  --color-surface-muted: #FAFAFA;
+  --color-accent-glow: rgba(0, 0, 0, 0.05);
+  --color-accent-soft: #525252;
 }
 
-/* Typography - Strong & Industrial */
-@font-face {
-  font-family: 'Forge Display';
-  src: local('Inter'), local('system-ui');
-  font-weight: 700 900;
-  font-display: swap;
-}
-
-/* Custom Utilities */
-@utility glass {
-  background-color: rgba(20, 24, 22, 0.7);
-  backdrop-filter: blur(24px);
-  border: 1px solid rgba(212, 175, 55, 0.1);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-}
-
-@utility card-hover {
-  transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
-  &:hover {
-    box-shadow: 0 20px 40px -12px rgba(212, 175, 55, 0.2),
-                0 4px 16px -4px rgba(0, 0, 0, 0.5);
-    transform: translateY(-4px);
-    border-color: var(--color-accent-soft);
-  }
-}
-
-@utility industrial-texture {
-  background-image:
-    linear-gradient(rgba(212, 175, 55, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(212, 175, 55, 0.03) 1px, transparent 1px);
-  background-size: 40px 40px;
-}
-
-/* Base Styles */
+/* Typography - Clean & Professional */
 @layer base {
   * {
     border-color: var(--color-border);
@@ -83,43 +48,40 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Helvetica Neue', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
+    font-size: 16px;
+    line-height: 1.6;
   }
 
-  /* Display font for headings */
-  h1, h2, h3, .font-display {
-    font-family: 'Forge Display', -apple-system, BlinkMacSystemFont, sans-serif;
-    font-weight: 800;
-    letter-spacing: -0.025em;
-    line-height: 1.1;
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    color: var(--color-foreground);
   }
 
-  /* Smooth scroll */
   html {
     scroll-behavior: smooth;
   }
 
-  /* Selection color */
   ::selection {
-    background-color: var(--color-accent);
-    color: var(--color-accent-foreground);
+    background-color: var(--color-foreground);
+    color: var(--color-background);
   }
 
-  /* Focus rings */
   :focus-visible {
     outline: 2px solid var(--color-ring);
     outline-offset: 2px;
   }
 }
 
-/* Custom Animations */
+/* Minimal animations */
 @keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -127,48 +89,22 @@
   }
 }
 
-@keyframes glow-pulse {
-  0%, 100% {
-    opacity: 1;
-    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
-  }
-  50% {
-    opacity: 0.8;
-    box-shadow: 0 0 40px rgba(212, 175, 55, 0.5);
-  }
-}
-
-@keyframes forge-shine {
-  0% {
-    background-position: -200% center;
-  }
-  100% {
-    background-position: 200% center;
-  }
-}
-
 .animate-fade-in {
-  animation: fade-in 0.6s ease-out forwards;
+  animation: fade-in 0.4s ease-out forwards;
 }
 
-.animate-glow-pulse {
-  animation: glow-pulse 3s ease-in-out infinite;
+/* Clean hover effects */
+.hover-lift {
+  transition: transform 0.2s ease;
 }
 
-.animate-forge-shine {
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(212, 175, 55, 0.3) 50%,
-    transparent 100%
-  );
-  background-size: 200% 100%;
-  animation: forge-shine 3s linear infinite;
+.hover-lift:hover {
+  transform: translateY(-2px);
 }
 
-/* Scrollbar Styling */
+/* Scrollbar */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -177,38 +113,9 @@
 
 ::-webkit-scrollbar-thumb {
   background: var(--color-border);
-  border-radius: 5px;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-accent-soft);
-}
-
-/* Custom gradient text */
-.gradient-gold {
-  background: linear-gradient(135deg, #D4AF37 0%, #F4E4B4 50%, #D4AF37 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Ember glow effect */
-.ember-glow {
-  position: relative;
-}
-
-.ember-glow::before {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  background: linear-gradient(45deg, #FF6B35, #D4AF37);
-  border-radius: inherit;
-  opacity: 0;
-  transition: opacity 0.3s;
-  z-index: -1;
-  filter: blur(8px);
-}
-
-.ember-glow:hover::before {
-  opacity: 0.6;
+  background: var(--color-muted-foreground);
 }
