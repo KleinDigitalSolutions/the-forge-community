@@ -173,7 +173,6 @@ export default function Home() {
       
       {/* Integrated Hero & Header */}
       <ResponsiveHeroBanner 
-        badgeLabel="STATUS"
         badgeText="BATCH #001 — REKRUTIERUNG LÄUFT"
         title="25 Founder. 1 Brand."
         titleLine2="Volle Transparenz."
