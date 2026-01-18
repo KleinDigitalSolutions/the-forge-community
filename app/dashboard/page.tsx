@@ -125,10 +125,10 @@ export default function Dashboard() {
 
              <div className="bg-gradient-to-br from-[var(--accent)] to-[#FF5500] p-8 rounded-3xl relative overflow-hidden group cursor-pointer shadow-2xl">
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
-                <Zap className="w-12 h-14 text-white/20 absolute -right-2 -bottom-2 group-hover:scale-110 transition-transform duration-700" />
+                <Zap className="w-12 h-14 text-white/20 absolute -right-2 -bottom-2" />
                 <h4 className="text-white font-instrument-serif text-2xl mb-2 relative z-10">Batch #002</h4>
                 <p className="text-white/80 text-[10px] uppercase tracking-widest font-bold relative z-10 mb-6">In Vorbereitung</p>
-                <button className="bg-white text-black px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest relative z-10 hover:scale-105 transition-transform">Vormerken</button>
+                <button className="bg-white text-black px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest relative z-10 hover:brightness-90 transition-all">Vormerken</button>
              </div>
           </div>
         </div>
@@ -149,7 +149,7 @@ function KpiCard({ title, value, icon: Icon, trend }: any) {
       </div>
       <div className="relative z-10">
         <div className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em] mb-2">{title}</div>
-        <div className="text-3xl font-instrument-serif text-white tracking-tight group-hover:scale-105 transition-transform duration-700 origin-left">{value}</div>
+        <div className="text-3xl font-instrument-serif text-white tracking-tight">{value}</div>
       </div>
     </div>
   );
