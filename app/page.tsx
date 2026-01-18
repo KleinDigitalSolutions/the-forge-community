@@ -172,7 +172,25 @@ export default function Home() {
     <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] selection:bg-[var(--accent)] selection:text-[var(--accent-foreground)] overflow-x-hidden">
       
       {/* Integrated Hero & Header */}
-      <ResponsiveHeroBanner />
+      <ResponsiveHeroBanner 
+        badgeLabel="Recruiting"
+        badgeText="Batch #001 - Join the Forge"
+        title="Forge Real Value."
+        titleLine2="Build the Future."
+        description="The Forge ist das erste Community Venture Studio. Wir bündeln Kapital, Skills und Execution um profitable Businesses zu schmieden, die uns allen gehören."
+        primaryButtonText="Start Your Journey"
+        primaryButtonHref="#apply"
+        secondaryButtonText="Watch Manifesto"
+        secondaryButtonHref="#"
+        navLinks={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Forum", href: "/forum" },
+          { label: "Squads", href: "/squads" },
+          { label: "Legal", href: "/legal/impressum" }
+        ]}
+        ctaButtonText="Apply"
+        ctaButtonHref="#apply"
+      />
 
       {/* Metrics Grid (Bento Style) */}
       <section className="py-20 px-4 md:px-6 border-y border-[var(--border)] bg-[var(--surface)]/30 backdrop-blur-sm">

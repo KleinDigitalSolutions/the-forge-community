@@ -2,8 +2,8 @@
 
 @theme {
   /* THE FORGE - Dark Industrial Premium (Refined) */
-  --color-background: #08090A; /* Darker, slightly cooler charcoal */
-  --color-foreground: #EDEDEF; /* Soft white */
+  --color-background: var(--bg-0);
+  --color-foreground: var(--text-100);
 
   --color-card: #0F1113;
   --color-card-foreground: #EDEDEF;
@@ -30,7 +30,7 @@
   --color-input: #1A1D21;
   --color-ring: #D4AF37;
 
-  --radius: 0.75rem; /* 12px - slightly sharper */
+  --radius: var(--radius);
 
   /* Custom Forge Colors */
   --color-surface: #0C0E10;
@@ -38,6 +38,21 @@
   --color-accent-glow: rgba(212, 175, 55, 0.15);
   --color-accent-soft: #B8935C;
   --color-forge-ember: #FF5500; /* More vibrant orange */
+
+  /* Custom Fonts */
+  --font-instrument-serif: "Instrument Serif", serif;
+}
+
+:root {
+  --bg-0: #09090b;
+  --bg-100: #18181b;
+  --bg-200: #27272a;
+  --bg-300: #3f3f46;
+  --text-100: #fafafa;
+  --text-200: #e4e4e7;
+  --text-300: #a1a1aa;
+  --text-400: #71717a;
+  --radius: 0.5rem;
 }
 
 @layer base {
@@ -63,6 +78,10 @@
 }
 
 @layer utilities {
+  .font-instrument-serif {
+    font-family: var(--font-instrument-serif);
+  }
+
   .font-display {
     font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
     font-weight: 700;
@@ -193,4 +212,9 @@
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Industrial Texture Overlay */
+.industrial-texture {
+  background-image: url("https://www.transparenttextures.com/patterns/carbon-fibre.png");
 }
