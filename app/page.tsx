@@ -202,48 +202,53 @@ export default function Home() {
       {/* Smart Header */}
       <Header />
 
-      {/* Hero Section - Clean Professional */}
-      <section className="pt-32 pb-20 px-6 sm:pt-40 sm:pb-28">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
-            <h1 className="text-5xl sm:text-6xl md:text-7xl font-semibold text-[var(--foreground)] mb-8 leading-tight tracking-tight">
-              Baue echte Projekte.<br />
-              In flexiblen Gruppen.
-            </h1>
+      {/* Hero - Mercury Style */}
+      <section className="pt-24 pb-12 px-6 text-center">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-6xl sm:text-7xl md:text-[80px] font-semibold text-[var(--foreground)] mb-6 leading-[1.1] tracking-tight">
+            Baue echte Projekte in flexiblen Gruppen
+          </h1>
 
-            <p className="text-xl sm:text-2xl text-[var(--muted-foreground)] mb-12 max-w-3xl mx-auto leading-relaxed">
-              STAKE & SCALE verbindet Founder-Gruppen, die gemeinsam profitable Businesses bauen. Flexible Startkapital-Tiers, professionelle Infrastruktur, klare Prozesse.
-            </p>
+          <p className="text-xl sm:text-2xl text-[var(--muted-foreground)] mb-10 leading-relaxed">
+            Bewirb dich in 10 Minuten und werde Teil einer Founder-Community, die gemeinsam profitable Businesses baut.
+          </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
-                href="#apply"
-                className="inline-flex items-center justify-center gap-2 bg-[var(--foreground)] text-[var(--background)] px-8 py-4 rounded-lg hover:opacity-90 transition-opacity font-medium"
-              >
-                Jetzt Founder werden
-                <ArrowRight className="h-5 w-5" />
-              </a>
-              <Link
-                href="/transparency"
-                className="inline-flex items-center justify-center gap-2 border border-[var(--border)] text-[var(--foreground)] px-8 py-4 rounded-lg hover:bg-[var(--surface-muted)] transition-colors font-medium"
-              >
-                Transparenz ansehen
-              </Link>
-            </div>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center max-w-xl mx-auto">
+            <a
+              href="#apply"
+              className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 bg-[var(--accent)] text-white rounded-[var(--radius)] hover:opacity-90 transition-opacity font-medium text-base"
+            >
+              Jetzt bewerben
+            </a>
+            <Link
+              href="/transparency"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-[var(--secondary)] text-[var(--foreground)] rounded-[var(--radius)] hover:bg-[#EFEFEF] transition-colors font-medium text-base"
+            >
+              Transparenz ansehen
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
+        </div>
+      </section>
 
-          {/* Trust Indicators - Simple */}
-          <div className="grid grid-cols-3 gap-8 max-w-3xl mx-auto pt-12 border-t border-[var(--border)]">
-            <div className="text-center">
-              <div className="text-3xl font-semibold text-[var(--foreground)] mb-2">Flexibel</div>
+      {/* Social Proof - Mercury Style */}
+      <section className="py-16 px-6 text-center">
+        <div className="max-w-5xl mx-auto">
+          <p className="text-lg text-[var(--muted-foreground)] mb-12">
+            Platz für {Math.max(0, MAX_GROUP_SIZE - foundersCount)} von {MAX_GROUP_SIZE} aktiven Foundern
+          </p>
+
+          <div className="grid grid-cols-3 gap-x-8 gap-y-4 max-w-2xl mx-auto pt-8 border-t border-[var(--border)]">
+            <div>
+              <div className="text-3xl font-semibold mb-1">Flexibel</div>
               <div className="text-sm text-[var(--muted-foreground)]">Startkapital</div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-semibold text-[var(--foreground)] mb-2">Gleich</div>
+            <div>
+              <div className="text-3xl font-semibold mb-1">Gleich</div>
               <div className="text-sm text-[var(--muted-foreground)]">Anteile</div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-semibold text-[var(--foreground)] mb-2">Klar</div>
+            <div>
+              <div className="text-3xl font-semibold mb-1">Klar</div>
               <div className="text-sm text-[var(--muted-foreground)]">Struktur</div>
             </div>
           </div>
@@ -307,75 +312,62 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Erstes Projekt: SmartStore - Clean */}
-      <section className="py-24 px-6 bg-[var(--background)]">
+      {/* SmartStore - Mercury Style */}
+      <section className="py-24 px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="mb-16">
-            <div className="inline-block px-4 py-2 bg-[var(--surface-muted)] rounded-full text-sm font-medium mb-6">
-              Erstes Projekt
-            </div>
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-semibold text-[var(--foreground)] mb-6">
+          <div className="text-center mb-20">
+            <h2 className="text-5xl sm:text-6xl font-semibold text-[var(--foreground)] mb-6">
               SmartStore: The 3PL Revolution
             </h2>
-            <p className="text-xl text-[var(--muted-foreground)] max-w-3xl">
-              Wir lösen ein echtes Problem: Kleine E-Commerce Brands werden von großen Logistikern ignoriert oder überbezahlt. SmartStore ist das Boutique-Fulfillment, das mitskaliert.
+            <p className="text-xl text-[var(--muted-foreground)] max-w-3xl mx-auto">
+              Wir lösen ein echtes Problem: Kleine E-Commerce Brands werden von großen Logistikern ignoriert oder überbezahlt.
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-12 mb-16">
-            <div>
-              <h3 className="text-2xl font-semibold mb-6">Key Metrics</h3>
-              <div className="space-y-4">
-                <div className="border border-[var(--border)] rounded-lg p-6">
-                  <div className="text-3xl font-semibold mb-2">€12k+ MRR</div>
-                  <div className="text-sm text-[var(--muted-foreground)]">Target nach 6 Monaten</div>
-                </div>
-                <div className="border border-[var(--border)] rounded-lg p-6">
-                  <div className="text-3xl font-semibold mb-2">2.5x Multiple</div>
-                  <div className="text-sm text-[var(--muted-foreground)]">Estimated Exit</div>
-                </div>
-              </div>
+          {/* Key Metrics */}
+          <div className="grid sm:grid-cols-2 gap-8 max-w-3xl mx-auto mb-24">
+            <div className="bg-[var(--secondary)] rounded-2xl p-8">
+              <div className="text-4xl font-semibold mb-2">€12k+ MRR</div>
+              <div className="text-[var(--muted-foreground)]">Target nach 6 Monaten</div>
             </div>
-
-            <div>
-              <h3 className="text-2xl font-semibold mb-6">Path to Exit</h3>
-              <div className="space-y-6">
-                {[
-                  { month: '01-02', title: 'Infrastructure', desc: 'Setup Warehouse & Software-Integration' },
-                  { month: '03-04', title: 'Beta Launch', desc: 'Onboarding der ersten 5 Ankerkunden' },
-                  { month: '05-06', title: 'Scaling', desc: 'Automatisierung & Expansion auf 15+ Kunden' }
-                ].map((step, i) => (
-                  <div key={i} className="border-l-2 border-[var(--border)] pl-6">
-                    <div className="text-sm text-[var(--muted-foreground)] mb-1">Monat {step.month}</div>
-                    <div className="text-lg font-semibold mb-2">{step.title}</div>
-                    <div className="text-sm text-[var(--muted-foreground)]">{step.desc}</div>
-                  </div>
-                ))}
-              </div>
+            <div className="bg-[var(--secondary)] rounded-2xl p-8">
+              <div className="text-4xl font-semibold mb-2">2.5x Multiple</div>
+              <div className="text-[var(--muted-foreground)]">Estimated Exit</div>
             </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          {/* Path to Exit */}
+          <div className="max-w-3xl mx-auto mb-24">
+            <h3 className="text-3xl font-semibold mb-12 text-center">Path to Exit</h3>
+            <div className="space-y-8">
+              {[
+                { month: '01-02', title: 'Infrastructure', desc: 'Setup Warehouse & Software-Integration' },
+                { month: '03-04', title: 'Beta Launch', desc: 'Onboarding der ersten 5 Ankerkunden' },
+                { month: '05-06', title: 'Scaling', desc: 'Automatisierung & Expansion auf 15+ Kunden' }
+              ].map((step, i) => (
+                <div key={i} className="flex gap-6 items-start">
+                  <div className="text-[var(--muted-foreground)] font-medium min-w-[80px]">Monat {step.month}</div>
+                  <div className="flex-1">
+                    <div className="text-xl font-semibold mb-2">{step.title}</div>
+                    <div className="text-[var(--muted-foreground)]">{step.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Why It Works */}
+          <div className="grid md:grid-cols-3 gap-8">
             {[
-              { title: 'High Margin', desc: 'Über 35% Marge durch optimierte Prozesse und dezentrale Lagerhaltung' },
-              { title: 'Asset Light', desc: 'Bestehende Infrastruktur-Partner minimieren Risiko und gebundenes Kapital' },
-              { title: 'Ready to Scale', desc: 'Blaupausen-fähiges Modell für schnelle Expansion in weitere Städte' }
+              { title: 'High Margin', desc: 'Über 35% Marge durch optimierte Prozesse' },
+              { title: 'Asset Light', desc: 'Minimales Risiko durch Partner-Infrastruktur' },
+              { title: 'Ready to Scale', desc: 'Blaupausen-fähiges Modell für Expansion' }
             ].map((item, i) => (
-              <div key={i} className="border border-[var(--border)] rounded-lg p-6 hover:border-[var(--foreground)] transition-colors hover-lift">
-                <h4 className="text-lg font-semibold mb-3">{item.title}</h4>
-                <p className="text-sm text-[var(--muted-foreground)]">{item.desc}</p>
+              <div key={i} className="text-center">
+                <h4 className="text-xl font-semibold mb-3">{item.title}</h4>
+                <p className="text-[var(--muted-foreground)]">{item.desc}</p>
               </div>
             ))}
-          </div>
-
-          <div className="mt-12 text-center">
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-2 bg-[var(--foreground)] text-[var(--background)] px-8 py-4 rounded-lg hover:opacity-90 transition-opacity font-medium"
-            >
-              Business Case ansehen
-              <ArrowRight className="h-5 w-5" />
-            </Link>
           </div>
         </div>
       </section>
