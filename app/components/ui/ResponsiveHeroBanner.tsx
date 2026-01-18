@@ -163,10 +163,7 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
             <div className="z-10 relative">
                 <div className="sm:pt-28 md:pt-32 lg:pt-40 max-w-7xl mx-auto pt-28 px-6 pb-56">
                     <div className="mx-auto max-w-3xl text-center">
-                        <div className="mb-6 inline-flex items-center gap-3 rounded-full bg-white/10 px-2.5 py-2 ring-1 ring-white/15 backdrop-blur animate-fade-slide-in-1">
-                            <span className="inline-flex items-center text-[10px] font-black uppercase tracking-widest text-black bg-[var(--accent)] rounded-full py-0.5 px-2">
-                                {badgeLabel}
-                            </span>
+                        <div className="mb-6 inline-flex items-center gap-3 rounded-full bg-white/10 px-4 py-2 ring-1 ring-white/15 backdrop-blur animate-fade-slide-in-1">
                             <span className="text-xs font-bold text-white/90 uppercase tracking-[0.2em]">
                                 {badgeText}
                             </span>
