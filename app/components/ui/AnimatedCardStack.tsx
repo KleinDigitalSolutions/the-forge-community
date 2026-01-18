@@ -152,7 +152,7 @@ export default function AnimatedCardStack() {
         </AnimatePresence>
       </div>
 
-      <div className="relative z-20 -mt-10">
+      <div className="relative z-20 mt-12">
         <button
           onClick={handleAnimate}
           className="btn-shimmer flex h-12 cursor-pointer select-none items-center justify-center gap-3 overflow-hidden rounded-full bg-[var(--foreground)] px-8 text-sm font-bold uppercase tracking-widest text-[var(--background)] transition-all active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
