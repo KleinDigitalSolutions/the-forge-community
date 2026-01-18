@@ -1,152 +1,138 @@
-import { Building2, Mail, Info } from 'lucide-react';
+import { Building2, Mail, Info, ShieldCheck } from 'lucide-react';
 
 export default function ImpressumPage() {
   return (
-    <div className="space-y-8">
-      {/* Hero */}
-      <div>
-        <h1 className="text-4xl font-bold text-gray-900 mb-3">Impressum</h1>
-        <p className="text-lg text-gray-600">
-          Alle Infos gemäß § 5 TMG. Transparent und vollständig.
+    <div className="space-y-16">
+      {/* Hero Section */}
+      <section className="space-y-6">
+        <h2 className="text-4xl md:text-5xl text-white mb-4">Impressum</h2>
+        <p className="text-lg text-white/50 leading-relaxed">
+          Alle Informationen gemäß § 5 TMG. Radikale Transparenz ist unser Standard.
         </p>
-      </div>
+      </section>
 
       {/* Transparency Note */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-        <div className="flex items-start gap-3">
-          <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+      <div className="glass-card border border-[var(--accent)]/20 bg-[var(--accent)]/[0.02] rounded-3xl p-8 relative overflow-hidden group">
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/[0.05] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+        <div className="flex items-start gap-5 relative z-10">
+          <div className="p-3 rounded-xl bg-[var(--accent)]/10 border border-[var(--accent)]/20">
+            <ShieldCheck className="w-6 h-6 text-[var(--accent)]" />
+          </div>
           <div>
-            <h3 className="font-semibold text-gray-900 mb-1">Transparenz First</h3>
-            <p className="text-sm text-gray-700">
-              Das Impressum ist gesetzlich vorgeschrieben. Wir gehen weiter:
-              Alle Founder der jeweiligen Gruppe (max. 25) bekommen Einblick in alle Finanzen, Verträge und Entscheidungen.
+            <h3 className="text-xl font-instrument-serif text-white mb-2">Transparenz-Protokoll</h3>
+            <p className="text-sm text-white/50 leading-relaxed">
+              Dieses Impressum ist gesetzlich vorgeschrieben. Bei THE FORGE gehen wir jedoch weiter: 
+              Jedes Mitglied einer Squad erhält vollständigen Einblick in alle operativen Finanzen und Verträge.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Contact Info */}
-      <div className="bg-white border border-gray-200 rounded-xl p-8">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-            <Building2 className="w-5 h-5 text-gray-700" />
-          </div>
-          <h2 className="text-xl font-semibold text-gray-900">Angaben gemäß § 5 TMG</h2>
-        </div>
-
-        <div className="space-y-6">
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-2">Klein Digital Solutions (Einzelunternehmen)</h3>
-            <p className="text-gray-600">
-              Özgür Azap<br />
-              Wittbräuckerstraße 109<br />
-              44287 Dortmund<br />
-              Deutschland
-            </p>
+      {/* Main Legal Content */}
+      <div className="grid gap-12">
+        <section className="space-y-8">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center">
+              <Building2 className="w-5 h-5 text-white/40" />
+            </div>
+            <h3 className="text-2xl font-instrument-serif text-white">Angaben gemäß § 5 TMG</h3>
           </div>
 
-          <div className="border-t border-gray-200 pt-6">
-            <h3 className="font-semibold text-gray-900 mb-3">Kontakt</h3>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 text-gray-700">
-                <Mail className="w-5 h-5 text-gray-400" />
-                <a href="mailto:info@kleindigitalsolutions.de" className="hover:text-gray-900">
+          <div className="grid md:grid-cols-2 gap-12">
+            <div className="space-y-6">
+              <div>
+                <h4 className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-3">Betreiber</h4>
+                <p className="text-white/80 font-bold leading-relaxed">
+                  Klein Digital Solutions<br />
+                  <span className="text-white/40 font-medium">(Einzelunternehmen)</span>
+                </p>
+              </div>
+              <div>
+                <h4 className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-3">Verantwortlich</h4>
+                <p className="text-white/80 leading-relaxed">Özgür Azap</p>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div>
+                <h4 className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-3">Postanschrift</h4>
+                <p className="text-white/60 leading-relaxed">
+                  Wittbräuckerstraße 109<br />
+                  44287 Dortmund<br />
+                  Deutschland
+                </p>
+              </div>
+              <div>
+                <h4 className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-3">Kontakt</h4>
+                <a href="mailto:info@kleindigitalsolutions.de" className="inline-flex items-center gap-2 text-[var(--accent)] hover:underline">
+                  <Mail className="w-4 h-4" />
                   info@kleindigitalsolutions.de
                 </a>
               </div>
             </div>
           </div>
+        </section>
 
-          <div className="border-t border-gray-200 pt-6">
-            <h3 className="font-semibold text-gray-900 mb-2">Umsatzsteuer-ID</h3>
-            <p className="text-gray-600 mb-2">
-              Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG:<br />
-              <span className="font-mono">DE456989341</span>
-            </p>
-          </div>
+        <section className="pt-12 border-t border-white/5 space-y-6">
+          <h4 className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Steuer-ID</h4>
+          <p className="text-white/60 leading-relaxed">
+            Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG:<br />
+            <span className="text-white font-mono text-lg mt-2 inline-block">DE456989341</span>
+          </p>
+        </section>
 
-          <div className="border-t border-gray-200 pt-6">
-            <h3 className="font-semibold text-gray-900 mb-2">Verantwortlich für den Inhalt</h3>
-            <p className="text-gray-600">
-              Özgür Azap<br />
-              Wittbräuckerstraße 109<br />
-              44287 Dortmund<br />
-              Deutschland
+        {/* Dispute Resolution */}
+        <div className="grid md:grid-cols-2 gap-8 pt-12 border-t border-white/5">
+          <section className="space-y-4">
+            <h3 className="text-xl font-instrument-serif text-white">EU-Streitschlichtung</h3>
+            <p className="text-sm text-white/50 leading-relaxed">
+              Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit:
             </p>
-          </div>
+            <a
+              href="https://ec.europa.eu/consumers/odr"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs font-bold text-[var(--accent)] hover:underline uppercase tracking-widest"
+            >
+              Portal öffnen
+            </a>
+          </section>
+
+          <section className="space-y-4">
+            <h3 className="text-xl font-instrument-serif text-white">Verbraucherstreitbeilegung</h3>
+            <p className="text-sm text-white/50 leading-relaxed">
+              Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer
+              Verbraucherschlichtungsstelle teilzunehmen.
+            </p>
+          </section>
         </div>
       </div>
 
-      {/* EU Dispute Resolution */}
-      <div className="bg-white border border-gray-200 rounded-xl p-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">EU-Streitschlichtung</h2>
-        <p className="text-gray-600 mb-3">
-          Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit:
-        </p>
-        <a
-          href="https://ec.europa.eu/consumers/odr"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-gray-900 hover:underline font-medium"
-        >
-          https://ec.europa.eu/consumers/odr
-        </a>
-        <p className="text-gray-600 mt-3">
-          Unsere E-Mail-Adresse findest du oben im Impressum.
-        </p>
-      </div>
-
-      {/* Verbraucher­streit­beilegung */}
-      <div className="bg-white border border-gray-200 rounded-xl p-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Verbraucherstreitbeilegung</h2>
-        <p className="text-gray-600 mb-3">
-          Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer
-          Verbraucherschlichtungsstelle teilzunehmen.
-        </p>
-        <p className="text-gray-700 font-medium">
-          Aber ehrlich: Wenn du ein Problem hast, schreib uns einfach.
-          Wir lösen das direkt und transparent mit dir.
-        </p>
-      </div>
-
-      {/* FAQ */}
-      <div className="bg-white border border-gray-200 rounded-xl p-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">Häufige Fragen</h2>
-
-        <div className="space-y-6">
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-2">Warum steht hier eine Privatadresse?</h3>
-            <p className="text-gray-600">
-              THE FORGE ist (noch) kein eingetragenes Unternehmen. Sobald eine Gruppe vollständig ist
-              und die GmbH gegründet ist, wird hier die Firmenadresse stehen.
-            </p>
-          </div>
-
-          <div className="border-t border-gray-200 pt-6">
-            <h3 className="font-semibold text-gray-900 mb-2">Wer haftet für was?</h3>
-            <p className="text-gray-600">
-              Aktuell: Ich als Gründer. Nach GmbH-Gründung: Die GmbH mit dem Stammkapital.
-              Alle Founders sind über den Gesellschaftervertrag abgesichert.
-            </p>
-          </div>
-
-          <div className="border-t border-gray-200 pt-6">
-            <h3 className="font-semibold text-gray-900 mb-2">Kann ich die Adresse für offizielle Dokumente nutzen?</h3>
-            <p className="text-gray-600">
-              Ja, diese Adresse ist für alle rechtlichen Anfragen gültig. Nach Gründung wird
-              die offizielle Geschäftsadresse hier stehen.
-            </p>
-          </div>
+      {/* FAQ / Trust */}
+      <section className="pt-20 border-t border-white/5">
+        <h3 className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] mb-12 text-center">Status & Haftung</h3>
+        <div className="grid md:grid-cols-3 gap-8">
+          {[
+            {
+              q: "Privatadresse?",
+              a: "THE FORGE ist aktuell eine Initiative von Klein Digital Solutions. Nach Squad-Gründung folgen offizielle Standorte."
+            },
+            {
+              q: "Haftung?",
+              a: "Aktuell vollumfänglich durch den Betreiber. Nach GmbH-Gründung haftet die Gesellschaft mit ihrem Stammkapital."
+            },
+            {
+              q: "Gültigkeit?",
+              a: "Diese Adresse ist für alle offiziellen Zustellungen gültig. Das System ist vollständig abgesichert."
+            }
+          ].map((item, i) => (
+            <div key={i} className="p-6 rounded-2xl bg-white/[0.02] border border-white/5">
+              <h4 className="text-white font-bold mb-3 text-sm uppercase tracking-wide">{item.q}</h4>
+              <p className="text-xs text-white/40 leading-relaxed">{item.a}</p>
+            </div>
+          ))}
         </div>
-      </div>
-
-      {/* Trust Message */}
-      <div className="text-center bg-gray-50 border border-gray-200 rounded-xl p-8">
-        <p className="text-gray-700">
-          <span className="font-semibold text-gray-900">Keine versteckten Infos.</span><br />
-          Wenn du irgendwas wissen willst, frag einfach.
-        </p>
-      </div>
+      </section>
     </div>
   );
 }
