@@ -2,39 +2,38 @@
 
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import { SignOutButton } from './SignOutButton';
 
 export default function Header() {
   const { status } = useSession();
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md border-b border-zinc-200 z-50">
+    <header className="fixed top-0 left-0 right-0 bg-[var(--background)]/80 backdrop-blur-md border-b border-[var(--border)] z-50 transition-all duration-300">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 bg-zinc-900 rounded-lg flex items-center justify-center text-white font-black shadow-lg group-hover:scale-105 transition-transform">
+        <Link href="/" className="flex items-center gap-3 group">
+          <div className="w-10 h-10 bg-[var(--surface)] border border-[var(--border)] rounded-xl flex items-center justify-center text-[var(--accent)] font-black shadow-lg group-hover:border-[var(--accent)] group-hover:shadow-[0_0_15px_rgba(212,175,55,0.3)] transition-all duration-300">
             F
           </div>
-          <span className="font-bold text-lg tracking-tight text-zinc-900">THE FORGE</span>
+          <span className="font-display font-bold text-xl tracking-tight text-[var(--foreground)] group-hover:text-[var(--accent)] transition-colors">THE FORGE</span>
         </Link>
 
         {/* Navigation */}
-        <nav className="flex items-center gap-6">
+        <nav className="flex items-center gap-8">
           {status === 'authenticated' ? (
             <Link
               href="/dashboard"
-              className="text-sm font-bold text-zinc-900 hover:text-zinc-600 transition-colors"
+              className="text-sm font-bold text-[var(--foreground)] hover:text-[var(--accent)] transition-colors tracking-wide uppercase"
             >
               Zum Dashboard
             </Link>
           ) : (
-            <div className="flex items-center gap-4">
-              <Link href="/login" className="text-sm font-bold text-zinc-600 hover:text-zinc-900 transition-colors">
+            <div className="flex items-center gap-6">
+              <Link href="/login" className="text-xs font-bold uppercase tracking-widest text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors">
                 Login
               </Link>
               <a
                 href="#apply"
-                className="bg-zinc-900 text-white px-5 py-2.5 rounded-full text-xs font-bold hover:bg-zinc-800 transition-all shadow-md"
+                className="ember-glow bg-[var(--accent)] text-[var(--accent-foreground)] px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest hover:brightness-110 transition-all shadow-md"
               >
                 Apply Now
               </a>
