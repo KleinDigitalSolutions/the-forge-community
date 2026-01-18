@@ -1,0 +1,107 @@
+'use server';
+
+import { auth } from '@/auth';
+import { prisma } from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
+
+export async function getRoadmapItems() {
+  const session = await auth();
+  if (!session?.user?.email) return [];
+
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    select: { id: true, squadId: true, role: true }
+  });
+
+  if (!user) return [];
+
+  const items = await prisma.roadmapItem.findMany({
+    where: user.role === 'ADMIN' ? {} : { squadId: user.squadId || 'none' },
+    include: {
+      votes: true,
+      _count: {
+        select: { votes: true }
+      }
+    },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  return items.map(item => ({
+    id: item.id,
+    title: item.title,
+    description: item.description || '',
+    status: item.status,
+    votes: item._count.votes,
+    hasVoted: item.votes.some(v => v.userId === user.id)
+  }));
+}
+
+export async function toggleVote(roadmapItemId: string) {
+  const session = await auth();
+  
+  if (!session?.user?.email) {
+    throw new Error('Unauthorized');
+  }
+
+  // 1. Get User
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    include: { squad: true }
+  });
+
+  if (!user) throw new Error('User not found');
+
+  // 2. Security Check (Squad Access)
+  // We need to know which squad the item belongs to.
+  const item = await prisma.roadmapItem.findUnique({
+    where: { id: roadmapItemId },
+    select: { squadId: true }
+  });
+
+  if (!item) throw new Error('Item not found');
+
+  // Verify access (User must be in the squad of the item)
+  if (user.role !== 'ADMIN' && user.squadId !== item.squadId) {
+     throw new Error('Access denied');
+  }
+
+  // 3. Check existing vote
+  const existingVote = await prisma.vote.findUnique({
+    where: {
+      userId_roadmapItemId: {
+        userId: user.id,
+        roadmapItemId: roadmapItemId,
+      },
+    },
+  });
+
+  if (existingVote) {
+    // 4a. Remove Vote
+    await prisma.vote.delete({
+      where: { id: existingVote.id },
+    });
+    console.log(`Vote removed by ${user.email}`);
+  } else {
+    // 4b. Add Vote & Karma
+    await prisma.$transaction([
+      prisma.vote.create({
+        data: {
+          userId: user.id,
+          roadmapItemId: roadmapItemId,
+        },
+      }),
+      prisma.karma.create({
+        data: {
+          points: 10,
+          reason: 'Voted on Roadmap Item',
+          userId: user.id,
+          squadId: item.squadId,
+        },
+      }),
+    ]);
+    console.log(`Vote added by ${user.email}`);
+  }
+
+  // 5. Revalidate
+  revalidatePath('/dashboard'); // Assuming the dashboard shows the votes
+}

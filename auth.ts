@@ -2,12 +2,12 @@ import NextAuth from 'next-auth';
 import { authConfig } from './auth.config';
 import Resend from 'next-auth/providers/resend';
 import { getFounderByEmail } from './lib/notion';
-import { sql } from '@vercel/postgres';
-import PostgresAdapter from '@auth/pg-adapter';
+import { PrismaAdapter } from '@auth/prisma-adapter';
+import { prisma } from '@/lib/prisma';
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
   ...authConfig,
-  adapter: PostgresAdapter(sql),
+  adapter: PrismaAdapter(prisma),
   debug: true, // Hilft uns Fehler in Vercel Logs zu sehen
   providers: [
     Resend({

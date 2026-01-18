@@ -5,6 +5,7 @@ import AuthGuard from '@/app/components/AuthGuard';
 import PageShell from '@/app/components/PageShell';
 import { ArrowUpRight, Wallet, Users, MessageSquare, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
+import { RoadmapWidget } from '@/app/components/RoadmapWidget';
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
@@ -56,32 +57,57 @@ export default function Dashboard() {
           />
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="bg-white p-8 rounded-3xl border border-zinc-200 shadow-sm hover:shadow-md transition-all">
-            <div className="h-12 w-12 bg-zinc-900 rounded-2xl flex items-center justify-center text-white mb-6">
-              <Users className="w-6 h-6" />
-            </div>
-            <h3 className="text-xl font-bold text-zinc-900 mb-2">Squad Market</h3>
-            <p className="text-zinc-500 text-sm mb-6 leading-relaxed">
-              Finde Mitgründer oder investiere in bestehende Teams. Der Markt ist geöffnet.
-            </p>
-            <Link href="/squads" className="inline-flex items-center gap-2 text-sm font-black text-zinc-900 hover:text-zinc-600 transition-colors">
-              Zum Markt <ArrowUpRight className="w-4 h-4" />
-            </Link>
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Main Content Area */}
+          <div className="lg:col-span-2 space-y-8">
+             <RoadmapWidget />
+             
+             {/* Quick Actions */}
+             <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-white p-6 rounded-3xl border border-zinc-200 shadow-sm hover:shadow-md transition-all">
+                  <div className="h-10 w-10 bg-zinc-900 rounded-xl flex items-center justify-center text-white mb-4">
+                    <Users className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-lg font-bold text-zinc-900 mb-1">Squad Market</h3>
+                  <p className="text-zinc-500 text-xs mb-4 leading-relaxed">
+                    Finde Mitgründer oder investiere in bestehende Teams.
+                  </p>
+                  <Link href="/squads" className="inline-flex items-center gap-2 text-xs font-black text-zinc-900 hover:text-zinc-600 transition-colors uppercase tracking-wide">
+                    Zum Markt <ArrowUpRight className="w-3 h-3" />
+                  </Link>
+                </div>
+
+                <div className="bg-white p-6 rounded-3xl border border-zinc-200 shadow-sm hover:shadow-md transition-all">
+                  <div className="h-10 w-10 bg-zinc-900 rounded-xl flex items-center justify-center text-white mb-4">
+                    <MessageSquare className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-lg font-bold text-zinc-900 mb-1">Community Forum</h3>
+                  <p className="text-zinc-500 text-xs mb-4 leading-relaxed">
+                    Diskutiere Strategien, hole Feedback ein.
+                  </p>
+                  <Link href="/forum" className="inline-flex items-center gap-2 text-xs font-black text-zinc-900 hover:text-zinc-600 transition-colors uppercase tracking-wide">
+                    Diskussion starten <ArrowUpRight className="w-3 h-3" />
+                  </Link>
+                </div>
+             </div>
           </div>
 
-          <div className="bg-white p-8 rounded-3xl border border-zinc-200 shadow-sm hover:shadow-md transition-all">
-            <div className="h-12 w-12 bg-zinc-900 rounded-2xl flex items-center justify-center text-white mb-6">
-              <MessageSquare className="w-6 h-6" />
-            </div>
-            <h3 className="text-xl font-bold text-zinc-900 mb-2">Community Forum</h3>
-            <p className="text-zinc-500 text-sm mb-6 leading-relaxed">
-              Diskutiere Strategien, hole Feedback ein oder teile deine Wins.
-            </p>
-            <Link href="/forum" className="inline-flex items-center gap-2 text-sm font-black text-zinc-900 hover:text-zinc-600 transition-colors">
-              Diskussion starten <ArrowUpRight className="w-4 h-4" />
-            </Link>
+          {/* Sidebar Area */}
+          <div className="space-y-6">
+             {/* Activity Feed Placeholder */}
+             <div className="bg-zinc-50 p-6 rounded-3xl border border-zinc-200">
+                <h3 className="text-sm font-bold text-zinc-900 mb-4 uppercase tracking-widest">Recent Activity</h3>
+                <div className="space-y-4">
+                   {[1,2,3].map(i => (
+                      <div key={i} className="flex gap-3 items-start">
+                         <div className="w-2 h-2 rounded-full bg-zinc-300 mt-1.5 shrink-0" />
+                         <p className="text-xs text-zinc-500">
+                           <span className="font-bold text-zinc-900">Max Mustermann</span> voted on <span className="text-zinc-900">Brand V2</span>
+                         </p>
+                      </div>
+                   ))}
+                </div>
+             </div>
           </div>
         </div>
       </PageShell>

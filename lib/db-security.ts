@@ -1,5 +1,6 @@
 import { sql } from '@vercel/postgres';
 import { auth } from '@/auth';
+import { prisma } from '@/lib/prisma';
 
 /**
  * Database Security Helpers
@@ -86,4 +87,36 @@ export async function secureQuery<T>(
 export async function isAdmin(): Promise<boolean> {
   const session = await auth();
   return session?.user?.email === process.env.ADMIN_EMAIL;
+}
+
+/**
+ * Verifies if the current user has access to the specified squad.
+ * Throws an error if access is denied.
+ * @param squadId - The ID of the squad to check access for
+ */
+export async function verifySquadAccess(squadId: string) {
+  const session = await auth();
+  
+  if (!session?.user?.email) {
+    throw new Error('Unauthorized');
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    select: { squadId: true, role: true }
+  });
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  if (user.role === 'ADMIN') {
+    return true; // Admins have access to all squads
+  }
+
+  if (user.squadId !== squadId) {
+    throw new Error('Access denied: You are not a member of this squad');
+  }
+
+  return true;
 }
