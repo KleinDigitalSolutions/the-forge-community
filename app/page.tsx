@@ -173,8 +173,8 @@ export default function Home() {
       
       {/* Integrated Hero & Header */}
       <ResponsiveHeroBanner 
-        badgeLabel="SYSTEM-UPDATE"
-        badgeText="Kollektives Unternehmertum v1.0"
+        badgeLabel="STATUS"
+        badgeText="BATCH #001 — REKRUTIERUNG LÄUFT"
         title="25 Founder. 1 Brand."
         titleLine2="Volle Transparenz."
         description="STAKE & SCALE ersetzt den riskanten Solo-Weg durch ein hocheffizientes Kollektiv. Wir bündeln Kapital und Skills, während die Execution im Forge-Hub zentralisiert wird."
@@ -512,11 +512,11 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="py-32 border-t border-white/5 relative overflow-hidden bg-[#08090A]">
+      <footer className="py-16 border-t border-white/5 relative overflow-hidden bg-[#08090A]">
          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-[var(--accent)]/20 to-transparent" />
          
          <div className="max-w-7xl mx-auto px-6 relative z-10">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 mb-24">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 mb-12">
                {/* Brand Column */}
                <div className="space-y-8">
                   <Link href="/" className="flex items-center gap-3 group">
@@ -573,7 +573,7 @@ export default function Home() {
                </div>
             </div>
 
-            <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
                <div className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/20">
                   © 2026 THE FORGE SYSTEM • ALL RIGHTS RESERVED
                </div>
