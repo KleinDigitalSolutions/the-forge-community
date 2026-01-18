@@ -1,0 +1,183 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import AuthGuard from '@/app/components/AuthGuard';
+import PageShell from '@/app/components/PageShell';
+import { getUserVentures } from '@/app/actions/ventures';
+import { Plus, Rocket, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
+
+export default function VenturesPage() {
+  const [ventures, setVentures] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadVentures();
+  }, []);
+
+  const loadVentures = async () => {
+    try {
+      const data = await getUserVentures();
+      setVentures(data);
+    } catch (error) {
+      console.error('Failed to load ventures:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'LAUNCHED':
+        return <Rocket className="w-5 h-5 text-green-500" />;
+      case 'IN_PROGRESS':
+        return <Clock className="w-5 h-5 text-[#D4AF37]" />;
+      case 'PAUSED':
+        return <AlertCircle className="w-5 h-5 text-orange-500" />;
+      default:
+        return <CheckCircle2 className="w-5 h-5 text-white/30" />;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'LAUNCHED':
+        return 'text-green-500 bg-green-500/10 border-green-500/20';
+      case 'IN_PROGRESS':
+        return 'text-[#D4AF37] bg-[#D4AF37]/10 border-[#D4AF37]/20';
+      case 'PAUSED':
+        return 'text-orange-500 bg-orange-500/10 border-orange-500/20';
+      default:
+        return 'text-white/30 bg-white/5 border-white/10';
+    }
+  };
+
+  return (
+    <AuthGuard>
+      <PageShell>
+        <header className="mb-12 flex items-center justify-between">
+          <div>
+            <h1 className="text-5xl font-instrument-serif text-white tracking-tight mb-4">
+              Ventures
+            </h1>
+            <p className="text-white/40 uppercase tracking-[0.2em] text-xs font-bold">
+              Deine Brand-Building Projekte
+            </p>
+          </div>
+          <Link
+            href="/ventures/new"
+            className="inline-flex items-center gap-3 bg-[#D4AF37] text-black px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:brightness-110 transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            Neues Venture
+          </Link>
+        </header>
+
+        {isLoading ? (
+          <div className="text-center py-20">
+            <div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-white/30 text-sm">Lade Ventures...</p>
+          </div>
+        ) : ventures.length === 0 ? (
+          <div className="glass-card rounded-3xl border border-white/10 p-16 text-center">
+            <Rocket className="w-16 h-16 text-white/20 mx-auto mb-6" />
+            <h2 className="text-2xl font-instrument-serif text-white mb-3">
+              Noch keine Ventures
+            </h2>
+            <p className="text-white/40 mb-8 max-w-md mx-auto">
+              Starte dein erstes Venture und nutze den strukturierten Workflow von Idee bis Launch.
+            </p>
+            <Link
+              href="/ventures/new"
+              className="inline-flex items-center gap-3 bg-[#D4AF37] text-black px-8 py-4 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:brightness-110 transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              Erstes Venture erstellen
+            </Link>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {ventures.map((venture) => (
+              <Link
+                key={venture.id}
+                href={`/ventures/${venture.id}`}
+                className="glass-card rounded-3xl border border-white/10 p-8 hover:border-[#D4AF37]/40 transition-all group"
+              >
+                {/* Status Badge */}
+                <div className="flex items-center justify-between mb-6">
+                  <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest border ${getStatusColor(venture.status)}`}>
+                    {getStatusIcon(venture.status)}
+                    {venture.status}
+                  </span>
+                  <span className="text-[9px] text-white/30 font-bold uppercase tracking-widest">
+                    {venture.type}
+                  </span>
+                </div>
+
+                {/* Venture Info */}
+                <h3 className="text-2xl font-instrument-serif text-white mb-2 group-hover:text-[#D4AF37] transition-colors">
+                  {venture.name}
+                </h3>
+                {venture.description && (
+                  <p className="text-sm text-white/50 mb-6 line-clamp-2">
+                    {venture.description}
+                  </p>
+                )}
+
+                {/* Progress */}
+                <div className="mb-6">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-[9px] text-white/30 font-bold uppercase tracking-widest">
+                      Fortschritt
+                    </span>
+                    <span className="text-xs text-[#D4AF37] font-bold">
+                      {venture.currentStep}/6
+                    </span>
+                  </div>
+                  <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-[#D4AF37] rounded-full transition-all duration-500"
+                      style={{ width: `${(venture.currentStep / 6) * 100}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Tasks Preview */}
+                {venture.tasks && venture.tasks.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-[9px] text-white/30 font-bold uppercase tracking-widest mb-3">
+                      Nächste Tasks
+                    </p>
+                    {venture.tasks.slice(0, 2).map((task: any) => (
+                      <div
+                        key={task.id}
+                        className="flex items-center gap-2 text-xs text-white/50"
+                      >
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]" />
+                        <span className="truncate">{task.title}</span>
+                      </div>
+                    ))}
+                    {venture.tasks.length > 2 && (
+                      <p className="text-[9px] text-white/20 font-bold">
+                        +{venture.tasks.length - 2} weitere
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Completed Tasks Count */}
+                {venture._count && (
+                  <div className="mt-6 pt-6 border-t border-white/5">
+                    <p className="text-xs text-white/40">
+                      <span className="text-[#D4AF37] font-bold">{venture._count.tasks}</span> Tasks erledigt
+                    </p>
+                  </div>
+                )}
+              </Link>
+            ))}
+          </div>
+        )}
+      </PageShell>
+    </AuthGuard>
+  );
+}

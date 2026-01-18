@@ -2,22 +2,24 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  MessageSquare, 
-  Users, 
-  CheckSquare, 
-  PieChart, 
-  FileText, 
-  Settings, 
+import {
+  LayoutDashboard,
+  MessageSquare,
+  Users,
+  CheckSquare,
+  PieChart,
+  FileText,
+  Settings,
   LogOut,
   Zap,
-  Target
+  Target,
+  Rocket
 } from 'lucide-react';
 import { SignOutButton } from './SignOutButton';
 
 const navigation = [
   { name: 'Cockpit', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Ventures', href: '/ventures', icon: Rocket },
   { name: 'Forum', href: '/forum', icon: MessageSquare },
   { name: 'Squad Markt', href: '/squads', icon: Users },
   { name: 'Mission Control', href: '/tasks', icon: CheckSquare },

@@ -10,6 +10,31 @@ enum Role {
   USER
   ADMIN
   FOUNDER
+  MENTOR
+}
+
+enum VentureType {
+  ECOMMERCE
+  SAAS
+  SERVICE
+  MARKETPLACE
+  AGENCY
+  OTHER
+}
+
+enum VentureStatus {
+  IDEATION
+  IN_PROGRESS
+  LAUNCHED
+  PAUSED
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
 }
 
 model User {
@@ -27,11 +52,14 @@ model User {
   
   votes         Vote[]
   karma         Karma[]
-  
+  ventures      Venture[]
+  ventureTasks  VentureTask[]
+  mentoringSessions MentoringSession[]
+
   // NextAuth
   accounts      Account[]
   sessions      Session[]
-  
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -41,10 +69,11 @@ model Squad {
   name        String
   description String?
   slug        String   @unique
-  
+
   users       User[]
   roadmaps    RoadmapItem[]
-  
+  ventures    Venture[]
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -131,4 +160,205 @@ model VerificationToken {
   expires    DateTime
  
   @@id([identifier, token])
+}
+
+// ============================================
+// VENTURE CREATION SYSTEM
+// ============================================
+
+model Venture {
+  id              String        @id @default(cuid())
+  name            String
+  description     String?
+  type            VentureType   @default(OTHER)
+  status          VentureStatus @default(IDEATION)
+
+  // Wizard Progress
+  currentStep     Int           @default(1)
+  completedSteps  Int[]         @default([])
+
+  // Business Data
+  productType     String?
+  targetMarket    String?
+  brandColors     String?       // JSON: ["#hex1", "#hex2"]
+  logoUrl         String?
+  pricing         Json?         // Flexible pricing structure
+  marketingBudget Float?
+  totalBudget     Float?
+  estimatedRevenue Float?
+
+  // Deadlines & Tracking
+  launchDate      DateTime?
+  lastActivityAt  DateTime      @default(now())
+
+  // Relations
+  ownerId         String
+  owner           User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  squadId         String?
+  squad           Squad?        @relation(fields: [squadId], references: [id])
+
+  tasks           VentureTask[]
+  steps           VentureStep[]
+  costs           CostItem[]
+  resources       VentureResource[]
+  mentoringSessions MentoringSession[]
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([ownerId])
+  @@index([squadId])
+  @@index([status])
+}
+
+model VentureStep {
+  id              String   @id @default(cuid())
+  ventureId       String
+  venture         Venture  @relation(fields: [ventureId], references: [id], onDelete: Cascade)
+
+  stepNumber      Int
+  stepName        String
+  status          String   @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED
+  data            Json?    // Step-specific data
+
+  completedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([ventureId, stepNumber])
+  @@index([ventureId])
+}
+
+model VentureTask {
+  id              String       @id @default(cuid())
+  title           String
+  description     String?
+  status          String       @default("TODO") // TODO, IN_PROGRESS, DONE, BLOCKED
+  priority        TaskPriority @default(MEDIUM)
+
+  // Deadlines
+  dueDate         DateTime?
+  completedAt     DateTime?
+  overdueNotifiedAt DateTime?  // Track when mentor was notified
+
+  // Relations
+  ventureId       String
+  venture         Venture      @relation(fields: [ventureId], references: [id], onDelete: Cascade)
+
+  assignedToId    String?
+  assignedTo      User?        @relation(fields: [assignedToId], references: [id])
+
+  // Template Data
+  isFromTemplate  Boolean      @default(false)
+  templateOrder   Int?
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([ventureId])
+  @@index([assignedToId])
+  @@index([dueDate])
+  @@index([status])
+}
+
+model VentureTemplate {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  type            VentureType
+
+  // Template Data
+  defaultSteps    Json     // Array of step configs
+  defaultTasks    Json     // Array of task templates with deadlines
+  estimatedDuration Int?   // Days to complete
+
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([type])
+}
+
+model CostItem {
+  id              String   @id @default(cuid())
+  category        String   // MARKETING, DEVELOPMENT, OPERATIONS, etc.
+  name            String
+  amount          Float
+  isRecurring     Boolean  @default(false)
+  frequency       String?  // MONTHLY, YEARLY, ONCE
+
+  ventureId       String
+  venture         Venture  @relation(fields: [ventureId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([ventureId])
+  @@index([category])
+}
+
+model Resource {
+  id              String   @id @default(cuid())
+  title           String
+  description     String?
+  category        String   // B2B_DIRECTORY, TEMPLATE, TOOL, GUIDE
+  type            String?  // SUPPLIER, MANUFACTURER, SERVICE
+
+  // Resource Data
+  url             String?
+  contactEmail    String?
+  contactInfo     Json?
+  tags            String[] @default([])
+
+  // B2B Specific
+  minOrderQty     Int?
+  priceRange      String?
+  location        String?
+
+  isPublic        Boolean  @default(true)
+  ventures        VentureResource[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([category])
+  @@index([type])
+}
+
+model VentureResource {
+  id              String   @id @default(cuid())
+  ventureId       String
+  venture         Venture  @relation(fields: [ventureId], references: [id], onDelete: Cascade)
+
+  resourceId      String
+  resource        Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  notes           String?
+  createdAt       DateTime @default(now())
+
+  @@unique([ventureId, resourceId])
+  @@index([ventureId])
+  @@index([resourceId])
+}
+
+model MentoringSession {
+  id              String   @id @default(cuid())
+  ventureId       String
+  venture         Venture  @relation(fields: [ventureId], references: [id], onDelete: Cascade)
+
+  mentorId        String
+  mentor          User     @relation(fields: [mentorId], references: [id])
+
+  reason          String   // DEADLINE_OVERDUE, REQUESTED, SCHEDULED
+  notes           String?
+  outcome         String?
+
+  scheduledAt     DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([ventureId])
+  @@index([mentorId])
 }
