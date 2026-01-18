@@ -175,13 +175,13 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                         <p className="animate-fade-slide-in-1 text-xs font-bold uppercase tracking-[0.3em] text-white/40 text-center">
                             Unterstützt durch führende Technologien
                         </p>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 animate-fade-slide-in-2 text-white/30 mt-8 items-center justify-items-center gap-12 opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 animate-fade-slide-in-2 text-white/30 mt-8 items-center justify-items-center gap-16 opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
                             {partners.map((partner, index) => (
                                 <Link
                                     key={index}
                                     href={partner.href}
                                     target="_blank"
-                                    className="inline-flex items-center justify-center bg-center w-[100px] h-[32px] bg-contain bg-no-repeat hover:opacity-100 transition-opacity invert brightness-200"
+                                    className="inline-flex items-center justify-center bg-center w-[130px] h-[40px] bg-contain bg-no-repeat hover:opacity-100 transition-opacity invert brightness-200"
                                     style={{ backgroundImage: `url(${partner.logoUrl})` }}
                                 />
                             ))}

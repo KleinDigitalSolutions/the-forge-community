@@ -221,7 +221,6 @@ export default function Home() {
 
       {/* Philosophy / Features */}
       <section className="py-40 px-6 relative">
-        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-32">
             <h2 className="text-5xl md:text-7xl font-instrument-serif text-white mb-8 animate-fade-slide-in-1">
