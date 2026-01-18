@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import PageShell from '@/app/components/PageShell';
 import AuthGuard from '@/app/components/AuthGuard';
-import { Users, Target, Calendar, ArrowUpRight, TrendingUp, Lock, Unlock } from 'lucide-react';
+import { Users, Target, Calendar, ArrowUpRight, TrendingUp, Lock, Unlock, Shield, Rocket } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface Squad {
@@ -17,10 +17,10 @@ interface Squad {
 }
 
 const statusConfig: Record<string, { color: string, label: string, icon: any }> = {
-  'Recruiting': { color: 'bg-emerald-500', label: 'Open for Investment', icon: Unlock },
-  'Building': { color: 'bg-blue-500', label: 'In Development', icon: Users },
-  'Live': { color: 'bg-indigo-500', label: 'Market Live', icon: TrendingUp },
-  'Exit': { color: 'bg-purple-500', label: 'Exit Phase', icon: ArrowUpRight },
+  'Recruiting': { color: 'text-emerald-500 border-emerald-500/20 bg-emerald-500/10', label: 'Investition offen', icon: Unlock },
+  'Building': { color: 'text-blue-500 border-blue-500/20 bg-blue-500/10', label: 'In Entwicklung', icon: Users },
+  'Live': { color: 'text-indigo-500 border-indigo-500/20 bg-indigo-500/10', label: 'Markt Live', icon: TrendingUp },
+  'Exit': { color: 'text-purple-500 border-purple-500/20 bg-purple-500/10', label: 'Exit Phase', icon: ArrowUpRight },
 };
 
 export default function SquadsPage() {
@@ -47,32 +47,36 @@ export default function SquadsPage() {
   return (
     <AuthGuard>
       <PageShell>
-        <header className="mb-12 flex flex-col md:flex-row justify-between items-end gap-6">
-          <div>
-            <h1 className="text-4xl font-black text-zinc-900 tracking-tight mb-2">Squad Market</h1>
-            <p className="text-zinc-500 font-medium">Investiere Zeit & Kapital in High-Performance Teams.</p>
+        <header className="mb-16 flex flex-col md:flex-row justify-between items-end gap-8 relative">
+          <div className="relative z-10">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 text-[10px] font-bold text-[var(--accent)] uppercase tracking-[0.3em] mb-6">
+              <Rocket className="w-3 h-3" />
+              Verfügbare Operationen
+            </div>
+            <h1 className="text-5xl md:text-6xl font-instrument-serif text-white tracking-tight mb-4">Squad Markt</h1>
+            <p className="text-white/40 uppercase tracking-[0.2em] text-xs font-bold">Investiere Zeit & Kapital in High-Performance Teams.</p>
           </div>
-          <div className="bg-white px-6 py-3 rounded-2xl shadow-sm border border-zinc-200 flex gap-8">
+          <div className="glass-card px-8 py-6 rounded-3xl border border-white/10 flex gap-12 relative z-10">
             <div>
-              <div className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Total Value</div>
-              <div className="text-2xl font-black text-zinc-900">€ 75.000</div>
+              <div className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em] mb-2">Gesamtwert</div>
+              <div className="text-3xl font-instrument-serif text-white tracking-tight">€ 75.000</div>
             </div>
             <div>
-              <div className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Active Squads</div>
-              <div className="text-2xl font-black text-zinc-900">{squads.length}</div>
+              <div className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em] mb-2">Aktive Squads</div>
+              <div className="text-3xl font-instrument-serif text-white tracking-tight">{squads.length}</div>
             </div>
           </div>
         </header>
 
         {loading ? (
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-3 gap-8">
               {[1,2,3].map(i => (
-                <div key={i} className="h-64 bg-zinc-100 rounded-3xl animate-pulse" />
+                <div key={i} className="h-[450px] bg-white/5 rounded-[2.5rem] border border-white/5 animate-pulse" />
               ))}
             </div>
         ) : squads.length === 0 ? (
-          <div className="bg-white rounded-3xl border border-dashed border-zinc-300 p-20 text-center">
-              <p className="text-zinc-400 font-bold text-lg">Der Markt ist gerade ruhig.</p>
+          <div className="glass-card rounded-[2.5rem] border border-dashed border-white/10 p-24 text-center">
+              <p className="text-white/20 font-black uppercase tracking-[0.4em] text-sm">Der Markt ist gerade ruhig.</p>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -86,63 +90,67 @@ export default function SquadsPage() {
                   key={squad.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.1 }}
-                  className="group relative bg-white rounded-[2rem] border border-zinc-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden"
+                  transition={{ delay: idx * 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                  className="group relative glass-card rounded-[2.5rem] border border-white/10 hover:border-[var(--accent)]/30 transition-all duration-700 overflow-hidden flex flex-col shadow-2xl"
                 >
-                  <div className="absolute top-6 right-6">
-                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider text-white ${config.color}`}>
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
+                  
+                  <div className="p-10 pb-0 relative z-10 flex justify-between items-start">
+                    <div className="w-16 h-16 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-[var(--accent)] text-3xl font-instrument-serif shadow-2xl group-hover:border-[var(--accent)]/50 transition-all duration-700">
+                      {squad.name.charAt(0)}
+                    </div>
+                    <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${config.color}`}>
                       <Icon className="w-3 h-3" />
                       {config.label}
                     </span>
                   </div>
 
-                  <div className="p-8 pb-0">
-                    <div className="w-14 h-14 bg-zinc-900 rounded-2xl flex items-center justify-center text-white text-2xl font-black mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                      {squad.name.charAt(0)}
-                    </div>
-                    <h3 className="text-2xl font-black text-zinc-900 mb-1">{squad.name}</h3>
-                    <p className="text-sm text-zinc-500 font-medium">E-Commerce Brand</p>
-                  </div>
+                  <div className="p-10 pb-6 relative z-10 flex-1">
+                    <h3 className="text-3xl font-instrument-serif text-white mb-2 group-hover:text-[var(--accent)] transition-colors duration-700">{squad.name}</h3>
+                    <p className="text-[10px] text-white/30 font-bold uppercase tracking-[0.2em] mb-10">E-Commerce Brand</p>
 
-                  <div className="p-8 space-y-6">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-zinc-50 p-4 rounded-2xl border border-zinc-100">
-                        <div className="text-[10px] font-bold text-zinc-400 uppercase mb-1">Target Cap</div>
-                        <div className="text-lg font-black text-zinc-900">€ {squad.targetCapital}</div>
+                    <div className="grid grid-cols-2 gap-4 mb-10">
+                      <div className="bg-white/[0.03] p-5 rounded-2xl border border-white/5">
+                        <div className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">Ziel-Kapital</div>
+                        <div className="text-xl font-instrument-serif text-white">€ {squad.targetCapital}</div>
                       </div>
-                      <div className="bg-zinc-50 p-4 rounded-2xl border border-zinc-100">
-                        <div className="text-[10px] font-bold text-zinc-400 uppercase mb-1">Launch</div>
-                        <div className="text-lg font-black text-zinc-900">
+                      <div className="bg-white/[0.03] p-5 rounded-2xl border border-white/5">
+                        <div className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">Launch</div>
+                        <div className="text-xl font-instrument-serif text-white">
                           {squad.startDate ? new Date(squad.startDate).toLocaleDateString('de-DE', { month: 'short', year: '2-digit' }) : 'TBA'}
                         </div>
                       </div>
                     </div>
 
-                    <div>
-                      <div className="flex justify-between text-xs font-bold text-zinc-500 mb-2">
+                    <div className="space-y-4">
+                      <div className="flex justify-between text-[9px] font-black uppercase tracking-[0.2em] text-white/30">
                         <span>Founders Board</span>
-                        <span>{(squad.currentCount || 2)} / {squad.maxFounders} Seats</span>
+                        <span className="text-[var(--accent)]">{(squad.currentCount || 2)} / {squad.maxFounders} Plätze</span>
                       </div>
-                      <div className="h-3 w-full bg-zinc-100 rounded-full overflow-hidden">
+                      <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
                         <motion.div 
                           initial={{ width: 0 }}
                           animate={{ width: `${fillPercent}%` }}
-                          className={`h-full ${config.color}`}
+                          transition={{ duration: 1.5, ease: "easeOut" }}
+                          className={`h-full bg-[var(--accent)] shadow-[0_0_10px_var(--accent)]`}
                         />
                       </div>
-                      <div className="flex -space-x-2 mt-3">
+                      <div className="flex -space-x-3 mt-6">
                         {[...Array(squad.maxFounders)].map((_, i) => (
-                          <div key={i} className={`w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold ${
-                            i < (squad.currentCount || 2) ? 'bg-zinc-800 text-white' : 'bg-zinc-100 text-zinc-300'
+                          <div key={i} className={`w-9 h-9 rounded-full border-2 border-[#08090A] flex items-center justify-center text-[10px] font-black shadow-xl transition-transform hover:scale-110 relative ${
+                            i < (squad.currentCount || 2) ? 'bg-[var(--accent)] text-black' : 'bg-white/5 text-white/10'
                           }`}>
                             {i < (squad.currentCount || 2) ? 'F' : '+'}
                           </div>
                         ))}
                       </div>
                     </div>
+                  </div>
 
-                    <button className="w-full bg-black text-white py-4 rounded-xl font-black text-sm hover:bg-zinc-800 transition-all shadow-lg active:scale-95 flex justify-center items-center gap-2">
-                      {squad.status === 'Recruiting' ? 'Apply for Seat' : 'View Details'} <ArrowUpRight className="w-4 h-4" />
+                  <div className="p-10 pt-0 relative z-10 mt-auto">
+                    <button className="w-full bg-white text-black py-4 rounded-xl font-black text-[10px] uppercase tracking-[0.3em] hover:bg-[var(--accent)] transition-all duration-500 shadow-2xl active:scale-[0.98] flex justify-center items-center gap-3 group/btn">
+                      {squad.status === 'Recruiting' ? 'Platz anfordern' : 'Details ansehen'} 
+                      <ArrowUpRight className="w-4 h-4 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
                     </button>
                   </div>
                 </motion.div>
