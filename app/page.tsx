@@ -192,24 +192,25 @@ export default function Home() {
         ctaButtonHref="#apply"
       />
 
-      {/* Metrics Grid (Bento Style) */}
-      <section className="py-20 px-4 md:px-6 border-y border-[var(--border)] bg-[var(--surface)]/30 backdrop-blur-sm">
+      {/* Metrics Section - HUD Style */}
+      <section className="relative -mt-20 z-20 px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-[var(--border)] rounded-2xl overflow-hidden border border-[var(--border)]">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
               { label: 'Available Seats', value: `${Math.max(0, MAX_GROUP_SIZE - foundersCount)}`, sub: 'of 25 Total' },
               { label: 'Capital Target', value: '25k€', sub: 'Pre-Seed' },
               { label: 'Equity Split', value: 'Equal', sub: '1 Vote / Member' },
               { label: 'Transparency', value: '100%', sub: 'Open Ledger' },
             ].map((stat, i) => (
-              <div key={i} className="bg-[var(--background)] p-8 md:p-12 flex flex-col items-center justify-center hover:bg-[var(--surface)] transition-colors group">
-                <div className="text-4xl md:text-5xl font-display font-bold text-[var(--foreground)] mb-2 group-hover:scale-105 transition-transform duration-300">
+              <div key={i} className="glass-card backdrop-blur-2xl p-8 rounded-3xl border border-white/10 flex flex-col items-center justify-center hover:border-[var(--accent)]/50 transition-all duration-700 group overflow-hidden relative shadow-2xl">
+                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="text-4xl md:text-5xl font-instrument-serif text-white mb-3 group-hover:scale-110 transition-transform duration-700 relative z-10">
                   {stat.value}
                 </div>
-                <div className="text-xs font-medium uppercase tracking-widest text-[var(--muted-foreground)] mb-1">
+                <div className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--accent)] mb-1.5 relative z-10">
                   {stat.label}
                 </div>
-                <div className="text-[10px] text-[var(--secondary)]">
+                <div className="text-[8px] font-bold text-white/30 uppercase tracking-[0.2em] relative z-10">
                   {stat.sub}
                 </div>
               </div>
@@ -219,27 +220,21 @@ export default function Home() {
       </section>
 
       {/* Philosophy / Features */}
-      <section className="py-32 px-6">
+      <section className="py-40 px-6 relative">
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
-            <div className="max-w-2xl">
-              <h2 className="text-4xl md:text-5xl font-display font-bold mb-6">
-                Institutional Grade.<br/>
-                Community Powered.
-              </h2>
-              <p className="text-lg text-[var(--muted-foreground)]">
-                Wir ersetzen den veralteten VC-Ansatz durch Schwarmintelligenz.
-                Weniger Risiko für den Einzelnen, mehr Upside für alle.
-              </p>
-            </div>
-            <div className="hidden md:block">
-               <Link href="/manifesto" className="text-sm font-bold border-b border-[var(--border)] pb-1 hover:text-[var(--accent)] hover:border-[var(--accent)] transition-colors">
-                  Read the Manifesto
-               </Link>
-            </div>
+          <div className="text-center mb-32">
+            <h2 className="text-5xl md:text-7xl font-instrument-serif text-white mb-8 animate-fade-slide-in-1">
+              Institutional Grade.<br/>
+              Community Powered.
+            </h2>
+            <p className="text-lg text-white/50 max-w-2xl mx-auto leading-relaxed animate-fade-slide-in-2">
+              Wir ersetzen den veralteten VC-Ansatz durch Schwarmintelligenz.
+              Weniger Risiko für den Einzelnen, mehr Upside für alle.
+            </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-12">
             {[
               {
                 icon: Users,
@@ -257,12 +252,12 @@ export default function Home() {
                 desc: "Statt 50k alleine zu riskieren, splitten wir das Risiko. Maximale Hebelwirkung bei minimalem Einsatz."
               }
             ].map((feature, i) => (
-              <div key={i} className="glass-card p-8 rounded-2xl hover:border-[var(--accent)]/50 transition-all duration-300 group">
-                <div className="w-12 h-12 rounded-xl bg-[var(--surface-muted)] border border-[var(--border)] flex items-center justify-center mb-6 group-hover:bg-[var(--accent)] group-hover:text-[var(--accent-foreground)] transition-colors">
-                  <feature.icon className="w-5 h-5" />
+              <div key={i} className="text-center group">
+                <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-8 mx-auto group-hover:border-[var(--accent)] group-hover:bg-[var(--accent)]/10 transition-all duration-500">
+                  <feature.icon className="w-6 h-6 text-white group-hover:text-[var(--accent)]" />
                 </div>
-                <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-                <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
+                <h3 className="text-2xl font-instrument-serif text-white mb-4">{feature.title}</h3>
+                <p className="text-sm text-white/40 leading-relaxed max-w-[280px] mx-auto">
                   {feature.desc}
                 </p>
               </div>
@@ -271,69 +266,59 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured Project - The "Case Study" */}
-      <section className="py-32 px-6 border-y border-[var(--border)] bg-[var(--surface-muted)]">
+      {/* Featured Project - Mission Log Style */}
+      <section className="py-40 px-6 bg-[#0B0C0E] relative overflow-hidden">
+        <div className="absolute inset-0 bg-grid-small opacity-[0.03] pointer-events-none" />
         <div className="max-w-7xl mx-auto">
-           <div className="grid lg:grid-cols-2 gap-16 items-center">
-             <div>
-                <div className="text-[var(--accent)] font-bold text-xs uppercase tracking-widest mb-4">Current Focus</div>
-                <h2 className="text-4xl md:text-5xl font-display font-bold mb-6">SmartStore Fulfillment</h2>
-                <p className="text-lg text-[var(--muted-foreground)] mb-8">
+           <div className="grid lg:grid-cols-2 gap-24 items-center">
+             <div className="relative z-10">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 text-[10px] font-bold text-[var(--accent)] uppercase tracking-[0.3em] mb-8">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
+                  Active Mission
+                </div>
+                <h2 className="text-5xl md:text-7xl font-instrument-serif text-white mb-8">SmartStore<br/>Fulfillment</h2>
+                <p className="text-lg text-white/50 mb-12 leading-relaxed">
                   Ein Nischen-3PL (Third Party Logistics) Provider für High-Value Goods. 
                   Wir schließen die Lücke zwischen Garage-Shipping und Enterprise-Logistik.
                 </p>
-                <ul className="space-y-4 mb-10">
-                  <li className="flex items-center gap-3 text-sm text-[var(--foreground)]">
-                    <Check className="w-4 h-4 text-[var(--accent)]" />
-                    <span>Infrastruktur & Software Partnerschaften gesichert</span>
-                  </li>
-                  <li className="flex items-center gap-3 text-sm text-[var(--foreground)]">
-                    <Check className="w-4 h-4 text-[var(--accent)]" />
-                    <span>Erste 5 Beta-Kunden auf Warteliste</span>
-                  </li>
-                  <li className="flex items-center gap-3 text-sm text-[var(--foreground)]">
-                    <Check className="w-4 h-4 text-[var(--accent)]" />
-                    <span>Geplanter Launch: Q3 2026</span>
-                  </li>
-                </ul>
-                <div className="flex gap-4">
-                  <div className="px-5 py-3 rounded-lg border border-[var(--border)] bg-[var(--background)]">
-                    <div className="text-2xl font-bold">€12k</div>
-                    <div className="text-[10px] text-[var(--muted-foreground)] uppercase">Target MRR (6 Mo)</div>
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-sm">
+                    <div className="text-3xl font-instrument-serif text-white mb-1">€12k</div>
+                    <div className="text-[9px] text-white/30 uppercase tracking-[0.2em] font-bold">Target MRR (6 Mo)</div>
                   </div>
-                  <div className="px-5 py-3 rounded-lg border border-[var(--border)] bg-[var(--background)]">
-                    <div className="text-2xl font-bold text-[var(--accent)]">35%</div>
-                    <div className="text-[10px] text-[var(--muted-foreground)] uppercase">EBITDA Margin</div>
+                  <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-sm">
+                    <div className="text-3xl font-instrument-serif text-[var(--accent)] mb-1">35%</div>
+                    <div className="text-[9px] text-white/30 uppercase tracking-[0.2em] font-bold">EBITDA Margin</div>
                   </div>
                 </div>
              </div>
              
              <div className="relative">
-                {/* Abstract UI representation */}
-                <div className="absolute -inset-1 bg-gradient-to-r from-[var(--accent)] to-transparent rounded-2xl opacity-20 blur-xl"></div>
-                <div className="relative bg-[var(--background)] border border-[var(--border)] rounded-2xl p-8 shadow-2xl">
-                   <div className="flex items-center justify-between mb-8 border-b border-[var(--border)] pb-4">
-                      <div className="text-sm font-bold">Roadmap</div>
-                      <div className="flex gap-1">
-                        <div className="w-2 h-2 rounded-full bg-red-500"/>
-                        <div className="w-2 h-2 rounded-full bg-yellow-500"/>
-                        <div className="w-2 h-2 rounded-full bg-green-500"/>
+                <div className="absolute -inset-20 bg-[var(--accent)]/5 rounded-full blur-[100px] pointer-events-none" />
+                <div className="relative glass-card border border-white/10 rounded-3xl p-8 shadow-2xl overflow-hidden group">
+                   <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                   <div className="flex items-center justify-between mb-10 border-b border-white/10 pb-6 relative z-10">
+                      <div className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">Operation Roadmap</div>
+                      <div className="flex gap-1.5">
+                        <div className="w-2.5 h-2.5 rounded-full bg-red-500/20 border border-red-500/50"/>
+                        <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/20 border border-yellow-500/50"/>
+                        <div className="w-2.5 h-2.5 rounded-full bg-green-500/20 border border-green-500/50"/>
                       </div>
                    </div>
-                   <div className="space-y-6">
+                   <div className="space-y-8 relative z-10">
                       {[
-                        { step: '01', title: 'Formation', status: 'Done' },
-                        { step: '02', title: 'Legal & Banking', status: 'In Progress' },
-                        { step: '03', title: 'Tech Stack Setup', status: 'Pending' },
-                        { step: '04', title: 'Customer Onboarding', status: 'Pending' }
+                        { step: '01', title: 'Formation', status: 'COMPLETED' },
+                        { step: '02', title: 'Legal & Banking', status: 'PROCESSING' },
+                        { step: '03', title: 'Tech Stack Setup', status: 'QUEUED' },
+                        { step: '04', title: 'Customer Onboarding', status: 'QUEUED' }
                       ].map((item, i) => (
-                        <div key={i} className="flex items-center gap-4">
-                           <div className="font-mono text-xs text-[var(--muted-foreground)] opacity-50">{item.step}</div>
-                           <div className="flex-1 font-medium text-sm">{item.title}</div>
-                           <div className={`text-[10px] px-2 py-0.5 rounded-full border ${
-                             item.status === 'Done' ? 'border-green-900 bg-green-900/20 text-green-500' :
-                             item.status === 'In Progress' ? 'border-yellow-900 bg-yellow-900/20 text-yellow-500' :
-                             'border-[var(--border)] text-[var(--muted-foreground)]'
+                        <div key={i} className="flex items-center gap-6">
+                           <div className="font-mono text-[10px] text-white/20">{item.step}</div>
+                           <div className="flex-1 font-instrument-serif text-xl text-white/90">{item.title}</div>
+                           <div className={`text-[9px] font-bold tracking-[0.2em] px-3 py-1 rounded-full border ${
+                             item.status === 'COMPLETED' ? 'border-green-500/20 bg-green-500/10 text-green-400' :
+                             item.status === 'PROCESSING' ? 'border-yellow-500/20 bg-yellow-500/10 text-yellow-400' :
+                             'border-white/5 text-white/20'
                            }`}>
                              {item.status}
                            </div>
@@ -347,15 +332,13 @@ export default function Home() {
       </section>
 
       {/* Philosophy Interlude - Animated Stack */}
-      <section className="py-24 px-6 relative overflow-hidden border-b border-[var(--border)]">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none opacity-10">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[var(--accent)] rounded-full blur-[120px]" />
-        </div>
+      <section className="py-40 px-6 relative overflow-hidden border-b border-white/5">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[var(--accent)]/5 rounded-full blur-[150px] pointer-events-none" />
         
-        <div className="max-w-7xl mx-auto flex flex-col items-center">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-5xl font-display font-bold mb-4 uppercase tracking-tighter">Core Principles</h2>
-            <p className="text-[var(--muted-foreground)] max-w-xl mx-auto text-sm font-medium uppercase tracking-widest opacity-60">
+        <div className="max-w-7xl mx-auto flex flex-col items-center relative z-10">
+          <div className="text-center mb-20">
+            <h2 className="text-5xl md:text-7xl font-instrument-serif text-white mb-6 tracking-tighter">Core Principles</h2>
+            <p className="text-white/40 uppercase tracking-[0.3em] text-[10px] font-bold">
               How we forge success from the ground up.
             </p>
           </div>
@@ -365,11 +348,12 @@ export default function Home() {
       </section>
 
       {/* Pricing / Join */}
-      <section className="py-32 px-6">
-         <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-20">
-               <h2 className="text-4xl font-display font-bold mb-4">Membership Options</h2>
-               <p className="text-[var(--muted-foreground)]">Choose your level of involvement.</p>
+      <section className="py-40 px-6 relative overflow-hidden">
+         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[var(--accent)]/5 rounded-full blur-[150px] pointer-events-none" />
+         <div className="max-w-7xl mx-auto relative z-10">
+            <div className="text-center mb-32">
+               <h2 className="text-5xl md:text-7xl font-instrument-serif text-white mb-6">Membership Options</h2>
+               <p className="text-white/40 uppercase tracking-[0.3em] text-[10px] font-bold">Choose your level of involvement.</p>
             </div>
             <PricingTable 
               isLoading={false} 
@@ -379,20 +363,22 @@ export default function Home() {
       </section>
 
       {/* The Application Interface */}
-      <section id="apply" className="py-24 px-4 bg-[var(--background)]">
-        <div className="max-w-3xl mx-auto">
-          <div className="mb-12 text-center">
-            <h2 className="text-3xl font-display font-bold mb-3">Initiate Sequence</h2>
-            <p className="text-sm text-[var(--muted-foreground)]">Request access to the foundry.</p>
+      <section id="apply" className="py-40 px-4 relative">
+        <div className="max-w-3xl mx-auto relative z-10">
+          <div className="mb-20 text-center">
+            <h2 className="text-5xl md:text-6xl font-instrument-serif text-white mb-6">Initiate Sequence</h2>
+            <p className="text-white/40 uppercase tracking-[0.3em] text-[10px] font-bold">Request access to the foundry.</p>
           </div>
 
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-2xl overflow-hidden relative">
+          <div className="bg-[#0F1113] border border-white/10 rounded-3xl shadow-2xl overflow-hidden relative group transition-all duration-700 hover:border-[var(--accent)]/30">
+             <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
+             
              {/* Terminal Header */}
-             <div className="h-10 bg-[var(--surface-muted)] border-b border-[var(--border)] flex items-center px-4 gap-2">
+             <div className="h-12 bg-white/[0.03] border-b border-white/10 flex items-center px-6 gap-2">
                 <div className="w-3 h-3 rounded-full bg-[#FF5F56] opacity-80" />
                 <div className="w-3 h-3 rounded-full bg-[#FFBD2E] opacity-80" />
                 <div className="w-3 h-3 rounded-full bg-[#27C93F] opacity-80" />
-                <div className="ml-4 text-[10px] font-mono text-[var(--muted-foreground)] opacity-50">user@theforge:~</div>
+                <div className="ml-4 text-[10px] font-mono text-white/20 uppercase tracking-widest">Operator Terminal v1.0.4</div>
              </div>
 
              <div className="p-8 md:p-12">
@@ -410,57 +396,57 @@ export default function Home() {
                         {/* Step Indicator */}
                         <div className="flex gap-2 mb-10">
                            {[1, 2, 3].map(s => (
-                              <div key={s} className={`h-1 flex-1 rounded-full transition-all duration-500 ${currentStep >= s ? 'bg-[var(--accent)]' : 'bg-[var(--border)]'}`} />
+                              <div key={s} className={`h-1 flex-1 rounded-full transition-all duration-500 ${currentStep >= s ? 'bg-[var(--accent)]' : 'bg-white/5'}`} />
                            ))}
                         </div>
 
                         {currentStep === 1 && (
                            <div className="animate-fade-in-up">
-                              <label className="text-xs uppercase tracking-widest text-[var(--muted-foreground)] font-bold mb-6 block">Select Operator Mode</label>
+                              <label className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold mb-8 block">Select Operator Mode</label>
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                  <button
                                     type="button"
                                     onClick={() => handleSelectRole('investor')}
-                                    className="p-6 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:border-[var(--accent)] transition-all text-left group"
+                                    className="p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-[var(--accent)]/50 hover:bg-[var(--accent)]/5 transition-all text-left group"
                                  >
-                                    <div className="font-bold text-[var(--foreground)] mb-1 group-hover:text-[var(--accent)] transition-colors">Capital Partner</div>
-                                    <div className="text-xs text-[var(--muted-foreground)]">Passive stake. Financial contribution only.</div>
+                                    <div className="font-instrument-serif text-2xl text-white mb-2 group-hover:text-[var(--accent)] transition-colors">Capital Partner</div>
+                                    <div className="text-xs text-white/40 leading-relaxed">Passive stake. Financial contribution only.</div>
                                  </button>
                                  <button
                                     type="button"
                                     onClick={() => handleSelectRole('builder')}
-                                    className="p-6 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:border-[var(--accent)] transition-all text-left group"
+                                    className="p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-[var(--accent)]/50 hover:bg-[var(--accent)]/5 transition-all text-left group"
                                  >
-                                    <div className="font-bold text-[var(--foreground)] mb-1 group-hover:text-[var(--accent)] transition-colors">Builder</div>
-                                    <div className="text-xs text-[var(--muted-foreground)]">Active stake. Sweat equity & skills.</div>
+                                    <div className="font-instrument-serif text-2xl text-white mb-2 group-hover:text-[var(--accent)] transition-colors">Builder</div>
+                                    <div className="text-xs text-white/40 leading-relaxed">Active stake. Sweat equity & skills.</div>
                                  </button>
                               </div>
                            </div>
                         )}
 
                         {currentStep === 2 && (
-                           <div className="animate-fade-in-up space-y-6">
-                              <label className="text-xs uppercase tracking-widest text-[var(--muted-foreground)] font-bold block">Identity Config</label>
+                           <div className="animate-fade-in-up space-y-8">
+                              <label className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold block">Identity Config</label>
                               <div className="grid gap-4">
                                  <input
                                     type="text"
                                     value={formData.name}
                                     onChange={handleFormChange('name')}
-                                    className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-4 py-3 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-[var(--muted-foreground)]/50"
+                                    className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-white/20"
                                     placeholder="Full Name"
                                  />
                                  <input
                                     type="email"
                                     value={formData.email}
                                     onChange={handleFormChange('email')}
-                                    className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-4 py-3 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-[var(--muted-foreground)]/50"
+                                    className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-white/20"
                                     placeholder="Email Address"
                                  />
                                  {role === 'investor' && (
                                      <select
                                        value={formData.capital}
                                        onChange={handleFormChange('capital')}
-                                       className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-4 py-3 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all"
+                                       className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all"
                                      >
                                         <option value="">Select Capital Target...</option>
                                         <option value="25k">25k Tier</option>
@@ -473,44 +459,44 @@ export default function Home() {
                                        type="text"
                                        value={formData.skill}
                                        onChange={handleFormChange('skill')}
-                                       className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-4 py-3 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-[var(--muted-foreground)]/50"
+                                       className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-white/20"
                                        placeholder="Primary Skill (e.g. Next.js, Growth)"
                                     />
                                  )}
                               </div>
                               <div className="flex justify-between pt-4">
-                                 <button type="button" onClick={handlePrevStep} className="text-xs font-bold text-[var(--muted-foreground)] hover:text-[var(--foreground)]">BACK</button>
-                                 <button type="button" onClick={handleNextStep} disabled={!formData.name || !formData.email} className="text-xs font-bold text-[var(--accent)] hover:opacity-80 disabled:opacity-50">CONTINUE</button>
+                                 <button type="button" onClick={handlePrevStep} className="text-[10px] font-bold text-white/40 hover:text-white uppercase tracking-widest">BACK</button>
+                                 <button type="button" onClick={handleNextStep} disabled={!formData.name || !formData.email} className="text-[10px] font-bold text-[var(--accent)] hover:opacity-80 disabled:opacity-30 uppercase tracking-widest">CONTINUE</button>
                               </div>
                            </div>
                         )}
 
                         {currentStep === 3 && (
-                           <div className="animate-fade-in-up space-y-6">
-                              <label className="text-xs uppercase tracking-widest text-[var(--muted-foreground)] font-bold block">Manifesto</label>
+                           <div className="animate-fade-in-up space-y-8">
+                              <label className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold block">Manifesto</label>
                               <textarea
                                  value={formData.why}
                                  onChange={handleFormChange('why')}
                                  rows={4}
-                                 className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-4 py-3 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-[var(--muted-foreground)]/50 resize-none"
+                                 className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-white/20 resize-none"
                                  placeholder="Tell us why you belong here."
                               />
                                <input
                                     type="text"
                                     value={formData.instagram}
                                     onChange={handleFormChange('instagram')}
-                                    className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-4 py-3 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-[var(--muted-foreground)]/50"
+                                    className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-white/20"
                                     placeholder="LinkedIn / Social URL"
                                  />
                               
-                              {formMessage && <p className="text-red-500 text-xs text-center">{formMessage}</p>}
+                              {formMessage && <p className="text-red-500 text-[10px] text-center uppercase tracking-widest">{formMessage}</p>}
 
                               <div className="flex justify-between pt-4">
-                                 <button type="button" onClick={handlePrevStep} className="text-xs font-bold text-[var(--muted-foreground)] hover:text-[var(--foreground)]">BACK</button>
+                                 <button type="button" onClick={handlePrevStep} className="text-[10px] font-bold text-white/40 hover:text-white uppercase tracking-widest">BACK</button>
                                  <button 
                                     type="submit" 
                                     disabled={formStatus === 'loading'}
-                                    className="px-6 py-2 bg-[var(--accent)] text-[var(--accent-foreground)] rounded-lg text-xs font-bold hover:brightness-110 transition-all disabled:opacity-50"
+                                    className="px-8 py-3 bg-[var(--accent)] text-[var(--accent-foreground)] rounded-xl text-[10px] font-bold hover:brightness-110 transition-all disabled:opacity-30 uppercase tracking-[0.2em]"
                                  >
                                     {formStatus === 'loading' ? 'TRANSMITTING...' : 'SUBMIT APPLICATION'}
                                  </button>
@@ -526,13 +512,13 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 border-t border-[var(--border)] text-center text-[var(--muted-foreground)] text-xs">
-         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div>© 2026 THE FORGE</div>
-            <div className="flex gap-6">
-               <Link href="/imprint" className="hover:text-[var(--foreground)]">Imprint</Link>
-               <Link href="/privacy" className="hover:text-[var(--foreground)]">Privacy</Link>
-               <Link href="/terms" className="hover:text-[var(--foreground)]">Terms</Link>
+      <footer className="py-20 border-t border-white/5 relative overflow-hidden">
+         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8 relative z-10">
+            <div className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/20">© 2026 THE FORGE SYSTEM</div>
+            <div className="flex gap-12">
+               <Link href="/imprint" className="text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-[var(--accent)] transition-colors">Imprint</Link>
+               <Link href="/privacy" className="text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-[var(--accent)] transition-colors">Privacy</Link>
+               <Link href="/terms" className="text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-[var(--accent)] transition-colors">Terms</Link>
             </div>
          </div>
       </footer>
@@ -540,39 +526,39 @@ export default function Home() {
       {/* Modern Chat Widget */}
       <button
         onClick={isChatOpen ? handleCloseChat : handleOpenChat}
-        className={`fixed bottom-6 right-6 z-50 p-4 rounded-full bg-[var(--surface)] border border-[var(--border)] shadow-2xl hover:border-[var(--accent)] transition-all duration-300 ${isChatOpen ? 'rotate-90 opacity-0 pointer-events-none' : 'opacity-100'}`}
+        className={`fixed bottom-8 right-8 z-50 p-5 rounded-2xl bg-white/[0.03] border border-white/10 shadow-2xl hover:border-[var(--accent)]/50 transition-all duration-500 backdrop-blur-xl group ${isChatOpen ? 'rotate-90 opacity-0 pointer-events-none' : 'opacity-100'}`}
       >
-         <MessageSquare className="w-5 h-5 text-[var(--foreground)]" />
+         <MessageSquare className="w-6 h-6 text-white group-hover:text-[var(--accent)] transition-colors" />
       </button>
 
       {/* Chat Window */}
-      <div className={`fixed bottom-6 right-6 z-50 w-[350px] bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-2xl transition-all duration-300 transform origin-bottom-right ${isChatOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0 pointer-events-none'}`}>
-         <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
-            <div className="flex items-center gap-3">
-               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-               <span className="text-sm font-bold">Orion AI</span>
+      <div className={`fixed bottom-8 right-8 z-50 w-[400px] glass-card border border-white/10 rounded-3xl shadow-2xl transition-all duration-500 transform origin-bottom-right ${isChatOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0 pointer-events-none'}`}>
+         <div className="flex items-center justify-between p-6 border-b border-white/10">
+            <div className="flex items-center gap-4">
+               <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
+               <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Orion Intelligence</span>
             </div>
-            <button onClick={handleCloseChat}><X className="w-4 h-4 text-[var(--muted-foreground)] hover:text-[var(--foreground)]" /></button>
+            <button onClick={handleCloseChat}><X className="w-5 h-5 text-white/40 hover:text-white transition-colors" /></button>
          </div>
-         <div className="h-[300px] overflow-y-auto p-4 space-y-4">
+         <div className="h-[400px] overflow-y-auto p-6 space-y-6 scrollbar-hide">
              {chatMessages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                   <div className={`max-w-[85%] text-xs p-3 rounded-xl ${msg.role === 'user' ? 'bg-[var(--accent)] text-[var(--accent-foreground)]' : 'bg-[var(--surface-muted)] text-[var(--foreground)]'}`}>
+                   <div className={`max-w-[85%] text-xs p-4 rounded-2xl leading-relaxed ${msg.role === 'user' ? 'bg-[var(--accent)] text-[var(--accent-foreground)] font-bold' : 'bg-white/[0.03] border border-white/5 text-white/80'}`}>
                       {msg.content}
                    </div>
                 </div>
              ))}
-             {chatStatus === 'loading' && <div className="text-xs text-[var(--muted-foreground)] animate-pulse">Orion is thinking...</div>}
+             {chatStatus === 'loading' && <div className="text-[10px] font-bold uppercase tracking-widest text-white/30 animate-pulse">Orion is processing...</div>}
              <div ref={chatEndRef} />
          </div>
-         <form onSubmit={handleChatSubmit} className="p-3 border-t border-[var(--border)] flex gap-2">
+         <form onSubmit={handleChatSubmit} className="p-4 border-t border-white/10 flex gap-3 bg-white/[0.01]">
             <input 
-               className="flex-1 bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-xs focus:border-[var(--accent)] outline-none"
-               placeholder="Type a message..."
+               className="flex-1 bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-xs focus:border-[var(--accent)] outline-none text-white transition-all placeholder:text-white/20"
+               placeholder="Enter protocol query..."
                value={chatInput}
                onChange={(e) => setChatInput(e.target.value)}
             />
-            <button type="submit" className="p-2 rounded-lg bg-[var(--surface-muted)] hover:text-[var(--accent)] transition-colors"><ChevronRight className="w-4 h-4" /></button>
+            <button type="submit" className="p-3 rounded-xl bg-[var(--accent)] text-[var(--accent-foreground)] hover:brightness-110 transition-all"><ChevronRight className="w-5 h-5" /></button>
          </form>
       </div>
 

@@ -1,6 +1,7 @@
 'use client';
 
-import { Check } from 'lucide-react';
+import { Check, Zap } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 type PlanType = 'starter' | 'growth' | 'premium';
 
@@ -10,119 +11,125 @@ interface PricingTableProps {
 }
 
 export function PricingTable({ onSelectPlan, isLoading }: PricingTableProps) {
+  const plans = [
+    {
+      id: 'starter' as PlanType,
+      name: 'Starter',
+      subtitle: 'Low-Friction Entry',
+      price: '69',
+      features: [
+        { text: '15% Rohertrag Share', highlight: true },
+        { text: 'Zugang zur Community', highlight: false },
+        { text: 'Basic Support', highlight: false },
+      ],
+      cta: 'Choose Starter',
+      featured: false,
+    },
+    {
+      id: 'growth' as PlanType,
+      name: 'Growth',
+      subtitle: 'Order-Based Scale',
+      price: '99',
+      features: [
+        { text: '10% Rohertrag Share', highlight: true },
+        { text: '2€ pro Order Gebühr', highlight: false },
+        { text: 'Full Community Access', highlight: false },
+        { text: 'Priority Support', highlight: false },
+      ],
+      cta: 'Choose Growth',
+      featured: false,
+    },
+    {
+      id: 'premium' as PlanType,
+      name: 'Premium',
+      subtitle: 'High Volume Pro',
+      price: '149',
+      features: [
+        { text: '5% Rohertrag Share', highlight: true },
+        { text: 'Keine Order-Gebühr', highlight: false },
+        { text: 'Voting Power x2', highlight: true },
+        { text: 'Direct Founder Access', highlight: false },
+      ],
+      cta: 'Select Premium',
+      featured: true,
+    },
+  ];
+
   return (
-    <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto items-stretch">
-      {/* STARTER */}
-      <div className="group bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-8 flex flex-col relative hover:border-[var(--accent)] transition-all duration-300 hover:-translate-y-1">
-        <div className="mb-6">
-          <h3 className="text-lg font-display font-bold text-[var(--foreground)] uppercase tracking-wide">Starter</h3>
-          <p className="text-xs text-[var(--muted-foreground)] mt-2 font-medium uppercase tracking-widest">Low-Friction Entry</p>
-        </div>
-        <div className="mb-6">
-          <span className="text-4xl font-display font-bold text-[var(--foreground)]">69€</span>
-          <span className="text-[var(--muted-foreground)]">/Monat</span>
-        </div>
-        <ul className="space-y-4 mb-8 flex-1">
-          <li className="flex items-start gap-3">
-            <Check className="w-5 h-5 text-[var(--accent)] shrink-0" />
-            <span className="text-sm text-[var(--secondary)]"><strong>15%</strong> Rohertrag Share</span>
-          </li>
-          <li className="flex items-start gap-3">
-            <Check className="w-5 h-5 text-[var(--accent)] shrink-0" />
-            <span className="text-sm text-[var(--secondary)]">Zugang zur Community</span>
-          </li>
-          <li className="flex items-start gap-3">
-            <Check className="w-5 h-5 text-[var(--accent)] shrink-0" />
-            <span className="text-sm text-[var(--secondary)]">Basic Support</span>
-          </li>
-        </ul>
-        <button
-          onClick={() => onSelectPlan('starter')}
-          disabled={isLoading}
-          className="w-full py-3 px-4 bg-transparent border border-[var(--border)] text-[var(--foreground)] rounded-xl font-bold uppercase tracking-widest text-xs hover:border-[var(--accent)] hover:text-[var(--accent)] transition-all disabled:opacity-50"
+    <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto items-stretch px-4">
+      {plans.map((plan) => (
+        <div 
+          key={plan.id}
+          className={cn(
+            "relative group flex flex-col p-10 rounded-3xl transition-all duration-700 overflow-hidden border",
+            plan.featured 
+              ? "bg-[#0F1113] border-[var(--accent)]/40 shadow-[0_0_50px_-12px_rgba(212,175,55,0.2)]" 
+              : "bg-white/[0.02] border-white/10 hover:border-white/20 shadow-2xl"
+          )}
         >
-          {isLoading ? 'Laden...' : 'Starter wählen'}
-        </button>
-      </div>
+          {plan.featured && (
+            <div className="absolute top-0 right-0 p-8 opacity-20 group-hover:opacity-40 transition-opacity">
+              <Zap className="w-20 h-20 text-[var(--accent)]" />
+            </div>
+          )}
+          
+          <div className="relative z-10 mb-10">
+            <div className="flex items-center justify-between mb-4">
+               <h3 className={cn(
+                 "text-2xl font-instrument-serif",
+                 plan.featured ? "text-[var(--accent)]" : "text-white"
+               )}>
+                 {plan.name}
+               </h3>
+               {plan.featured && (
+                 <span className="text-[9px] font-black uppercase tracking-[0.2em] bg-[var(--accent)] text-[var(--accent-foreground)] px-3 py-1 rounded-full">
+                    Best Value
+                 </span>
+               )}
+            </div>
+            <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] font-bold">
+              {plan.subtitle}
+            </p>
+          </div>
 
-      {/* GROWTH */}
-      <div className="group bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-8 flex flex-col relative hover:border-[var(--accent)] transition-all duration-300 hover:-translate-y-1">
-        <div className="mb-6">
-          <h3 className="text-lg font-display font-bold text-[var(--foreground)] uppercase tracking-wide">Growth</h3>
-          <p className="text-xs text-[var(--muted-foreground)] mt-2 font-medium uppercase tracking-widest">Order-Based Scale</p>
-        </div>
-        <div className="mb-6">
-          <span className="text-4xl font-display font-bold text-[var(--foreground)]">99€</span>
-          <span className="text-[var(--muted-foreground)]">/Monat</span>
-        </div>
-        <ul className="space-y-4 mb-8 flex-1">
-          <li className="flex items-start gap-3">
-            <Check className="w-5 h-5 text-[var(--accent)] shrink-0" />
-            <span className="text-sm text-[var(--secondary)]"><strong>10%</strong> Rohertrag Share</span>
-          </li>
-          <li className="flex items-start gap-3">
-            <Check className="w-5 h-5 text-[var(--accent)] shrink-0" />
-            <span className="text-sm text-[var(--secondary)]">2€ pro Order Gebühr</span>
-          </li>
-          <li className="flex items-start gap-3">
-            <Check className="w-5 h-5 text-[var(--accent)] shrink-0" />
-            <span className="text-sm text-[var(--secondary)]">Full Community Access</span>
-          </li>
-          <li className="flex items-start gap-3">
-            <Check className="w-5 h-5 text-[var(--accent)] shrink-0" />
-            <span className="text-sm text-[var(--secondary)]">Priority Support</span>
-          </li>
-        </ul>
-        <button
-          onClick={() => onSelectPlan('growth')}
-          disabled={isLoading}
-          className="w-full py-3 px-4 bg-transparent border border-[var(--border)] text-[var(--foreground)] rounded-xl font-bold uppercase tracking-widest text-xs hover:border-[var(--accent)] hover:text-[var(--accent)] transition-all disabled:opacity-50"
-        >
-          {isLoading ? 'Laden...' : 'Growth wählen'}
-        </button>
-      </div>
+          <div className="relative z-10 mb-10">
+            <div className="flex items-baseline gap-1">
+              <span className="text-5xl font-instrument-serif text-white">{plan.price}€</span>
+              <span className="text-xs text-white/30 uppercase tracking-widest">/mo</span>
+            </div>
+          </div>
 
-      {/* PREMIUM */}
-      <div className="group bg-[var(--surface-muted)] rounded-2xl border border-[var(--accent)] p-8 flex flex-col relative transform hover:-translate-y-2 transition-all duration-300 shadow-[0_0_30px_-10px_rgba(212,175,55,0.15)]">
-        <div className="absolute top-0 right-0 left-0 -mt-3 flex justify-center">
-          <span className="bg-[var(--accent)] text-[var(--accent-foreground)] text-[0.6rem] font-black px-4 py-1 rounded-full uppercase tracking-[0.2em] shadow-lg">
-            Best Value
-          </span>
+          <ul className="relative z-10 space-y-5 mb-12 flex-1">
+            {plan.features.map((feature, i) => (
+              <li key={i} className="flex items-start gap-4 group/item">
+                <Check className={cn(
+                  "w-4 h-4 mt-0.5 transition-colors",
+                  feature.highlight ? "text-[var(--accent)]" : "text-white/20"
+                )} />
+                <span className={cn(
+                  "text-sm leading-relaxed transition-colors",
+                  feature.highlight ? "text-white font-medium" : "text-white/50 group-hover/item:text-white/70"
+                )}>
+                  {feature.text}
+                </span>
+              </li>
+            ))}
+          </ul>
+
+          <button
+            onClick={() => onSelectPlan(plan.id)}
+            disabled={isLoading}
+            className={cn(
+              "relative z-10 w-full py-4 rounded-xl font-bold uppercase tracking-[0.2em] text-[10px] transition-all duration-500",
+              plan.featured 
+                ? "bg-[var(--accent)] text-[var(--accent-foreground)] shadow-lg hover:brightness-110 active:scale-[0.98]" 
+                : "bg-white/5 text-white border border-white/10 hover:bg-white/10 active:scale-[0.98]"
+            )}
+          >
+            {isLoading ? 'Processing...' : plan.cta}
+          </button>
         </div>
-        <div className="mb-6">
-          <h3 className="text-lg font-display font-bold text-[var(--accent)] uppercase tracking-wide">Premium</h3>
-          <p className="text-xs text-[var(--muted-foreground)] mt-2 font-medium uppercase tracking-widest">High Volume Pro</p>
-        </div>
-        <div className="mb-6">
-          <span className="text-4xl font-display font-bold text-[var(--foreground)]">149€</span>
-          <span className="text-[var(--muted-foreground)]">/Monat</span>
-        </div>
-        <ul className="space-y-4 mb-8 flex-1">
-          <li className="flex items-start gap-3">
-            <Check className="w-5 h-5 text-[var(--accent)] shrink-0" />
-            <span className="text-sm text-[var(--foreground)] font-medium"><strong>5%</strong> Rohertrag Share</span>
-          </li>
-          <li className="flex items-start gap-3">
-            <Check className="w-5 h-5 text-[var(--accent)] shrink-0" />
-            <span className="text-sm text-[var(--secondary)]">Keine Order-Gebühr</span>
-          </li>
-          <li className="flex items-start gap-3">
-            <Check className="w-5 h-5 text-[var(--accent)] shrink-0" />
-            <span className="text-sm text-[var(--secondary)]">Voting Power x2</span>
-          </li>
-          <li className="flex items-start gap-3">
-            <Check className="w-5 h-5 text-[var(--accent)] shrink-0" />
-            <span className="text-sm text-[var(--secondary)]">Direct Founder Access</span>
-          </li>
-        </ul>
-        <button
-          onClick={() => onSelectPlan('premium')}
-          disabled={isLoading}
-          className="ember-glow w-full py-3 px-4 bg-[var(--accent)] text-[var(--accent-foreground)] rounded-xl font-bold hover:brightness-110 transition-all shadow-lg disabled:opacity-50 uppercase text-xs tracking-[0.15em]"
-        >
-          {isLoading ? 'Laden...' : 'Premium wählen'}
-        </button>
-      </div>
+      ))}
     </div>
   );
 }

@@ -72,9 +72,10 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                 alt=""
                 className="w-full h-full object-cover absolute top-0 right-0 bottom-0 left-0"
             />
-            <div className="pointer-events-none absolute inset-0 ring-1 ring-black/30" />
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px]" />
+            <div className="pointer-events-none absolute inset-0 ring-1 ring-white/10" />
 
-            <header className="z-10 xl:top-4 relative">
+            <header className="z-20 xl:top-4 relative">
                 <div className="mx-6">
                     <div className="flex items-center justify-between pt-4">
                         <Link
@@ -125,7 +126,7 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
             </header>
 
             <div className="z-10 relative">
-                <div className="sm:pt-28 md:pt-32 lg:pt-40 max-w-7xl mx-auto pt-28 px-6 pb-16">
+                <div className="sm:pt-28 md:pt-32 lg:pt-40 max-w-7xl mx-auto pt-28 px-6 pb-56">
                     <div className="mx-auto max-w-3xl text-center">
                         <div className="mb-6 inline-flex items-center gap-3 rounded-full bg-white/10 px-2.5 py-2 ring-1 ring-white/15 backdrop-blur animate-fade-slide-in-1">
                             <span className="inline-flex items-center text-xs font-medium text-neutral-900 bg-white/90 rounded-full py-0.5 px-2 font-sans">
@@ -169,16 +170,16 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                         </div>
                     </div>
 
-                    <div className="mx-auto mt-20 max-w-5xl">
-                        <p className="animate-fade-slide-in-1 text-sm text-white/70 text-center">
+                    <div className="mx-auto mt-12 max-w-5xl">
+                        <p className="animate-fade-slide-in-1 text-xs font-bold uppercase tracking-[0.3em] text-white/40 text-center">
                             {partnersTitle}
                         </p>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 animate-fade-slide-in-2 text-white/70 mt-6 items-center justify-items-center gap-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 animate-fade-slide-in-2 text-white/30 mt-8 items-center justify-items-center gap-8 opacity-50 grayscale hover:grayscale-0 transition-all duration-700">
                             {partners.map((partner, index) => (
                                 <Link
                                     key={index}
                                     href={partner.href}
-                                    className="inline-flex items-center justify-center bg-center w-[120px] h-[36px] bg-cover rounded-full opacity-80 hover:opacity-100 transition-opacity"
+                                    className="inline-flex items-center justify-center bg-center w-[120px] h-[36px] bg-cover rounded-full hover:opacity-100 transition-opacity"
                                     style={{ backgroundImage: `url(${partner.logoUrl})` }}
                                 />
                             ))}
