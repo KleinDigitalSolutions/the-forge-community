@@ -1,3 +1,19 @@
+# 🚨 DRINGENDE TODO-LISTE (Zahlungssystem & Deployment)
+
+**Bevor das System live gehen kann, müssen folgende Schritte in Vercel erledigt werden:**
+
+1.  **Stripe Variablen korrigieren**:
+    *   Benenne in Vercel die existierende Variable `STRIPE_SECRET_KEY` (die mit `whsec_...` beginnt) um in **`STRIPE_WEBHOOK_SECRET`**.
+    *   Füge eine neue Variable **`STRIPE_SECRET_KEY`** mit deinem echten Stripe **API Secret Key** hinzu (beginnt mit `sk_live_...` oder `sk_test_...`).
+2.  **App URL hinzufügen**:
+    *   Füge die Variable **`NEXT_PUBLIC_APP_URL`** mit deiner Vercel-Domain hinzu (z.B. `https://the-forge-community.vercel.app`).
+3.  **Notion Datenbank Update**:
+    *   Stelle sicher, dass in deiner Notion "Founders" Datenbank eine Spalte mit dem Namen **"Plan"** existiert (Typ: `Select` oder `Text`).
+4.  **Redeploy**:
+    *   Starte einen neuen Build in Vercel, damit die Änderungen aktiv werden.
+
+---
+
 # THE FORGE - Community OS
 
 Dieses Projekt ist das digitale Betriebssystem für **The Forge**, eine exklusive Gründer-Community. Es verbindet administrative Kontrolle (Notion) mit einer hochperformanten Web-Plattform (Next.js).

@@ -174,10 +174,10 @@ export default function Home() {
       {/* Integrated Hero & Header */}
       <ResponsiveHeroBanner 
         badgeLabel="SYSTEM-UPDATE"
-        badgeText="Das Ende des einsamen Founders ist hier."
-        title="Hör auf, alleine"
-        titleLine2="zu kämpfen."
-        description="Warum 100k riskieren, wenn du mit 50 Experten ein profitables Imperium schmieden kannst? Wir bündeln Kapital, Skills und Execution. Echte Brands. Echte Anteile. Dein Squad wartet."
+        badgeText="Kollektives Unternehmertum v1.0"
+        title="25 Founder. 1 Brand."
+        titleLine2="Volle Transparenz."
+        description="STAKE & SCALE ersetzt den riskanten Solo-Weg durch ein hocheffizientes Kollektiv. Wir bündeln Kapital und Skills, während die Execution im Forge-Hub zentralisiert wird."
         primaryButtonText="SEQUENZ STARTEN"
         primaryButtonHref="#apply"
         secondaryButtonText="PROTOKOLL ANSEHEN"

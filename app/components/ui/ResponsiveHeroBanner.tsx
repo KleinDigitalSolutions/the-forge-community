@@ -78,11 +78,12 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
             <header className="z-20 xl:top-4 relative">
                 <div className="mx-6">
                     <div className="flex items-center justify-between pt-4">
-                        <Link
-                            href="/"
-                            className="inline-flex items-center justify-center bg-center w-[100px] h-[40px] bg-cover rounded"
-                            style={{ backgroundImage: `url(${logoUrl})` }}
-                        />
+                        <Link href="/" className="flex items-center gap-3 group">
+                          <div className="w-10 h-10 bg-white/10 border border-white/20 rounded-xl flex items-center justify-center text-[var(--accent)] font-black shadow-lg backdrop-blur group-hover:border-[var(--accent)] transition-all text-xs">
+                            S&S
+                          </div>
+                          <span className="font-display font-bold text-xl tracking-tight text-white group-hover:text-[var(--accent)] transition-colors">STAKE & SCALE</span>
+                        </Link>
 
                         <nav className="hidden md:flex items-center gap-2">
                             <div className="flex items-center gap-1 rounded-full bg-white/5 px-1 py-1 ring-1 ring-white/10 backdrop-blur">
