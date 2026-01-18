@@ -1,0 +1,29 @@
+import { sql } from '@vercel/postgres';
+import { NextResponse } from 'next/server';
+import { auth } from '@/auth';
+
+export async function GET() {
+  const session = await auth();
+  // Nur Admins oder du selbst sollten das ausführen, aber wir machen es einmalig für das Setup
+  
+  try {
+    // Erweitere die Users Tabelle um die Founder-spezifischen Felder
+    await sql`
+      ALTER TABLE users 
+      ADD COLUMN IF NOT EXISTS phone TEXT,
+      ADD COLUMN IF NOT EXISTS birthday DATE,
+      ADD COLUMN IF NOT EXISTS address_street TEXT,
+      ADD COLUMN IF NOT EXISTS address_city TEXT,
+      ADD COLUMN IF NOT EXISTS address_zip TEXT,
+      ADD COLUMN IF NOT EXISTS address_country TEXT,
+      ADD COLUMN IF NOT EXISTS instagram TEXT,
+      ADD COLUMN IF NOT EXISTS linkedin TEXT,
+      ADD COLUMN IF NOT EXISTS bio TEXT,
+      ADD COLUMN IF NOT EXISTS skills TEXT[],
+      ADD COLUMN IF NOT EXISTS goal TEXT;
+    `;
+    return NextResponse.json({ message: "Database schema updated successfully" });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}

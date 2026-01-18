@@ -1,149 +1,151 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Header from '@/app/components/Header';
-import AuthGuard from '@/app/components/AuthGuard';
-import { FileText, ExternalLink, Lock, Users } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import PageShell from '@/app/components/PageShell';
+import { Search, FileText, Lock, Download, ExternalLink, Calendar, Shield, BookOpen } from 'lucide-react';
 
-interface Document {
+interface Resource {
   id: string;
   name: string;
   description: string;
-  category: 'Contract' | 'Guide' | 'Template' | 'Process';
+  category: string;
   url: string;
   uploadDate: string;
   accessLevel: 'All Founders' | 'Core Team';
 }
 
-const categoryColors = {
-  Contract: 'bg-red-100 text-red-700',
-  Guide: 'bg-blue-100 text-blue-700',
-  Template: 'bg-purple-100 text-purple-700',
-  Process: 'bg-green-100 text-green-700',
-};
+const categories = ['All', 'Guide', 'Contract', 'Template', 'Process'];
 
 export default function ResourcesPage() {
-  const [documents, setDocuments] = useState<Document[]>([]);
+  const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<string>('All');
+  const [search, setSearch] = useState('');
+  const [filterCategory, setFilterCategory] = useState('All');
 
   useEffect(() => {
-    async function fetchDocuments() {
+    async function fetchResources() {
       try {
         setLoading(true);
         const response = await fetch('/api/documents');
         if (!response.ok) {
-          throw new Error('Failed to fetch documents');
+          throw new Error('Failed to fetch resources');
         }
         const data = await response.json();
-        setDocuments(Array.isArray(data) ? data : []);
+        setResources(Array.isArray(data) ? data : []);
       } catch (error) {
-        console.error('Error fetching documents:', error);
-        setDocuments([]);
+        console.error('Error fetching resources:', error);
+        setResources([]);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchDocuments();
+    fetchResources();
   }, []);
 
-  const filteredDocuments =
-    filter === 'All' ? documents : documents.filter((d) => d.category === filter);
-
-  const categories = ['All', 'Contract', 'Guide', 'Template', 'Process'];
+  const filteredResources = resources.filter((res) => {
+    const matchesSearch =
+      res.name.toLowerCase().includes(search.toLowerCase()) ||
+      res.description.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory =
+      filterCategory === 'All' || res.category === filterCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   return (
-    <AuthGuard>
-      <div className="min-h-screen bg-gray-50">
-        <Header />
+    <PageShell>
+      <header className="mb-12">
+        <h1 className="text-4xl font-black text-zinc-900 tracking-tight mb-2">Knowledge Base</h1>
+        <p className="text-zinc-500 font-medium">Verträge, Playbooks und Vorlagen für deinen Erfolg.</p>
+      </header>
 
-        <div className="max-w-5xl mx-auto px-6 py-12 pt-32">
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-3">
-              <FileText className="w-8 h-8 text-gray-700" />
-              <h1 className="text-4xl font-bold text-gray-900">Documents & Resources</h1>
-            </div>
-            <p className="text-lg text-gray-600">
-              Zentrale Ablage für Verträge, Guides, Templates und Prozesse.
-            </p>
-          </div>
-
-          <div className="mb-6 flex gap-2 flex-wrap">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => setFilter(category)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  filter === category
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
-                }`}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
-
-          {loading ? (
-            <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-sm text-gray-500">
-              Lade Dokumente...
-            </div>
-          ) : filteredDocuments.length === 0 ? (
-            <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-sm text-gray-500">
-              Noch keine Dokumente vorhanden.
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-2 gap-4">
-              {filteredDocuments.map((doc) => (
-                <a
-                  key={doc.id}
-                  href={doc.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-white rounded-xl border border-gray-200 p-5 hover:border-gray-300 transition-colors group"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-start gap-3 flex-1">
-                      <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                        <FileText className="w-5 h-5 text-gray-700" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors flex items-center gap-2">
-                          {doc.name}
-                          <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-blue-600" />
-                        </h3>
-                        <p className="text-sm text-gray-600 mb-2">{doc.description}</p>
-                        <div className="flex items-center gap-2 text-xs text-gray-500">
-                          <span>
-                            {new Date(doc.uploadDate).toLocaleDateString('de-DE')}
-                          </span>
-                          <span className="text-gray-400">•</span>
-                          <span className="flex items-center gap-1">
-                            {doc.accessLevel === 'Core Team' ? (
-                              <Lock className="w-3 h-3" />
-                            ) : (
-                              <Users className="w-3 h-3" />
-                            )}
-                            {doc.accessLevel}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium ${
-                        categoryColors[doc.category]
-                      }`}
-                    >
-                      {doc.category}
-                    </span>
-                  </div>
-                </a>
-              ))}
-            </div>
-          )}
+      <div className="flex flex-col md:flex-row gap-4 mb-8">
+        <div className="relative flex-1">
+          <Search className="absolute left-4 top-3.5 h-5 w-5 text-zinc-400" />
+          <input
+            type="text"
+            placeholder="Suche nach Dokumenten..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-12 pr-4 py-3 bg-white border border-zinc-200 rounded-xl focus:ring-2 focus:ring-zinc-900 outline-none transition-all text-sm font-medium"
+          />
+        </div>
+        <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setFilterCategory(cat)}
+              className={`px-5 py-3 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                filterCategory === cat
+                  ? 'bg-zinc-900 text-white shadow-md'
+                  : 'bg-white text-zinc-600 border border-zinc-200 hover:bg-zinc-50'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
         </div>
       </div>
-    </AuthGuard>
+
+      {loading ? (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-48 bg-zinc-100 rounded-3xl animate-pulse" />
+          ))}
+        </div>
+      ) : filteredResources.length === 0 ? (
+        <div className="bg-white rounded-3xl border border-dashed border-zinc-300 p-20 text-center">
+          <BookOpen className="w-12 h-12 text-zinc-300 mx-auto mb-4" />
+          <p className="text-zinc-400 font-bold text-lg">Keine Dokumente gefunden.</p>
+        </div>
+      ) : (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredResources.map((res) => (
+            <div
+              key={res.id}
+              className="group bg-white rounded-3xl border border-zinc-200 p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden"
+            >
+              <div className="flex justify-between items-start mb-4">
+                <div className="p-3 bg-zinc-50 rounded-2xl group-hover:bg-zinc-900 group-hover:text-white transition-colors">
+                  {res.category === 'Contract' ? (
+                    <Shield className="w-6 h-6" />
+                  ) : (
+                    <FileText className="w-6 h-6" />
+                  )}
+                </div>
+                {res.accessLevel === 'Core Team' && (
+                  <div className="bg-amber-50 text-amber-600 p-2 rounded-xl" title="Core Team Only">
+                    <Lock className="w-4 h-4" />
+                  </div>
+                )}
+              </div>
+
+              <h3 className="text-lg font-bold text-zinc-900 mb-2 leading-tight pr-8">
+                {res.name}
+              </h3>
+              <p className="text-sm text-zinc-500 mb-6 line-clamp-2 leading-relaxed">
+                {res.description}
+              </p>
+
+              <div className="border-t border-zinc-100 pt-4 mt-auto flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                  <Calendar className="w-3 h-3" />
+                  {res.uploadDate ? new Date(res.uploadDate).toLocaleDateString('de-DE') : 'N/A'}
+                </div>
+                
+                <a
+                  href={res.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-xs font-black text-zinc-900 hover:text-blue-600 transition-colors group-hover:underline"
+                >
+                  Download <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </PageShell>
   );
 }

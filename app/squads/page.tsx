@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Header from '@/app/components/Header';
+import PageShell from '@/app/components/PageShell';
 import AuthGuard from '@/app/components/AuthGuard';
-import { Users, Target, Calendar, ArrowUpRight } from 'lucide-react';
+import { Users, Target, Calendar, ArrowUpRight, TrendingUp, Lock, Unlock } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface Squad {
   id: string;
@@ -12,14 +13,14 @@ interface Squad {
   status: string;
   maxFounders: number;
   startDate: string;
-  currentCount?: number; // Will be calculated later or fetched
+  currentCount?: number;
 }
 
-const statusColors: Record<string, string> = {
-  'Recruiting': 'bg-yellow-100 text-yellow-800',
-  'Building': 'bg-blue-100 text-blue-800',
-  'Live': 'bg-green-100 text-green-800',
-  'Exit': 'bg-purple-100 text-purple-800',
+const statusConfig: Record<string, { color: string, label: string, icon: any }> = {
+  'Recruiting': { color: 'bg-emerald-500', label: 'Open for Investment', icon: Unlock },
+  'Building': { color: 'bg-blue-500', label: 'In Development', icon: Users },
+  'Live': { color: 'bg-indigo-500', label: 'Market Live', icon: TrendingUp },
+  'Exit': { color: 'bg-purple-500', label: 'Exit Phase', icon: ArrowUpRight },
 };
 
 export default function SquadsPage() {
@@ -45,78 +46,111 @@ export default function SquadsPage() {
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-[#f8f4f0]">
-        <Header />
-        
-        <main className="max-w-7xl mx-auto px-6 pt-32 pb-20">
-          <div className="mb-12">
-            <h1 className="text-4xl font-display text-[var(--foreground)] mb-2">Squads</h1>
-            <p className="text-lg text-[var(--secondary)]">
-              Die operativen Einheiten von The Forge. Finde dein Team.
-            </p>
+      <PageShell>
+        <header className="mb-12 flex flex-col md:flex-row justify-between items-end gap-6">
+          <div>
+            <h1 className="text-4xl font-black text-zinc-900 tracking-tight mb-2">Squad Market</h1>
+            <p className="text-zinc-500 font-medium">Investiere Zeit & Kapital in High-Performance Teams.</p>
           </div>
-
-          {loading ? (
-             <div className="bg-white rounded-xl border border-[var(--border)] p-8 text-center text-sm text-[var(--secondary)]">
-                Lade Squads...
-             </div>
-          ) : squads.length === 0 ? (
-            <div className="bg-white rounded-xl border border-[var(--border)] p-8 text-center text-sm text-[var(--secondary)]">
-                Noch keine Squads aktiv.
+          <div className="bg-white px-6 py-3 rounded-2xl shadow-sm border border-zinc-200 flex gap-8">
+            <div>
+              <div className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Total Value</div>
+              <div className="text-2xl font-black text-zinc-900">€ 75.000</div>
             </div>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {squads.map((squad) => (
-                <div key={squad.id} className="bg-white rounded-2xl border border-[var(--border)] p-6 hover:border-[var(--accent-soft)] transition-all group">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="text-xl font-display text-[var(--foreground)]">{squad.name}</h3>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-2 ${statusColors[squad.status] || 'bg-gray-100 text-gray-800'}`}>
-                        {squad.status}
-                      </span>
-                    </div>
-                    {/* Placeholder icon or action */}
-                    <div className="h-10 w-10 bg-[var(--surface-muted)] rounded-full flex items-center justify-center group-hover:bg-[var(--accent-glow)] transition-colors">
-                        <Users className="w-5 h-5 text-[var(--secondary)] group-hover:text-[var(--accent)]" />
-                    </div>
-                  </div>
+            <div>
+              <div className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Active Squads</div>
+              <div className="text-2xl font-black text-zinc-900">{squads.length}</div>
+            </div>
+          </div>
+        </header>
 
-                  <div className="space-y-4 mt-6">
-                    <div className="flex items-center gap-3">
-                      <Target className="w-4 h-4 text-[var(--secondary)]" />
-                      <div>
-                        <div className="text-xs text-[var(--secondary)]">Target Capital</div>
-                        <div className="text-sm font-medium">{squad.targetCapital}</div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <Calendar className="w-4 h-4 text-[var(--secondary)]" />
-                      <div>
-                        <div className="text-xs text-[var(--secondary)]">Start Date</div>
-                        <div className="text-sm font-medium">
-                            {squad.startDate ? new Date(squad.startDate).toLocaleDateString('de-DE') : 'TBA'}
-                        </div>
-                      </div>
-                    </div>
-                    
-                     <div className="pt-4 border-t border-[var(--border)]">
-                        <div className="flex justify-between text-xs text-[var(--secondary)] mb-1">
-                            <span>Founders</span>
-                            <span>Max {squad.maxFounders}</span>
-                        </div>
-                         {/* Progress bar placeholder - ideally fetch real count */}
-                        <div className="h-1.5 w-full bg-[var(--surface-muted)] rounded-full overflow-hidden">
-                            <div className="h-full bg-[var(--accent)] w-1/3" /> 
-                        </div>
-                     </div>
-                  </div>
-                </div>
+        {loading ? (
+            <div className="grid md:grid-cols-3 gap-6">
+              {[1,2,3].map(i => (
+                <div key={i} className="h-64 bg-zinc-100 rounded-3xl animate-pulse" />
               ))}
             </div>
-          )}
-        </main>
-      </div>
+        ) : squads.length === 0 ? (
+          <div className="bg-white rounded-3xl border border-dashed border-zinc-300 p-20 text-center">
+              <p className="text-zinc-400 font-bold text-lg">Der Markt ist gerade ruhig.</p>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {squads.map((squad, idx) => {
+              const config = statusConfig[squad.status] || statusConfig['Recruiting'];
+              const Icon = config.icon;
+              const fillPercent = Math.min(((squad.currentCount || 2) / squad.maxFounders) * 100, 100);
+
+              return (
+                <motion.div 
+                  key={squad.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="group relative bg-white rounded-[2rem] border border-zinc-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden"
+                >
+                  <div className="absolute top-6 right-6">
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider text-white ${config.color}`}>
+                      <Icon className="w-3 h-3" />
+                      {config.label}
+                    </span>
+                  </div>
+
+                  <div className="p-8 pb-0">
+                    <div className="w-14 h-14 bg-zinc-900 rounded-2xl flex items-center justify-center text-white text-2xl font-black mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                      {squad.name.charAt(0)}
+                    </div>
+                    <h3 className="text-2xl font-black text-zinc-900 mb-1">{squad.name}</h3>
+                    <p className="text-sm text-zinc-500 font-medium">E-Commerce Brand</p>
+                  </div>
+
+                  <div className="p-8 space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-zinc-50 p-4 rounded-2xl border border-zinc-100">
+                        <div className="text-[10px] font-bold text-zinc-400 uppercase mb-1">Target Cap</div>
+                        <div className="text-lg font-black text-zinc-900">€ {squad.targetCapital}</div>
+                      </div>
+                      <div className="bg-zinc-50 p-4 rounded-2xl border border-zinc-100">
+                        <div className="text-[10px] font-bold text-zinc-400 uppercase mb-1">Launch</div>
+                        <div className="text-lg font-black text-zinc-900">
+                          {squad.startDate ? new Date(squad.startDate).toLocaleDateString('de-DE', { month: 'short', year: '2-digit' }) : 'TBA'}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between text-xs font-bold text-zinc-500 mb-2">
+                        <span>Founders Board</span>
+                        <span>{(squad.currentCount || 2)} / {squad.maxFounders} Seats</span>
+                      </div>
+                      <div className="h-3 w-full bg-zinc-100 rounded-full overflow-hidden">
+                        <motion.div 
+                          initial={{ width: 0 }}
+                          animate={{ width: `${fillPercent}%` }}
+                          className={`h-full ${config.color}`}
+                        />
+                      </div>
+                      <div className="flex -space-x-2 mt-3">
+                        {[...Array(squad.maxFounders)].map((_, i) => (
+                          <div key={i} className={`w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold ${
+                            i < (squad.currentCount || 2) ? 'bg-zinc-800 text-white' : 'bg-zinc-100 text-zinc-300'
+                          }`}>
+                            {i < (squad.currentCount || 2) ? 'F' : '+'}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <button className="w-full bg-black text-white py-4 rounded-xl font-black text-sm hover:bg-zinc-800 transition-all shadow-lg active:scale-95 flex justify-center items-center gap-2">
+                      {squad.status === 'Recruiting' ? 'Apply for Seat' : 'View Details'} <ArrowUpRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+      </PageShell>
     </AuthGuard>
   );
 }

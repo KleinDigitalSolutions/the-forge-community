@@ -2,32 +2,80 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { UserCircle, ArrowRight } from 'lucide-react';
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
   const router = useRouter();
   const pathname = usePathname();
+  const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated' && pathname !== '/') {
       router.replace('/');
+    }
+
+    if (status === 'authenticated') {
+      // Check profile completeness
+      fetch('/api/me')
+        .then(res => res.json())
+        .then(data => setProfileComplete(data.isProfileComplete))
+        .catch(() => setProfileComplete(true)); // Fallback to safe state
     }
   }, [status, router, pathname]);
 
   if (status === 'loading') {
     return (
       <div className="min-h-screen bg-[#f8f4f0] flex items-center justify-center">
-        <div className="text-[0.7rem] uppercase tracking-[0.3em] text-[var(--secondary)] animate-pulse">
+        <div className="text-[0.7rem] uppercase tracking-[0.3em] text-gray-400 animate-pulse">
           Authentifiziere...
         </div>
       </div>
     );
   }
 
-  if (status === 'unauthenticated') {
-    return null; // Don't render anything while redirecting
-  }
+  if (status === 'unauthenticated') return null;
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+
+      {/* Profile Completion Overlay */}
+      <AnimatePresence>
+        {profileComplete === false && pathname !== '/profile' && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[9999] flex items-center justify-center p-6"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              className="bg-white rounded-[2.5rem] p-10 max-w-lg w-full shadow-2xl text-center"
+            >
+              <div className="w-20 h-20 bg-blue-50 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                <UserCircle className="w-10 h-10 text-blue-600" />
+              </div>
+              <h2 className="text-3xl font-black text-gray-900 mb-4">Willkommen bei The Forge!</h2>
+              <p className="text-gray-500 font-medium mb-8 leading-relaxed">
+                Um die Community sicher und exklusiv zu halten, bitten wir dich, dein **Founder Dossier** (Adresse, Kontakt, Skills) einmalig zu vervollständigen.
+              </p>
+              <button 
+                onClick={() => router.push('/profile')}
+                className="w-full bg-gray-900 hover:bg-black text-white py-5 rounded-2xl font-black text-sm transition-all flex items-center justify-center gap-3 shadow-xl active:scale-[0.98]"
+              >
+                Profil vervollständigen <ArrowRight className="w-4 h-4" />
+              </button>
+              <p className="mt-6 text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                Dauert weniger als 2 Minuten
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
 }

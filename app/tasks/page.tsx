@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Header from '@/app/components/Header';
+import PageShell from '@/app/components/PageShell';
 import AuthGuard from '@/app/components/AuthGuard';
 import { CheckSquare, Circle, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
 
@@ -23,22 +23,22 @@ const statusIcons = {
 };
 
 const statusColors = {
-  'To Do': 'bg-gray-100 text-gray-700',
-  'In Progress': 'bg-blue-100 text-blue-700',
-  'Done': 'bg-green-100 text-green-700',
+  'To Do': 'bg-zinc-100 text-zinc-600',
+  'In Progress': 'bg-blue-50 text-blue-600',
+  'Done': 'bg-green-50 text-green-600',
 };
 
 const priorityColors = {
   High: 'border-l-4 border-red-500',
-  Medium: 'border-l-4 border-yellow-500',
-  Low: 'border-l-4 border-gray-300',
+  Medium: 'border-l-4 border-amber-400',
+  Low: 'border-l-4 border-zinc-200',
 };
 
 const categoryColors = {
-  Legal: 'bg-purple-100 text-purple-700',
-  WMS: 'bg-blue-100 text-blue-700',
-  Marketing: 'bg-pink-100 text-pink-700',
-  Operations: 'bg-green-100 text-green-700',
+  Legal: 'bg-purple-50 text-purple-700 border border-purple-100',
+  WMS: 'bg-blue-50 text-blue-700 border border-blue-100',
+  Marketing: 'bg-pink-50 text-pink-700 border border-pink-100',
+  Operations: 'bg-emerald-50 text-emerald-700 border border-emerald-100',
 };
 
 export default function TasksPage() {
@@ -94,157 +94,111 @@ export default function TasksPage() {
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-gray-50">
-        <Header />
+      <PageShell>
+        <header className="mb-12">
+          <h1 className="text-4xl font-black text-zinc-900 tracking-tight mb-2">Mission Control</h1>
+          <p className="text-zinc-500 font-medium">Alle Aufgaben und Verantwortlichkeiten im Überblick.</p>
+        </header>
 
-        <div className="max-w-6xl mx-auto px-6 py-12 pt-32">
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-3">
-              <CheckSquare className="w-8 h-8 text-gray-700" />
-              <h1 className="text-4xl font-bold text-gray-900">Tasks & Action Items</h1>
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white rounded-2xl border border-zinc-200 p-6 shadow-sm">
+            <div className="flex items-center gap-3 mb-2">
+              <Circle className="w-5 h-5 text-zinc-400" />
+              <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">To Do</span>
             </div>
-            <p className="text-lg text-gray-600">
-              Alle Aufgaben und Verantwortlichkeiten im Überblick.
-            </p>
+            <div className="text-3xl font-black text-zinc-900">{toDoCount}</div>
           </div>
-
-          <div className="grid md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-white rounded-xl border border-gray-200 p-5">
-              <div className="flex items-center gap-3 mb-2">
-                <Circle className="w-5 h-5 text-gray-600" />
-                <span className="text-sm font-medium text-gray-600">To Do</span>
-              </div>
-              <div className="text-2xl font-bold text-gray-900">{toDoCount}</div>
+          <div className="bg-white rounded-2xl border border-zinc-200 p-6 shadow-sm">
+            <div className="flex items-center gap-3 mb-2">
+              <Clock className="w-5 h-5 text-blue-500" />
+              <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">In Progress</span>
             </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-5">
-              <div className="flex items-center gap-3 mb-2">
-                <Clock className="w-5 h-5 text-blue-600" />
-                <span className="text-sm font-medium text-gray-600">In Progress</span>
-              </div>
-              <div className="text-2xl font-bold text-gray-900">{inProgressCount}</div>
-            </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-5">
-              <div className="flex items-center gap-3 mb-2">
-                <CheckCircle2 className="w-5 h-5 text-green-600" />
-                <span className="text-sm font-medium text-gray-600">Done</span>
-              </div>
-              <div className="text-2xl font-bold text-gray-900">{doneCount}</div>
-            </div>
+            <div className="text-3xl font-black text-zinc-900">{inProgressCount}</div>
           </div>
-
-          <div className="mb-6 flex gap-2 flex-wrap">
-            {filters.map((f) => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  filter === f
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
-                }`}
-              >
-                {f}
-              </button>
-            ))}
+          <div className="bg-white rounded-2xl border border-zinc-200 p-6 shadow-sm">
+            <div className="flex items-center gap-3 mb-2">
+              <CheckCircle2 className="w-5 h-5 text-green-500" />
+              <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Done</span>
+            </div>
+            <div className="text-3xl font-black text-zinc-900">{doneCount}</div>
           </div>
+        </div>
 
-          {loading ? (
-            <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-sm text-gray-500">
-              Lade Tasks...
-            </div>
-          ) : filteredTasks.length === 0 ? (
-            <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-sm text-gray-500">
-              Noch keine Tasks vorhanden.
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {filteredTasks.map((task) => {
-                const Icon = statusIcons[task.status];
-                const isOverdue =
-                  task.status !== 'Done' &&
-                  task.dueDate &&
-                  new Date(task.dueDate) < new Date();
+        <div className="mb-8 flex gap-2 flex-wrap p-1 bg-zinc-100 rounded-xl w-fit">
+          {filters.map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-5 py-2 rounded-lg text-xs font-bold transition-all ${
+                filter === f
+                  ? 'bg-white text-zinc-900 shadow-sm'
+                  : 'text-zinc-500 hover:text-zinc-900'
+              }`}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
 
-                return (
-                  <div
-                    key={task.id}
-                    className={`bg-white rounded-xl border border-gray-200 p-5 hover:border-gray-300 transition-colors ${
-                      priorityColors[task.priority]
-                    }`}
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-start gap-3 flex-1">
-                        <div
-                          className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                            statusColors[task.status]
-                          }`}
-                        >
-                          <Icon className="w-5 h-5" />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900 mb-1">{task.task}</h3>
-                          <p className="text-sm text-gray-600 mb-3">{task.description}</p>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-xs text-gray-500">
-                              <strong>Assigned:</strong> {task.assignedTo}
-                            </span>
-                            <span className="text-xs text-gray-400">•</span>
-                            <span
-                              className={`text-xs ${
-                                isOverdue ? 'text-red-600 font-medium' : 'text-gray-500'
-                              }`}
-                            >
-                              {isOverdue && (
-                                <AlertCircle className="w-3 h-3 inline mr-1" />
-                              )}
-                              <strong>Due:</strong>{' '}
-                              {new Date(task.dueDate).toLocaleDateString('de-DE')}
-                            </span>
-                            <span className="text-xs text-gray-400">•</span>
-                            <span
-                              className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${
-                                categoryColors[task.category]
-                              }`}
-                            >
-                              {task.category}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex flex-col gap-2 ml-3">
-                        <select
-                          value={task.status}
-                          onChange={(e) =>
-                            handleStatusChange(task.id, e.target.value as Task['status'])
-                          }
-                          className={`px-3 py-1 rounded-lg text-xs font-medium border border-gray-200 focus:outline-none focus:border-gray-900 ${
-                            statusColors[task.status]
-                          }`}
-                        >
-                          <option value="To Do">To Do</option>
-                          <option value="In Progress">In Progress</option>
-                          <option value="Done">Done</option>
-                        </select>
-                        <span
-                          className={`inline-flex items-center justify-center px-2 py-1 rounded-md text-xs font-medium ${
-                            task.priority === 'High'
-                              ? 'bg-red-100 text-red-700'
-                              : task.priority === 'Medium'
-                              ? 'bg-yellow-100 text-yellow-700'
-                              : 'bg-gray-100 text-gray-700'
-                          }`}
-                        >
-                          {task.priority}
-                        </span>
-                      </div>
+        {loading ? (
+          <div className="bg-white rounded-3xl border border-zinc-200 p-12 text-center text-sm text-zinc-400 font-medium animate-pulse">
+            Lade Missionen...
+          </div>
+        ) : filteredTasks.length === 0 ? (
+          <div className="bg-white rounded-3xl border border-dashed border-zinc-300 p-20 text-center text-zinc-400 font-bold">
+            Keine Aufgaben gefunden.
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredTasks.map((task) => {
+              const Icon = statusIcons[task.status];
+              const isOverdue =
+                task.status !== 'Done' &&
+                task.dueDate &&
+                new Date(task.dueDate) < new Date();
+
+              return (
+                <div
+                  key={task.id}
+                  className={`bg-white rounded-2xl border border-zinc-200 p-6 hover:border-zinc-300 hover:shadow-md transition-all group ${priorityColors[task.priority]}`}
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${categoryColors[task.category] || 'bg-zinc-100 text-zinc-500'}`}>
+                      {task.category}
+                    </span>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${statusColors[task.status]}`}>
+                      <Icon className="w-4 h-4" />
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </div>
+
+                  <h3 className="font-bold text-zinc-900 mb-2 leading-tight">{task.task}</h3>
+                  <p className="text-xs text-zinc-500 mb-6 leading-relaxed line-clamp-3">{task.description}</p>
+
+                  <div className="border-t border-zinc-100 pt-4 mt-auto">
+                    <div className="flex justify-between items-center text-xs text-zinc-500 mb-4">
+                      <span className="font-medium">{task.assignedTo || 'Unassigned'}</span>
+                      <span className={`${isOverdue ? 'text-red-500 font-bold' : ''}`}>
+                        {isOverdue && <AlertCircle className="w-3 h-3 inline mr-1" />}
+                        {task.dueDate ? new Date(task.dueDate).toLocaleDateString('de-DE', { day: '2-digit', month: 'short' }) : ''}
+                      </span>
+                    </div>
+
+                    <select
+                      value={task.status}
+                      onChange={(e) => handleStatusChange(task.id, e.target.value as Task['status'])}
+                      className="w-full bg-zinc-50 border border-zinc-200 text-zinc-700 text-xs font-bold rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-zinc-900 cursor-pointer"
+                    >
+                      <option value="To Do">To Do</option>
+                      <option value="In Progress">In Progress</option>
+                      <option value="Done">Done</option>
+                    </select>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </PageShell>
     </AuthGuard>
   );
 }

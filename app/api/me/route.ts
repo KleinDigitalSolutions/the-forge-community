@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { getFounderByEmail } from '@/lib/notion';
+import { sql } from '@vercel/postgres';
 
 export async function GET() {
   const session = await auth();
@@ -8,10 +9,34 @@ export async function GET() {
     return new NextResponse('Unauthorized', { status: 401 });
   }
 
-  const founder = await getFounderByEmail(session.user.email);
-  if (!founder) {
-    return new NextResponse('Founder not found', { status: 404 });
-  }
+  try {
+    // 1. Daten aus Notion holen (Status, Founder-Nummer)
+    const founder = await getFounderByEmail(session.user.email);
+    
+    // 2. Daten aus Postgres holen (Dossier: Adresse, BDay, etc.)
+    const pgUser = await sql`
+      SELECT name, phone, birthday, address_street, address_city, address_zip, address_country, instagram, linkedin, bio, skills, goal
+      FROM users 
+      WHERE email = ${session.user.email}
+    `;
 
-  return NextResponse.json(founder);
+    const profile = pgUser.rows[0] || {};
+
+    // 3. Prüfen, ob das Profil vollständig ist (Pflichtfelder)
+    const isComplete = !!(
+      profile.name && 
+      profile.birthday && 
+      profile.address_city && 
+      profile.phone
+    );
+
+    return NextResponse.json({
+      ...founder,
+      ...profile,
+      isProfileComplete: isComplete
+    });
+  } catch (error) {
+    console.error('Error fetching combined profile:', error);
+    return new NextResponse('Error', { status: 500 });
+  }
 }

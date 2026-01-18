@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
-import { getForumPosts, addForumPost } from '@/lib/notion';
+import { getForumPosts, addForumPost, getFounderByEmail } from '@/lib/notion';
+import { auth } from '@/auth';
 import { Client } from '@notionhq/client';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET() {
   try {
@@ -18,26 +20,41 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const { author, founderNumber, content, category } = body;
+  const session = await auth();
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
-    if (!author || !content || !category) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
+  try {
+    let authorName = session.user.name || 'Anonymous Founder';
+    let founderNumber = 0;
+
+    try {
+      const founder = await getFounderByEmail(session.user.email);
+      if (founder) {
+        authorName = founder.name;
+        founderNumber = founder.founderNumber;
+      }
+    } catch (e) {
+      console.warn('API: Founder lookup failed, using session defaults');
     }
 
-    // 1. Create the post in Notion
+    const body = await request.json();
+    const { content, category } = body;
+
+    if (!content || !category) {
+      return NextResponse.json({ error: 'Missing content or category' }, { status: 400 });
+    }
+
+    // Erstelle den Post
     const response = await addForumPost({
-      author,
-      founderNumber,
+      author: authorName,
+      founderNumber: founderNumber,
       content,
       category,
     });
     
-    // 2. Generate AI Response (Fire & Forget style mostly, but we await here for simplicity)
+    // AI Response (bleibt als nettes Feature)
     if (process.env.GROQ_API_KEY) {
         try {
             const aiResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -48,12 +65,12 @@ export async function POST(request: Request) {
                 },
                 body: JSON.stringify({
                     messages: [
-                        { 
-                            role: 'system', 
+                        {
+                            role: 'system',
                             content: `Du bist ein hilfreicher Community-Bot für 'The Forge'. Ein Founder hat gerade eine Frage oder Idee gepostet.
                             Gib eine kurze, motivierende und fachlich fundierte erste Einschätzung oder Antwort (max 2-3 Sätze).
                             Biete an, dass andere Founder sicher noch mehr dazu sagen können.
-                            Unterschreibe mit '🤖 Forge AI'.` 
+                            Unterschreibe mit '🤖 Forge AI'.`
                         },
                         { role: 'user', content: `Kategorie: ${category}\nInhalt: ${content}` },
                     ],
@@ -66,30 +83,18 @@ export async function POST(request: Request) {
                 const botText = aiData.choices[0]?.message?.content || '';
 
                 if (botText && response.id) {
-                    // 3. Append AI answer to the Notion Page content
                     const notion = new Client({ auth: process.env.NOTION_API_KEY });
                     await notion.blocks.children.append({
                         block_id: response.id,
                         children: [
-                            {
-                                object: 'block',
-                                type: 'divider',
-                                divider: {}
-                            },
+                            { object: 'block', type: 'divider', divider: {} },
                             {
                                 object: 'block',
                                 type: 'callout',
                                 callout: {
                                     icon: { emoji: '🤖' },
                                     color: 'gray_background',
-                                    rich_text: [
-                                        {
-                                            type: 'text',
-                                            text: {
-                                                content: botText
-                                            }
-                                        }
-                                    ]
+                                    rich_text: [{ type: 'text', text: { content: botText } }]
                                 }
                             }
                         ]
@@ -97,16 +102,15 @@ export async function POST(request: Request) {
                 }
             }
         } catch (aiError) {
-            console.error('AI Reply failed (non-critical):', aiError);
-            // We do not fail the request if AI fails
+            console.error('AI Reply failed:', aiError);
         }
     }
 
     return NextResponse.json(response);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error adding forum post:', error);
     return NextResponse.json(
-      { error: 'Failed to add forum post' },
+      { error: 'Failed to add forum post', details: error.message },
       { status: 500 }
     );
   }
