@@ -204,7 +204,7 @@ export default function Home() {
             ].map((stat, i) => (
               <div key={i} className="glass-card backdrop-blur-2xl p-8 rounded-3xl border border-white/10 flex flex-col items-center justify-center hover:border-[var(--accent)]/50 transition-all duration-700 group overflow-hidden relative shadow-2xl">
                 <div className="absolute inset-0 bg-gradient-to-b from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                <div className="text-4xl md:text-5xl font-instrument-serif text-white mb-3 group-hover:scale-110 transition-transform duration-700 relative z-10">
+                <div className="text-4xl md:text-5xl font-instrument-serif text-white mb-3 relative z-10">
                   {stat.value}
                 </div>
                 <div className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--accent)] mb-1.5 relative z-10">
