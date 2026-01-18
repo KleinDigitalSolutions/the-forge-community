@@ -126,6 +126,7 @@ export interface Founder {
   investmentPaid: boolean;
   groupId?: string;
   groupName?: string;
+  plan?: string;
 }
 
 export async function getFounders(): Promise<Founder[]> {
@@ -145,6 +146,7 @@ export async function getFounders(): Promise<Founder[]> {
         status: getStatus(getProperty(page, props, ['Status'])) as any || 'pending',
         investmentPaid: getProperty(page, props, ['Investment Paid', 'Investment bezahlt'])?.checkbox || false,
         groupId: getProperty(page, props, ['Group', 'Gruppe'])?.relation?.[0]?.id || undefined,
+        plan: getStatus(getProperty(page, props, ['Plan'])) || undefined,
       };
     });
   } catch (error) {
@@ -210,7 +212,8 @@ export async function getFounderByEmail(email: string): Promise<Founder | null> 
       status: getStatus(getProperty(page, props, ['Status'])) as any || 'pending',
       investmentPaid: getProperty(page, props, ['Investment Paid', 'Investment bezahlt'])?.checkbox || false,
       groupId,
-      groupName
+      groupName,
+      plan: getStatus(getProperty(page, props, ['Plan'])) || undefined,
     };
   } catch (error) { return null; }
 }
