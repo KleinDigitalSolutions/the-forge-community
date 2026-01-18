@@ -1,44 +1,43 @@
 @import "tailwindcss";
 
 @theme {
-  /* THE FORGE - Dark Industrial Premium */
-  --color-background: #0A0E0D;
-  --color-foreground: #FAFAF9;
+  /* THE FORGE - Dark Industrial Premium (Refined) */
+  --color-background: #08090A; /* Darker, slightly cooler charcoal */
+  --color-foreground: #EDEDEF; /* Soft white */
 
-  --color-card: #141816;
-  --color-card-foreground: #FAFAF9;
+  --color-card: #0F1113;
+  --color-card-foreground: #EDEDEF;
 
-  --color-popover: #141816;
-  --color-popover-foreground: #FAFAF9;
+  --color-popover: #0F1113;
+  --color-popover-foreground: #EDEDEF;
 
   --color-primary: #D4AF37;
-  --color-primary-foreground: #0A0E0D;
+  --color-primary-foreground: #08090A;
 
-  --color-secondary: #78716C;
-  --color-secondary-foreground: #FAFAF9;
+  --color-secondary: #888888;
+  --color-secondary-foreground: #EDEDEF;
 
-  --color-muted: #1C2220;
-  --color-muted-foreground: #A8A29E;
+  --color-muted: #1A1D21;
+  --color-muted-foreground: #A1A1AA;
 
   --color-accent: #D4AF37;
-  --color-accent-foreground: #0A0E0D;
+  --color-accent-foreground: #08090A;
 
-  --color-destructive: #7f1d1d;
-  --color-destructive-foreground: #FAFAF9;
+  --color-destructive: #991B1B;
+  --color-destructive-foreground: #EDEDEF;
 
-  --color-border: #2D3532;
-  --color-input: #1C2220;
+  --color-border: #27272A; /* Zinc-800 equivalent */
+  --color-input: #1A1D21;
   --color-ring: #D4AF37;
 
-  --radius: 1rem; /* 16px */
+  --radius: 0.75rem; /* 12px - slightly sharper */
 
   /* Custom Forge Colors */
-  --color-surface: #141816;
-  --color-surface-muted: #1C2220;
-  --color-accent-glow: rgba(212, 175, 55, 0.1);
+  --color-surface: #0C0E10;
+  --color-surface-muted: #131518;
+  --color-accent-glow: rgba(212, 175, 55, 0.15);
   --color-accent-soft: #B8935C;
-  --color-forge-green: #0E2419;
-  --color-forge-ember: #FF6B35;
+  --color-forge-ember: #FF5500; /* More vibrant orange */
 }
 
 @layer base {
@@ -51,13 +50,14 @@
     color: var(--color-foreground);
     font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     font-size: 16px;
     line-height: 1.6;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-weight: 700;
-    letter-spacing: -0.025em;
+    font-weight: 600;
+    letter-spacing: -0.03em;
     line-height: 1.1;
   }
 }
@@ -65,18 +65,53 @@
 @layer utilities {
   .font-display {
     font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
-    font-weight: 800;
-    letter-spacing: -0.03em;
+    font-weight: 700;
+    letter-spacing: -0.04em;
   }
 
-  .gradient-gold {
-    background: linear-gradient(135deg, #D4AF37 0%, #F4E4B4 50%, #D4AF37 100%);
+  /* Premium Gradient Text */
+  .text-gradient {
+    background: linear-gradient(to bottom right, #FFFFFF 30%, #999999 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     color: transparent;
   }
 
+  .text-gradient-gold {
+    background: linear-gradient(to bottom right, #FCD34D 0%, #D4AF37 50%, #B45309 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Subtle Background Grid */
+  .bg-grid-small {
+    background-size: 20px 20px;
+    background-image: linear-gradient(to right, #27272A 1px, transparent 1px),
+      linear-gradient(to bottom, #27272A 1px, transparent 1px);
+    mask-image: radial-gradient(ellipse at center, black 40%, transparent 75%);
+  }
+
+  /* Glassmorphism Card */
+  .glass-card {
+    background: rgba(15, 17, 19, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  /* Glow Effects */
+  .glow-point {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(212,175,55,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+  }
+  
   .ember-glow {
     position: relative;
     isolation: isolate;
@@ -98,30 +133,36 @@
     opacity: 0.6;
   }
 
-  .industrial-texture {
-    background-image:
-      linear-gradient(rgba(212, 175, 55, 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(212, 175, 55, 0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
+  /* Button Shimmer */
+  .btn-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(115deg, transparent, rgba(255,255,255,0.3), transparent);
+    transform: translateX(-100%);
+    animation: shimmer 3s infinite;
   }
 
-  .card-hover {
-    transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  .card-hover:hover {
-    transform: translateY(-4px);
-    border-color: var(--color-accent);
-    box-shadow: 0 10px 40px -10px rgba(212, 175, 55, 0.1);
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    20% { transform: translateX(100%); }
+    100% { transform: translateX(100%); }
   }
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   opacity: 0;
 }
 
-@keyframes fadeIn {
+@keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }

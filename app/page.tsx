@@ -18,7 +18,9 @@ import {
   Shield,
   Layers,
   BarChart,
-  Users
+  Users,
+  ChevronRight,
+  Sparkles
 } from 'lucide-react';
 
 type ChatMessage = {
@@ -34,7 +36,7 @@ export default function Home() {
     {
       role: 'assistant',
       content:
-        'Ich bin Orion, dein AI-Concierge für STAKE & SCALE. Frag mich alles zu unserem Modell, Projekten, Voting oder Transparenz.',
+        'Hi, ich bin Orion. Dein Guide für The Forge. Wie kann ich helfen?',
     },
   ]);
   const [chatInput, setChatInput] = useState('');
@@ -84,21 +86,11 @@ export default function Home() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [chatMessages, isChatOpen]);
 
-  const handleOpenChat = () => {
-    setIsChatOpen(true);
-  };
+  const handleOpenChat = () => setIsChatOpen(true);
+  const handleCloseChat = () => setIsChatOpen(false);
 
-  const handleCloseChat = () => {
-    setIsChatOpen(false);
-  };
-
-  const handleNextStep = () => {
-    setCurrentStep(prev => prev + 1);
-  };
-
-  const handlePrevStep = () => {
-    setCurrentStep(prev => prev - 1);
-  };
+  const handleNextStep = () => setCurrentStep(prev => prev + 1);
+  const handlePrevStep = () => setCurrentStep(prev => prev - 1);
 
   const handleSelectRole = (selectedRole: 'investor' | 'builder') => {
     setRole(selectedRole);
@@ -114,9 +106,7 @@ export default function Home() {
 
   const handleChatSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!chatInput.trim() || chatStatus === 'loading') {
-      return;
-    }
+    if (!chatInput.trim() || chatStatus === 'loading') return;
 
     const message = chatInput.trim();
     const history = chatMessages.slice(-6).map((entry) => ({
@@ -136,27 +126,14 @@ export default function Home() {
       });
 
       const data = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        if (data?.details) {
-          console.error('Groq error details:', data.details);
-        }
-        throw new Error(data?.error || 'Chat request failed');
-      }
+      if (!response.ok) throw new Error(data?.error || 'Chat request failed');
 
-      const reply =
-        typeof data.message === 'string' && data.message.trim()
-          ? data.message.trim()
-          : 'Danke dir. Kannst du deine Frage etwas präziser stellen?';
-
+      const reply = data.message?.trim() || 'Danke. Kannst du das präzisieren?';
       setChatMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
     } catch (error) {
-      console.error('Chat error:', error);
       setChatMessages((prev) => [
         ...prev,
-        {
-          role: 'assistant',
-          content: 'Sorry, ich hatte gerade einen Fehler. Versuch es bitte nochmal.',
-        },
+        { role: 'assistant', content: 'Verbindung unterbrochen. Bitte versuche es erneut.' },
       ]);
     } finally {
       setChatStatus('idle');
@@ -178,635 +155,433 @@ export default function Home() {
       const response = await fetch('/api/founders/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          role, // Send the role too
-        }),
+        body: JSON.stringify({ ...formData, role }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to submit');
-      }
+      if (!response.ok) throw new Error('Failed to submit');
 
       setFormStatus('success');
-      setFormMessage('Danke! Deine Bewerbung ist eingegangen. Wir melden uns in Kürze.');
-      // Reset form after delay or show success screen
+      setFormMessage('Empfangen. Wir melden uns.');
     } catch (error) {
-      console.error('Error submitting form:', error);
       setFormStatus('error');
-      setFormMessage('Bewerbung konnte nicht gesendet werden. Bitte versuche es erneut.');
+      setFormMessage('Fehler beim Senden.');
     }
   };
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] selection:bg-[var(--accent)] selection:text-[var(--accent-foreground)]">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] selection:bg-[var(--accent)] selection:text-[var(--accent-foreground)] overflow-x-hidden">
       <Header />
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-6 relative overflow-hidden industrial-texture">
-        {/* Background Gradients */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full pointer-events-none opacity-20">
-          <div className="absolute top-20 left-1/4 w-96 h-96 bg-[var(--accent)] rounded-full blur-[128px]" />
-          <div className="absolute top-40 right-1/4 w-64 h-64 bg-[var(--color-forge-ember)] rounded-full blur-[128px]" />
-        </div>
+      <section className="relative pt-40 pb-32 px-6 flex flex-col items-center justify-center min-h-[90vh]">
+        {/* Background Grid */}
+        <div className="absolute inset-0 bg-grid-small opacity-20 pointer-events-none" />
+        
+        {/* Glow Effects */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-[var(--color-primary)] opacity-[0.03] blur-[120px] rounded-full pointer-events-none" />
 
-        <div className="max-w-5xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--surface-muted)] border border-[var(--border)] mb-8 animate-fade-in">
-            <span className="w-2 h-2 rounded-full bg-[var(--color-forge-ember)] animate-pulse" />
-            <span className="text-[0.65rem] uppercase tracking-[0.3em] text-[var(--secondary)] font-medium">Limited Access Phase</span>
+        <div className="relative z-10 max-w-5xl mx-auto text-center">
+          <div className="animate-fade-in-up" style={{ animationDelay: '0s' }}>
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--surface-muted)] border border-[var(--border)] text-[10px] uppercase tracking-[0.2em] text-[var(--muted-foreground)] mb-8 hover:border-[var(--accent)] transition-colors cursor-default">
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-forge-ember)] animate-pulse" />
+              Batch #001 Closing Soon
+            </span>
           </div>
           
-          <h1 className="text-5xl sm:text-7xl md:text-[88px] font-display font-bold text-[var(--foreground)] mb-8 leading-[1.05] tracking-tight animate-fade-in" style={{ animationDelay: '0.1s' }}>
-            Baue echte Projekte <br/>
-            <span className="gradient-gold">in flexiblen Gruppen</span>
+          <h1 className="text-6xl sm:text-7xl md:text-[96px] font-display font-bold text-[var(--foreground)] mb-8 leading-[0.95] tracking-tight animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+            Build <span className="text-gradient">Products.</span><br />
+            Create <span className="text-gradient-gold">Equity.</span>
           </h1>
 
-          <p className="text-xl sm:text-2xl text-[var(--muted-foreground)] mb-12 leading-relaxed max-w-3xl mx-auto animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            Bewirb dich in 10 Minuten und werde Teil einer exklusiven Founder-Community, die gemeinsam profitable Businesses schmiedet.
+          <p className="text-xl md:text-2xl text-[var(--muted-foreground)] mb-12 max-w-2xl mx-auto leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            The Forge ist das erste Community Venture Studio. <br className="hidden md:block"/>
+            Wir bündeln Kapital, Skills und Execution um echte Firmen zu bauen.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in" style={{ animationDelay: '0.3s' }}>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
             <a
               href="#apply"
-              className="ember-glow w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 bg-[var(--accent)] text-[var(--accent-foreground)] rounded-2xl hover:brightness-110 transition-all font-bold text-sm uppercase tracking-widest shadow-2xl"
+              className="btn-shimmer group relative px-8 py-4 bg-[var(--foreground)] text-[var(--background)] rounded-full font-bold text-sm hover:opacity-90 transition-all flex items-center gap-2"
             >
-              Jetzt bewerben
-              <ArrowRight className="w-4 h-4" />
+              Start Building
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </a>
             <Link
               href="/transparency"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-transparent border border-[var(--border)] text-[var(--foreground)] rounded-2xl hover:border-[var(--accent)] hover:text-[var(--accent)] transition-all font-bold text-sm uppercase tracking-widest"
+              className="px-8 py-4 bg-[var(--surface)] border border-[var(--border)] text-[var(--muted-foreground)] rounded-full font-medium text-sm hover:text-[var(--foreground)] hover:border-[var(--foreground)] transition-all"
             >
-              Transparenz
+              How it Works
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Stats / Social Proof */}
-      <section className="py-12 px-6 border-y border-[var(--border)] bg-[var(--surface)]/50 backdrop-blur-sm">
+      {/* Metrics Grid (Bento Style) */}
+      <section className="py-20 px-4 md:px-6 border-y border-[var(--border)] bg-[var(--surface)]/30 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
-            <div className="text-center md:text-left">
-              <div className="text-3xl sm:text-4xl font-display font-bold text-[var(--foreground)] mb-1">
-                {Math.max(0, MAX_GROUP_SIZE - foundersCount)}
-              </div>
-              <div className="text-[0.65rem] uppercase tracking-[0.2em] text-[var(--secondary)]">Verfügbare Plätze</div>
-            </div>
-            <div className="text-center md:text-left">
-              <div className="text-3xl sm:text-4xl font-display font-bold text-[var(--foreground)] mb-1">100%</div>
-              <div className="text-[0.65rem] uppercase tracking-[0.2em] text-[var(--secondary)]">Transparenz</div>
-            </div>
-            <div className="text-center md:text-left">
-              <div className="text-3xl sm:text-4xl font-display font-bold text-[var(--foreground)] mb-1">25k+</div>
-              <div className="text-[0.65rem] uppercase tracking-[0.2em] text-[var(--secondary)]">Target Capital</div>
-            </div>
-            <div className="text-center md:text-left">
-              <div className="text-3xl sm:text-4xl font-display font-bold text-[var(--foreground)] mb-1">Equal</div>
-              <div className="text-[0.65rem] uppercase tracking-[0.2em] text-[var(--secondary)]">Equity Split</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="py-32 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-24">
-            <span className="text-[var(--accent)] text-xs font-bold uppercase tracking-[0.4em] mb-4 block">The Process</span>
-            <h2 className="text-4xl md:text-6xl font-display font-bold text-[var(--foreground)] mb-6">
-              Vom Konzept zum Cashflow
-            </h2>
-            <p className="text-lg text-[var(--muted-foreground)] max-w-2xl mx-auto">
-              Kein unnötiger Ballast. Wir fokussieren uns auf das, was zählt: Bauen, Launching, Scaling.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="group p-8 rounded-3xl bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--accent)] transition-all duration-500 hover:-translate-y-2">
-              <div className="w-16 h-16 rounded-2xl bg-[var(--surface-muted)] flex items-center justify-center mb-8 group-hover:bg-[var(--accent)] transition-colors duration-500">
-                <Users className="w-8 h-8 text-[var(--foreground)] group-hover:text-[var(--accent-foreground)]" />
-              </div>
-              <h3 className="text-2xl font-display font-bold mb-4">Gleichberechtigt</h3>
-              <p className="text-[var(--secondary)] leading-relaxed">
-                Jeder zahlt den gleichen Beitrag. Anteile werden gleich verteilt. Keine komplexen Cap Tables, keine stillen Teilhaber. 
-                <span className="block mt-4 text-[var(--accent)] font-medium">1 Member = 1 Vote</span>
-              </p>
-            </div>
-
-            <div className="group p-8 rounded-3xl bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--accent)] transition-all duration-500 hover:-translate-y-2">
-              <div className="w-16 h-16 rounded-2xl bg-[var(--surface-muted)] flex items-center justify-center mb-8 group-hover:bg-[var(--accent)] transition-colors duration-500">
-                <Layers className="w-8 h-8 text-[var(--foreground)] group-hover:text-[var(--accent-foreground)]" />
-              </div>
-              <h3 className="text-2xl font-display font-bold mb-4">Demokratisch</h3>
-              <p className="text-[var(--secondary)] leading-relaxed">
-                Die Community entscheidet, was gebaut wird. Pitch deine Ideen oder stimme für andere ab. Die besten Konzepte gewinnen durch Mehrheit.
-                <span className="block mt-4 text-[var(--accent)] font-medium">Power to the Builders</span>
-              </p>
-            </div>
-
-            <div className="group p-8 rounded-3xl bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--accent)] transition-all duration-500 hover:-translate-y-2">
-              <div className="w-16 h-16 rounded-2xl bg-[var(--surface-muted)] flex items-center justify-center mb-8 group-hover:bg-[var(--accent)] transition-colors duration-500">
-                <BarChart className="w-8 h-8 text-[var(--foreground)] group-hover:text-[var(--accent-foreground)]" />
-              </div>
-              <h3 className="text-2xl font-display font-bold mb-4">Transparent</h3>
-              <p className="text-[var(--secondary)] leading-relaxed">
-                Jeder Cent ist nachvollziehbar. Live-Dashboard für alle Einnahmen & Ausgaben. Volle Einsicht in die Bücher zu jeder Zeit.
-                <span className="block mt-4 text-[var(--accent)] font-medium">Open Metrics</span>
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Project */}
-      <section className="py-32 px-6 bg-[var(--surface-muted)] relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-5"></div>
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--background)] border border-[var(--accent)] mb-8">
-                <span className="text-[0.65rem] uppercase tracking-[0.3em] text-[var(--accent)] font-bold">Featured Project</span>
-              </div>
-              <h2 className="text-5xl md:text-7xl font-display font-bold text-[var(--foreground)] mb-8">
-                SmartStore <br/>
-                <span className="text-[var(--secondary)] text-4xl md:text-6xl">3PL Revolution</span>
-              </h2>
-              <p className="text-lg text-[var(--secondary)] mb-12 leading-relaxed">
-                Wir lösen ein echtes Problem: Kleine E-Commerce Brands werden von großen Logistikern ignoriert. SmartStore bietet Enterprise-Grade Fulfillment für die Nische.
-              </p>
-              
-              <div className="grid sm:grid-cols-2 gap-6 mb-12">
-                <div className="p-6 rounded-2xl bg-[var(--background)] border border-[var(--border)]">
-                  <div className="text-3xl font-display font-bold text-[var(--foreground)] mb-2">€12k+</div>
-                  <div className="text-xs uppercase tracking-[0.2em] text-[var(--muted-foreground)]">Monthly Recurring Revenue</div>
-                </div>
-                <div className="p-6 rounded-2xl bg-[var(--background)] border border-[var(--border)]">
-                  <div className="text-3xl font-display font-bold text-[var(--foreground)] mb-2">2.5x</div>
-                  <div className="text-xs uppercase tracking-[0.2em] text-[var(--muted-foreground)]">Exit Multiple Target</div>
-                </div>
-              </div>
-
-              <button className="text-[var(--accent)] font-bold uppercase tracking-widest text-sm hover:text-white transition-colors flex items-center gap-2">
-                View Project Details <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="relative">
-              <div className="absolute -inset-4 bg-gradient-to-r from-[var(--accent)] to-[var(--color-forge-ember)] rounded-[2.5rem] opacity-20 blur-2xl"></div>
-              <div className="relative bg-[var(--surface)] border border-[var(--border)] rounded-[2rem] p-8 shadow-2xl">
-                <h3 className="text-2xl font-display font-bold mb-8">Path to Exit</h3>
-                <div className="space-y-8">
-                  {[
-                    { month: '01-02', title: 'Infrastructure', desc: 'Setup Warehouse & Software-Integration' },
-                    { month: '03-04', title: 'Beta Launch', desc: 'Onboarding der ersten 5 Ankerkunden' },
-                    { month: '05-06', title: 'Scaling', desc: 'Automatisierung & Expansion auf 15+ Kunden' }
-                  ].map((step, i) => (
-                    <div key={i} className="flex gap-6 items-start group">
-                      <div className="font-mono text-[var(--accent)] font-bold pt-1">{step.month}</div>
-                      <div className="flex-1 pb-8 border-b border-[var(--border)] group-last:border-0 group-last:pb-0">
-                        <div className="text-lg font-bold mb-2 group-hover:text-[var(--accent)] transition-colors">{step.title}</div>
-                        <div className="text-[var(--secondary)] text-sm">{step.desc}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Tools Grid */}
-      <section className="py-32 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-24">
-            <h2 className="text-4xl md:text-5xl font-display font-bold text-[var(--foreground)] mb-6">
-              Infrastructure Ready
-            </h2>
-            <p className="text-[var(--secondary)]">
-              Alles was du brauchst ist bereits da. Du fokussierst dich aufs Bauen.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-[var(--border)] rounded-2xl overflow-hidden border border-[var(--border)]">
             {[
-              { icon: Vote, title: 'Voting System', desc: 'Demokratische Entscheidungsfindung für alle wichtigen Milestones.' },
-              { icon: MessageSquare, title: 'Community Forum', desc: 'Der Ort für Diskussionen, Strategie und Austausch.' },
-              { icon: TrendingUp, title: 'Finance Dashboard', desc: 'Echtzeit-Einblick in alle Geldflüsse der Gruppe.' },
-              { icon: Target, title: 'Task Management', desc: 'Klare Zuweisung von Aufgaben und Deadlines.' },
-              { icon: Calendar, title: 'Event Calendar', desc: 'Founder Calls, Sprints und Launch-Termine.' },
-              { icon: FileText, title: 'Legal & Docs', desc: 'Automatisierte Verträge und Dokumentation.' },
-            ].map((item, i) => (
-              <div key={i} className="group p-8 rounded-2xl bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--accent)] hover:shadow-[0_0_30px_-10px_rgba(212,175,55,0.1)] transition-all duration-300">
-                <div className="w-12 h-12 rounded-xl bg-[var(--surface-muted)] flex items-center justify-center mb-6 group-hover:bg-[var(--accent)] transition-colors duration-300">
-                  <item.icon className="w-6 h-6 text-[var(--secondary)] group-hover:text-[var(--accent-foreground)] transition-colors" />
+              { label: 'Available Seats', value: `${Math.max(0, MAX_GROUP_SIZE - foundersCount)}`, sub: 'of 25 Total' },
+              { label: 'Capital Target', value: '25k€', sub: 'Pre-Seed' },
+              { label: 'Equity Split', value: 'Equal', sub: '1 Vote / Member' },
+              { label: 'Transparency', value: '100%', sub: 'Open Ledger' },
+            ].map((stat, i) => (
+              <div key={i} className="bg-[var(--background)] p-8 md:p-12 flex flex-col items-center justify-center hover:bg-[var(--surface)] transition-colors group">
+                <div className="text-4xl md:text-5xl font-display font-bold text-[var(--foreground)] mb-2 group-hover:scale-105 transition-transform duration-300">
+                  {stat.value}
                 </div>
-                <h3 className="text-lg font-display font-bold mb-3">{item.title}</h3>
-                <p className="text-sm text-[var(--secondary)]">{item.desc}</p>
+                <div className="text-xs font-medium uppercase tracking-widest text-[var(--muted-foreground)] mb-1">
+                  {stat.label}
+                </div>
+                <div className="text-[10px] text-[var(--secondary)]">
+                  {stat.sub}
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Pricing */}
-      <section className="py-32 px-6 bg-[var(--surface-muted)]">
+      {/* Philosophy / Features */}
+      <section className="py-32 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-display font-bold text-[var(--foreground)] mb-6">
-              Dein Einstieg
-            </h2>
-            <p className="text-[var(--secondary)] max-w-2xl mx-auto">
-              Wir haben das Modell. Du hast die Wahl.
-            </p>
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
+            <div className="max-w-2xl">
+              <h2 className="text-4xl md:text-5xl font-display font-bold mb-6">
+                Institutional Grade.<br/>
+                Community Powered.
+              </h2>
+              <p className="text-lg text-[var(--muted-foreground)]">
+                Wir ersetzen den veralteten VC-Ansatz durch Schwarmintelligenz.
+                Weniger Risiko für den Einzelnen, mehr Upside für alle.
+              </p>
+            </div>
+            <div className="hidden md:block">
+               <Link href="/manifesto" className="text-sm font-bold border-b border-[var(--border)] pb-1 hover:text-[var(--accent)] hover:border-[var(--accent)] transition-colors">
+                  Read the Manifesto
+               </Link>
+            </div>
           </div>
-          <PricingTable 
-            isLoading={false} 
-            onSelectPlan={() => document.getElementById('apply')?.scrollIntoView({ behavior: 'smooth' })} 
-          />
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                icon: Users,
+                title: "Collective Ownership",
+                desc: "Keine stillen Teilhaber. Jeder Founder hält Anteile, jeder hat Stimmrecht. Das Projekt gehört uns."
+              },
+              {
+                icon: Layers,
+                title: "Meritocratic Stack",
+                desc: "Die besten Ideen gewinnen. Wir nutzen Voting-Mechanismen um Produktentscheidungen zu treffen."
+              },
+              {
+                icon: Shield,
+                title: "Risk Mitigation",
+                desc: "Statt 50k alleine zu riskieren, splitten wir das Risiko. Maximale Hebelwirkung bei minimalem Einsatz."
+              }
+            ].map((feature, i) => (
+              <div key={i} className="glass-card p-8 rounded-2xl hover:border-[var(--accent)]/50 transition-all duration-300 group">
+                <div className="w-12 h-12 rounded-xl bg-[var(--surface-muted)] border border-[var(--border)] flex items-center justify-center mb-6 group-hover:bg-[var(--accent)] group-hover:text-[var(--accent-foreground)] transition-colors">
+                  <feature.icon className="w-5 h-5" />
+                </div>
+                <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
+                <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
+                  {feature.desc}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Application Form */}
-      <section id="apply" className="py-32 px-6 relative overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-[var(--accent)] to-transparent opacity-50" />
-        
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 text-[var(--accent)] mb-4">
-              <Shield className="w-5 h-5" />
-              <span className="text-[0.65rem] uppercase tracking-[0.4em] font-bold">Limited Partnership</span>
+      {/* Featured Project - The "Case Study" */}
+      <section className="py-32 px-6 border-y border-[var(--border)] bg-[var(--surface-muted)]">
+        <div className="max-w-7xl mx-auto">
+           <div className="grid lg:grid-cols-2 gap-16 items-center">
+             <div>
+                <div className="text-[var(--accent)] font-bold text-xs uppercase tracking-widest mb-4">Current Focus</div>
+                <h2 className="text-4xl md:text-5xl font-display font-bold mb-6">SmartStore Fulfillment</h2>
+                <p className="text-lg text-[var(--muted-foreground)] mb-8">
+                  Ein Nischen-3PL (Third Party Logistics) Provider für High-Value Goods. 
+                  Wir schließen die Lücke zwischen Garage-Shipping und Enterprise-Logistik.
+                </p>
+                <ul className="space-y-4 mb-10">
+                  <li className="flex items-center gap-3 text-sm text-[var(--foreground)]">
+                    <Check className="w-4 h-4 text-[var(--accent)]" />
+                    <span>Infrastruktur & Software Partnerschaften gesichert</span>
+                  </li>
+                  <li className="flex items-center gap-3 text-sm text-[var(--foreground)]">
+                    <Check className="w-4 h-4 text-[var(--accent)]" />
+                    <span>Erste 5 Beta-Kunden auf Warteliste</span>
+                  </li>
+                  <li className="flex items-center gap-3 text-sm text-[var(--foreground)]">
+                    <Check className="w-4 h-4 text-[var(--accent)]" />
+                    <span>Geplanter Launch: Q3 2026</span>
+                  </li>
+                </ul>
+                <div className="flex gap-4">
+                  <div className="px-5 py-3 rounded-lg border border-[var(--border)] bg-[var(--background)]">
+                    <div className="text-2xl font-bold">€12k</div>
+                    <div className="text-[10px] text-[var(--muted-foreground)] uppercase">Target MRR (6 Mo)</div>
+                  </div>
+                  <div className="px-5 py-3 rounded-lg border border-[var(--border)] bg-[var(--background)]">
+                    <div className="text-2xl font-bold text-[var(--accent)]">35%</div>
+                    <div className="text-[10px] text-[var(--muted-foreground)] uppercase">EBITDA Margin</div>
+                  </div>
+                </div>
+             </div>
+             
+             <div className="relative">
+                {/* Abstract UI representation */}
+                <div className="absolute -inset-1 bg-gradient-to-r from-[var(--accent)] to-transparent rounded-2xl opacity-20 blur-xl"></div>
+                <div className="relative bg-[var(--background)] border border-[var(--border)] rounded-2xl p-8 shadow-2xl">
+                   <div className="flex items-center justify-between mb-8 border-b border-[var(--border)] pb-4">
+                      <div className="text-sm font-bold">Roadmap</div>
+                      <div className="flex gap-1">
+                        <div className="w-2 h-2 rounded-full bg-red-500"/>
+                        <div className="w-2 h-2 rounded-full bg-yellow-500"/>
+                        <div className="w-2 h-2 rounded-full bg-green-500"/>
+                      </div>
+                   </div>
+                   <div className="space-y-6">
+                      {[
+                        { step: '01', title: 'Formation', status: 'Done' },
+                        { step: '02', title: 'Legal & Banking', status: 'In Progress' },
+                        { step: '03', title: 'Tech Stack Setup', status: 'Pending' },
+                        { step: '04', title: 'Customer Onboarding', status: 'Pending' }
+                      ].map((item, i) => (
+                        <div key={i} className="flex items-center gap-4">
+                           <div className="font-mono text-xs text-[var(--muted-foreground)] opacity-50">{item.step}</div>
+                           <div className="flex-1 font-medium text-sm">{item.title}</div>
+                           <div className={`text-[10px] px-2 py-0.5 rounded-full border ${
+                             item.status === 'Done' ? 'border-green-900 bg-green-900/20 text-green-500' :
+                             item.status === 'In Progress' ? 'border-yellow-900 bg-yellow-900/20 text-yellow-500' :
+                             'border-[var(--border)] text-[var(--muted-foreground)]'
+                           }`}>
+                             {item.status}
+                           </div>
+                        </div>
+                      ))}
+                   </div>
+                </div>
+             </div>
+           </div>
+        </div>
+      </section>
+
+      {/* Pricing / Join */}
+      <section className="py-32 px-6">
+         <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-20">
+               <h2 className="text-4xl font-display font-bold mb-4">Membership Options</h2>
+               <p className="text-[var(--muted-foreground)]">Choose your level of involvement.</p>
             </div>
-            <h2 className="text-4xl md:text-6xl font-display font-bold text-[var(--foreground)] mb-6">
-              Werde Teil der Schmiede.
-            </h2>
-            <p className="text-lg text-[var(--secondary)] max-w-2xl mx-auto">
-              Wir suchen keine passiven Investoren. Wir suchen Macher. Aktuell sind noch <span className="text-[var(--foreground)] font-bold">{Math.max(0, MAX_GROUP_SIZE - foundersCount)} Plätze</span> verfügbar.
-            </p>
+            <PricingTable 
+              isLoading={false} 
+              onSelectPlan={() => document.getElementById('apply')?.scrollIntoView({ behavior: 'smooth' })} 
+            />
+         </div>
+      </section>
+
+      {/* The Application Interface */}
+      <section id="apply" className="py-24 px-4 bg-[var(--background)]">
+        <div className="max-w-3xl mx-auto">
+          <div className="mb-12 text-center">
+            <h2 className="text-3xl font-display font-bold mb-3">Initiate Sequence</h2>
+            <p className="text-sm text-[var(--muted-foreground)]">Request access to the foundry.</p>
           </div>
 
-          <div className="relative">
-            {/* Form Glow */}
-            <div className="absolute -inset-1 bg-gradient-to-b from-[var(--accent)] to-transparent rounded-[2.5rem] opacity-20 blur-xl" />
-            
-            <form
-              onSubmit={handleSubmit}
-              className="relative bg-[var(--surface)] rounded-[2rem] border border-[var(--border)] p-8 md:p-12 shadow-2xl min-h-[500px] flex flex-col justify-center"
-            >
-              {formStatus === 'success' ? (
-                <div className="text-center animate-fade-in">
-                  <div className="w-20 h-20 bg-[var(--surface-muted)] text-[var(--accent)] rounded-full flex items-center justify-center mx-auto mb-8 border border-[var(--accent)]">
-                    <Check className="w-10 h-10" />
-                  </div>
-                  <h3 className="text-3xl font-display font-bold mb-4">Bewerbung empfangen</h3>
-                  <p className="text-[var(--secondary)]">
-                    Wir prüfen deine Unterlagen und melden uns innerhalb von 48 Stunden.<br/>
-                    Behalte deinen Posteingang im Auge.
-                  </p>
-                </div>
-              ) : (
-                <>
-                  {/* Progress */}
-                  <div className="flex justify-center gap-3 mb-12">
-                    {[1, 2, 3].map(step => (
-                      <div 
-                        key={step} 
-                        className={`h-1.5 rounded-full transition-all duration-500 ${
-                          currentStep >= step 
-                            ? 'w-12 bg-[var(--accent)] shadow-[0_0_10px_rgba(212,175,55,0.5)]' 
-                            : 'w-3 bg-[var(--border)]'
-                        }`} 
-                      />
-                    ))}
-                  </div>
+          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-2xl overflow-hidden relative">
+             {/* Terminal Header */}
+             <div className="h-10 bg-[var(--surface-muted)] border-b border-[var(--border)] flex items-center px-4 gap-2">
+                <div className="w-3 h-3 rounded-full bg-[#FF5F56] opacity-80" />
+                <div className="w-3 h-3 rounded-full bg-[#FFBD2E] opacity-80" />
+                <div className="w-3 h-3 rounded-full bg-[#27C93F] opacity-80" />
+                <div className="ml-4 text-[10px] font-mono text-[var(--muted-foreground)] opacity-50">user@theforge:~</div>
+             </div>
 
-                  {/* STEP 1: ROLE */}
-                  {currentStep === 1 && (
-                    <div className="animate-fade-in">
-                      <h3 className="text-2xl font-display font-bold text-center mb-10">Wähle deinen Pfad</h3>
-                      <div className="grid md:grid-cols-2 gap-6">
-                        <button
-                          type="button"
-                          onClick={() => handleSelectRole('investor')}
-                          className="p-8 rounded-2xl border border-[var(--border)] bg-[var(--background)] hover:border-[var(--accent)] hover:bg-[var(--surface-muted)] transition-all text-left group hover:-translate-y-1"
-                        >
-                          <div className="w-12 h-12 bg-[var(--surface-muted)] rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform group-hover:bg-[var(--accent)]">
-                            <TrendingUp className="w-6 h-6 text-[var(--accent)] group-hover:text-[var(--accent-foreground)]" />
-                          </div>
-                          <div className="font-bold text-lg mb-2 text-[var(--foreground)]">Capital Partner</div>
-                          <div className="text-sm text-[var(--secondary)] leading-relaxed">
-                            Ich investiere Kapital. Mein Anteil richtet sich nach dem Zielbetrag der Gruppe.
-                          </div>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleSelectRole('builder')}
-                          className="p-8 rounded-2xl border border-[var(--border)] bg-[var(--background)] hover:border-[var(--accent)] hover:bg-[var(--surface-muted)] transition-all text-left group hover:-translate-y-1"
-                        >
-                          <div className="w-12 h-12 bg-[var(--surface-muted)] rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform group-hover:bg-[var(--accent)]">
-                            <Zap className="w-6 h-6 text-[var(--accent)] group-hover:text-[var(--accent-foreground)]" />
-                          </div>
-                          <div className="font-bold text-lg mb-2 text-[var(--foreground)]">Builder</div>
-                          <div className="text-sm text-[var(--secondary)] leading-relaxed">
-                            Ich investiere Zeit & Skills (Sweat Equity). Mind. 15h/Woche.
-                          </div>
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* STEP 2: DETAILS */}
-                  {currentStep === 2 && (
-                    <div className="animate-fade-in space-y-8">
-                      <h3 className="text-2xl font-display font-bold text-center mb-8">
-                        {role === 'investor' ? 'Profil erstellen' : 'Skillset definieren'}
-                      </h3>
-                      
-                      <div className="grid md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <label className="text-[0.65rem] uppercase tracking-[0.2em] text-[var(--secondary)] font-bold ml-1">Name</label>
-                          <input
-                            type="text"
-                            value={formData.name}
-                            onChange={handleFormChange('name')}
-                            className="w-full px-5 py-4 bg-[var(--background)] border border-[var(--border)] rounded-xl outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]"
-                            placeholder="Dein vollständiger Name"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-[0.65rem] uppercase tracking-[0.2em] text-[var(--secondary)] font-bold ml-1">E-Mail</label>
-                          <input
-                            type="email"
-                            value={formData.email}
-                            onChange={handleFormChange('email')}
-                            className="w-full px-5 py-4 bg-[var(--background)] border border-[var(--border)] rounded-xl outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]"
-                            placeholder="name@example.com"
-                          />
-                        </div>
-                      </div>
-
-                      {role === 'investor' ? (
-                         <div className="space-y-2">
-                           <label className="text-[0.65rem] uppercase tracking-[0.2em] text-[var(--secondary)] font-bold ml-1">Investment Ziel</label>
-                           <select
-                              value={formData.capital}
-                              onChange={handleFormChange('capital')}
-                              className="w-full px-5 py-4 bg-[var(--background)] border border-[var(--border)] rounded-xl outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all text-[var(--foreground)] appearance-none cursor-pointer"
-                           >
-                             <option value="">Bitte wählen...</option>
-                             <option value="25k">25.000 € Gruppe (Starter)</option>
-                             <option value="50k">50.000 € Gruppe (Growth)</option>
-                             <option value="100k">100.000 € Gruppe (Pro)</option>
-                           </select>
+             <div className="p-8 md:p-12">
+                <form onSubmit={handleSubmit} className="relative z-10">
+                   {formStatus === 'success' ? (
+                      <div className="text-center py-12 animate-fade-in-up">
+                         <div className="w-16 h-16 rounded-full bg-green-500/10 text-green-500 flex items-center justify-center mx-auto mb-6 border border-green-500/20">
+                            <Check className="w-8 h-8" />
                          </div>
-                      ) : (
-                        <div className="space-y-2">
-                          <label className="text-[0.65rem] uppercase tracking-[0.2em] text-[var(--secondary)] font-bold ml-1">Core Skill</label>
-                          <input
-                            type="text"
-                            value={formData.skill}
-                            onChange={handleFormChange('skill')}
-                            className="w-full px-5 py-4 bg-[var(--background)] border border-[var(--border)] rounded-xl outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]"
-                            placeholder="z.B. React Native, SEO, B2B Sales"
-                          />
+                         <h3 className="text-xl font-bold mb-2">Request Transmitted</h3>
+                         <p className="text-sm text-[var(--muted-foreground)]">Check your inbox for the encrypted key.</p>
+                      </div>
+                   ) : (
+                      <>
+                        {/* Step Indicator */}
+                        <div className="flex gap-2 mb-10">
+                           {[1, 2, 3].map(s => (
+                              <div key={s} className={`h-1 flex-1 rounded-full transition-all duration-500 ${currentStep >= s ? 'bg-[var(--accent)]' : 'bg-[var(--border)]'}`} />
+                           ))}
                         </div>
-                      )}
 
-                      <div className="flex gap-4 pt-6">
-                        <button 
-                          type="button" 
-                          onClick={handlePrevStep}
-                          className="flex-1 py-4 rounded-xl border border-[var(--border)] hover:bg-[var(--surface-muted)] text-[var(--secondary)] hover:text-[var(--foreground)] transition-colors uppercase text-xs tracking-widest font-bold"
-                        >
-                          Zurück
-                        </button>
-                        <button 
-                          type="button" 
-                          onClick={handleNextStep}
-                          disabled={!formData.name || !formData.email}
-                          className="flex-1 py-4 rounded-xl bg-[var(--accent)] text-[var(--accent-foreground)] hover:brightness-110 disabled:opacity-50 transition-all uppercase text-xs tracking-widest font-bold shadow-lg"
-                        >
-                          Weiter
-                        </button>
-                      </div>
-                    </div>
-                  )}
+                        {currentStep === 1 && (
+                           <div className="animate-fade-in-up">
+                              <label className="text-xs uppercase tracking-widest text-[var(--muted-foreground)] font-bold mb-6 block">Select Operator Mode</label>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                 <button
+                                    type="button"
+                                    onClick={() => handleSelectRole('investor')}
+                                    className="p-6 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:border-[var(--accent)] transition-all text-left group"
+                                 >
+                                    <div className="font-bold text-[var(--foreground)] mb-1 group-hover:text-[var(--accent)] transition-colors">Capital Partner</div>
+                                    <div className="text-xs text-[var(--muted-foreground)]">Passive stake. Financial contribution only.</div>
+                                 </button>
+                                 <button
+                                    type="button"
+                                    onClick={() => handleSelectRole('builder')}
+                                    className="p-6 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:border-[var(--accent)] transition-all text-left group"
+                                 >
+                                    <div className="font-bold text-[var(--foreground)] mb-1 group-hover:text-[var(--accent)] transition-colors">Builder</div>
+                                    <div className="text-xs text-[var(--muted-foreground)]">Active stake. Sweat equity & skills.</div>
+                                 </button>
+                              </div>
+                           </div>
+                        )}
 
-                  {/* STEP 3: MOTIVATION */}
-                  {currentStep === 3 && (
-                    <div className="animate-fade-in space-y-8">
-                      <h3 className="text-2xl font-display font-bold text-center mb-8">Dein Pitch</h3>
-                      
-                      <div className="space-y-2">
-                        <label className="text-[0.65rem] uppercase tracking-[0.2em] text-[var(--secondary)] font-bold ml-1">
-                          {role === 'builder' 
-                            ? 'Warum du? (Pitch dich)' 
-                            : 'Vision & Erwartung'}
-                        </label>
-                        <textarea
-                          value={formData.why}
-                          onChange={handleFormChange('why')}
-                          rows={4}
-                          className="w-full px-5 py-4 bg-[var(--background)] border border-[var(--border)] rounded-xl outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] resize-none"
-                          placeholder={role === 'builder' ? "Überzeuge uns von deinen Skills." : "Was möchtest du mit uns aufbauen?"}
-                        />
-                      </div>
+                        {currentStep === 2 && (
+                           <div className="animate-fade-in-up space-y-6">
+                              <label className="text-xs uppercase tracking-widest text-[var(--muted-foreground)] font-bold block">Identity Config</label>
+                              <div className="grid gap-4">
+                                 <input
+                                    type="text"
+                                    value={formData.name}
+                                    onChange={handleFormChange('name')}
+                                    className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-4 py-3 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-[var(--muted-foreground)]/50"
+                                    placeholder="Full Name"
+                                 />
+                                 <input
+                                    type="email"
+                                    value={formData.email}
+                                    onChange={handleFormChange('email')}
+                                    className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-4 py-3 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-[var(--muted-foreground)]/50"
+                                    placeholder="Email Address"
+                                 />
+                                 {role === 'investor' && (
+                                     <select
+                                       value={formData.capital}
+                                       onChange={handleFormChange('capital')}
+                                       className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-4 py-3 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all"
+                                     >
+                                        <option value="">Select Capital Target...</option>
+                                        <option value="25k">25k Tier</option>
+                                        <option value="50k">50k Tier</option>
+                                        <option value="100k">100k Tier</option>
+                                     </select>
+                                 )}
+                                 {role === 'builder' && (
+                                    <input
+                                       type="text"
+                                       value={formData.skill}
+                                       onChange={handleFormChange('skill')}
+                                       className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-4 py-3 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-[var(--muted-foreground)]/50"
+                                       placeholder="Primary Skill (e.g. Next.js, Growth)"
+                                    />
+                                 )}
+                              </div>
+                              <div className="flex justify-between pt-4">
+                                 <button type="button" onClick={handlePrevStep} className="text-xs font-bold text-[var(--muted-foreground)] hover:text-[var(--foreground)]">BACK</button>
+                                 <button type="button" onClick={handleNextStep} disabled={!formData.name || !formData.email} className="text-xs font-bold text-[var(--accent)] hover:opacity-80 disabled:opacity-50">CONTINUE</button>
+                              </div>
+                           </div>
+                        )}
 
-                      <div className="space-y-2">
-                        <label className="text-[0.65rem] uppercase tracking-[0.2em] text-[var(--secondary)] font-bold ml-1">LinkedIn / Social</label>
-                        <input
-                            type="text"
-                            value={formData.instagram}
-                            onChange={handleFormChange('instagram')}
-                            className="w-full px-5 py-4 bg-[var(--background)] border border-[var(--border)] rounded-xl outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]"
-                            placeholder="URL zu deinem Profil"
-                          />
-                      </div>
+                        {currentStep === 3 && (
+                           <div className="animate-fade-in-up space-y-6">
+                              <label className="text-xs uppercase tracking-widest text-[var(--muted-foreground)] font-bold block">Manifesto</label>
+                              <textarea
+                                 value={formData.why}
+                                 onChange={handleFormChange('why')}
+                                 rows={4}
+                                 className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-4 py-3 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-[var(--muted-foreground)]/50 resize-none"
+                                 placeholder="Tell us why you belong here."
+                              />
+                               <input
+                                    type="text"
+                                    value={formData.instagram}
+                                    onChange={handleFormChange('instagram')}
+                                    className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-4 py-3 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-[var(--muted-foreground)]/50"
+                                    placeholder="LinkedIn / Social URL"
+                                 />
+                              
+                              {formMessage && <p className="text-red-500 text-xs text-center">{formMessage}</p>}
 
-                      {formMessage && (
-                        <p className="text-center text-[var(--color-destructive)] text-sm">{formMessage}</p>
-                      )}
-
-                      <div className="flex gap-4 pt-6">
-                        <button 
-                          type="button" 
-                          onClick={handlePrevStep}
-                          className="flex-1 py-4 rounded-xl border border-[var(--border)] hover:bg-[var(--surface-muted)] text-[var(--secondary)] hover:text-[var(--foreground)] transition-colors uppercase text-xs tracking-widest font-bold"
-                        >
-                          Zurück
-                        </button>
-                        <button 
-                          type="submit" 
-                          disabled={formStatus === 'loading'}
-                          className="ember-glow flex-1 py-4 rounded-xl bg-[var(--accent)] text-[var(--accent-foreground)] hover:brightness-110 disabled:opacity-50 transition-all uppercase text-xs tracking-widest font-bold shadow-lg"
-                        >
-                          {formStatus === 'loading' ? 'Sende...' : 'Bewerbung absenden'}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-            </form>
+                              <div className="flex justify-between pt-4">
+                                 <button type="button" onClick={handlePrevStep} className="text-xs font-bold text-[var(--muted-foreground)] hover:text-[var(--foreground)]">BACK</button>
+                                 <button 
+                                    type="submit" 
+                                    disabled={formStatus === 'loading'}
+                                    className="px-6 py-2 bg-[var(--accent)] text-[var(--accent-foreground)] rounded-lg text-xs font-bold hover:brightness-110 transition-all disabled:opacity-50"
+                                 >
+                                    {formStatus === 'loading' ? 'TRANSMITTING...' : 'SUBMIT APPLICATION'}
+                                 </button>
+                              </div>
+                           </div>
+                        )}
+                      </>
+                   )}
+                </form>
+             </div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-[var(--surface-muted)] border-t border-[var(--border)] py-16 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-12 mb-12">
-            <div>
-              <div className="font-display font-bold text-2xl text-[var(--foreground)] mb-6">THE FORGE</div>
-              <p className="text-sm text-[var(--secondary)] leading-relaxed">
-                Die Plattform für kollektives Entrepreneurship. Wir verbinden Kapital, Skills und Visionen zu echten Unternehmen.
-              </p>
+      <footer className="py-12 border-t border-[var(--border)] text-center text-[var(--muted-foreground)] text-xs">
+         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>© 2026 THE FORGE</div>
+            <div className="flex gap-6">
+               <Link href="/imprint" className="hover:text-[var(--foreground)]">Imprint</Link>
+               <Link href="/privacy" className="hover:text-[var(--foreground)]">Privacy</Link>
+               <Link href="/terms" className="hover:text-[var(--foreground)]">Terms</Link>
             </div>
-
-            <div>
-              <div className="text-xs font-bold uppercase tracking-widest text-[var(--foreground)] mb-6">Community</div>
-              <div className="space-y-4 text-sm">
-                <Link href="/dashboard" className="block text-[var(--secondary)] hover:text-[var(--accent)] transition-colors">
-                  Dashboard
-                </Link>
-                <Link href="/forum" className="block text-[var(--secondary)] hover:text-[var(--accent)] transition-colors">
-                  Forum
-                </Link>
-                <Link href="/transparency" className="block text-[var(--secondary)] hover:text-[var(--accent)] transition-colors">
-                  Transparenz
-                </Link>
-              </div>
-            </div>
-
-            <div>
-              <div className="text-xs font-bold uppercase tracking-widest text-[var(--foreground)] mb-6">Rechtliches</div>
-              <div className="space-y-4 text-sm">
-                <Link href="/legal/impressum" className="block text-[var(--secondary)] hover:text-[var(--accent)] transition-colors">
-                  Impressum
-                </Link>
-                <Link
-                  href="/legal/datenschutz"
-                  className="block text-[var(--secondary)] hover:text-[var(--accent)] transition-colors"
-                >
-                  Datenschutz
-                </Link>
-                <Link href="/legal/agb" className="block text-[var(--secondary)] hover:text-[var(--accent)] transition-colors">
-                  AGB
-                </Link>
-              </div>
-            </div>
-
-            <div>
-              <div className="text-xs font-bold uppercase tracking-widest text-[var(--foreground)] mb-6">System Status</div>
-              <div className="space-y-4 text-sm text-[var(--secondary)]">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-[var(--color-forge-ember)] rounded-full animate-pulse" />
-                  <span className="text-[var(--foreground)]">Recruiting Phase</span>
-                </div>
-                <div>24/25 Slots filled</div>
-                <div>v2.0.0-beta</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="border-t border-[var(--border)] pt-8 text-center text-xs text-[var(--secondary)] uppercase tracking-widest">
-            © 2026 THE FORGE. All rights reserved. Built with precision.
-          </div>
-        </div>
+         </div>
       </footer>
 
-      {/* Chat Bot UI */}
-      {isChatOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
-          onClick={handleCloseChat}
-        />
-      )}
-
+      {/* Modern Chat Widget */}
       <button
-        type="button"
         onClick={isChatOpen ? handleCloseChat : handleOpenChat}
-        className="ember-glow fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] shadow-2xl hover:brightness-110 transition-all flex items-center justify-center border border-[var(--accent-foreground)]/10"
-        aria-label="Chat mit Orion"
+        className={`fixed bottom-6 right-6 z-50 p-4 rounded-full bg-[var(--surface)] border border-[var(--border)] shadow-2xl hover:border-[var(--accent)] transition-all duration-300 ${isChatOpen ? 'rotate-90 opacity-0 pointer-events-none' : 'opacity-100'}`}
       >
-        {isChatOpen ? <X className="h-6 w-6" /> : <MessageSquare className="h-6 w-6" />}
+         <MessageSquare className="w-5 h-5 text-[var(--foreground)]" />
       </button>
 
-      <div
-        className={`fixed bottom-24 right-6 z-50 w-[90vw] max-w-[22rem] rounded-3xl border border-[var(--border)] bg-[var(--surface)] shadow-2xl transition-all duration-300 ${
-          isChatOpen ? 'opacity-100 translate-y-0 scale-100' : 'pointer-events-none opacity-0 translate-y-4 scale-95'
-        }`}
-      >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)] bg-[var(--surface-muted)] rounded-t-3xl">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] flex items-center justify-center font-display font-bold text-sm">
-              O
+      {/* Chat Window */}
+      <div className={`fixed bottom-6 right-6 z-50 w-[350px] bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-2xl transition-all duration-300 transform origin-bottom-right ${isChatOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0 pointer-events-none'}`}>
+         <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
+            <div className="flex items-center gap-3">
+               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+               <span className="text-sm font-bold">Orion AI</span>
             </div>
-            <div>
-              <div className="text-[0.65rem] uppercase tracking-[0.3em] font-bold text-[var(--foreground)]">
-                Orion
-              </div>
-              <div className="text-[0.65rem] text-[var(--secondary)]">AI Concierge</div>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={handleCloseChat}
-            className="text-[var(--secondary)] hover:text-[var(--foreground)] transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <div className="px-6 py-5 space-y-4 max-h-[50vh] overflow-y-auto bg-[var(--background)]">
-          {chatMessages.map((message, index) => (
-            <div
-              key={`${message.role}-${index}`}
-              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-                  message.role === 'user'
-                    ? 'bg-[var(--accent)] text-[var(--accent-foreground)] rounded-br-none'
-                    : 'bg-[var(--surface-muted)] text-[var(--foreground)] border border-[var(--border)] rounded-bl-none'
-                }`}
-              >
-                {message.content}
-              </div>
-            </div>
-          ))}
-          {chatStatus === 'loading' && (
-            <div className="flex justify-start">
-              <div className="rounded-2xl px-4 py-3 text-[0.65rem] uppercase tracking-[0.2em] text-[var(--secondary)] border border-[var(--border)] bg-[var(--surface-muted)] rounded-bl-none">
-                Orion denkt nach...
-              </div>
-            </div>
-          )}
-          <div ref={chatEndRef} />
-        </div>
-
-        <form
-          onSubmit={handleChatSubmit}
-          className="px-4 py-4 border-t border-[var(--border)] bg-[var(--surface)] rounded-b-3xl flex items-center gap-3"
-        >
-          <input
-            type="text"
-            value={chatInput}
-            onChange={(event) => setChatInput(event.target.value)}
-            placeholder="Frag Orion..."
-            className="flex-1 px-4 py-3 border border-[var(--border)] rounded-xl focus:ring-1 focus:ring-[var(--accent)] focus:border-[var(--accent)] outline-none text-sm bg-[var(--background)] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]"
-          />
-          <button
-            type="submit"
-            disabled={chatStatus === 'loading'}
-            className="bg-[var(--accent)] text-[var(--accent-foreground)] px-4 py-3 rounded-xl hover:brightness-110 transition-colors disabled:opacity-50"
-          >
-            <ArrowRight className="w-5 h-5" />
-          </button>
-        </form>
+            <button onClick={handleCloseChat}><X className="w-4 h-4 text-[var(--muted-foreground)] hover:text-[var(--foreground)]" /></button>
+         </div>
+         <div className="h-[300px] overflow-y-auto p-4 space-y-4">
+             {chatMessages.map((msg, i) => (
+                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                   <div className={`max-w-[85%] text-xs p-3 rounded-xl ${msg.role === 'user' ? 'bg-[var(--accent)] text-[var(--accent-foreground)]' : 'bg-[var(--surface-muted)] text-[var(--foreground)]'}`}>
+                      {msg.content}
+                   </div>
+                </div>
+             ))}
+             {chatStatus === 'loading' && <div className="text-xs text-[var(--muted-foreground)] animate-pulse">Orion is thinking...</div>}
+             <div ref={chatEndRef} />
+         </div>
+         <form onSubmit={handleChatSubmit} className="p-3 border-t border-[var(--border)] flex gap-2">
+            <input 
+               className="flex-1 bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-xs focus:border-[var(--accent)] outline-none"
+               placeholder="Type a message..."
+               value={chatInput}
+               onChange={(e) => setChatInput(e.target.value)}
+            />
+            <button type="submit" className="p-2 rounded-lg bg-[var(--surface-muted)] hover:text-[var(--accent)] transition-colors"><ChevronRight className="w-4 h-4" /></button>
+         </form>
       </div>
+
     </div>
   );
 }
