@@ -255,12 +255,12 @@ export default function Forum() {
     <AuthGuard>
       <PageShell>
 
-        <div className="max-w-6xl mx-auto px-4 pt-24 pb-12 flex flex-col md:flex-row gap-6">
+        <div className="max-w-[1800px] mx-auto px-4 md:px-6 pt-24 pb-12 flex flex-col lg:flex-row gap-8 items-start">
           
-          <main className="flex-1 space-y-6">
+          <main className="flex-1 space-y-4 min-w-0">
             
             {/* Reddit-style Create Post Trigger */}
-            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-3 px-4 flex items-center gap-3 shadow-sm glass-card">
+            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-3 flex items-center gap-3 shadow-sm glass-card mb-6">
               <div className="w-10 h-10 bg-[var(--surface-muted)] border border-[var(--border)] rounded-full flex-shrink-0 flex items-center justify-center font-bold text-[var(--accent)] text-sm">
                 {user?.name?.charAt(0).toUpperCase() || '?'}
               </div>
@@ -269,7 +269,7 @@ export default function Forum() {
                 placeholder="Teile eine Idee oder stelle eine Frage..."
                 onClick={() => { setEditingPost('NEW'); setIsPreview(false); }}
                 readOnly
-                className="flex-1 bg-[var(--background)] border border-[var(--border)] hover:border-[var(--accent)] rounded-lg px-4 py-2.5 text-sm outline-none transition-all cursor-pointer text-[var(--foreground)]"
+                className="flex-1 bg-[var(--background)] border border-[var(--border)] hover:border-[var(--accent)] rounded-md px-4 py-2.5 text-sm outline-none transition-all cursor-pointer text-[var(--foreground)]"
               />
               <button 
                 onClick={() => { setEditingPost('NEW'); setIsPreview(false); }}
@@ -382,31 +382,30 @@ export default function Forum() {
                   <p className="text-[var(--muted-foreground)] text-xs font-bold uppercase tracking-[0.3em] animate-pulse">Gathering intelligence...</p>
                 </div>
               ) : filteredPosts.map((post) => (
-                <div key={post.id} className="flex bg-[var(--surface)] border border-[var(--border)] rounded-xl hover:border-[var(--accent)]/30 transition-all shadow-sm glass-card group relative">
+                <div key={post.id} className="flex bg-[var(--surface)] border border-[var(--border)] rounded-lg hover:border-[var(--accent)]/30 transition-all shadow-sm glass-card group relative">
                   
                   {/* Voting Sidebar */}
-                  <div className="w-12 bg-[var(--surface-muted)]/50 flex flex-col items-center pt-4 gap-2 border-r border-[var(--border)] rounded-l-xl overflow-hidden">
-                    <button onClick={() => handleVote(post.id, 1)} className="p-1.5 hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] rounded-lg text-[var(--muted-foreground)] transition-all">
-                      <ArrowUp className="w-5 h-5" />
+                  <div className="w-10 bg-[var(--surface-muted)]/30 flex flex-col items-center pt-3 gap-1 border-r border-[var(--border)] rounded-l-lg overflow-hidden">
+                    <button onClick={() => handleVote(post.id, 1)} className="p-1 hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] rounded text-[var(--muted-foreground)] transition-all">
+                      <ArrowUp className="w-4 h-4" />
                     </button>
-                    <span className="text-xs font-black text-[var(--foreground)] leading-none">{post.likes}</span>
-                    <button onClick={() => handleVote(post.id, -1)} className="p-1.5 hover:bg-blue-600 hover:text-white rounded-lg text-[var(--muted-foreground)] transition-all">
-                      <ArrowDown className="w-5 h-5" />
+                    <span className="text-xs font-bold text-[var(--foreground)] leading-none my-1">{post.likes}</span>
+                    <button onClick={() => handleVote(post.id, -1)} className="p-1 hover:bg-blue-600 hover:text-white rounded text-[var(--muted-foreground)] transition-all">
+                      <ArrowDown className="w-4 h-4" />
                     </button>
                   </div>
 
                   {/* Content */}
-                  <div className="flex-1 p-5">
-                    <div className="flex items-center gap-3 text-[10px] mb-4 text-[var(--muted-foreground)] font-bold uppercase tracking-widest">
-                      <span className="text-[var(--accent)] bg-[var(--accent)]/10 px-2 py-1 rounded tracking-tighter border border-[var(--accent)]/20">{post.category}</span>
+                  <div className="flex-1 p-4">
+                    <div className="flex items-center gap-2 text-[10px] mb-3 text-[var(--muted-foreground)] font-bold uppercase tracking-widest">
+                      <span className="text-[var(--accent)] bg-[var(--accent)]/10 px-1.5 py-0.5 rounded border border-[var(--accent)]/20">{post.category}</span>
                       <span className="opacity-30">•</span>
-                      <span>Gepostet von <span className="text-[var(--foreground)] hover:underline cursor-pointer">u/{post.author.replace(/\s+/g, '').toLowerCase()}</span></span>
-                      <span className="bg-[var(--accent)]/10 text-[var(--accent)] px-2 py-1 rounded border border-[var(--accent)]/20">KARMA: {getUserKarma(post.author)}</span>
+                      <span>u/{post.author.replace(/\s+/g, '').toLowerCase()}</span>
                       <span className="opacity-30">•</span>
                       <span className="opacity-60">{new Date(post.createdTime).toLocaleDateString()}</span>
                     </div>
 
-                    <div className="prose prose-invert prose-sm max-w-none text-[var(--foreground)] mb-6 prose-img:rounded-xl prose-img:shadow-2xl">
+                    <div className="prose prose-invert prose-sm max-w-none text-[var(--foreground)] mb-4 prose-p:leading-relaxed prose-img:rounded-lg">
                       {editingPost === post.id ? (
                         <div className="space-y-3">
                           <textarea
@@ -621,14 +620,14 @@ export default function Forum() {
             </div>
           </main>
 
-          <aside className="w-full md:w-[312px] space-y-6">
-            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-xl overflow-hidden glass-card">
+          <aside className="w-full lg:w-[360px] space-y-6 flex-shrink-0 sticky top-24">
+            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-xl overflow-hidden glass-card">
               <div className="h-16 bg-gradient-to-r from-[var(--accent)] to-[var(--color-forge-ember)] opacity-80" />
-              <div className="p-6 pt-0 -mt-8 text-center md:text-left">
-                <div className="w-20 h-20 bg-[var(--surface)] rounded-2xl border-4 border-[var(--background)] shadow-2xl flex items-center justify-center font-black text-[var(--accent)] text-3xl mb-4 mx-auto md:mx-0">
+              <div className="p-5 pt-0 -mt-8 text-center md:text-left">
+                <div className="w-16 h-16 bg-[var(--surface)] rounded-xl border-4 border-[var(--background)] shadow-2xl flex items-center justify-center font-black text-[var(--accent)] text-2xl mb-3 mx-auto md:mx-0">
                   {user?.name?.charAt(0).toUpperCase() || 'F'}
                 </div>
-                <h3 className="font-display font-bold text-[var(--foreground)] text-xl mb-1">{user?.name || 'Founder'}</h3>
+                <h3 className="font-display font-bold text-[var(--foreground)] text-lg mb-1">{user?.name || 'Founder'}</h3>
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 mb-6">
                   <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
                   <span className="text-[9px] text-[var(--accent)] font-bold uppercase tracking-widest">KARMA: {user?.name ? getUserKarma(user.name) : 0}</span>

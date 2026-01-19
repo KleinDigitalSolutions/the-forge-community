@@ -88,16 +88,16 @@ export function TrendingTopics() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-[#0a0a0a] to-[#1a1a1a] rounded-2xl p-6 border border-white/5">
+    <div className="bg-[var(--surface)] rounded-xl p-6 border border-[var(--border)] glass-card">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500/20 to-orange-500/20 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500/20 to-orange-500/20 flex items-center justify-center">
             <TrendingUp className="w-5 h-5 text-red-400" />
           </div>
           <div>
-            <h3 className="font-bold text-white text-lg">Trending Topics</h3>
-            <p className="text-xs text-white/40">
+            <h3 className="font-bold text-[var(--foreground)] text-lg">Trending Topics</h3>
+            <p className="text-xs text-[var(--muted-foreground)]">
               {data.analyzed_posts} Posts analysiert
               {data.provider && ` · AI: ${data.provider}`}
             </p>
@@ -107,7 +107,7 @@ export function TrendingTopics() {
         <button
           onClick={loadTrends}
           disabled={loading}
-          className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest bg-white/5 hover:bg-white/10 rounded-lg text-white/70 hover:text-white transition-colors disabled:opacity-50"
+          className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest bg-[var(--surface-muted)] hover:bg-[var(--surface-muted)]/80 rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors disabled:opacity-50"
         >
           Aktualisieren
         </button>
