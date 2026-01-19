@@ -60,7 +60,7 @@ const BudgetSimulator = () => {
               <p className="text-white/40 text-sm">Schiebe den Regler: Ware vs. Hype.</p>
             </div>
             <div className="text-right">
-              <div className="text-4xl font-mono text-white tracking-tighter">€{totalBudget.toLocaleString()}</div>
+              <div className="text-4xl font-mono text-white tracking-tighter">€{totalBudget.toLocaleString('de-DE')}</div>
               <div className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Gesamtkapital</div>
             </div>
           </div>
@@ -92,7 +92,7 @@ const BudgetSimulator = () => {
                    <Package className="w-6 h-6" />
                  </div>
                  <div className="text-right">
-                   <div className="text-lg font-mono text-white">€{sourcingBudget.toLocaleString()}</div>
+                   <div className="text-lg font-mono text-white">€{sourcingBudget.toLocaleString('de-DE')}</div>
                    <div className="text-[10px] text-white/30 uppercase tracking-widest">{split}% Allocation</div>
                  </div>
                </div>
@@ -110,7 +110,7 @@ const BudgetSimulator = () => {
                    <Megaphone className="w-6 h-6" />
                  </div>
                  <div className="text-right">
-                   <div className="text-lg font-mono text-white">€{marketingBudget.toLocaleString()}</div>
+                   <div className="text-lg font-mono text-white">€{marketingBudget.toLocaleString('de-DE')}</div>
                    <div className="text-[10px] text-white/30 uppercase tracking-widest">{100-split}% Allocation</div>
                  </div>
                </div>
