@@ -51,7 +51,7 @@ export async function GET(request: Request) {
           WHERE s.is_public = true
             AND s.is_accepting_members = true
             AND s.current_members < s.max_members
-            AND s.status = 'forming'
+            AND s.status IN ('forming', 'building')
           ORDER BY s.created_at DESC
         `;
         break;
