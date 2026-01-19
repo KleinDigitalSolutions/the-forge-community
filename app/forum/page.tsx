@@ -374,10 +374,10 @@ export default function Forum() {
                   <p className="text-[var(--muted-foreground)] text-xs font-bold uppercase tracking-[0.3em] animate-pulse">Gathering intelligence...</p>
                 </div>
               ) : filteredPosts.map((post) => (
-                <div key={post.id} className="flex bg-[var(--surface)] border border-[var(--border)] rounded-xl hover:border-[var(--accent)]/30 transition-all shadow-sm overflow-hidden glass-card group">
+                <div key={post.id} className="flex bg-[var(--surface)] border border-[var(--border)] rounded-xl hover:border-[var(--accent)]/30 transition-all shadow-sm glass-card group relative">
                   
                   {/* Voting Sidebar */}
-                  <div className="w-12 bg-[var(--surface-muted)]/50 flex flex-col items-center pt-4 gap-2 border-r border-[var(--border)]">
+                  <div className="w-12 bg-[var(--surface-muted)]/50 flex flex-col items-center pt-4 gap-2 border-r border-[var(--border)] rounded-l-xl overflow-hidden">
                     <button onClick={() => handleVote(post.id, 1)} className="p-1.5 hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] rounded-lg text-[var(--muted-foreground)] transition-all">
                       <ArrowUp className="w-5 h-5" />
                     </button>
@@ -450,7 +450,8 @@ export default function Forum() {
                               initial={{ opacity: 0, y: -10, scale: 0.95 }}
                               animate={{ opacity: 1, y: 0, scale: 1 }}
                               exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                              className="absolute top-full left-0 mt-2 bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-2xl overflow-hidden z-50 min-w-[220px]"
+                              className="absolute top-full left-0 mt-2 bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-2xl overflow-hidden min-w-[220px]"
+                              style={{ zIndex: 1000 }}
                             >
                               <div className="p-2 space-y-1">
                                 <button
