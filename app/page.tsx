@@ -19,9 +19,10 @@ import {
   BarChart,
   Users,
   ChevronRight,
-  Package,    // Neu importiert
-  Megaphone,  // Neu importiert
-  Cpu         // Neu importiert
+  Package,
+  Megaphone,
+  Cpu,
+  Truck
 } from 'lucide-react';
 import ResponsiveHeroBanner from '@/app/components/ui/ResponsiveHeroBanner';
 import AnimatedCardStack from '@/app/components/ui/AnimatedCardStack';
@@ -413,9 +414,9 @@ export default function Home() {
                 </p>
              </div>
 
-             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+             <div className="grid md:grid-cols-2 lg:grid-cols-6 gap-6">
                 {/* Feature 1: Legal */}
-                <div className="p-8 rounded-3xl bg-[#0F1113] border border-white/5 hover:border-[var(--accent)]/30 transition-all group">
+                <div className="lg:col-span-2 p-8 rounded-3xl bg-[#0F1113] border border-white/5 hover:border-[var(--accent)]/30 transition-all group">
                    <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-6 text-white group-hover:text-[var(--accent)] transition-colors">
                       <FileText className="w-6 h-6" />
                    </div>
@@ -429,7 +430,7 @@ export default function Home() {
                 </div>
 
                 {/* Feature 2: Research */}
-                <div className="p-8 rounded-3xl bg-[#0F1113] border border-white/5 hover:border-[var(--accent)]/30 transition-all group">
+                <div className="lg:col-span-2 p-8 rounded-3xl bg-[#0F1113] border border-white/5 hover:border-[var(--accent)]/30 transition-all group">
                    <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-6 text-white group-hover:text-[var(--accent)] transition-colors">
                       <Target className="w-6 h-6" />
                    </div>
@@ -440,7 +441,7 @@ export default function Home() {
                 </div>
 
                 {/* Feature 3: Sourcing */}
-                <div className="p-8 rounded-3xl bg-[#0F1113] border border-white/5 hover:border-[var(--accent)]/30 transition-all group">
+                <div className="lg:col-span-2 p-8 rounded-3xl bg-[#0F1113] border border-white/5 hover:border-[var(--accent)]/30 transition-all group">
                    <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-6 text-white group-hover:text-[var(--accent)] transition-colors">
                       <Package className="w-6 h-6" />
                    </div>
@@ -451,13 +452,24 @@ export default function Home() {
                 </div>
 
                 {/* Feature 4: Tech */}
-                <div className="p-8 rounded-3xl bg-[#0F1113] border border-white/5 hover:border-[var(--accent)]/30 transition-all group">
+                <div className="lg:col-span-2 lg:col-start-2 p-8 rounded-3xl bg-[#0F1113] border border-white/5 hover:border-[var(--accent)]/30 transition-all group">
                    <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-6 text-white group-hover:text-[var(--accent)] transition-colors">
                       <Zap className="w-6 h-6" />
                    </div>
                    <h3 className="text-xl font-instrument-serif text-white mb-3">Instant Commerce</h3>
                    <p className="text-xs text-white/50 leading-relaxed mb-4">
                       Dein Shop steht an Tag 1. Integriertes Stripe-Payment, Vercel-Hosting und Conversion-Optimierung.
+                   </p>
+                </div>
+
+                {/* Feature 5: Assets */}
+                <div className="lg:col-span-2 p-8 rounded-3xl bg-[#0F1113] border border-white/5 hover:border-[var(--accent)]/30 transition-all group">
+                   <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-6 text-white group-hover:text-[var(--accent)] transition-colors">
+                      <Truck className="w-6 h-6" />
+                   </div>
+                   <h3 className="text-xl font-instrument-serif text-white mb-3">Physical Asset Hub</h3>
+                   <p className="text-xs text-white/50 leading-relaxed mb-4">
+                      Geteilte Infrastruktur spart Kosten: Zugriff auf Lagerhallen, Transporter und Logistik-Netzwerke innerhalb der Forge.
                    </p>
                 </div>
              </div>
