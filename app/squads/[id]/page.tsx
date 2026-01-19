@@ -45,13 +45,36 @@ interface Member {
 interface Venture {
   id: string;
   name?: string;
+  tagline?: string;
   status: string;
   current_phase: number;
+  phase_completed: number;
+}
+
+interface VenturePhase {
+  id: string;
+  phase_number: number;
+  phase_name: string;
+  status: string;
+  total_tasks: number;
+  completed_tasks: number;
 }
 
 interface Wallet {
   balance: number;
   budget_total: number;
+  budget_allocated_samples?: number;
+  budget_allocated_production?: number;
+}
+
+interface Transaction {
+  id: string;
+  type: string;
+  category: string;
+  amount: number;
+  description: string;
+  created_at: string;
+  created_by_name?: string;
 }
 
 export default function SquadDetailPage() {
@@ -61,7 +84,9 @@ export default function SquadDetailPage() {
 
   const [squad, setSquad] = useState<Squad | null>(null);
   const [venture, setVenture] = useState<Venture | null>(null);
+  const [phases, setPhases] = useState<VenturePhase[]>([]);
   const [wallet, setWallet] = useState<Wallet | null>(null);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
@@ -78,7 +103,9 @@ export default function SquadDetailPage() {
       const data = await res.json();
       setSquad(data.squad);
       setVenture(data.venture);
+      setPhases(data.phases || []);
       setWallet(data.wallet);
+      setTransactions(data.recent_transactions || []);
     } catch (err) {
       console.error('Error fetching squad:', err);
       router.push('/squads');
@@ -246,6 +273,45 @@ export default function SquadDetailPage() {
               </div>
             </div>
 
+            {/* Venture Phases */}
+            {venture && phases.length > 0 && (
+              <div className="glass-card rounded-[2rem] border border-white/10 p-8">
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-2xl font-instrument-serif text-white">Venture Progress</h2>
+                  <span className="text-xs uppercase tracking-widest font-bold text-white/40">
+                    Phase {venture.current_phase}/6
+                  </span>
+                </div>
+
+                <div className="space-y-3">
+                  {phases.map((phase) => (
+                    <PhaseCard key={phase.id} phase={phase} isCurrent={phase.phase_number === venture.current_phase} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Budget & Transactions */}
+            {wallet && (
+              <div className="glass-card rounded-[2rem] border border-white/10 p-8">
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-2xl font-instrument-serif text-white">Budget</h2>
+                  <span className="text-2xl font-bold text-[var(--accent)]">
+                    €{wallet.balance.toLocaleString()}
+                  </span>
+                </div>
+
+                {transactions.length > 0 && (
+                  <div className="space-y-2">
+                    <h3 className="text-xs uppercase tracking-widest font-bold text-white/40 mb-4">Recent Transactions</h3>
+                    {transactions.slice(0, 5).map((tx) => (
+                      <TransactionRow key={tx.id} transaction={tx} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Quick Actions */}
             <div className="grid grid-cols-2 gap-4">
               <QuickActionCard
@@ -268,7 +334,7 @@ export default function SquadDetailPage() {
             {/* Venture Info */}
             {venture ? (
               <div className="glass-card rounded-[2rem] border border-white/10 p-8">
-                <div className="flex items-center gap-3 mb-6">
+                <div className="flex items-center gap-3 mb-2">
                   <div className="w-12 h-12 rounded-xl bg-[var(--accent)]/10 border border-[var(--accent)]/20 flex items-center justify-center">
                     <Zap className="w-6 h-6 text-[var(--accent)]" />
                   </div>
@@ -278,10 +344,18 @@ export default function SquadDetailPage() {
                   </div>
                 </div>
 
+                {venture.tagline && (
+                  <p className="text-sm text-white/60 mb-6 italic">"{venture.tagline}"</p>
+                )}
+
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-white/60">Phase</span>
+                    <span className="text-sm text-white/60">Current Phase</span>
                     <span className="text-sm font-bold text-white">{venture.current_phase}/6</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-white/60">Completed</span>
+                    <span className="text-sm font-bold text-green-400">{venture.phase_completed} phases</span>
                   </div>
                   <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
                     <motion.div
@@ -399,24 +473,37 @@ function MemberCard({ member }: { member: Member }) {
   return (
     <motion.div
       whileHover={{ x: 4 }}
-      className="flex items-center justify-between p-4 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/10 transition-all group"
+      className="p-5 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/10 transition-all group"
     >
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-xl bg-[var(--accent)]/10 border border-[var(--accent)]/20 flex items-center justify-center text-[var(--accent)] font-bold text-lg">
-          {member.user_name?.charAt(0) || 'F'}
-        </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <h4 className="font-bold text-white">{member.user_name}</h4>
-            <Icon className="w-4 h-4 text-[var(--accent)]" />
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-xl bg-[var(--accent)]/10 border border-[var(--accent)]/20 flex items-center justify-center text-[var(--accent)] font-bold text-xl">
+            {member.user_name?.charAt(0) || 'F'}
           </div>
-          <p className="text-xs text-white/40 uppercase tracking-widest">{member.role}</p>
+          <div>
+            <div className="flex items-center gap-2">
+              <h4 className="font-bold text-white text-lg">{member.user_name}</h4>
+              <Icon className="w-4 h-4 text-[var(--accent)]" />
+            </div>
+            <p className="text-xs text-white/40 uppercase tracking-widest">{member.role}</p>
+          </div>
+        </div>
+
+        <div className="text-right">
+          <div className="text-xl font-bold text-white">{member.equity_share.toFixed(1)}%</div>
+          <div className="text-xs text-white/40">Equity</div>
         </div>
       </div>
 
-      <div className="text-right">
-        <div className="text-sm font-bold text-white">{member.equity_share.toFixed(1)}%</div>
-        <div className="text-xs text-white/40">Equity</div>
+      <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
+        <div>
+          <div className="text-xs text-white/40 mb-1">Hours</div>
+          <div className="text-sm font-bold text-white">{member.hours_contributed}h</div>
+        </div>
+        <div>
+          <div className="text-xs text-white/40 mb-1">Tasks</div>
+          <div className="text-sm font-bold text-white">{member.tasks_completed}</div>
+        </div>
       </div>
     </motion.div>
   );
@@ -442,6 +529,84 @@ function InfoRow({ label, value }: { label: string; value: string }) {
     <div className="flex justify-between items-center">
       <span className="text-white/60">{label}</span>
       <span className="font-bold text-white capitalize">{value}</span>
+    </div>
+  );
+}
+
+function PhaseCard({ phase, isCurrent }: { phase: VenturePhase; isCurrent: boolean }) {
+  const progress = phase.total_tasks > 0 ? (phase.completed_tasks / phase.total_tasks) * 100 : 0;
+
+  const statusConfig: Record<string, { color: string; label: string }> = {
+    completed: { color: 'text-green-400', label: '✓' },
+    in_progress: { color: 'text-[var(--accent)]', label: '→' },
+    pending: { color: 'text-white/20', label: '○' },
+  };
+
+  const { color, label } = statusConfig[phase.status] || statusConfig.pending;
+
+  return (
+    <motion.div
+      whileHover={{ x: 4 }}
+      className={`p-4 rounded-xl border transition-all ${
+        isCurrent
+          ? 'bg-[var(--accent)]/5 border-[var(--accent)]/30'
+          : 'bg-white/[0.02] border-white/5 hover:border-white/10'
+      }`}
+    >
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center gap-3">
+          <span className={`text-lg font-bold ${color}`}>{label}</span>
+          <div>
+            <h4 className="font-bold text-white text-sm">Phase {phase.phase_number}: {phase.phase_name}</h4>
+            <p className="text-xs text-white/40">
+              {phase.completed_tasks}/{phase.total_tasks} Tasks
+            </p>
+          </div>
+        </div>
+        {isCurrent && (
+          <span className="px-2 py-1 rounded-full bg-[var(--accent)]/20 text-[var(--accent)] text-[10px] font-bold uppercase tracking-wider">
+            Aktiv
+          </span>
+        )}
+      </div>
+
+      <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${progress}%` }}
+          className={`h-full ${
+            phase.status === 'completed' ? 'bg-green-400' :
+            phase.status === 'in_progress' ? 'bg-[var(--accent)]' :
+            'bg-white/10'
+          }`}
+        />
+      </div>
+    </motion.div>
+  );
+}
+
+function TransactionRow({ transaction }: { transaction: Transaction }) {
+  const isExpense = transaction.type === 'expense';
+
+  return (
+    <div className="flex items-center justify-between p-3 rounded-lg bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all">
+      <div className="flex items-center gap-3">
+        <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold ${
+          isExpense ? 'bg-red-500/10 text-red-400' : 'bg-green-500/10 text-green-400'
+        }`}>
+          {isExpense ? '−' : '+'}
+        </div>
+        <div>
+          <p className="text-sm text-white font-medium">{transaction.description}</p>
+          <p className="text-xs text-white/40 capitalize">
+            {transaction.category}
+            {transaction.created_by_name && ` · ${transaction.created_by_name}`}
+          </p>
+        </div>
+      </div>
+      <span className={`text-sm font-bold ${isExpense ? 'text-red-400' : 'text-green-400'}`}>
+        {isExpense ? '−' : '+'}€{transaction.amount.toLocaleString()}
+      </span>
     </div>
   );
 }
