@@ -44,13 +44,13 @@ const BudgetSimulator = () => {
       <div className="bg-[#0B0C0E] rounded-[22px] border border-white/5 p-6 md:p-10 relative overflow-hidden group">
         
         {/* Background Glow Effects */}
-        <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-blue-500/10 blur-[100px] rounded-full pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[200px] h-[200px] bg-cyan-500/5 blur-[80px] rounded-full pointer-events-none" />
+        <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-[var(--accent)]/5 blur-[100px] rounded-full pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[200px] h-[200px] bg-[var(--accent)]/5 blur-[80px] rounded-full pointer-events-none" />
 
         <div className="relative z-10">
           <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 text-[10px] font-bold text-[var(--accent)] uppercase tracking-widest mb-4">
                 <Cpu className="w-3 h-3" />
                 Validator Engine
               </div>
@@ -69,7 +69,7 @@ const BudgetSimulator = () => {
           <div className="mb-12">
             <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-white/30 mb-4">
               <span className={split > 50 ? "text-white transition-colors" : ""}>Sourcing Focus</span>
-              <span className={split < 50 ? "text-blue-400 transition-colors" : ""}>Growth Focus</span>
+              <span className={split < 50 ? "text-[var(--accent)] transition-colors" : ""}>Growth Focus</span>
             </div>
             
             <input 
@@ -78,7 +78,7 @@ const BudgetSimulator = () => {
               max="80" 
               value={split} 
               onChange={(e) => setSplit(parseInt(e.target.value))}
-              className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:bg-blue-500 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-4 [&::-webkit-slider-thumb]:border-[#0B0C0E] [&::-webkit-slider-thumb]:shadow-[0_0_20px_rgba(59,130,246,0.5)] transition-all"
+              className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:bg-[var(--accent)] [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-4 [&::-webkit-slider-thumb]:border-[#0B0C0E] [&::-webkit-slider-thumb]:shadow-[0_0_20px_rgba(212,175,55,0.5)] transition-all"
             />
           </div>
 
@@ -103,20 +103,20 @@ const BudgetSimulator = () => {
             </div>
 
             {/* Marketing Card */}
-            <div className="p-6 rounded-2xl bg-blue-900/[0.05] border border-blue-500/10 relative overflow-hidden">
-               <div className="absolute top-0 left-0 w-1 h-full bg-blue-500/50" style={{ height: `${100-split}%`}} />
+            <div className="p-6 rounded-2xl bg-[var(--accent)]/[0.03] border border-[var(--accent)]/10 relative overflow-hidden">
+               <div className="absolute top-0 left-0 w-1 h-full bg-[var(--accent)]/50" style={{ height: `${100-split}%`}} />
                <div className="flex items-start justify-between mb-8">
-                 <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400">
+                 <div className="p-3 bg-[var(--accent)]/10 rounded-xl text-[var(--accent)]">
                    <Megaphone className="w-6 h-6" />
                  </div>
                  <div className="text-right">
-                   <div className="text-lg font-mono text-blue-100">€{marketingBudget.toLocaleString()}</div>
-                   <div className="text-[10px] text-blue-200/30 uppercase tracking-widest">{100-split}% Allocation</div>
+                   <div className="text-lg font-mono text-white">€{marketingBudget.toLocaleString()}</div>
+                   <div className="text-[10px] text-white/30 uppercase tracking-widest">{100-split}% Allocation</div>
                  </div>
                </div>
                <div>
-                 <div className="text-4xl font-instrument-serif text-blue-100 mb-1">~{influencers} Partners</div>
-                 <div className="text-xs text-blue-200/40">Micro-Influencer / Seeding Kampagne</div>
+                 <div className="text-4xl font-instrument-serif text-white mb-1">~{influencers} Partners</div>
+                 <div className="text-xs text-white/40">Micro-Influencer / Seeding Kampagne</div>
                </div>
             </div>
           </div>
@@ -387,7 +387,7 @@ export default function Home() {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
              <div>
                 <h2 className="text-4xl md:text-6xl font-instrument-serif text-white mb-6">
-                  Start Small.<br/><span className="text-blue-500">Scale Fast.</span>
+                  Start Small.<br/><span className="text-[var(--accent)]">Scale Fast.</span>
                 </h2>
                 <p className="text-lg text-white/60 mb-8 leading-relaxed">
                   Mit dem neuen <strong>12.5k Validator Batch</strong> senken wir die Eintrittsbarriere.
@@ -396,21 +396,21 @@ export default function Home() {
                 </p>
                 <ul className="space-y-4 mb-8">
                   <li className="flex items-center gap-3 text-sm text-white/80">
-                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_10px_rgba(212,175,55,0.8)]" />
                     Perfekt für First-Time Founder
                   </li>
                   <li className="flex items-center gap-3 text-sm text-white/80">
-                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_10px_rgba(212,175,55,0.8)]" />
                     Fokus auf Cashflow & Brand-Building
                   </li>
                   <li className="flex items-center gap-3 text-sm text-white/80">
-                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_10px_rgba(212,175,55,0.8)]" />
                     Spielgeld-Risiko bei Squad-Teilung
                   </li>
                 </ul>
                 <button 
                   onClick={() => document.getElementById('apply')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="text-xs font-bold uppercase tracking-widest text-blue-400 hover:text-white transition-colors border-b border-blue-500/50 pb-1"
+                  className="text-xs font-bold uppercase tracking-widest text-[var(--accent)] hover:text-white transition-colors border-b border-[var(--accent)]/50 pb-1"
                 >
                   Validator Batch Bewerben →
                 </button>
