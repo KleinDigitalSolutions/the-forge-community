@@ -314,7 +314,7 @@ export default function Home() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
               { label: 'Execution Hebel', value: '25x', sub: 'Vs. Solo Gründung' },
-              { label: 'Tage bis Launch', value: 'Ø 28', sub: 'Infrastruktur Ready' },
+              { label: 'Tage bis Launch', value: 'Ø 45', sub: 'Infrastruktur Ready' },
               { label: 'Risiko-Faktor', value: '-96%', sub: 'Durch Kapital-Split' },
               { label: 'Community Owned', value: '100%', sub: 'Keine VCs. Echte Werte.' },
             ].map((stat, i) => (
@@ -372,11 +372,75 @@ export default function Home() {
                   <feature.icon className="w-6 h-6 text-white group-hover:text-[var(--accent)]" />
                 </div>
                 <h3 className="text-2xl font-instrument-serif text-white mb-4">{feature.title}</h3>
-                <p className="text-sm text-white/40 leading-relaxed max-w-[280px] mx-auto">
-                  {feature.desc}
-                </p>
+                <p className="text-white/60">{feature.desc}</p>
               </div>
             ))}
+          </div>
+
+          {/* --- NEW: THE FOUNDER OS (Feature Stack) --- */}
+          <div className="mt-32 border-t border-white/5 pt-20">
+             <div className="text-center mb-16">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 text-[10px] font-bold text-[var(--accent)] uppercase tracking-[0.3em] mb-4">
+                  <Cpu className="w-3 h-3" />
+                  Orion AI Core
+                </div>
+                <h2 className="text-4xl md:text-5xl font-instrument-serif text-white mb-6">
+                   The Founder OS.
+                </h2>
+                <p className="text-white/50 max-w-2xl mx-auto">
+                   Warum selbst arbeiten? Wir haben die Prozesse von 8-Figure Brands automatisiert.
+                   Dein Abo finanziert sich durch gesparte Zeit und Anwaltskosten von selbst.
+                </p>
+             </div>
+
+             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* Feature 1: Legal */}
+                <div className="p-8 rounded-3xl bg-[#0F1113] border border-white/5 hover:border-[var(--accent)]/30 transition-all group">
+                   <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-6 text-white group-hover:text-[var(--accent)] transition-colors">
+                      <FileText className="w-6 h-6" />
+                   </div>
+                   <h3 className="text-xl font-instrument-serif text-white mb-3">Behörden & Legal</h3>
+                   <p className="text-xs text-white/50 leading-relaxed mb-4">
+                      Gewerbe, Finanzamt, IHK. Orion kennt die Formulare und liefert geprüfte Vertrags-Vorlagen für GmbH & Co.
+                   </p>
+                   <div className="text-[9px] font-bold text-white/20 uppercase tracking-widest border-t border-white/5 pt-4">
+                      *Administrative Assistenz. Keine Rechtsberatung.
+                   </div>
+                </div>
+
+                {/* Feature 2: Research */}
+                <div className="p-8 rounded-3xl bg-[#0F1113] border border-white/5 hover:border-[var(--accent)]/30 transition-all group">
+                   <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-6 text-white group-hover:text-[var(--accent)] transition-colors">
+                      <Target className="w-6 h-6" />
+                   </div>
+                   <h3 className="text-xl font-instrument-serif text-white mb-3">Deep Research</h3>
+                   <p className="text-xs text-white/50 leading-relaxed mb-4">
+                      Konkurrenz-Scanner: Orion analysiert Preise, Nischen-Trends und Ad-Libraries deiner Wettbewerber. Live.
+                   </p>
+                </div>
+
+                {/* Feature 3: Sourcing */}
+                <div className="p-8 rounded-3xl bg-[#0F1113] border border-white/5 hover:border-[var(--accent)]/30 transition-all group">
+                   <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-6 text-white group-hover:text-[var(--accent)] transition-colors">
+                      <Package className="w-6 h-6" />
+                   </div>
+                   <h3 className="text-xl font-instrument-serif text-white mb-3">Sourcing Scout</h3>
+                   <p className="text-xs text-white/50 leading-relaxed mb-4">
+                      Direktzugang zu verifizierten B2B-Großhändlern. Wir finden die besten Margen für dein Produkt. Kein Alibaba-Roulette.
+                   </p>
+                </div>
+
+                {/* Feature 4: Tech */}
+                <div className="p-8 rounded-3xl bg-[#0F1113] border border-white/5 hover:border-[var(--accent)]/30 transition-all group">
+                   <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-6 text-white group-hover:text-[var(--accent)] transition-colors">
+                      <Zap className="w-6 h-6" />
+                   </div>
+                   <h3 className="text-xl font-instrument-serif text-white mb-3">Instant Commerce</h3>
+                   <p className="text-xs text-white/50 leading-relaxed mb-4">
+                      Dein Shop steht an Tag 1. Integriertes Stripe-Payment, Vercel-Hosting und Conversion-Optimierung.
+                   </p>
+                </div>
+             </div>
           </div>
         </div>
       </section>
