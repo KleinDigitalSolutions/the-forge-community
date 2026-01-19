@@ -132,8 +132,30 @@ export default function DemoShop() {
       </section>
 
       {/* --- FEATURES TICKER --- */}
-      <div className="border-y border-white/5 py-6 overflow-hidden bg-black/50 backdrop-blur-sm">
-         <div className="flex gap-12 justify-center items-center text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 whitespace-nowrap">
+      <div className="border-y border-white/5 py-6 overflow-hidden bg-black/50 backdrop-blur-sm relative">
+         <style jsx>{`
+            @keyframes marquee {
+               0% { transform: translateX(0); }
+               100% { transform: translateX(-50%); }
+            }
+            .animate-marquee {
+               animation: marquee 30s linear infinite;
+               width: fit-content;
+            }
+         `}</style>
+         <div className="flex animate-marquee gap-12 items-center text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 whitespace-nowrap px-6">
+            {/* Set 1 */}
+            <div className="flex items-center gap-3"><Globe className="w-3 h-3" /> Worldwide Shipping</div>
+            <span className="w-1 h-1 bg-white/10 rounded-full" />
+            <div className="flex items-center gap-3"><ShieldCheck className="w-3 h-3" /> Secure Crypto Checkout</div>
+            <span className="w-1 h-1 bg-white/10 rounded-full" />
+            <div className="flex items-center gap-3"><Zap className="w-3 h-3" /> Same Day Fulfillment</div>
+            <span className="w-1 h-1 bg-white/10 rounded-full" />
+            <div className="flex items-center gap-3"><Star className="w-3 h-3" /> 5.0 Rated Support</div>
+            
+            <span className="w-1 h-1 bg-white/10 rounded-full mx-6" />
+
+            {/* Set 2 (Duplicate for Loop) */}
             <div className="flex items-center gap-3"><Globe className="w-3 h-3" /> Worldwide Shipping</div>
             <span className="w-1 h-1 bg-white/10 rounded-full" />
             <div className="flex items-center gap-3"><ShieldCheck className="w-3 h-3" /> Secure Crypto Checkout</div>
