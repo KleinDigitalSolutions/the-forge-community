@@ -115,7 +115,7 @@ const BudgetSimulator = () => {
                  </div>
                </div>
                <div>
-                 <div className="text-4xl font-instrument-serif text-white mb-1">~{influencers} Partners</div>
+                 <div className="text-4xl font-instrument-serif text-white mb-1">~{influencers} Creator Deals</div>
                  <div className="text-xs text-white/40">Micro-Influencer / Seeding Kampagne</div>
                </div>
             </div>
@@ -302,8 +302,7 @@ export default function Home() {
           { label: "Mission Log", href: "#projects" },
           { label: "Prinzipien", href: "#principles" },
           { label: "Preise", href: "#pricing" },
-          { label: "Shop Demo", href: "/demo-shop" },
-          { label: "Login", href: "/login" }
+          { label: "Shop Demo", href: "/demo-shop" }
         ]}
         ctaButtonText="BEWERBEN"
         ctaButtonHref="#apply"
@@ -314,10 +313,10 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { label: 'Verfügbare Plätze', value: `${Math.max(0, MAX_GROUP_SIZE - foundersCount)}`, sub: 'von 25 Gesamt' },
-              { label: 'Einstieg ab', value: '12.5k', sub: 'Validator Tier' }, // ANGEPASST
-              { label: 'Equity Split', value: 'Gleich', sub: '1 Stimme / Mitglied' },
-              { label: 'Transparenz', value: '100%', sub: 'Open Ledger' },
+              { label: 'Execution Hebel', value: '25x', sub: 'Vs. Solo Gründung' },
+              { label: 'Tage bis Launch', value: 'Ø 28', sub: 'Infrastruktur Ready' },
+              { label: 'Risiko-Faktor', value: '-96%', sub: 'Durch Kapital-Split' },
+              { label: 'Community Owned', value: '100%', sub: 'Keine VCs. Echte Werte.' },
             ].map((stat, i) => (
               <div key={i} className="glass-card backdrop-blur-2xl p-8 rounded-3xl border border-white/10 flex flex-col items-center justify-center hover:border-[var(--accent)]/50 transition-all duration-700 group overflow-hidden relative shadow-2xl">
                 <div className="absolute inset-0 bg-gradient-to-b from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />

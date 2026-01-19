@@ -175,7 +175,7 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                             {titleLine2}
                         </h1>
 
-                        <p className="sm:text-lg animate-fade-slide-in-3 text-base text-white/80 max-w-2xl mt-6 mx-auto">
+                        <p className="sm:text-lg animate-fade-slide-in-3 text-base text-white/60 max-w-xl mt-6 mx-auto leading-relaxed">
                             {description}
                         </p>
 
@@ -189,7 +189,7 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                             </Link>
                             <Link
                                 href={secondaryButtonHref}
-                                className="inline-flex items-center gap-3 rounded-xl bg-white/10 border border-white/20 px-8 py-4 text-[10px] font-black text-white hover:bg-white/20 uppercase tracking-[0.3em] transition-all duration-500"
+                                className="inline-flex items-center gap-3 rounded-xl bg-white/5 border border-white/10 px-8 py-4 text-[10px] font-black text-white hover:bg-white/10 uppercase tracking-[0.3em] transition-all duration-500"
                             >
                                 {secondaryButtonText}
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
@@ -199,19 +199,19 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                         </div>
                     </div>
 
-                    <div className="mx-auto mt-16 max-w-5xl">
-                        <p className="animate-fade-slide-in-1 text-[10px] font-bold uppercase tracking-[0.4em] text-white/30 text-center mb-10">
+                    <div className="mx-auto mt-24 max-w-5xl">
+                        <p className="animate-fade-slide-in-1 text-[8px] font-black uppercase tracking-[0.5em] text-white/20 text-center mb-10">
                             {partnersTitle}
                         </p>
                         {/* Desktop: 5 in einer Reihe | Mobile: 2-2-1 symmetrisch */}
-                        <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-8 animate-fade-slide-in-2">
+                        <div className="flex flex-wrap justify-center items-center gap-x-16 gap-y-8 animate-fade-slide-in-2">
                             {partners.map((partner, index) => (
                                 <div
                                     key={index}
                                     className="flex items-center justify-center"
                                 >
                                     <div
-                                        className="w-20 h-20 bg-center bg-contain bg-no-repeat invert brightness-200 opacity-40 grayscale pointer-events-none"
+                                        className="w-12 h-12 bg-center bg-contain bg-no-repeat invert brightness-200 opacity-20 grayscale pointer-events-none"
                                         style={{ backgroundImage: `url(${partner.logoUrl})` }}
                                         aria-label={`Partner logo ${index + 1}`}
                                     />
