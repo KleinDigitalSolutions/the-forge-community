@@ -26,7 +26,7 @@ const cardData = {
     font: "font-sans font-black tracking-tighter",
   },
   3: {
-    title: "Execution.exe",
+    title: "FORGE.EXE",
     description: "Kapital und Skills in hochprofitable Produkte verwandeln.",
     gradient: "from-emerald-500 via-teal-600 to-cyan-700",
     icon: Zap,
