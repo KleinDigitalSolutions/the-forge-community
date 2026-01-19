@@ -10,13 +10,22 @@ export async function getRoadmapItems() {
 
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
-    select: { id: true, squadId: true, role: true }
+    select: {
+      id: true,
+      role: true,
+      squadMemberships: {
+        where: { leftAt: null },
+        select: { squadId: true }
+      }
+    }
   });
 
   if (!user) return [];
 
+  const squadIds = user.squadMemberships.map(m => m.squadId);
+
   const items = await prisma.roadmapItem.findMany({
-    where: user.role === 'ADMIN' ? {} : { squadId: user.squadId || 'none' },
+    where: user.role === 'ADMIN' ? {} : { squadId: { in: squadIds.length > 0 ? squadIds : ['none'] } },
     include: {
       votes: true,
       _count: {
@@ -46,10 +55,20 @@ export async function toggleVote(roadmapItemId: string) {
   // 1. Get User
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
-    include: { squad: true }
+    select: {
+      id: true,
+      email: true,
+      role: true,
+      squadMemberships: {
+        where: { leftAt: null },
+        select: { squadId: true }
+      }
+    }
   });
 
   if (!user) throw new Error('User not found');
+
+  const userSquadIds = user.squadMemberships.map(m => m.squadId);
 
   // 2. Security Check (Squad Access)
   // We need to know which squad the item belongs to.
@@ -61,7 +80,7 @@ export async function toggleVote(roadmapItemId: string) {
   if (!item) throw new Error('Item not found');
 
   // Verify access (User must be in the squad of the item)
-  if (user.role !== 'ADMIN' && user.squadId !== item.squadId) {
+  if (user.role !== 'ADMIN' && !userSquadIds.includes(item.squadId)) {
      throw new Error('Access denied');
   }
 

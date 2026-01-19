@@ -31,15 +31,13 @@ export async function POST(req: Request) {
   if (session?.user?.email) {
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { squad: true }
+      select: { name: true, role: true }
     });
 
     if (user) {
        userContext = `
        USER CONTEXT:
        Name: ${user.name}
-       Squad: ${user.squad?.name || 'Kein Squad'}
-       Squad Topic: ${user.squad?.description || 'General'}
        Role: ${user.role}
        `;
     }

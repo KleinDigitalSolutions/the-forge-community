@@ -63,13 +63,11 @@ export async function GET(request: Request) {
           name: founder.name,
           notionId: founder.id,
           role: (founder.status === 'active' ? 'FOUNDER' : 'USER') as any,
-          squadId: squadId,
         },
         update: {
           name: founder.name,
           notionId: founder.id,
           role: (founder.status === 'active' ? 'FOUNDER' : 'USER') as any,
-          squadId: squadId,
         }
       });
       syncedCount++;

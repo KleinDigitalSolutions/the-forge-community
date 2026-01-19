@@ -37,6 +37,12 @@ enum TaskPriority {
   CRITICAL
 }
 
+enum SquadRole {
+  LEAD    // Squad Lead (decision maker, founder)
+  MEMBER  // Regular member
+  GUEST   // Observer only (limited access)
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -47,8 +53,7 @@ model User {
   notionId      String?   @unique
 
   // Relations
-  squadId       String?
-  squad         Squad?    @relation(fields: [squadId], references: [id])
+  squadMemberships SquadMember[]
 
   votes         Vote[]
   karma         Karma[]
@@ -67,6 +72,13 @@ model User {
   banReason        String?
   bannedAt         DateTime?
 
+  // Stripe Subscription (69€/mo Platform Fee)
+  stripeCustomerId      String?  @unique
+  stripeSubscriptionId  String?  @unique
+  subscriptionStatus    String?  // active, cancelled, past_due, trialing
+  subscriptionTier      String   @default("founder") // founder, pro, enterprise
+  subscriptionEndsAt    DateTime?
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -77,12 +89,51 @@ model Squad {
   description String?
   slug        String   @unique
 
-  users       User[]
+  // Stripe Connect (Squad erhält Zahlungen)
+  stripeConnectedAccountId String?  @unique
+  stripeAccountStatus      String?  // pending, enabled, disabled, rejected
+  stripeOnboardingComplete Boolean  @default(false)
+  stripeChargesEnabled     Boolean  @default(false) // Kann Squad Zahlungen empfangen?
+  stripePayoutsEnabled     Boolean  @default(false) // Kann Squad auszahlen?
+
+  members     SquadMember[]
   roadmaps    RoadmapItem[]
   ventures    Venture[]
+  transactions SquadTransaction[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+// ============================================
+// SQUAD MEMBERSHIP - Many-to-Many System
+// ============================================
+
+model SquadMember {
+  id          String    @id @default(cuid())
+
+  // Relations
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  squadId     String
+  squad       Squad     @relation(fields: [squadId], references: [id], onDelete: Cascade)
+
+  // Role & Permissions
+  role        SquadRole @default(MEMBER)
+
+  // Equity & Ownership (optional for revenue sharing)
+  equityShare Float?    // Percentage: 20.5 = 20.5%
+
+  // Timestamps
+  joinedAt    DateTime  @default(now())
+  leftAt      DateTime? // Track when they left (soft delete)
+
+  // Prevent duplicate memberships
+  @@unique([userId, squadId])
+  @@index([userId])
+  @@index([squadId])
+  @@index([role])
 }
 
 model RoadmapItem {
@@ -210,6 +261,7 @@ model Venture {
   costs           CostItem[]
   resources       VentureResource[]
   mentoringSessions MentoringSession[]
+  brandDNA        BrandDNA?
 
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -217,6 +269,55 @@ model Venture {
   @@index([ownerId])
   @@index([squadId])
   @@index([status])
+}
+
+// ============================================
+// BRAND DNA - AI Context System
+// ============================================
+
+model BrandDNA {
+  id              String   @id @default(cuid())
+  ventureId       String   @unique
+  venture         Venture  @relation(fields: [ventureId], references: [id], onDelete: Cascade)
+
+  // Core Identity
+  brandName       String
+  tagline         String?
+  mission         String?   // "Why we exist"
+  vision          String?   // "Where we're going"
+  values          String[]  @default([]) // ["Sustainability", "Innovation"]
+
+  // Voice & Tone (for AI content generation)
+  toneOfVoice     String?   // "Professional", "Casual", "Edgy", "Friendly"
+  personality     String[]  @default([]) // ["Bold", "Playful", "Authentic"]
+  writingStyle    String?   // "Short & punchy", "Detailed & informative"
+
+  // Target Audience
+  targetAudience  Json?     // { age: "25-35", gender: "all", location: "EU", interests: [] }
+  customerPersona String?   // Free text description
+
+  // Visual Identity
+  primaryColor    String?   // "#D4AF37"
+  secondaryColors String[]  @default([]) // ["#000000", "#FFFFFF"]
+  logoUrl         String?
+  fontFamily      String?   // "Inter, sans-serif"
+
+  // Product/Service
+  productCategory String?   // "Fashion", "Food", "SaaS"
+  keyFeatures     String[]  @default([]) // ["Organic", "Handmade", "Sustainable"]
+  usp             String?   // Unique Selling Proposition
+
+  // Competitors (for context)
+  competitors     Json?     // [{ name: "Brand X", url: "...", strengths: [] }]
+
+  // AI Context (Most Important!)
+  aiContext       String?   // Free text for Gemini: "Always mention sustainability..."
+  doNotMention    String[]  @default([]) // Topics to avoid in AI responses
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([ventureId])
 }
 
 model VentureStep {
@@ -408,4 +509,65 @@ model LinkPreview {
 
   @@index([url])
   @@index([fetchedAt])
+}
+
+// ============================================
+// STRIPE CONNECT - TRANSACTION LOG
+// ============================================
+// WICHTIG: Dies ist NUR ein Log für Transparenz!
+// Wir halten KEIN Geld! Alle Gelder laufen über Stripe Connect.
+
+enum TransactionType {
+  SALE              // Squad verkauft Produkt (Shop)
+  REFUND            // Rückerstattung
+  PLATFORM_FEE      // Unsere Provision (automatisch von Stripe)
+  PAYOUT            // Squad zahlt aus (Stripe → Squad Bank)
+  SUBSCRIPTION      // User zahlt 69€/mo (geht an uns)
+}
+
+enum TransactionStatus {
+  PENDING           // Zahlung wird verarbeitet
+  SUCCEEDED         // Erfolgreich
+  FAILED            // Fehlgeschlagen
+  REFUNDED          // Rückerstattet
+}
+
+model SquadTransaction {
+  id              String   @id @default(cuid())
+
+  // Relation
+  squadId         String
+  squad           Squad    @relation(fields: [squadId], references: [id], onDelete: Cascade)
+
+  // Transaction Details
+  type            TransactionType
+  status          TransactionStatus @default(PENDING)
+  amount          Float    // In EUR (oder currency)
+  currency        String   @default("EUR")
+
+  // Stripe IDs (für Nachverfolgung, NICHT für Geld-Holding!)
+  stripePaymentIntentId    String?  @unique
+  stripeChargeId           String?
+  stripeTransferId         String?  // Transfer zu Squad Connected Account
+
+  // Platform Fee (unsere Provision)
+  platformFeeAmount Float?  // z.B. 5€ bei 100€ Sale
+  platformFeePercent Float? // z.B. 5.0 (= 5%)
+
+  // Description & Metadata
+  description     String?
+  metadata        Json?    // Flexible Daten (order_id, customer_email, etc.)
+
+  // Related Order/Customer (optional)
+  customerEmail   String?
+  orderId         String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([squadId])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+  @@index([stripePaymentIntentId])
 }

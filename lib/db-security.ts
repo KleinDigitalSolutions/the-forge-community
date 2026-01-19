@@ -96,14 +96,20 @@ export async function isAdmin(): Promise<boolean> {
  */
 export async function verifySquadAccess(squadId: string) {
   const session = await auth();
-  
+
   if (!session?.user?.email) {
     throw new Error('Unauthorized');
   }
 
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
-    select: { squadId: true, role: true }
+    select: {
+      role: true,
+      squadMemberships: {
+        where: { leftAt: null },
+        select: { squadId: true }
+      }
+    }
   });
 
   if (!user) {
@@ -114,7 +120,8 @@ export async function verifySquadAccess(squadId: string) {
     return true; // Admins have access to all squads
   }
 
-  if (user.squadId !== squadId) {
+  const userSquadIds = user.squadMemberships.map(m => m.squadId);
+  if (!userSquadIds.includes(squadId)) {
     throw new Error('Access denied: You are not a member of this squad');
   }
 

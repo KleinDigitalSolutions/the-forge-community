@@ -5,7 +5,8 @@ import { useParams } from 'next/navigation';
 import AuthGuard from '@/app/components/AuthGuard';
 import PageShell from '@/app/components/PageShell';
 import { getVenture, updateVentureTask, addVentureCost, getVentureCosts } from '@/app/actions/ventures';
-import { Calendar, CheckCircle2, Circle, AlertCircle, Plus, DollarSign, TrendingUp, Clock } from 'lucide-react';
+import { Calendar, CheckCircle2, Circle, AlertCircle, Plus, DollarSign, TrendingUp, Clock, Zap } from 'lucide-react';
+import Link from 'next/link';
 
 export default function VentureDetailPage() {
   const params = useParams();
@@ -118,13 +119,22 @@ export default function VentureDetailPage() {
                 {venture.type} • Schritt {venture.currentStep}/6
               </p>
             </div>
-            <span className={`px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest ${
-              venture.status === 'LAUNCHED' ? 'bg-green-500/10 text-green-500 border border-green-500/20' :
-              venture.status === 'IN_PROGRESS' ? 'bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/20' :
-              'bg-white/5 text-white/30 border border-white/10'
-            }`}>
-              {venture.status}
-            </span>
+            <div className="flex items-center gap-4">
+              <Link
+                href={`/forge/${ventureId}`}
+                className="flex items-center gap-2 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-black px-6 py-3 rounded-xl font-bold text-sm hover:brightness-110 transition-all"
+              >
+                <Zap className="w-4 h-4" />
+                Open Forge
+              </Link>
+              <span className={`px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest ${
+                venture.status === 'LAUNCHED' ? 'bg-green-500/10 text-green-500 border border-green-500/20' :
+                venture.status === 'IN_PROGRESS' ? 'bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/20' :
+                'bg-white/5 text-white/30 border border-white/10'
+              }`}>
+                {venture.status}
+              </span>
+            </div>
           </div>
 
           {/* Progress Bar */}
