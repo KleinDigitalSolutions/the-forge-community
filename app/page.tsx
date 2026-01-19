@@ -517,11 +517,11 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="py-16 border-t border-white/5 relative overflow-hidden bg-[#08090A]">
+      <footer className="py-8 border-t border-white/5 relative overflow-hidden bg-[#08090A]">
          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-[var(--accent)]/20 to-transparent" />
          
          <div className="max-w-7xl mx-auto px-6 relative z-10">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 mb-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-6">
                {/* Brand Column */}
                <div className="space-y-8">
                   <Link href="/" className="flex flex-col group">
@@ -575,7 +575,7 @@ export default function Home() {
                </div>
             </div>
 
-            <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="pt-4 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
                <div className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/20">
                   © 2026 THE FORGE SYSTEM • ALL RIGHTS RESERVED
                </div>
