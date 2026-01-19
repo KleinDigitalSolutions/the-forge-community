@@ -199,19 +199,26 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                         </div>
                     </div>
 
-                    <div className="mx-auto mt-12 max-w-5xl">
-                        <p className="animate-fade-slide-in-1 text-xs font-bold uppercase tracking-[0.3em] text-white/40 text-center">
+                    <div className="mx-auto mt-16 max-w-5xl">
+                        <p className="animate-fade-slide-in-1 text-[10px] font-bold uppercase tracking-[0.4em] text-white/30 text-center mb-10">
                             {partnersTitle}
                         </p>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 animate-fade-slide-in-2 text-white/30 mt-8 items-center justify-items-center gap-16 opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
+                        {/* Desktop: 5 in einer Reihe | Mobile: 2-2-1 symmetrisch */}
+                        <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-8 animate-fade-slide-in-2">
                             {partners.map((partner, index) => (
                                 <Link
                                     key={index}
                                     href={partner.href}
                                     target="_blank"
-                                    className="inline-flex items-center justify-center bg-center w-[130px] h-[40px] bg-contain bg-no-repeat hover:opacity-100 transition-opacity invert brightness-200"
-                                    style={{ backgroundImage: `url(${partner.logoUrl})` }}
-                                />
+                                    rel="noopener noreferrer"
+                                    className="group flex items-center justify-center"
+                                >
+                                    <div
+                                        className="w-20 h-20 bg-center bg-contain bg-no-repeat invert brightness-200 opacity-40 group-hover:opacity-100 transition-all duration-500 grayscale"
+                                        style={{ backgroundImage: `url(${partner.logoUrl})` }}
+                                        aria-label={`Partner logo ${index + 1}`}
+                                    />
+                                </Link>
                             ))}
                         </div>
                     </div>
