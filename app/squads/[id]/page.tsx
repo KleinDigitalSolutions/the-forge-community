@@ -588,25 +588,54 @@ function PhaseCard({ phase, isCurrent }: { phase: VenturePhase; isCurrent: boole
 function TransactionRow({ transaction }: { transaction: Transaction }) {
   const isExpense = transaction.type === 'expense';
 
+  // AI Tag Logic - detects AI-verified or AI-generated transactions
+  const desc = transaction.description.toLowerCase();
+  const cat = transaction.category.toLowerCase();
+
+  const isVerified = desc.includes('supplier') || desc.includes('samples') || desc.includes('verified') || cat.includes('production');
+  const isAiGen = desc.includes('flux') || desc.includes('api') || desc.includes('ai') || desc.includes('generated') || cat.includes('ai');
+
   return (
-    <div className="flex items-center justify-between p-3 rounded-lg bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all">
-      <div className="flex items-center gap-3">
-        <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold ${
-          isExpense ? 'bg-red-500/10 text-red-400' : 'bg-green-500/10 text-green-400'
+    <div className="group flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-all">
+      <div className="flex items-center gap-4">
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm ${
+          isExpense ? 'bg-red-500/5 text-red-400' : 'bg-green-500/5 text-green-400'
         }`}>
-          {isExpense ? '−' : '+'}
+          {isExpense ? <ArrowUpRight className="w-5 h-5 rotate-45" /> : <ArrowUpRight className="w-5 h-5 rotate-[225deg]" />}
         </div>
         <div>
-          <p className="text-sm text-white font-medium">{transaction.description}</p>
-          <p className="text-xs text-white/40 capitalize">
-            {transaction.category}
-            {transaction.created_by_name && ` · ${transaction.created_by_name}`}
-          </p>
+          <p className="text-sm text-white font-medium mb-1">{transaction.description}</p>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-white/40 capitalize">{transaction.category}</span>
+            {transaction.created_by_name && (
+              <>
+                <span className="w-1 h-1 rounded-full bg-white/20" />
+                <span className="text-xs text-white/40">{transaction.created_by_name}</span>
+              </>
+            )}
+
+            {/* AI Tags */}
+            {isVerified && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-green-500/20 bg-green-500/10 text-[10px] font-bold text-green-400 uppercase tracking-wide">
+                <Shield className="w-2.5 h-2.5" /> Verified
+              </span>
+            )}
+            {isAiGen && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-purple-500/20 bg-purple-500/10 text-[10px] font-bold text-purple-400 uppercase tracking-wide">
+                <Sparkles className="w-2.5 h-2.5" /> AI Asset
+              </span>
+            )}
+          </div>
         </div>
       </div>
-      <span className={`text-sm font-bold ${isExpense ? 'text-red-400' : 'text-green-400'}`}>
-        {isExpense ? '−' : '+'}€{transaction.amount.toLocaleString()}
-      </span>
+      <div className="text-right">
+        <span className={`block font-instrument-serif text-lg ${isExpense ? 'text-white' : 'text-green-400'}`}>
+          {isExpense ? '−' : '+'}€{transaction.amount.toLocaleString()}
+        </span>
+        <span className="text-[10px] text-white/30 uppercase tracking-widest">
+          {new Date(transaction.created_at).toLocaleDateString('de-DE')}
+        </span>
+      </div>
     </div>
   );
 }
