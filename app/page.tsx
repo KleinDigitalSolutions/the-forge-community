@@ -19,9 +19,119 @@ import {
   BarChart,
   Users,
   ChevronRight,
+  Package,    // Neu importiert
+  Megaphone,  // Neu importiert
+  Cpu         // Neu importiert
 } from 'lucide-react';
 import ResponsiveHeroBanner from '@/app/components/ui/ResponsiveHeroBanner';
 import AnimatedCardStack from '@/app/components/ui/AnimatedCardStack';
+
+// --- SUB-KOMPONENTE: BUDGET SIMULATOR (Vercel Style) ---
+const BudgetSimulator = () => {
+  const [split, setSplit] = useState(65); // Startet bei 65% Sourcing
+  const totalBudget = 12500;
+  
+  // Berechnung
+  const sourcingBudget = Math.floor(totalBudget * (split / 100));
+  const marketingBudget = totalBudget - sourcingBudget;
+  
+  // Annahmen: ~13.50€ pro Unit (inkl. Packaging/Versand zum Lager) / ~220€ pro Micro-Influencer Collab
+  const units = Math.floor(sourcingBudget / 13.5); 
+  const influencers = Math.floor(marketingBudget / 220);
+
+  return (
+    <div className="w-full max-w-4xl mx-auto p-1 rounded-3xl bg-gradient-to-b from-white/10 to-transparent">
+      <div className="bg-[#0B0C0E] rounded-[22px] border border-white/5 p-6 md:p-10 relative overflow-hidden group">
+        
+        {/* Background Glow Effects */}
+        <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-blue-500/10 blur-[100px] rounded-full pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[200px] h-[200px] bg-cyan-500/5 blur-[80px] rounded-full pointer-events-none" />
+
+        <div className="relative z-10">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-4">
+                <Cpu className="w-3 h-3" />
+                Validator Engine
+              </div>
+              <h3 className="text-3xl md:text-4xl font-instrument-serif text-white mb-2">
+                12.5k Budget Simulator
+              </h3>
+              <p className="text-white/40 text-sm">Schiebe den Regler: Ware vs. Hype.</p>
+            </div>
+            <div className="text-right">
+              <div className="text-4xl font-mono text-white tracking-tighter">€{totalBudget.toLocaleString()}</div>
+              <div className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Gesamtkapital</div>
+            </div>
+          </div>
+
+          {/* Slider Control */}
+          <div className="mb-12">
+            <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-white/30 mb-4">
+              <span className={split > 50 ? "text-white transition-colors" : ""}>Sourcing Focus</span>
+              <span className={split < 50 ? "text-blue-400 transition-colors" : ""}>Growth Focus</span>
+            </div>
+            
+            <input 
+              type="range" 
+              min="20" 
+              max="80" 
+              value={split} 
+              onChange={(e) => setSplit(parseInt(e.target.value))}
+              className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:bg-blue-500 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-4 [&::-webkit-slider-thumb]:border-[#0B0C0E] [&::-webkit-slider-thumb]:shadow-[0_0_20px_rgba(59,130,246,0.5)] transition-all"
+            />
+          </div>
+
+          {/* Results Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Sourcing Card */}
+            <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 relative overflow-hidden">
+               <div className="absolute top-0 left-0 w-1 h-full bg-white/20" style={{ height: `${split}%`}} />
+               <div className="flex items-start justify-between mb-8">
+                 <div className="p-3 bg-white/5 rounded-xl text-white">
+                   <Package className="w-6 h-6" />
+                 </div>
+                 <div className="text-right">
+                   <div className="text-lg font-mono text-white">€{sourcingBudget.toLocaleString()}</div>
+                   <div className="text-[10px] text-white/30 uppercase tracking-widest">{split}% Allocation</div>
+                 </div>
+               </div>
+               <div>
+                 <div className="text-4xl font-instrument-serif text-white mb-1">~{units} Stk.</div>
+                 <div className="text-xs text-white/40">Initial Stock (White/Private Label)</div>
+               </div>
+            </div>
+
+            {/* Marketing Card */}
+            <div className="p-6 rounded-2xl bg-blue-900/[0.05] border border-blue-500/10 relative overflow-hidden">
+               <div className="absolute top-0 left-0 w-1 h-full bg-blue-500/50" style={{ height: `${100-split}%`}} />
+               <div className="flex items-start justify-between mb-8">
+                 <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400">
+                   <Megaphone className="w-6 h-6" />
+                 </div>
+                 <div className="text-right">
+                   <div className="text-lg font-mono text-blue-100">€{marketingBudget.toLocaleString()}</div>
+                   <div className="text-[10px] text-blue-200/30 uppercase tracking-widest">{100-split}% Allocation</div>
+                 </div>
+               </div>
+               <div>
+                 <div className="text-4xl font-instrument-serif text-blue-100 mb-1">~{influencers} Partners</div>
+                 <div className="text-xs text-blue-200/40">Micro-Influencer / Seeding Kampagne</div>
+               </div>
+            </div>
+          </div>
+
+          <div className="mt-8 text-center">
+             <p className="text-xs text-white/30 italic">
+               *Schätzwerte basierend auf aktuellen Forge-Marktpreisen. Dient der Strategie-Findung.
+             </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+// --------------------------------------------------------
 
 type ChatMessage = {
   role: 'assistant' | 'user';
@@ -204,7 +314,7 @@ export default function Home() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
               { label: 'Verfügbare Plätze', value: `${Math.max(0, MAX_GROUP_SIZE - foundersCount)}`, sub: 'von 25 Gesamt' },
-              { label: 'Kapitalziel', value: '25k€', sub: 'Pre-Seed' },
+              { label: 'Einstieg ab', value: '12.5k', sub: 'Validator Tier' }, // ANGEPASST
               { label: 'Equity Split', value: 'Gleich', sub: '1 Stimme / Mitglied' },
               { label: 'Transparenz', value: '100%', sub: 'Open Ledger' },
             ].map((stat, i) => (
@@ -267,6 +377,49 @@ export default function Home() {
                 </p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+       {/* --- NEUE SECTION: VALIDATOR SIMULATOR --- */}
+       <section className="py-20 px-6 relative border-y border-white/5 bg-black/40">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+             <div>
+                <h2 className="text-4xl md:text-6xl font-instrument-serif text-white mb-6">
+                  Start Small.<br/><span className="text-blue-500">Scale Fast.</span>
+                </h2>
+                <p className="text-lg text-white/60 mb-8 leading-relaxed">
+                  Mit dem neuen <strong>12.5k Validator Batch</strong> senken wir die Eintrittsbarriere.
+                  Keine komplexe Tech-Plattform zu Beginn – voller Fokus auf Product-Market-Fit, 
+                  Sourcing und Hype-Generierung auf TikTok.
+                </p>
+                <ul className="space-y-4 mb-8">
+                  <li className="flex items-center gap-3 text-sm text-white/80">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
+                    Perfekt für First-Time Founder
+                  </li>
+                  <li className="flex items-center gap-3 text-sm text-white/80">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
+                    Fokus auf Cashflow & Brand-Building
+                  </li>
+                  <li className="flex items-center gap-3 text-sm text-white/80">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
+                    Spielgeld-Risiko bei Squad-Teilung
+                  </li>
+                </ul>
+                <button 
+                  onClick={() => document.getElementById('apply')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="text-xs font-bold uppercase tracking-widest text-blue-400 hover:text-white transition-colors border-b border-blue-500/50 pb-1"
+                >
+                  Validator Batch Bewerben →
+                </button>
+             </div>
+             
+             {/* Simulator Component Integration */}
+             <div className="animate-fade-in-up delay-200">
+               <BudgetSimulator />
+             </div>
           </div>
         </div>
       </section>
@@ -451,12 +604,13 @@ export default function Home() {
                                      <select
                                        value={formData.capital}
                                        onChange={handleFormChange('capital')}
-                                       className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all"
+                                       className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all [&>option]:bg-black"
                                      >
                                         <option value="">Kapitalziel wählen...</option>
-                                        <option value="25k">25k Tier</option>
-                                        <option value="50k">50k Tier</option>
-                                        <option value="100k">100k Tier</option>
+                                        <option value="12.5k">✨ 12.5k (Validator Batch)</option> {/* NEU HINZUGEFÜGT */}
+                                        <option value="25k">25k (Standard Batch)</option>
+                                        <option value="50k">50k (Growth Tier)</option>
+                                        <option value="100k">100k (Scale Tier)</option>
                                      </select>
                                  )}
                                  {role === 'builder' && (
