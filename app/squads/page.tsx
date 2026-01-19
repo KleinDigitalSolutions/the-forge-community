@@ -178,9 +178,9 @@ export default function SquadsPage() {
                           {config.label}
                         </span>
                         {squad.is_public ? (
-                          <Globe className="w-4 h-4 text-green-400" title="Öffentlich" />
+                          <Globe className="w-4 h-4 text-green-400" />
                         ) : (
-                          <Lock className="w-4 h-4 text-white/40" title="Privat" />
+                          <Lock className="w-4 h-4 text-white/40" />
                         )}
                       </div>
                     </div>

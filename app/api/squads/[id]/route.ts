@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
   if (!session?.user?.email) {
@@ -14,7 +14,7 @@ export async function GET(
   }
 
   try {
-    const squadId = params.id;
+    const { id: squadId } = await params;
 
     // Get squad details
     const squadResult = await sql`
@@ -63,7 +63,7 @@ export async function GET(
     const venture = ventureResult.rows[0] || null;
 
     // Get venture phases (if venture exists)
-    let phases = [];
+    let phases: any[] = [];
     if (venture) {
       const phasesResult = await sql`
         SELECT * FROM venture_phases
@@ -130,7 +130,7 @@ export async function GET(
 // Update squad settings
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
   if (!session?.user?.email) {
@@ -138,7 +138,7 @@ export async function PATCH(
   }
 
   try {
-    const squadId = params.id;
+    const { id: squadId } = await params;
     const updates = await request.json();
 
     // Get user
