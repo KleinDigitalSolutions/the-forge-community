@@ -580,7 +580,6 @@ export default function Home() {
                   © 2026 THE FORGE SYSTEM • ALL RIGHTS RESERVED
                </div>
                <div className="flex items-center gap-6 text-[10px] font-bold text-white/20 uppercase tracking-widest">
-                  <span>Made with ❤️ by 50 Founders</span>
                   <span className="w-1 h-1 rounded-full bg-white/10" />
                   <span>v1.0.4-stable</span>
                </div>
