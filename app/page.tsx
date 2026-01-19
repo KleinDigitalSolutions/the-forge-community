@@ -582,42 +582,46 @@ export default function Home() {
          </div>
       </footer>
 
-      {/* Modern Chat Widget */}
+      {/* Modern Chat Widget - Mobile Optimized */}
       <button
         onClick={isChatOpen ? handleCloseChat : handleOpenChat}
-        className={`fixed bottom-8 right-8 z-50 p-5 rounded-2xl bg-white/[0.03] border border-white/10 shadow-2xl hover:border-[var(--accent)]/50 transition-all duration-500 backdrop-blur-xl group ${isChatOpen ? 'rotate-90 opacity-0 pointer-events-none' : 'opacity-100'}`}
+        className={`fixed bottom-4 right-4 md:bottom-8 md:right-8 z-50 p-4 md:p-5 rounded-2xl bg-white/[0.03] border border-white/10 shadow-2xl hover:border-[var(--accent)]/50 transition-all duration-500 backdrop-blur-xl group ${isChatOpen ? 'rotate-90 opacity-0 pointer-events-none' : 'opacity-100'}`}
       >
-         <MessageSquare className="w-6 h-6 text-white group-hover:text-[var(--accent)] transition-colors" />
+         <MessageSquare className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:text-[var(--accent)] transition-colors" />
       </button>
 
-      {/* Chat Window */}
-      <div className={`fixed bottom-8 right-8 z-50 w-[400px] glass-card border border-white/10 rounded-3xl shadow-2xl transition-all duration-500 transform origin-bottom-right ${isChatOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0 pointer-events-none'}`}>
-         <div className="flex items-center justify-between p-6 border-b border-white/10">
-            <div className="flex items-center gap-4">
-               <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
-               <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">Orion Intelligence</span>
+      {/* Chat Window - Mobile Full Screen */}
+      <div className={`fixed inset-4 md:inset-auto md:bottom-8 md:right-8 z-50 md:w-[400px] glass-card border border-white/10 rounded-2xl md:rounded-3xl shadow-2xl transition-all duration-500 transform origin-bottom-right ${isChatOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0 pointer-events-none'}`}>
+         <div className="flex items-center justify-between p-4 md:p-6 border-b border-white/10">
+            <div className="flex items-center gap-3 md:gap-4">
+               <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
+               <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-white">Orion Intelligence</span>
             </div>
-            <button onClick={handleCloseChat}><X className="w-5 h-5 text-white/40 hover:text-white transition-colors" /></button>
+            <button onClick={handleCloseChat} className="p-1 hover:bg-white/5 rounded-lg transition-colors">
+              <X className="w-4 h-4 md:w-5 md:h-5 text-white/40 hover:text-white transition-colors" />
+            </button>
          </div>
-         <div className="h-[400px] overflow-y-auto p-6 space-y-6 scrollbar-hide">
+         <div className="h-[calc(100vh-200px)] md:h-[400px] overflow-y-auto p-4 md:p-6 space-y-4 md:space-y-6 scrollbar-hide">
              {chatMessages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                   <div className={`max-w-[85%] text-xs p-4 rounded-2xl leading-relaxed ${msg.role === 'user' ? 'bg-[var(--accent)] text-[var(--accent-foreground)] font-bold' : 'bg-white/[0.03] border border-white/5 text-white/80'}`}>
+                   <div className={`max-w-[90%] md:max-w-[85%] text-xs p-3 md:p-4 rounded-xl md:rounded-2xl leading-relaxed ${msg.role === 'user' ? 'bg-[var(--accent)] text-[var(--accent-foreground)] font-bold' : 'bg-white/[0.03] border border-white/5 text-white/80'}`}>
                       {msg.content}
                    </div>
                 </div>
              ))}
-             {chatStatus === 'loading' && <div className="text-[10px] font-bold uppercase tracking-widest text-white/30 animate-pulse">Orion verarbeitet...</div>}
+             {chatStatus === 'loading' && <div className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-white/30 animate-pulse">Orion verarbeitet...</div>}
              <div ref={chatEndRef} />
          </div>
-         <form onSubmit={handleChatSubmit} className="p-4 border-t border-white/10 flex gap-3 bg-white/[0.01]">
-            <input 
-               className="flex-1 bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-xs focus:border-[var(--accent)] outline-none text-white transition-all placeholder:text-white/20"
-               placeholder="Protokoll-Anfrage eingeben..."
+         <form onSubmit={handleChatSubmit} className="p-3 md:p-4 border-t border-white/10 flex gap-2 md:gap-3 bg-white/[0.01]">
+            <input
+               className="flex-1 bg-white/[0.03] border border-white/10 rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-xs focus:border-[var(--accent)] outline-none text-white transition-all placeholder:text-white/20"
+               placeholder="Nachricht eingeben..."
                value={chatInput}
                onChange={(e) => setChatInput(e.target.value)}
             />
-            <button type="submit" className="p-3 rounded-xl bg-[var(--accent)] text-[var(--accent-foreground)] hover:brightness-110 transition-all"><ChevronRight className="w-5 h-5" /></button>
+            <button type="submit" className="p-2.5 md:p-3 rounded-xl bg-[var(--accent)] text-[var(--accent-foreground)] hover:brightness-110 transition-all flex-shrink-0">
+              <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
+            </button>
          </form>
       </div>
 
