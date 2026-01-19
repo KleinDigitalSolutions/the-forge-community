@@ -229,7 +229,7 @@ export default function SquadDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
           <StatCard
             icon={Users}
-            label="Team Size"
+            label="Team Größe"
             value={`${squad.current_members}/${squad.max_members}`}
             trend={`${Math.round((squad.current_members / squad.max_members) * 100)}% besetzt`}
           />
@@ -247,9 +247,9 @@ export default function SquadDetailPage() {
           />
           <StatCard
             icon={TrendingUp}
-            label="Progress"
+            label="Fortschritt"
             value={venture ? `${Math.round((venture.current_phase / 6) * 100)}%` : '0%'}
-            trend={venture?.name || 'Not started'}
+            trend={venture?.name || 'Nicht gestartet'}
           />
         </div>
 
@@ -260,9 +260,9 @@ export default function SquadDetailPage() {
             {/* Team Members */}
             <div className="glass-card rounded-[2rem] border border-white/10 p-8">
               <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl font-instrument-serif text-white">Team Members</h2>
+                <h2 className="text-2xl font-instrument-serif text-white">Team Mitglieder</h2>
                 <span className="text-xs uppercase tracking-widest font-bold text-white/40">
-                  {squad.members?.length || 0} Active
+                  {squad.members?.length || 0} Aktiv
                 </span>
               </div>
 
@@ -277,7 +277,7 @@ export default function SquadDetailPage() {
             {venture && phases.length > 0 && (
               <div className="glass-card rounded-[2rem] border border-white/10 p-8">
                 <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-2xl font-instrument-serif text-white">Venture Progress</h2>
+                  <h2 className="text-2xl font-instrument-serif text-white">Venture Fortschritt</h2>
                   <span className="text-xs uppercase tracking-widest font-bold text-white/40">
                     Phase {venture.current_phase}/6
                   </span>
@@ -303,7 +303,7 @@ export default function SquadDetailPage() {
 
                 {transactions.length > 0 && (
                   <div className="space-y-2">
-                    <h3 className="text-xs uppercase tracking-widest font-bold text-white/40 mb-4">Recent Transactions</h3>
+                    <h3 className="text-xs uppercase tracking-widest font-bold text-white/40 mb-4">Letzte Transaktionen</h3>
                     {transactions.slice(0, 5).map((tx) => (
                       <TransactionRow key={tx.id} transaction={tx} />
                     ))}
@@ -322,8 +322,8 @@ export default function SquadDetailPage() {
               />
               <QuickActionCard
                 icon={FileText}
-                label="Documents"
-                description="Shared Resources"
+                label="Dokumente"
+                description="Geteilte Ressourcen"
                 href={`/resources?squad=${squadId}`}
               />
             </div>
@@ -340,7 +340,7 @@ export default function SquadDetailPage() {
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-white">{venture.name || 'Unnamed Venture'}</h3>
-                    <p className="text-xs uppercase tracking-widest text-white/40">Active Venture</p>
+                    <p className="text-xs uppercase tracking-widest text-white/40">Aktives Venture</p>
                   </div>
                 </div>
 
@@ -350,12 +350,12 @@ export default function SquadDetailPage() {
 
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-white/60">Current Phase</span>
+                    <span className="text-sm text-white/60">Aktuelle Phase</span>
                     <span className="text-sm font-bold text-white">{venture.current_phase}/6</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-white/60">Completed</span>
-                    <span className="text-sm font-bold text-green-400">{venture.phase_completed} phases</span>
+                    <span className="text-sm text-white/60">Abgeschlossen</span>
+                    <span className="text-sm font-bold text-green-400">{venture.phase_completed} Phasen</span>
                   </div>
                   <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
                     <motion.div
@@ -395,8 +395,8 @@ export default function SquadDetailPage() {
               <h3 className="text-lg font-bold text-white mb-6">Squad Info</h3>
               <div className="space-y-4 text-sm">
                 <InfoRow label="Gegründet" value={new Date(squad.created_at).toLocaleDateString('de-DE')} />
-                <InfoRow label="Lead" value={squad.lead_name || 'Unknown'} />
-                <InfoRow label="Type" value={squad.squad_type} />
+                <InfoRow label="Lead" value={squad.lead_name || 'Unbekannt'} />
+                <InfoRow label="Typ" value={squad.squad_type} />
                 <InfoRow label="Status" value={squad.status} />
               </div>
             </div>
@@ -497,11 +497,11 @@ function MemberCard({ member }: { member: Member }) {
 
       <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
         <div>
-          <div className="text-xs text-white/40 mb-1">Hours</div>
+          <div className="text-xs text-white/40 mb-1">Stunden</div>
           <div className="text-sm font-bold text-white">{member.hours_contributed}h</div>
         </div>
         <div>
-          <div className="text-xs text-white/40 mb-1">Tasks</div>
+          <div className="text-xs text-white/40 mb-1">Aufgaben</div>
           <div className="text-sm font-bold text-white">{member.tasks_completed}</div>
         </div>
       </div>
@@ -559,7 +559,7 @@ function PhaseCard({ phase, isCurrent }: { phase: VenturePhase; isCurrent: boole
           <div>
             <h4 className="font-bold text-white text-sm">Phase {phase.phase_number}: {phase.phase_name}</h4>
             <p className="text-xs text-white/40">
-              {phase.completed_tasks}/{phase.total_tasks} Tasks
+              {phase.completed_tasks}/{phase.total_tasks} Aufgaben
             </p>
           </div>
         </div>
