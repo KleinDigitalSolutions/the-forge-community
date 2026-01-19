@@ -4,23 +4,18 @@ import { useState, useEffect, useCallback, useRef, type ChangeEvent, type FormEv
 import Link from 'next/link';
 import { PricingTable } from '@/app/components/PricingTable';
 import {
-  ArrowRight,
   Check,
   TrendingUp,
-  Vote,
   MessageSquare,
   FileText,
-  Calendar,
   Target,
   Zap,
   X,
   Shield,
   Layers,
-  BarChart,
   Users,
   ChevronRight,
   Package,
-  Megaphone,
   Cpu,
   Truck
 } from 'lucide-react';
@@ -359,47 +354,53 @@ export default function Home() {
       {/* Philosophy / Features */}
       <section id="philosophy" className="py-40 px-6 relative">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-32">
-            <h2 className="text-5xl md:text-7xl font-instrument-serif text-white mb-8 animate-fade-slide-in-1">
-              Institutional Grade.<br/>
-              Community Powered.
-            </h2>
-            <p className="text-lg text-white/50 max-w-2xl mx-auto leading-relaxed animate-fade-slide-in-2">
-              Wir ersetzen den veralteten VC-Ansatz durch Schwarmintelligenz.
-              Weniger Risiko für den Einzelnen, mehr Upside für alle.
-            </p>
-          </div>
+          <div className="grid lg:grid-cols-2 gap-20 items-start mb-32">
+            <div>
+              <h2 className="text-5xl md:text-7xl font-instrument-serif text-white mb-8 leading-tight animate-fade-slide-in-1">
+                Institutional Grade.<br/>
+                <span className="text-[var(--accent)]">Community Powered.</span>
+              </h2>
+              <p className="text-lg text-white/50 leading-relaxed animate-fade-slide-in-2">
+                Wir ersetzen den veralteten VC-Ansatz durch Schwarmintelligenz.
+                Weniger Risiko für den Einzelnen, mehr Upside für alle.
+              </p>
+            </div>
 
-          <div className="grid md:grid-cols-3 gap-12">
-            {[
-              {
-                icon: Users,
-                title: "Kollektives Eigentum",
-                desc: "Keine stillen Teilhaber. Jeder Founder hält Anteile, jeder hat Stimmrecht. Das Projekt gehört uns."
-              },
-              {
-                icon: Layers,
-                title: "Meritokratischer Stack",
-                desc: "Die besten Ideen gewinnen. Wir nutzen Voting-Mechanismen um Produktentscheidungen zu treffen."
-              },
-              {
-                icon: Shield,
-                title: "Risiko-Minimierung",
-                desc: "Statt 50k alleine zu riskieren, splitten wir das Risiko. Maximale Hebelwirkung bei minimalem Einsatz."
-              }
-            ].map((feature, i) => (
-              <div key={i} className="text-center group">
-                <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-8 mx-auto group-hover:border-[var(--accent)] group-hover:bg-[var(--accent)]/10 transition-all duration-500">
-                  <feature.icon className="w-6 h-6 text-white group-hover:text-[var(--accent)]" />
+            <div className="space-y-12">
+              {[
+                {
+                  icon: Users,
+                  title: "Kollektives Eigentum",
+                  desc: "Keine stillen Teilhaber. Jeder Founder hält Anteile, jeder hat Stimmrecht. Das Projekt gehört uns."
+                },
+                {
+                  icon: Layers,
+                  title: "Meritokratischer Stack",
+                  desc: "Die besten Ideen gewinnen. Wir nutzen Voting-Mechanismen um Produktentscheidungen zu treffen."
+                },
+                {
+                  icon: Shield,
+                  title: "Risiko-Minimierung",
+                  desc: "Statt 50k alleine zu riskieren, splitten wir das Risiko. Maximale Hebelwirkung bei minimalem Einsatz."
+                }
+              ].map((feature, i) => (
+                <div key={i} className="flex gap-6 group">
+                  <div className="flex-shrink-0 mt-1">
+                    <div className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:border-[var(--accent)] group-hover:bg-[var(--accent)]/10 transition-all duration-500">
+                      <feature.icon className="w-5 h-5 text-white/60 group-hover:text-[var(--accent)] transition-colors" />
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-instrument-serif text-white mb-2 group-hover:text-[var(--accent)] transition-colors">{feature.title}</h3>
+                    <p className="text-white/50 text-sm leading-relaxed max-w-md">{feature.desc}</p>
+                  </div>
                 </div>
-                <h3 className="text-2xl font-instrument-serif text-white mb-4">{feature.title}</h3>
-                <p className="text-white/60">{feature.desc}</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           {/* --- NEW: THE FOUNDER OS (Feature Stack) --- */}
-          <div className="mt-32 border-t border-white/5 pt-20">
+          <div className="mt-40 border-t border-white/5 pt-20">
              <div className="text-center mb-16">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 text-[10px] font-bold text-[var(--accent)] uppercase tracking-[0.3em] mb-4">
                   <Cpu className="w-3 h-3" />
@@ -414,63 +415,103 @@ export default function Home() {
                 </p>
              </div>
 
-             <div className="grid md:grid-cols-2 lg:grid-cols-6 gap-6">
-                {/* Feature 1: Legal */}
-                <div className="lg:col-span-2 p-8 rounded-3xl bg-[#0F1113] border border-white/5 hover:border-[var(--accent)]/30 transition-all group">
-                   <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-6 text-white group-hover:text-[var(--accent)] transition-colors">
-                      <FileText className="w-6 h-6" />
+             {/* Terminal Interface */}
+             <div className="max-w-5xl mx-auto bg-[#0B0C0E] border border-white/10 rounded-2xl overflow-hidden shadow-2xl relative">
+                {/* Terminal Header */}
+                <div className="bg-white/[0.03] border-b border-white/5 px-4 py-3 flex items-center justify-between">
+                   <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/50" />
+                      <div className="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-500/50" />
+                      <div className="w-3 h-3 rounded-full bg-green-500/20 border border-green-500/50" />
                    </div>
-                   <h3 className="text-xl font-instrument-serif text-white mb-3">Admin Shield</h3>
-                   <p className="text-xs text-white/50 leading-relaxed mb-4">
-                      Nie wieder Papierkram-Angst. Orion generiert rechtssichere Verträge (Influencer, GmbH, AGB) basierend auf deinen Daten. Instant Download.
-                   </p>
-                   <div className="text-[9px] font-bold text-white/20 uppercase tracking-widest border-t border-white/5 pt-4">
-                      *Administrative Assistenz.
+                   <div className="text-[10px] font-mono text-white/30 uppercase tracking-widest">
+                      system_modules.config
                    </div>
+                   <div className="w-10" /> {/* Spacer */}
                 </div>
 
-                {/* Feature 2: Research */}
-                <div className="lg:col-span-2 p-8 rounded-3xl bg-[#0F1113] border border-white/5 hover:border-[var(--accent)]/30 transition-all group">
-                   <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-6 text-white group-hover:text-[var(--accent)] transition-colors">
-                      <Target className="w-6 h-6" />
-                   </div>
-                   <h3 className="text-xl font-instrument-serif text-white mb-3">Market Radar</h3>
-                   <p className="text-xs text-white/50 leading-relaxed mb-4">
-                      Dein 24/7 Watchtower. Wir scannen Winning Ads und Pricing-Strategien deiner Konkurrenz und liefern dir fertige Counter-Strategien.
-                   </p>
-                </div>
+                {/* Module List */}
+                <div className="divide-y divide-white/5">
+                   {[
+                      {
+                         id: '01',
+                         name: 'Admin Shield',
+                         icon: FileText,
+                         desc: 'Rechtssichere Verträge & Compliance',
+                         status: 'ACTIVE',
+                         detail: 'Auto-Generierung'
+                      },
+                      {
+                         id: '02',
+                         name: 'Market Radar',
+                         icon: Target,
+                         desc: 'Konkurrenz-Analyse & Ad-Scanning',
+                         status: 'SCANNING',
+                         detail: '24/7 Watchtower'
+                      },
+                      {
+                         id: '03',
+                         name: 'Supply Chain Command',
+                         icon: Package,
+                         desc: 'Manufaktur-Netzwerk & Sourcing',
+                         status: 'CONNECTED',
+                         detail: 'Global Access'
+                      },
+                      {
+                         id: '04',
+                         name: 'Commerce Engine',
+                         icon: Zap,
+                         desc: 'Shop-Deployment & Infrastructure',
+                         status: 'READY',
+                         detail: 'Vercel/Stripe'
+                      },
+                      {
+                         id: '05',
+                         name: 'Logistics Grid',
+                         icon: Truck,
+                         desc: 'Fulfillment & Lager-Buchung',
+                         status: 'STANDBY',
+                         detail: 'Pay-per-Use'
+                      }
+                   ].map((module, i) => (
+                      <div key={i} className="group p-6 flex flex-col md:flex-row md:items-center gap-6 hover:bg-white/[0.02] transition-colors cursor-default">
+                         {/* Icon & ID */}
+                         <div className="flex items-center gap-4 min-w-[200px]">
+                            <span className="font-mono text-xs text-white/20">#{module.id}</span>
+                            <div className="w-10 h-10 rounded bg-white/5 flex items-center justify-center text-white/60 group-hover:text-[var(--accent)] group-hover:bg-[var(--accent)]/10 transition-all">
+                               <module.icon className="w-5 h-5" />
+                            </div>
+                            <span className="font-instrument-serif text-lg text-white">{module.name}</span>
+                         </div>
+                         
+                         {/* Description */}
+                         <div className="flex-1 text-sm text-white/40 group-hover:text-white/60 transition-colors">
+                            {module.desc}
+                         </div>
 
-                {/* Feature 3: Sourcing */}
-                <div className="lg:col-span-2 p-8 rounded-3xl bg-[#0F1113] border border-white/5 hover:border-[var(--accent)]/30 transition-all group">
-                   <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-6 text-white group-hover:text-[var(--accent)] transition-colors">
-                      <Package className="w-6 h-6" />
-                   </div>
-                   <h3 className="text-xl font-instrument-serif text-white mb-3">Supply Chain Command</h3>
-                   <p className="text-xs text-white/50 leading-relaxed mb-4">
-                      Vom Design-Mockup zur Produktion mit einem Klick. Zugriff auf unser vor-verhandeltes Netzwerk aus Premium-Manufakturen.
-                   </p>
+                         {/* Status */}
+                         <div className="flex items-center gap-6 min-w-[180px] justify-between md:justify-end">
+                            <span className="text-[10px] uppercase tracking-widest text-white/30 hidden md:block">
+                               {module.detail}
+                            </span>
+                            <div className={`text-[9px] font-bold px-2 py-1 rounded border border-white/10 uppercase tracking-widest ${
+                               module.status === 'ACTIVE' || module.status === 'READY' || module.status === 'CONNECTED' ? 'text-green-400 bg-green-400/10 border-green-400/20' :
+                               module.status === 'SCANNING' ? 'text-[var(--accent)] bg-[var(--accent)]/10 border-[var(--accent)]/20 animate-pulse' :
+                               'text-white/40'
+                            }`}>
+                               {module.status}
+                            </div>
+                         </div>
+                      </div>
+                   ))}
                 </div>
-
-                {/* Feature 4: Tech */}
-                <div className="lg:col-span-2 lg:col-start-2 p-8 rounded-3xl bg-[#0F1113] border border-white/5 hover:border-[var(--accent)]/30 transition-all group">
-                   <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-6 text-white group-hover:text-[var(--accent)] transition-colors">
-                      <Zap className="w-6 h-6" />
+                
+                {/* Terminal Footer */}
+                <div className="bg-white/[0.02] border-t border-white/5 px-6 py-4">
+                   <div className="flex items-center gap-2 text-[10px] font-mono text-[var(--accent)]">
+                      <span className="animate-pulse">_</span>
+                      waiting for command...
                    </div>
-                   <h3 className="text-xl font-instrument-serif text-white mb-3">Commerce Engine</h3>
-                   <p className="text-xs text-white/50 leading-relaxed mb-4">
-                      High-Performance Shop System. Vercel-Hosted, Stripe-Integrated. Wir deployen deine Brand-Infrastruktur in Sekunden, nicht Wochen.
-                   </p>
-                </div>
-
-                {/* Feature 5: Assets */}
-                <div className="lg:col-span-2 p-8 rounded-3xl bg-[#0F1113] border border-white/5 hover:border-[var(--accent)]/30 transition-all group">
-                   <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-6 text-white group-hover:text-[var(--accent)] transition-colors">
-                      <Truck className="w-6 h-6" />
-                   </div>
-                   <h3 className="text-xl font-instrument-serif text-white mb-3">Logistics Grid</h3>
-                   <p className="text-xs text-white/50 leading-relaxed mb-4">
-                      Physische Power, digital gesteuert. Buche Lagerfläche, Fulfillment-Slots und Transporter direkt über das Terminal. Pay-per-Use.
-                   </p>
                 </div>
              </div>
           </div>
@@ -591,9 +632,9 @@ export default function Home() {
         
         <div className="max-w-7xl mx-auto flex flex-col items-center relative z-10">
           <div className="text-center mb-20">
-            <h2 className="text-5xl md:text-7xl font-instrument-serif text-white mb-6 tracking-tighter">Grundprinzipien</h2>
+            <h2 className="text-5xl md:text-7xl font-instrument-serif text-white mb-6 tracking-tighter">System: Override.</h2>
             <p className="text-white/40 uppercase tracking-[0.3em] text-[10px] font-bold">
-              Wie wir Erfolg von Grund auf schmieden.
+              Vergiss, was du über Startups gelernt hast. Das hier ist die Realität.
             </p>
           </div>
           

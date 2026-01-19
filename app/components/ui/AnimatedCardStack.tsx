@@ -12,22 +12,22 @@ interface Card {
 
 const cardData = {
   1: {
-    title: "Die Vision",
-    description: "Die Zukunft des kollektiven Unternehmertums schmieden.",
+    title: "VIELE KÖCHE? KAUFEN DAS RESTAURANT.",
+    description: "Vergiss das alte Sprichwort. Ein Solo-Gründer ist mutig, 50 Gründer sind eine Naturgewalt. Wir verderben nicht den Brei, wir übernehmen die ganze Küche.",
     gradient: "from-amber-500 via-yellow-600 to-orange-700",
     icon: Sparkles,
     font: "font-serif italic",
   },
   2: {
-    title: "DIE STRATEGIE",
-    description: "Institutionelles Risikomanagement für die Gemeinschaft.",
+    title: "WER DEN CENT NICHT EHRT? IST DEN EXIT NICHT WERT.",
+    description: "Gehalt macht satt, Equity macht frei. Wir jagen keinem Stundenlohn hinterher. Wir bauen Systeme, die auch dann verdienen, wenn wir offline sind.",
     gradient: "from-blue-600 via-indigo-600 to-violet-700",
     icon: Target,
     font: "font-sans font-black tracking-tighter",
   },
   3: {
-    title: "FORGE.EXE",
-    description: "Kapital und Skills in hochprofitable Produkte verwandeln.",
+    title: "WAS LANGE WÄHRT? IST LÄNGST KAPUTT.",
+    description: "Der Markt wartet nicht auf deine Perfektion. Während die Konkurrenz noch plant, haben wir schon gelauncht. Lieber unperfekt starten als perfekt warten.",
     gradient: "from-emerald-500 via-teal-600 to-cyan-700",
     icon: Zap,
     font: "font-mono uppercase tracking-widest",
@@ -70,16 +70,16 @@ function CardContent({ contentType }: { contentType: 1 | 2 | 3 }) {
           <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center mb-6 border border-white/30">
             <Icon className="w-6 h-6 text-white" />
           </div>
-          <h3 className={cn("text-3xl sm:text-4xl mb-3", data.font)}>
+          <h3 className={cn("text-3xl sm:text-4xl mb-3 leading-tight", data.font)}>
             {data.title}
           </h3>
-          <p className="text-white/80 text-sm sm:text-base leading-relaxed max-w-[80%]">
+          <p className="text-white/80 text-sm sm:text-base leading-relaxed max-w-[90%]">
             {data.description}
           </p>
         </div>
 
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest">
-          <span>Protokoll lesen</span>
+          <span>Manifest lesen</span>
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </div>
       </div>
@@ -116,7 +116,7 @@ function AnimatedCard({
         x: "-50%",
         bottom: 40,
       }}
-      className="absolute flex h-[320px] w-[300px] items-center justify-center overflow-hidden rounded-2xl border border-white/10 shadow-2xl will-change-transform sm:w-[480px] glass-card"
+      className="absolute flex h-[360px] w-[320px] items-center justify-center overflow-hidden rounded-2xl border border-white/10 shadow-2xl will-change-transform sm:w-[500px] glass-card"
     >
       <CardContent contentType={card.contentType} />
     </motion.div>
@@ -144,7 +144,7 @@ export default function AnimatedCardStack() {
 
   return (
     <div className="flex w-full flex-col items-center justify-center py-12">
-      <div className="relative h-[420px] w-full overflow-hidden sm:w-[600px]">
+      <div className="relative h-[460px] w-full overflow-hidden sm:w-[600px]">
         <AnimatePresence initial={false}>
           {cards.slice(0, 3).map((card, index) => (
             <AnimatedCard key={card.id} card={card} index={index} isAnimating={isAnimating} />
@@ -152,12 +152,12 @@ export default function AnimatedCardStack() {
         </AnimatePresence>
       </div>
 
-      <div className="relative z-20 mt-12">
+      <div className="relative z-20 mt-4">
         <button
           onClick={handleAnimate}
           className="btn-shimmer flex h-12 cursor-pointer select-none items-center justify-center gap-3 overflow-hidden rounded-full bg-[var(--foreground)] px-8 text-sm font-bold uppercase tracking-widest text-[var(--background)] transition-all active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
         >
-          Nächstes Level schmieden
+          REGELN NEU SCHREIBEN
           <Zap className="w-4 h-4 fill-current" />
         </button>
       </div>
