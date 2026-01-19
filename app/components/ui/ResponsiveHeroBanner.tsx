@@ -206,19 +206,16 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                         {/* Desktop: 5 in einer Reihe | Mobile: 2-2-1 symmetrisch */}
                         <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-8 animate-fade-slide-in-2">
                             {partners.map((partner, index) => (
-                                <Link
+                                <div
                                     key={index}
-                                    href={partner.href}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="group flex items-center justify-center"
+                                    className="flex items-center justify-center"
                                 >
                                     <div
-                                        className="w-20 h-20 bg-center bg-contain bg-no-repeat invert brightness-200 opacity-40 group-hover:opacity-100 transition-all duration-500 grayscale"
+                                        className="w-20 h-20 bg-center bg-contain bg-no-repeat invert brightness-200 opacity-40 grayscale pointer-events-none"
                                         style={{ backgroundImage: `url(${partner.logoUrl})` }}
                                         aria-label={`Partner logo ${index + 1}`}
                                     />
-                                </Link>
+                                </div>
                             ))}
                         </div>
                     </div>
