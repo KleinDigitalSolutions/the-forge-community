@@ -39,8 +39,7 @@ export async function GET(
       SELECT
         sm.*,
         u.name as user_name,
-        u.email as user_email,
-        u.skills as user_skills
+        u.email as user_email
       FROM squad_members sm
       INNER JOIN "User" u ON sm.user_id = u.id
       WHERE sm.squad_id = ${squadId}
