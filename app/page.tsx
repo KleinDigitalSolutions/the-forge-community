@@ -119,18 +119,24 @@ export default function Home() {
     setChatStatus('loading');
 
     try {
-      const response = await fetch('/api/chat', {
+      const response = await fetch('/api/chat/landing', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message, history }),
       });
 
       const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data?.error || 'Chat request failed');
+      if (!response.ok) {
+        const errorMessage = data?.message || 'Chat-Anfrage fehlgeschlagen. Bitte versuche es erneut.';
+        setChatMessages((prev) => [...prev, { role: 'assistant', content: errorMessage }]);
+        setChatStatus('idle');
+        return;
+      }
 
-      const reply = data.message?.trim() || 'Danke. Kannst du das präzisieren?';
+      const reply = data.message?.trim() || 'Entschuldigung, ich konnte keine Antwort generieren.';
       setChatMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
     } catch (error) {
+      console.error('Chat error:', error);
       setChatMessages((prev) => [
         ...prev,
         { role: 'assistant', content: 'Verbindung unterbrochen. Bitte versuche es erneut.' },
