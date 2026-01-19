@@ -12,6 +12,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { MicroExpander } from '@/app/components/ui/MicroExpander';
+import { LinkPreview, extractUrls } from '@/app/components/LinkPreview';
+import { RelatedPosts } from '@/app/components/RelatedPosts';
+import { VoiceInput } from '@/app/components/VoiceInput';
+import { TrendingTopics } from '@/app/components/TrendingTopics';
 
 interface Comment {
   author: string;
@@ -317,13 +321,17 @@ export default function Forum() {
                                 <option key={c} value={c}>{c}</option>
                               ))}
                             </select>
-                            <button 
+                            <button
                               onClick={() => fileInputRef.current?.click()}
                               className="flex items-center gap-2 text-xs font-bold text-[var(--muted-foreground)] hover:text-[var(--accent)] border border-[var(--border)] px-4 py-2 rounded-lg bg-[var(--surface)] transition-all"
                             >
                               <ImageIcon className="w-4 h-4" /> Add Image
                             </button>
                             <input type="file" ref={fileInputRef} onChange={handleUpload} className="hidden" accept="image/*" />
+
+                            <VoiceInput
+                              onTranscript={(text) => setContent((prev) => prev + (prev ? '\n\n' : '') + text)}
+                            />
                           </div>
                           <textarea
                             autoFocus
@@ -412,7 +420,13 @@ export default function Forum() {
                           </div>
                         </div>
                       ) : (
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
+                        <>
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
+                          {/* Smart Link Previews */}
+                          {extractUrls(post.content).map((url, idx) => (
+                            <LinkPreview key={idx} url={url} />
+                          ))}
+                        </>
                       )}
                     </div>
 
@@ -522,6 +536,13 @@ export default function Forum() {
                       )}
                     </div>
 
+                    {/* Related Posts */}
+                    <RelatedPosts
+                      postId={post.id}
+                      content={post.content}
+                      category={post.category}
+                    />
+
                     {/* AI Result Display */}
                     {aiResult && aiResult.postId === post.id && (
                       <motion.div
@@ -628,6 +649,9 @@ export default function Forum() {
                 </div>
               </div>
             </div>
+
+            {/* Trending Topics */}
+            <TrendingTopics />
 
             {/* Guidelines Card */}
             <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 glass-card">

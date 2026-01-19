@@ -388,3 +388,24 @@ model ModerationWarning {
   @@index([userId])
   @@index([createdAt])
 }
+
+model LinkPreview {
+  id              String   @id @default(cuid())
+  url             String   @unique
+
+  // Metadata from OpenGraph/Twitter Cards
+  title           String?
+  description     String?
+  image           String?
+  siteName        String?
+
+  // AI-generated summary
+  aiSummary       String?
+
+  // Cache control
+  fetchedAt       DateTime @default(now())
+  expiresAt       DateTime? // Cache expiry
+
+  @@index([url])
+  @@index([fetchedAt])
+}
