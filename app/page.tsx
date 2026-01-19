@@ -290,7 +290,7 @@ export default function Home() {
       {/* Integrated Hero & Header */}
       <ResponsiveHeroBanner 
         badgeText="BATCH #001 — REKRUTIERUNG LÄUFT"
-        title="25 Founder. 1 Brand."
+        title="Viele Founder. 1 Brand."
         titleLine2="Volle Transparenz."
         description="STAKE & SCALE ersetzt den riskanten Solo-Weg durch ein hocheffizientes Kollektiv. Wir bündeln Kapital und Skills, während die Execution im Forge-Hub zentralisiert wird."
         primaryButtonText="SEQUENZ STARTEN"

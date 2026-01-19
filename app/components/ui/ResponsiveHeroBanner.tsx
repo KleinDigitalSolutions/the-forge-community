@@ -14,6 +14,7 @@ interface NavLink {
 interface Partner {
     logoUrl: string;
     href: string;
+    scale?: number;
 }
 
 interface ResponsiveHeroBannerProps {
@@ -58,11 +59,11 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
     secondaryButtonHref = "#",
     partnersTitle = "Unterstützt durch führende Technologien",
     partners = [
-        { logoUrl: "https://cdn.worldvectorlogo.com/logos/vercel.svg", href: "https://vercel.com" },
-        { logoUrl: "https://cdn.worldvectorlogo.com/logos/stripe-2.svg", href: "https://stripe.com" },
-        { logoUrl: "https://cdn.worldvectorlogo.com/logos/next-js.svg", href: "https://nextjs.org" },
-        { logoUrl: "https://cdn.worldvectorlogo.com/logos/tailwind-css-2.svg", href: "https://tailwindcss.com" },
-        { logoUrl: "https://cdn.worldvectorlogo.com/logos/prisma-2.svg", href: "https://prisma.io" }
+        { logoUrl: "https://upload.wikimedia.org/wikipedia/commons/5/5e/Vercel_logo_black.svg", href: "https://vercel.com", scale: 1.2 },
+        { logoUrl: "https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg", href: "https://stripe.com" },
+        { logoUrl: "https://upload.wikimedia.org/wikipedia/commons/8/8e/Nextjs-logo.svg", href: "https://nextjs.org" },
+        { logoUrl: "https://upload.wikimedia.org/wikipedia/commons/d/d5/Tailwind_CSS_Logo.svg", href: "https://tailwindcss.com" },
+        { logoUrl: "https://simpleicons.org/icons/prisma.svg", href: "https://prisma.io" }
     ]
 }) => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -211,8 +212,11 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                                     className="flex items-center justify-center"
                                 >
                                     <div
-                                        className="w-12 h-12 bg-center bg-contain bg-no-repeat invert brightness-200 opacity-20 grayscale pointer-events-none"
-                                        style={{ backgroundImage: `url(${partner.logoUrl})` }}
+                                        className="w-12 h-12 bg-center bg-contain bg-no-repeat brightness-0 invert opacity-50 grayscale pointer-events-none"
+                                        style={{ 
+                                            backgroundImage: `url(${partner.logoUrl})`,
+                                            transform: `scale(${partner.scale || 1})`
+                                        }}
                                         aria-label={`Partner logo ${index + 1}`}
                                     />
                                 </div>
