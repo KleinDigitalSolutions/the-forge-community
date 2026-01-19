@@ -490,7 +490,7 @@ function MemberCard({ member }: { member: Member }) {
         </div>
 
         <div className="text-right">
-          <div className="text-xl font-bold text-white">{member.equity_share.toFixed(1)}%</div>
+          <div className="text-xl font-bold text-white">{Number(member.equity_share).toFixed(1)}%</div>
           <div className="text-xs text-white/40">Equity</div>
         </div>
       </div>
@@ -639,7 +639,7 @@ function JoinModal({ squad, onClose, onJoin, joining }: any) {
           <div className="p-4 rounded-xl bg-white/[0.03] border border-white/5">
             <div className="text-xs text-white/40 mb-1">Equity Share</div>
             <div className="text-2xl font-bold text-white">
-              {(100 / (squad.current_members + 1)).toFixed(1)}%
+              {Number((100 / (squad.current_members + 1))).toFixed(1)}%
             </div>
           </div>
 
