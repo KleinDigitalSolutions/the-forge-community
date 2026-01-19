@@ -46,6 +46,47 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing content or category' }, { status: 400 });
     }
 
+    // AI MODERATION CHECK
+    const { moderateContent, issueWarning, canUserPost } = await import('@/lib/moderation');
+    const { prisma } = await import('@/lib/prisma');
+
+    // Get user ID from session
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Check if user is allowed to post
+    const postCheck = await canUserPost(user.id);
+    if (!postCheck.allowed) {
+      return NextResponse.json({
+        error: 'Posting restricted',
+        reason: postCheck.reason
+      }, { status: 403 });
+    }
+
+    // Run toxicity check
+    const moderationResult = await moderateContent(content);
+
+    if (moderationResult.isToxic && moderationResult.confidence > 0.6) {
+      // Issue warning
+      const warningResult = await issueWarning(user.id, content, moderationResult);
+
+      // Don't create the post - reject it
+      return NextResponse.json({
+        error: 'Content violates community guidelines',
+        warning: {
+          number: warningResult.warningNumber,
+          message: warningResult.message,
+          banned: warningResult.shouldBan
+        }
+      }, { status: 400 });
+    }
+
     // Erstelle den Post
     const response = await addForumPost({
       author: authorName,
@@ -54,56 +95,41 @@ export async function POST(request: Request) {
       category,
     });
     
-    // AI Response (bleibt als nettes Feature)
-    if (process.env.GROQ_API_KEY) {
-        try {
-            const aiResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    messages: [
-                        {
-                            role: 'system',
-                            content: `Du bist ein hilfreicher Community-Bot für 'The Forge'. Ein Founder hat gerade eine Frage oder Idee gepostet.
-                            Gib eine kurze, motivierende und fachlich fundierte erste Einschätzung oder Antwort (max 2-3 Sätze).
-                            Biete an, dass andere Founder sicher noch mehr dazu sagen können.
-                            Unterschreibe mit '🤖 Forge AI'.`
-                        },
-                        { role: 'user', content: `Kategorie: ${category}\nInhalt: ${content}` },
-                    ],
-                    model: 'llama-3.3-70b-versatile',
-                }),
-            });
+    // Check for @forge-ai mention
+    const mentionRegex = /@forge-ai\s+(.+)/i;
+    const mentionMatch = content.match(mentionRegex);
 
-            if (aiResponse.ok) {
-                const aiData = await aiResponse.json();
-                const botText = aiData.choices[0]?.message?.content || '';
+    if (mentionMatch) {
+      // User mentioned AI - respond directly
+      try {
+        const { ForumAIActions } = await import('@/lib/ai');
+        const question = mentionMatch[1];
+        const aiResponse = await ForumAIActions.mentionReply(question, `Category: ${category}`);
 
-                if (botText && response.id) {
-                    const notion = new Client({ auth: process.env.NOTION_API_KEY });
-                    await notion.blocks.children.append({
-                        block_id: response.id,
-                        children: [
-                            { object: 'block', type: 'divider', divider: {} },
-                            {
-                                object: 'block',
-                                type: 'callout',
-                                callout: {
-                                    icon: { emoji: '🤖' },
-                                    color: 'gray_background',
-                                    rich_text: [{ type: 'text', text: { content: botText } }]
-                                }
-                            }
-                        ]
-                    });
+        if (aiResponse.content && response.id) {
+          const notion = new Client({ auth: process.env.NOTION_API_KEY });
+          await notion.blocks.children.append({
+            block_id: response.id,
+            children: [
+              { object: 'block', type: 'divider', divider: {} },
+              {
+                object: 'block',
+                type: 'callout',
+                callout: {
+                  icon: { emoji: '🤖' },
+                  color: 'blue_background',
+                  rich_text: [{
+                    type: 'text',
+                    text: { content: `**@forge-ai antwortet:**\n\n${aiResponse.content}\n\n_Powered by ${aiResponse.provider === 'gemini' ? 'Gemini Flash' : 'Groq'}_` }
+                  }]
                 }
-            }
-        } catch (aiError) {
-            console.error('AI Reply failed:', aiError);
+              }
+            ]
+          });
         }
+      } catch (aiError) {
+        console.error('AI Mention Reply failed:', aiError);
+      }
     }
 
     return NextResponse.json(response);

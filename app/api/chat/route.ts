@@ -1,11 +1,17 @@
 import { createOpenAI } from '@ai-sdk/openai';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { streamText } from 'ai';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { knowledgeBasePrompt } from '@/lib/knowledge-base';
 import { RateLimiters } from '@/lib/rate-limit';
 
-// Configure Groq as an OpenAI-compatible provider
+// Configure Gemini as primary
+const gemini = createGoogleGenerativeAI({
+  apiKey: process.env.GEMINI_API_KEY,
+});
+
+// Configure Groq as fallback
 const groq = createOpenAI({
   baseURL: 'https://api.groq.com/openai/v1',
   apiKey: process.env.GROQ_API_KEY,
@@ -19,7 +25,7 @@ export async function POST(req: Request) {
   if (rateLimitResponse) return rateLimitResponse;
 
   const session = await auth();
-  
+
   // Context Injection
   let userContext = '';
   if (session?.user?.email) {
@@ -27,7 +33,7 @@ export async function POST(req: Request) {
       where: { email: session.user.email },
       include: { squad: true }
     });
-    
+
     if (user) {
        userContext = `
        USER CONTEXT:
@@ -49,22 +55,36 @@ export async function POST(req: Request) {
     DEINE PERSÖNLICHKEIT & PHILOSOPHIE (WICHTIG):
     Du bist ein Mentor für ${session?.user?.name || 'den Founder'} vom Squad.
     Antworte prägnant und unternehmerisch.
-    
+
     - Dein Motto: "Aufgeben ist keine Option."
     - Deine Haltung: "Ich akzeptiere mein Schicksal nicht. Ich ändere es."
     - Dein Stil: Direkt, ehrlich, fast schon schmerzhaft real. Kein "Corporate Bullshit", kein Mitleid.
-    
+
     WICHTIG:
     - Sprich den User als "Founder" oder direkt beim Vornamen an.
     - Antworte immer auf Deutsch.
     - Sei kurz, knackig und extrem handlungsorientiert.
   `;
 
-  const result = await streamText({
-    model: groq('llama-3.3-70b-versatile'),
-    system: systemPrompt,
-    messages,
-  });
+  // Try Gemini first, fallback to Groq
+  try {
+    const result = await streamText({
+      model: gemini('gemini-2.0-flash-exp'),
+      system: systemPrompt,
+      messages,
+    });
 
-  return result.toTextStreamResponse();
+    return result.toTextStreamResponse();
+  } catch (error) {
+    console.warn('Gemini failed, falling back to Groq:', error);
+
+    // Fallback to Groq
+    const result = await streamText({
+      model: groq('llama-3.3-70b-versatile'),
+      system: systemPrompt,
+      messages,
+    });
+
+    return result.toTextStreamResponse();
+  }
 }

@@ -45,20 +45,27 @@ model User {
   image         String?
   role          Role      @default(USER)
   notionId      String?   @unique
-  
+
   // Relations
   squadId       String?
   squad         Squad?    @relation(fields: [squadId], references: [id])
-  
+
   votes         Vote[]
   karma         Karma[]
   ventures      Venture[]
   ventureTasks  VentureTask[]
   mentoringSessions MentoringSession[]
+  moderationWarnings ModerationWarning[]
 
   // NextAuth
   accounts      Account[]
   sessions      Session[]
+
+  // Moderation
+  toxicityWarnings Int      @default(0)
+  isBanned         Boolean  @default(false)
+  banReason        String?
+  bannedAt         DateTime?
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -361,4 +368,23 @@ model MentoringSession {
 
   @@index([ventureId])
   @@index([mentorId])
+}
+
+model ModerationWarning {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  reason          String   // AI-detected reason (toxicity, spam, harassment, etc.)
+  content         String   // The content that triggered the warning
+  severity        String   // LOW, MEDIUM, HIGH
+  warningNumber   Int      // 1, 2, 3 (helps track which warning this is)
+
+  acknowledged    Boolean  @default(false)
+  acknowledgedAt  DateTime?
+
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
 }

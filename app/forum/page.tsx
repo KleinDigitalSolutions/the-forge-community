@@ -5,7 +5,8 @@ import PageShell from '@/app/components/PageShell';
 import AuthGuard from '@/app/components/AuthGuard';
 import {
   MessageSquare, Send, ArrowUp, ArrowDown, Users,
-  Quote, Reply, MessageCircle, Edit2, Trash2, Image as ImageIcon, Eye, Code, X, Menu
+  Quote, Reply, MessageCircle, Edit2, Trash2, Image as ImageIcon, Eye, Code, X, Menu,
+  Sparkles, Lightbulb, CheckCircle, Search, Target
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
@@ -53,6 +54,10 @@ export default function Forum() {
   const [editContent, setEditContent] = useState('');
   const [isPreview, setIsPreview] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [aiMenuOpen, setAiMenuOpen] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResult, setAiResult] = useState<{postId: string; content: string; action: string} | null>(null);
+  const [moderationWarning, setModerationWarning] = useState<{number: number; message: string; banned: boolean} | null>(null);
 
   const fetchUser = async () => {
     try {
@@ -128,14 +133,25 @@ export default function Forum() {
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to submit post');
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Check if it's a moderation warning
+        if (data.warning) {
+          setModerationWarning(data.warning);
+          setEditingPost(null);
+          setContent('');
+          return;
+        }
+        throw new Error(data.error || 'Failed to submit post');
+      }
 
       setContent('');
       setEditingPost(null);
       setStatusMessage('Post shared!');
       fetchPosts();
-    } catch (error) {
-      setStatusMessage('Error posting.');
+    } catch (error: any) {
+      setStatusMessage(error.message || 'Error posting.');
     } finally {
       setIsSubmitting(false);
     }
@@ -201,6 +217,30 @@ export default function Forum() {
   const handleQuote = (post: ForumPost) => {
     setContent(`> **${post.author} wrote:**\n> ${post.content.replace(/\n/g, '\n> ')}\n\n`);
     setEditingPost('NEW');
+  };
+
+  const handleAIAction = async (postId: string, postContent: string, category: string, action: string) => {
+    setAiLoading(true);
+    setAiMenuOpen(null);
+    try {
+      const response = await fetch('/api/forum/ai-action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, postContent, category })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAiResult({ postId, content: data.content, action });
+      } else {
+        alert('AI Action failed. Please try again.');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('AI Action failed.');
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   const filteredPosts = filterCategory === 'All' 
@@ -289,9 +329,13 @@ export default function Forum() {
                             autoFocus
                             value={content}
                             onChange={e => setContent(e.target.value)}
-                            placeholder="Markdown unterstützt: **fett**, *kursiv*, # Überschrift..."
+                            placeholder="Markdown unterstützt: **fett**, *kursiv*, # Überschrift...&#10;&#10;💡 Tipp: Nutze @forge-ai um die AI zu fragen!"
                             className="w-full min-h-[300px] p-4 text-sm font-mono bg-[var(--surface)] border border-[var(--border)] rounded-xl outline-none focus:border-[var(--accent)] transition-all resize-none text-[var(--foreground)]"
                           />
+                          <div className="flex items-center gap-2 text-[10px] text-purple-400 bg-purple-500/10 px-3 py-2 rounded-lg border border-purple-500/20">
+                            <Sparkles className="w-3 h-3" />
+                            <span className="font-bold">Pro-Tipp: Schreib <code className="bg-purple-500/20 px-1.5 py-0.5 rounded">@forge-ai [deine Frage]</code> für eine direkte AI-Antwort!</span>
+                          </div>
                         </>
                       ) : (
                         <div className="prose prose-invert prose-sm max-w-none p-6 bg-[var(--surface)] border border-[var(--border)] rounded-xl min-h-[300px]">
@@ -373,17 +417,101 @@ export default function Forum() {
                     </div>
 
                     <div className="flex items-center gap-4">
-                      <MicroExpander 
+                      <MicroExpander
                         text={`${post.comments?.length || 0} Kommentare`}
                         icon={<MessageSquare className="w-4 h-4" />}
                         variant="ghost"
                         onClick={() => setReplyTo(replyTo === post.id ? null : post.id)}
                         className={replyTo === post.id ? 'bg-[var(--accent)]/20 border-[var(--accent)]/30' : ''}
                       />
-                      
+
                       <button onClick={() => handleQuote(post)} className="flex items-center gap-2 text-[10px] font-bold text-[var(--muted-foreground)] hover:text-[var(--foreground)] uppercase tracking-widest px-3 py-2 rounded-lg hover:bg-[var(--surface-muted)] transition-all">
                         <Quote className="w-3.5 h-3.5" /> Zitieren
                       </button>
+
+                      {/* AI Actions */}
+                      <div className="relative">
+                        <button
+                          onClick={() => setAiMenuOpen(aiMenuOpen === post.id ? null : post.id)}
+                          disabled={aiLoading}
+                          className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-all ${
+                            aiMenuOpen === post.id
+                              ? 'bg-purple-500/20 border border-purple-500/30 text-purple-400'
+                              : 'text-[var(--muted-foreground)] hover:text-purple-400 hover:bg-purple-500/10'
+                          } disabled:opacity-50`}
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          {aiLoading ? 'AI denkt...' : 'AI Actions'}
+                        </button>
+
+                        <AnimatePresence>
+                          {aiMenuOpen === post.id && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                              className="absolute top-full left-0 mt-2 bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-2xl overflow-hidden z-50 min-w-[220px]"
+                            >
+                              <div className="p-2 space-y-1">
+                                <button
+                                  onClick={() => handleAIAction(post.id, post.content, post.category, 'summarize')}
+                                  className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-left hover:bg-[var(--accent)]/10 rounded-lg transition-all text-[var(--foreground)]"
+                                >
+                                  <Sparkles className="w-4 h-4 text-blue-400" />
+                                  <div>
+                                    <div>Zusammenfassen</div>
+                                    <div className="text-[9px] text-[var(--muted-foreground)] font-normal">TL;DR generieren</div>
+                                  </div>
+                                </button>
+
+                                <button
+                                  onClick={() => handleAIAction(post.id, post.content, post.category, 'feedback')}
+                                  className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-left hover:bg-[var(--accent)]/10 rounded-lg transition-all text-[var(--foreground)]"
+                                >
+                                  <CheckCircle className="w-4 h-4 text-green-400" />
+                                  <div>
+                                    <div>Feedback geben</div>
+                                    <div className="text-[9px] text-[var(--muted-foreground)] font-normal">Konstruktive Kritik</div>
+                                  </div>
+                                </button>
+
+                                <button
+                                  onClick={() => handleAIAction(post.id, post.content, post.category, 'expand')}
+                                  className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-left hover:bg-[var(--accent)]/10 rounded-lg transition-all text-[var(--foreground)]"
+                                >
+                                  <Lightbulb className="w-4 h-4 text-yellow-400" />
+                                  <div>
+                                    <div>Ideen erweitern</div>
+                                    <div className="text-[9px] text-[var(--muted-foreground)] font-normal">Brainstorming</div>
+                                  </div>
+                                </button>
+
+                                <button
+                                  onClick={() => handleAIAction(post.id, post.content, post.category, 'factCheck')}
+                                  className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-left hover:bg-[var(--accent)]/10 rounded-lg transition-all text-[var(--foreground)]"
+                                >
+                                  <Search className="w-4 h-4 text-purple-400" />
+                                  <div>
+                                    <div>Fact-Check</div>
+                                    <div className="text-[9px] text-[var(--muted-foreground)] font-normal">Infos verifizieren</div>
+                                  </div>
+                                </button>
+
+                                <button
+                                  onClick={() => handleAIAction(post.id, post.content, post.category, 'nextSteps')}
+                                  className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-left hover:bg-[var(--accent)]/10 rounded-lg transition-all text-[var(--foreground)]"
+                                >
+                                  <Target className="w-4 h-4 text-orange-400" />
+                                  <div>
+                                    <div>Nächste Schritte</div>
+                                    <div className="text-[9px] text-[var(--muted-foreground)] font-normal">Action Items</div>
+                                  </div>
+                                </button>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
 
                       {user?.name === post.author && (
                         <div className="flex items-center gap-2 ml-auto">
@@ -392,6 +520,33 @@ export default function Forum() {
                         </div>
                       )}
                     </div>
+
+                    {/* AI Result Display */}
+                    {aiResult && aiResult.postId === post.id && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="mt-6 p-4 rounded-xl bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20"
+                      >
+                        <div className="flex items-center gap-2 mb-3">
+                          <Sparkles className="w-4 h-4 text-purple-400" />
+                          <span className="text-xs font-bold uppercase tracking-widest text-purple-400">
+                            {aiResult.action === 'summarize' && 'AI Zusammenfassung'}
+                            {aiResult.action === 'feedback' && 'AI Feedback'}
+                            {aiResult.action === 'expand' && 'AI Ideen'}
+                            {aiResult.action === 'factCheck' && 'AI Fact-Check'}
+                            {aiResult.action === 'nextSteps' && 'AI Nächste Schritte'}
+                          </span>
+                          <button
+                            onClick={() => setAiResult(null)}
+                            className="ml-auto p-1 hover:bg-white/10 rounded transition-all"
+                          >
+                            <X className="w-3 h-3 text-white/40" />
+                          </button>
+                        </div>
+                        <p className="text-sm text-white/80 leading-relaxed whitespace-pre-wrap">{aiResult.content}</p>
+                      </motion.div>
+                    )}
 
                     {/* Replies */}
                     {post.comments && post.comments.length > 0 && (
@@ -488,6 +643,91 @@ export default function Forum() {
           </aside>
 
         </div>
+
+        {/* Moderation Warning Modal */}
+        <AnimatePresence>
+          {moderationWarning && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+              onClick={() => !moderationWarning.banned && setModerationWarning(null)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9, y: 20 }}
+                onClick={(e) => e.stopPropagation()}
+                className={`w-full max-w-md rounded-2xl border p-8 glass-card ${
+                  moderationWarning.number >= 3
+                    ? 'bg-red-950/50 border-red-500/30'
+                    : moderationWarning.number === 2
+                    ? 'bg-orange-950/50 border-orange-500/30'
+                    : 'bg-yellow-950/50 border-yellow-500/30'
+                }`}
+              >
+                <div className="text-center mb-6">
+                  <div className={`w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center text-4xl ${
+                    moderationWarning.number >= 3 ? 'bg-red-500/20' : moderationWarning.number === 2 ? 'bg-orange-500/20' : 'bg-yellow-500/20'
+                  }`}>
+                    {moderationWarning.banned ? '🔒' : '⚠️'}
+                  </div>
+                  <h2 className="text-2xl font-bold text-white mb-2">
+                    {moderationWarning.banned ? 'Account Gesperrt' : `Warnung ${moderationWarning.number}/3`}
+                  </h2>
+                </div>
+
+                <div className="prose prose-invert prose-sm mb-8">
+                  <div className="bg-black/30 rounded-xl p-4 text-sm text-white/90 whitespace-pre-wrap">
+                    {moderationWarning.message}
+                  </div>
+                </div>
+
+                {!moderationWarning.banned && (
+                  <div className="space-y-3">
+                    <div className="flex gap-2">
+                      {[...Array(3)].map((_, i) => (
+                        <div
+                          key={i}
+                          className={`flex-1 h-2 rounded-full ${
+                            i < moderationWarning.number
+                              ? moderationWarning.number >= 3
+                                ? 'bg-red-500'
+                                : moderationWarning.number === 2
+                                ? 'bg-orange-500'
+                                : 'bg-yellow-500'
+                              : 'bg-white/10'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <p className="text-xs text-center text-white/60">
+                      {moderationWarning.number === 1 && 'Noch 2 Warnungen übrig'}
+                      {moderationWarning.number === 2 && 'Noch 1 Warnung übrig'}
+                      {moderationWarning.number === 3 && 'Letzte Warnung - beim nächsten Verstoß erfolgt die Sperrung'}
+                    </p>
+                  </div>
+                )}
+
+                <button
+                  onClick={() => setModerationWarning(null)}
+                  className={`w-full mt-6 py-4 rounded-xl font-bold text-sm uppercase tracking-widest transition-all ${
+                    moderationWarning.banned
+                      ? 'bg-red-500 hover:bg-red-600 text-white'
+                      : 'bg-white text-black hover:bg-gray-200'
+                  }`}
+                >
+                  {moderationWarning.banned ? 'Verstanden' : 'Ich verstehe'}
+                </button>
+
+                <p className="text-[10px] text-center text-white/40 mt-4 uppercase tracking-widest">
+                  Bei Fragen kontaktiere support@stakeandscale.de
+                </p>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </PageShell>
     </AuthGuard>
   );
