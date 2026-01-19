@@ -406,11 +406,11 @@ export default function Home() {
                   Orion AI Core
                 </div>
                 <h2 className="text-4xl md:text-5xl font-instrument-serif text-white mb-6">
-                   The Founder OS.
+                   The Forge Terminal.
                 </h2>
                 <p className="text-white/50 max-w-2xl mx-auto">
-                   Warum selbst arbeiten? Wir haben die Prozesse von 8-Figure Brands automatisiert.
-                   Dein Abo finanziert sich durch gesparte Zeit und Anwaltskosten von selbst.
+                   Kein Dashboard, sondern eine Werkstatt. Logg dich ein und teleportiere dich direkt in die Execution.
+                   Orion hält deine Brand DNA und steuert Tools, Sourcing und Assets zentral.
                 </p>
              </div>
 
@@ -420,12 +420,12 @@ export default function Home() {
                    <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-6 text-white group-hover:text-[var(--accent)] transition-colors">
                       <FileText className="w-6 h-6" />
                    </div>
-                   <h3 className="text-xl font-instrument-serif text-white mb-3">Behörden & Legal</h3>
+                   <h3 className="text-xl font-instrument-serif text-white mb-3">Admin Shield</h3>
                    <p className="text-xs text-white/50 leading-relaxed mb-4">
-                      Gewerbe, Finanzamt, IHK. Orion kennt die Formulare und liefert geprüfte Vertrags-Vorlagen für GmbH & Co.
+                      Nie wieder Papierkram-Angst. Orion generiert rechtssichere Verträge (Influencer, GmbH, AGB) basierend auf deinen Daten. Instant Download.
                    </p>
                    <div className="text-[9px] font-bold text-white/20 uppercase tracking-widest border-t border-white/5 pt-4">
-                      *Administrative Assistenz. Keine Rechtsberatung.
+                      *Administrative Assistenz.
                    </div>
                 </div>
 
@@ -434,9 +434,9 @@ export default function Home() {
                    <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-6 text-white group-hover:text-[var(--accent)] transition-colors">
                       <Target className="w-6 h-6" />
                    </div>
-                   <h3 className="text-xl font-instrument-serif text-white mb-3">Deep Research</h3>
+                   <h3 className="text-xl font-instrument-serif text-white mb-3">Market Radar</h3>
                    <p className="text-xs text-white/50 leading-relaxed mb-4">
-                      Konkurrenz-Scanner: Orion analysiert Preise, Nischen-Trends und Ad-Libraries deiner Wettbewerber. Live.
+                      Dein 24/7 Watchtower. Wir scannen Winning Ads und Pricing-Strategien deiner Konkurrenz und liefern dir fertige Counter-Strategien.
                    </p>
                 </div>
 
@@ -445,9 +445,9 @@ export default function Home() {
                    <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-6 text-white group-hover:text-[var(--accent)] transition-colors">
                       <Package className="w-6 h-6" />
                    </div>
-                   <h3 className="text-xl font-instrument-serif text-white mb-3">Sourcing Scout</h3>
+                   <h3 className="text-xl font-instrument-serif text-white mb-3">Supply Chain Command</h3>
                    <p className="text-xs text-white/50 leading-relaxed mb-4">
-                      Direktzugang zu verifizierten B2B-Großhändlern. Wir finden die besten Margen für dein Produkt. Kein Alibaba-Roulette.
+                      Vom Design-Mockup zur Produktion mit einem Klick. Zugriff auf unser vor-verhandeltes Netzwerk aus Premium-Manufakturen.
                    </p>
                 </div>
 
@@ -456,9 +456,9 @@ export default function Home() {
                    <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-6 text-white group-hover:text-[var(--accent)] transition-colors">
                       <Zap className="w-6 h-6" />
                    </div>
-                   <h3 className="text-xl font-instrument-serif text-white mb-3">Instant Commerce</h3>
+                   <h3 className="text-xl font-instrument-serif text-white mb-3">Commerce Engine</h3>
                    <p className="text-xs text-white/50 leading-relaxed mb-4">
-                      Dein Shop steht an Tag 1. Integriertes Stripe-Payment, Vercel-Hosting und Conversion-Optimierung.
+                      High-Performance Shop System. Vercel-Hosted, Stripe-Integrated. Wir deployen deine Brand-Infrastruktur in Sekunden, nicht Wochen.
                    </p>
                 </div>
 
@@ -467,9 +467,9 @@ export default function Home() {
                    <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-6 text-white group-hover:text-[var(--accent)] transition-colors">
                       <Truck className="w-6 h-6" />
                    </div>
-                   <h3 className="text-xl font-instrument-serif text-white mb-3">Physical Asset Hub</h3>
+                   <h3 className="text-xl font-instrument-serif text-white mb-3">Logistics Grid</h3>
                    <p className="text-xs text-white/50 leading-relaxed mb-4">
-                      Geteilte Infrastruktur spart Kosten: Zugriff auf Lagerhallen, Transporter und Logistik-Netzwerke innerhalb der Forge.
+                      Physische Power, digital gesteuert. Buche Lagerfläche, Fulfillment-Slots und Transporter direkt über das Terminal. Pay-per-Use.
                    </p>
                 </div>
              </div>
