@@ -302,6 +302,7 @@ export default function Home() {
           { label: "Mission Log", href: "#projects" },
           { label: "Prinzipien", href: "#principles" },
           { label: "Preise", href: "#pricing" },
+          { label: "Shop Demo", href: "/demo-shop" },
           { label: "Login", href: "/login" }
         ]}
         ctaButtonText="BEWERBEN"
