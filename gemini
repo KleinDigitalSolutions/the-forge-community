@@ -1,0 +1,668 @@
+  # 🎯 AUFGABE: Sourcing Studio implementieren (Phase 2)
+
+  ## 📍 Projektkontext
+
+  **Projekt:** THE FORGE - Community Venture Studio
+  **Standort:** `/Users/bucci369/the-forge-community`
+  **Stack:** Next.js 16, TypeScript, Prisma 7, PostgreSQL (Neon), Gemini AI
+  **Aktueller Stand:** Marketing Studio fertig ✅
+
+  ## 🚀 Was jetzt gebaut werden muss: SOURCING STUDIO
+
+  **Route:** `/app/forge/[ventureId]/sourcing/page.tsx`
+  **Aktueller Status:** Coming Soon Placeholder
+
+  ### Ziel
+  Ein vollständiges Lieferanten-Management-System für E-Commerce Ventures:
+  - Lieferanten-Datenbank durchsuchen
+  - Musterbestellungen tracken
+  - Produktionsaufträge verwalten
+  - Dokumente hochladen & teilen
+
+  ---
+
+  ## 🗄️ DATENBANK-SCHEMA
+
+  ### Neue Prisma-Modelle erstellen in `prisma/schema.prisma`:
+
+  ```prisma
+  // ============================================
+  // SOURCING STUDIO - Supplier Management
+  // ============================================
+
+  model Supplier {
+    id              String   @id @default(cuid())
+    ventureId       String
+    venture         Venture  @relation(fields: [ventureId], references:
+  [id], onDelete: Cascade)
+
+    // Basic Info
+    companyName     String
+    contactName     String?
+    email           String?
+    phone           String?
+    website         String?
+    address         String?  @db.Text
+    country         String?
+
+    // Categories
+    category        String   // 'fabric', 'manufacturer', 'packaging',
+  'logistics'
+    specialization  String?  // e.g., 'Organic Cotton', 'Screen Printing'
+
+    // Business Details
+    moq             Int?     // Minimum Order Quantity
+    leadTimeDays    Int?     // Production lead time
+    paymentTerms    String?  // e.g., "50% upfront, 50% on delivery"
+
+    // Rating & Notes
+    rating          Int?     // 1-5 stars
+    notes           String?  @db.Text
+    tags            String[] // ['sustainable', 'fast', 'premium']
+
+    // Relations
+    samples         Sample[]
+    orders          ProductionOrder[]
+
+    createdAt       DateTime @default(now())
+    updatedAt       DateTime @updatedAt
+
+    @@index([ventureId])
+    @@index([category])
+    @@index([country])
+  }
+
+  model Sample {
+    id              String   @id @default(cuid())
+    ventureId       String
+    venture         Venture  @relation(fields: [ventureId], references:
+  [id], onDelete: Cascade)
+
+    supplierId      String
+    supplier        Supplier @relation(fields: [supplierId], references:
+  [id], onDelete: Cascade)
+
+    // Sample Details
+    productName     String
+    description     String?  @db.Text
+    quantity        Int?
+    cost            Float?
+    currency        String   @default("EUR")
+
+    // Status Tracking
+    status          SampleStatus @default(REQUESTED)
+    orderedAt       DateTime?
+    receivedAt      DateTime?
+
+    // Quality Assessment
+    approved        Boolean?
+    qualityRating   Int?     // 1-5 stars
+    feedback        String?  @db.Text
+
+    // Files
+    imageUrls       String[] // Vercel Blob URLs
+    specFileUrls    String[] // Technical specs, PDFs
+
+    createdAt       DateTime @default(now())
+    updatedAt       DateTime @updatedAt
+    createdById     String
+    createdBy       User     @relation(fields: [createdById], references:
+  [id])
+
+    @@index([ventureId])
+    @@index([supplierId])
+    @@index([status])
+  }
+
+  enum SampleStatus {
+    REQUESTED      // Sample requested
+    ORDERED        // Order placed
+    IN_TRANSIT     // Shipped
+    RECEIVED       // Arrived
+    APPROVED       // Quality check passed
+    REJECTED       // Quality check failed
+  }
+
+  model ProductionOrder {
+    id              String   @id @default(cuid())
+    ventureId       String
+    venture         Venture  @relation(fields: [ventureId], references:
+  [id], onDelete: Cascade)
+
+    supplierId      String
+    supplier        Supplier @relation(fields: [supplierId], references:
+  [id])
+
+    // Order Details
+    orderNumber     String   @unique // e.g., "PO-2025-001"
+    productName     String
+    description     String?  @db.Text
+    quantity        Int
+    unitPrice       Float
+    totalPrice      Float
+    currency        String   @default("EUR")
+
+    // Timeline
+    orderDate       DateTime @default(now())
+    expectedDelivery DateTime?
+    actualDelivery  DateTime?
+
+    // Status & Payment
+    status          OrderStatus @default(DRAFT)
+    paymentStatus   PaymentStatus @default(PENDING)
+    depositPaid     Float?
+    finalPaid       Float?
+
+    // Files & Notes
+    poFileUrl       String?  // Purchase Order PDF
+    invoiceUrls     String[] // Invoices
+    notes           String?  @db.Text
+
+    createdAt       DateTime @default(now())
+    updatedAt       DateTime @updatedAt
+    createdById     String
+    createdBy       User     @relation(fields: [createdById], references:
+  [id])
+
+    @@index([ventureId])
+    @@index([supplierId])
+    @@index([status])
+  }
+
+  enum OrderStatus {
+    DRAFT          // Not sent yet
+    SENT           // PO sent to supplier
+    CONFIRMED      // Supplier confirmed
+    IN_PRODUCTION  // Manufacturing
+    SHIPPED        // On the way
+    DELIVERED      // Received
+    COMPLETED      // Closed
+    CANCELLED      // Cancelled
+  }
+
+  enum PaymentStatus {
+    PENDING        // Not paid
+    DEPOSIT_PAID   // Partial payment
+    FULLY_PAID     // Paid in full
+    REFUNDED       // Money returned
+  }
+
+  Nach Schema-Änderungen ausführen:
+  npx prisma generate
+  npx prisma db push
+
+  WICHTIG: Reverse Relations zu Venture und User hinzufügen!
+
+  ---
+  📂 DATEISTRUKTUR
+
+  Zu erstellen/bearbeiten:
+
+  1. Hauptseite:
+    - /app/forge/[ventureId]/sourcing/page.tsx - Dashboard mit Tabs
+  2. Sub-Seiten (Optional, kann später):
+    - /app/forge/[ventureId]/sourcing/suppliers/page.tsx - Lieferanten-Liste
+    - /app/forge/[ventureId]/sourcing/suppliers/new/page.tsx - Lieferant
+  hinzufügen
+    - /app/forge/[ventureId]/sourcing/samples/page.tsx - Sample-Tracking
+    - /app/forge/[ventureId]/sourcing/orders/page.tsx - Produktionsaufträge
+  3. API Routes:
+    - /app/api/ventures/[id]/sourcing/suppliers/route.ts - CRUD
+    - /app/api/ventures/[id]/sourcing/samples/route.ts - CRUD
+    - /app/api/ventures/[id]/sourcing/orders/route.ts - CRUD
+  4. Komponenten (Optional):
+    - /app/components/sourcing/SupplierCard.tsx
+    - /app/components/sourcing/SampleTracker.tsx
+    - /app/components/sourcing/OrderTimeline.tsx
+
+  ---
+  🎨 UI/UX ANFORDERUNGEN
+
+  MVP-Version (Single Page mit Tabs):
+
+  <StudioShell title="Sourcing Studio" icon={Factory}>
+    <Tabs>
+      {/* Tab 1: Lieferanten-Datenbank */}
+      <Tab label="Lieferanten">
+        - Suchfeld (Name, Kategorie, Land)
+        - Filter (Kategorie, Rating, MOQ)
+        - Grid mit Supplier Cards
+        - "Neuer Lieferant" Button
+      </Tab>
+
+      {/* Tab 2: Muster-Tracking */}
+      <Tab label="Muster">
+        - Kanban-Board (Requested, Ordered, In Transit, Received)
+        - Status-Updates
+        - Qualitätsbewertung
+        - Bildupload
+      </Tab>
+
+      {/* Tab 3: Produktionsaufträge */}
+      <Tab label="Aufträge">
+        - Timeline-Ansicht
+        - Status-Badges
+        - Zahlungsstatus
+        - PO-Download
+      </Tab>
+
+      {/* Tab 4: Statistiken (später) */}
+      <Tab label="Übersicht">
+        - Anzahl Lieferanten
+        - Offene Muster
+        - Laufende Aufträge
+        - Gesamtvolumen
+      </Tab>
+    </Tabs>
+  </StudioShell>
+
+  Design-System (wie Marketing Studio):
+
+  - Dark Theme + Gold-Akzente (#D4AF37)
+  - glass-card Komponenten
+  - Lucide Icons (Factory, Package, Truck, CheckCircle)
+  - Responsive Grid/List Views
+
+  ---
+  🔐 WICHTIGE FEATURES
+
+  1. File Upload (Vercel Blob)
+
+  // Für Bilder, PDFs, Specs
+  import { put } from '@vercel/blob';
+
+  const blob = await put(`samples/${sampleId}/${file.name}`, file, {
+    access: 'public',
+  });
+
+  // Speichere blob.url in DB
+
+  2. Status-Tracking
+
+  - Sample: 6 Status (REQUESTED → APPROVED/REJECTED)
+  - Order: 8 Status (DRAFT → COMPLETED/CANCELLED)
+  - Timeline-Komponente für Visualisierung
+
+  3. Supplier Rating
+
+  - 1-5 Sterne Bewertung
+  - Notizen & Tags
+  - Sortierung nach Rating
+
+  4. MOQ & Lead Time
+
+  - Wichtig für E-Commerce Kalkulation
+  - In Supplier Card prominent anzeigen
+
+  ---
+  📋 SCHRITT-FÜR-SCHRITT
+
+  1. Datenbank-Schema erstellen
+    - Supplier, Sample, ProductionOrder Modelle
+    - Enums (SampleStatus, OrderStatus, PaymentStatus)
+    - Reverse Relations in Venture + User
+  2. API-Routes implementieren
+    - GET/POST für Suppliers
+    - GET/POST/PATCH für Samples (Status-Updates)
+    - GET/POST/PATCH für Orders
+  3. Hauptseite mit Tabs bauen
+    - Tab-Navigation (kann Tailwind nutzen oder headlessui)
+    - Tab 1: Supplier-Liste (Grid oder Table)
+    - Tab 2: Sample Kanban (später, erstmal Liste)
+    - Tab 3: Order Timeline
+  4. CRUD-Formulare
+    - Modal oder separate Seite für "Neuer Lieferant"
+    - Modal für Sample erstellen
+    - Order-Formular
+  5. File Upload integrieren
+    - Image Upload für Samples
+    - PDF Upload für Orders (PO, Invoices)
+
+  ---
+  ⚠️ WICHTIGE HINWEISE
+
+  1. Keine externen APIs nötig - Alles in eigener DB
+  2. File Storage: Vercel Blob (ENV: BLOB_READ_WRITE_TOKEN)
+  3. Deutsch: Alle UI-Texte auf Deutsch
+  4. Access Control: Nur Venture Owner + Squad Members
+  5. Optional: AI-Integration für Lieferanten-Vorschläge (später)
+
+  ---
+  🎯 MVP SCOPE (Was zuerst?)
+
+  Must-Have (Tag 1-2):
+  - ✅ Datenbank-Schema
+  - ✅ Supplier CRUD (Liste, Hinzufügen, Bearbeiten)
+  - ✅ Sample-Tracking (Liste + Status-Updates)
+  - ✅ Basic UI mit Tabs
+
+  Nice-to-Have (Tag 3-4):
+  - 🔲 File Upload (Bilder, PDFs)
+  - 🔲 Produktionsaufträge
+  - 🔲 Statistiken-Dashboard
+  - 🔲 Export als CSV/PDF
+
+  Später:
+  - 🔲 Supplier-Datenbank (vorgefertigte Liste)
+  - 🔲 AI-Empfehlungen
+  - 🔲 Integrationen (Alibaba, etc.)
+
+  ---
+  📚 REFERENZEN
+
+  - Marketing Studio - Als Code-Referenz
+  - Legal Studio - Für Dokumenten-Management
+  - ROADMAP.md - Feature-Details
+  - Vercel Blob Docs - https://vercel.com/docs/storage/vercel-blob
+
+  Viel Erfolg! 🚀
+
+-------
+
+# 🎯 AUFGABE: Kampagnen-Manager implementieren (Marketing Studio Phase 2)
+
+  ## 📍 Projektkontext
+
+  **Projekt:** THE FORGE - Community Venture Studio
+  **Standort:** `/Users/bucci369/the-forge-community`
+  **Stack:** Next.js 16, TypeScript, Prisma 7, PostgreSQL (Neon), Gemini AI
+  **Aktueller Stand:** Marketing Studio (Content Generator) fertig ✅
+
+  ## 🚀 Was jetzt gebaut werden muss: KAMPAGNEN-MANAGER
+
+  **Erweiterung von:** `/app/forge/[ventureId]/marketing/page.tsx`
+  **Neue Route:** `/app/forge/[ventureId]/marketing/campaigns/page.tsx`
+
+  ### Ziel
+  Content-Planung & Multi-Channel-Management:
+  - Kampagnen erstellen (z.B. "Produktlaunch Q1")
+  - Content-Posts planen & organisieren
+  - Status-Tracking (Draft, Scheduled, Published)
+  - Performance-Metriken (später)
+
+  ---
+
+  ## 🗄️ DATENBANK-SCHEMA
+
+  ### Neue Prisma-Modelle in `prisma/schema.prisma`:
+
+  ```prisma
+  // ============================================
+  // MARKETING STUDIO - Campaign Management
+  // ============================================
+
+  model MarketingCampaign {
+    id              String   @id @default(cuid())
+    ventureId       String
+    venture         Venture  @relation(fields: [ventureId], references:
+  [id], onDelete: Cascade)
+
+    // Campaign Info
+    name            String
+    description     String?  @db.Text
+    goal            String?  // 'awareness', 'conversion', 'engagement'
+
+    // Timeline
+    startDate       DateTime?
+    endDate         DateTime?
+
+    // Budget (optional)
+    budgetAmount    Float?
+    budgetCurrency  String   @default("EUR")
+    spentAmount     Float?
+
+    // Status
+    status          CampaignStatus @default(DRAFT)
+
+    // Relations
+    posts           ContentPost[]
+
+    createdAt       DateTime @default(now())
+    updatedAt       DateTime @updatedAt
+    createdById     String
+    createdBy       User     @relation(fields: [createdById], references:
+  [id])
+
+    @@index([ventureId])
+    @@index([status])
+  }
+
+  enum CampaignStatus {
+    DRAFT          // In Planung
+    ACTIVE         // Läuft
+    PAUSED         // Pausiert
+    COMPLETED      // Abgeschlossen
+    ARCHIVED       // Archiviert
+  }
+
+  model ContentPost {
+    id              String   @id @default(cuid())
+    campaignId      String?
+    campaign        MarketingCampaign? @relation(fields: [campaignId],
+  references: [id], onDelete: SetNull)
+
+    ventureId       String
+    venture         Venture  @relation(fields: [ventureId], references:
+  [id], onDelete: Cascade)
+
+    // Content
+    title           String
+    content         String   @db.Text
+    contentType     String   // 'instagram', 'blog', 'email', etc.
+
+    // Scheduling
+    status          PostStatus @default(DRAFT)
+    scheduledFor    DateTime?
+    publishedAt     DateTime?
+
+    // Channel-Specific
+    platform        String?  // 'instagram', 'linkedin', 'twitter', 'email'
+    externalId      String?  // ID from social platform (if posted via API)
+    externalUrl     String?  // URL to published post
+
+    // Media
+    imageUrls       String[] // Attached images
+
+    // Performance (optional, für später)
+    views           Int?
+    likes           Int?
+    comments        Int?
+    shares          Int?
+    clicks          Int?
+
+    createdAt       DateTime @default(now())
+    updatedAt       DateTime @updatedAt
+    createdById     String
+    createdBy       User     @relation(fields: [createdById], references:
+  [id])
+
+    @@index([campaignId])
+    @@index([ventureId])
+    @@index([status])
+    @@index([scheduledFor])
+  }
+
+  enum PostStatus {
+    DRAFT          // Nicht fertig
+    READY          // Bereit zum Planen
+    SCHEDULED      // Geplant für Datum X
+    PUBLISHED      // Veröffentlicht
+    FAILED         // Fehler beim Posten
+    ARCHIVED       // Archiviert
+  }
+
+  Nicht vergessen: Reverse Relations zu Venture und User hinzufügen!
+
+  Ausführen:
+  npx prisma generate
+  npx prisma db push
+
+  ---
+  📂 DATEISTRUKTUR
+
+  Zu erstellen:
+
+  1. Kampagnen-Übersicht:
+    - /app/forge/[ventureId]/marketing/campaigns/page.tsx
+    - Liste aller Kampagnen
+    - "Neue Kampagne" Button
+  2. Kampagnen-Detail:
+    - /app/forge/[ventureId]/marketing/campaigns/[campaignId]/page.tsx
+    - Content-Posts der Kampagne
+    - Kalender-Ansicht
+    - Stats (Budget, Posts, Performance)
+  3. API Routes:
+    - /app/api/ventures/[id]/marketing/campaigns/route.ts - CRUD
+    - /app/api/ventures/[id]/marketing/campaigns/[campaignId]/posts/route.ts
+   - Posts CRUD
+  4. Komponenten:
+    - /app/components/marketing/CampaignCard.tsx
+    - /app/components/marketing/ContentCalendar.tsx (optional)
+    - /app/components/marketing/PostCard.tsx
+
+  ---
+  🎨 UI/UX ANFORDERUNGEN
+
+  Kampagnen-Übersicht (/campaigns/page.tsx):
+
+  <StudioShell title="Kampagnen-Manager" icon={TrendingUp}>
+    {/* Header mit Stats */}
+    <div className="grid grid-cols-3 gap-4">
+      <StatCard label="Aktive Kampagnen" value={3} />
+      <StatCard label="Geplante Posts" value={12} />
+      <StatCard label="Budget verbraucht" value="€450 / €1000" />
+    </div>
+
+    {/* Kampagnen-Grid */}
+    <div className="grid grid-cols-2 gap-4">
+      {campaigns.map(campaign => (
+        <CampaignCard
+          name="Produktlaunch Q1"
+          status="ACTIVE"
+          posts={8}
+          budget="€500"
+          startDate="2025-01-15"
+          endDate="2025-03-31"
+        />
+      ))}
+    </div>
+
+    {/* FAB Button */}
+    <FloatingButton label="Neue Kampagne" />
+  </StudioShell>
+
+  Kampagnen-Detail (/campaigns/[id]/page.tsx):
+
+  <StudioShell title={campaign.name}>
+    {/* Tabs */}
+    <Tabs>
+      {/* Tab 1: Übersicht */}
+      <Tab label="Übersicht">
+        - Kampagnen-Info (Name, Beschreibung, Ziel)
+        - Timeline (Start/End)
+        - Budget-Tracking
+      </Tab>
+
+      {/* Tab 2: Content-Posts */}
+      <Tab label="Content">
+        - Liste aller Posts
+        - Filter: Status, Platform
+        - "Neuer Post" Button (öffnet Content Generator)
+      </Tab>
+
+      {/* Tab 3: Kalender (optional) */}
+      <Tab label="Kalender">
+        - Monatsansicht
+        - Geplante Posts visualisiert
+        - Drag & Drop zum Umplanen (später)
+      </Tab>
+
+      {/* Tab 4: Analytics (später) */}
+      <Tab label="Analytics">
+        - Views, Likes, Shares
+        - Conversion Tracking
+        - ROI-Berechnung
+      </Tab>
+    </Tabs>
+  </StudioShell>
+
+  ---
+  🔗 INTEGRATION MIT CONTENT GENERATOR
+
+  Workflow:
+
+  1. User erstellt Kampagne
+  → POST /api/ventures/[id]/marketing/campaigns
+  2. User klickt "Content erstellen"
+  → Öffnet Content Generator (bereits fertig!)
+  → campaignId als URL-Parameter übergeben
+  3. Content wird generiert & gespeichert
+  → POST /api/ventures/[id]/marketing/generate
+  → Zusätzlich ContentPost erstellen mit campaignId
+  4. User plant Post
+  → scheduledFor Datum setzen
+  → Status: DRAFT → SCHEDULED
+  5. Optional: Automatisches Posting (später)
+  → Cron-Job prüft scheduledFor
+  → Postet via Meta/LinkedIn API
+  → Aktualisiert Status: SCHEDULED → PUBLISHED
+
+  ---
+  📋 SCHRITT-FÜR-SCHRITT
+
+  1. Datenbank-Schema erstellen
+    - MarketingCampaign, ContentPost Modelle
+    - Enums (CampaignStatus, PostStatus)
+  2. Kampagnen-CRUD API
+    - GET /campaigns - Liste
+    - POST /campaigns - Erstellen
+    - PATCH /campaigns/[id] - Bearbeiten
+  3. Kampagnen-Übersicht UI
+    - Grid mit CampaignCards
+    - Modal für "Neue Kampagne"
+  4. Kampagnen-Detail UI
+    - Tabs (Übersicht, Content, Kalender)
+    - Post-Liste mit Status-Badges
+  5. Content Generator erweitern
+    - campaignId URL-Param hinzufügen
+    - Beim Speichern ContentPost erstellen
+  6. Post-Scheduling
+    - Date-Picker für scheduledFor
+    - Status-Updates (DRAFT → SCHEDULED)
+
+  ---
+  🎯 MVP SCOPE
+
+  Must-Have (Tag 1-2):
+  - ✅ Kampagnen CRUD
+  - ✅ Kampagnen-Übersicht
+  - ✅ Kampagnen-Detail mit Post-Liste
+  - ✅ Content Generator Integration
+
+  Nice-to-Have (Tag 3):
+  - 🔲 Kalender-Ansicht
+  - 🔲 Budget-Tracking
+  - 🔲 Status-Workflows
+
+  Später:
+  - 🔲 Social Media API Integration (Auto-Posting)
+  - 🔲 Performance-Tracking (Views, Likes)
+  - 🔲 A/B-Testing
+
+  ---
+  ⚠️ WICHTIGE HINWEISE
+
+  1. Kein automatisches Posting im MVP - Nur Planung
+  2. Deutsch: Alle UI-Texte
+  3. Wiederverwendung: Content Generator bereits fertig!
+  4. Optional: Kalender-Komponente (kann später)
+  5. Social APIs: Erst in Phase 3 (braucht App-Registrierung)
+
+  ---
+  📚 REFERENZEN
+
+  - Marketing Studio - Content Generator (bereits fertig)
+  - Legal Studio - Für Dokumenten-Management Pattern
+  - ROADMAP.md - Feature-Details
+
+  Viel Erfolg! 🚀

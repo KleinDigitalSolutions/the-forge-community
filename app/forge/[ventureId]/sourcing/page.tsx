@@ -1,19 +1,511 @@
-import { Factory } from 'lucide-react';
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
+import { StudioShell } from '@/app/components/forge/StudioShell';
+import { 
+  Factory, 
+  Package, 
+  Truck, 
+  BarChart3, 
+  Plus, 
+  Search, 
+  Filter,
+  Globe,
+  Mail,
+  Phone,
+  ExternalLink,
+  Star,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  TrendingUp,
+  FileText
+} from 'lucide-react';
+import { AddSupplierModal } from '@/app/components/sourcing/AddSupplierModal';
+import { AddSampleModal } from '@/app/components/sourcing/AddSampleModal';
+import { AddOrderModal } from '@/app/components/sourcing/AddOrderModal';
+
+type TabType = 'suppliers' | 'samples' | 'orders' | 'overview';
 
 export default function SourcingPage() {
-  return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      <div className="flex items-center gap-4">
-        <Factory className="w-10 h-10 text-[#D4AF37]" />
-        <div>
-          <h1 className="text-4xl font-instrument-serif text-white">Sourcing</h1>
-          <p className="text-white/60">Find suppliers and manage production</p>
-        </div>
-      </div>
+  const params = useParams();
+  const ventureId = params.ventureId as string;
 
-      <div className="glass-card p-12 rounded-2xl border border-white/10 text-center">
-        <p className="text-white/40">Coming soon...</p>
-      </div>
-    </div>
-  );
-}
+  const [activeTab, setActiveTab] = useState<TabType>('suppliers');
+  const [loading, setLoading] = useState(true);
+  const [suppliers, setSuppliers] = useState<any[]>([]);
+  const [samples, setSamples] = useState<any[]>([]);
+  const [orders, setOrders] = useState<any[]>([]);
+
+  // Modal States
+  const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
+  const [isSampleModalOpen, setIsSampleModalOpen] = useState(false);
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [supRes, samRes, ordRes] = await Promise.all([
+        fetch(`/api/ventures/${ventureId}/sourcing/suppliers`),
+        fetch(`/api/ventures/${ventureId}/sourcing/samples`),
+        fetch(`/api/ventures/${ventureId}/sourcing/orders`)
+      ]);
+
+      if (supRes.ok) setSuppliers(await supRes.json());
+      if (samRes.ok) setSamples(await samRes.json());
+      if (ordRes.ok) setOrders(await ordRes.json());
+    } catch (err) {
+      console.error('Failed to fetch sourcing data', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateSampleStatus = async (sampleId: string, newStatus: string) => {
+    try {
+      const res = await fetch(`/api/ventures/${ventureId}/sourcing/samples/${sampleId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (res.ok) {
+        fetchData();
+      }
+    } catch (err) {
+      console.error('Failed to update status', err);
+    }
+  };
+
+  const updateOrderStatus = async (orderId: string, newStatus: string) => {
+    try {
+      const res = await fetch(`/api/ventures/${ventureId}/sourcing/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (res.ok) {
+        fetchData();
+      }
+    } catch (err) {
+      console.error('Failed to update status', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [ventureId]);
+
+  return (
+    <StudioShell
+      title="Sourcing Studio"
+      description="Lieferanten-Management & Produktions-Tracking"
+      icon={<Factory className="w-6 h-6 text-[#D4AF37]" />}
+    >
+      <div className="space-y-6">
+        {/* Tabs Navigation */}
+        <div className="flex gap-2 p-1 bg-white/5 rounded-xl border border-white/10 w-fit">
+          {[
+            { id: 'suppliers', label: 'Lieferanten', icon: Factory },
+            { id: 'samples', label: 'Muster / Samples', icon: Package },
+            { id: 'orders', label: 'Aufträge', icon: Truck },
+            { id: 'overview', label: 'Übersicht', icon: BarChart3 },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as TabType)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-all ${
+                activeTab === tab.id
+                  ? 'bg-[#D4AF37] text-black font-bold'
+                  : 'text-white/60 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <tab.icon className="w-4 h-4" />
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Tab Content */}
+        <div className="min-h-[500px]">
+          {loading ? (
+            <div className="flex items-center justify-center h-64 text-white/40">
+              <Clock className="w-6 h-6 animate-spin mr-2" />
+              Daten werden geladen...
+            </div>
+          ) : (
+            <>
+              {activeTab === 'suppliers' && (
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <div className="flex gap-4 flex-1 max-w-md">
+                      <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                        <input
+                          type="text"
+                          placeholder="Lieferanten suchen..."
+                          className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-sm text-white focus:border-[#D4AF37] outline-none"
+                        />
+                      </div>
+                      <button className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white hover:bg-white/10">
+                        <Filter className="w-4 h-4" />
+                        Filter
+                      </button>
+                    </div>
+                    <button 
+                      onClick={() => setIsSupplierModalOpen(true)}
+                      className="flex items-center gap-2 px-4 py-2 bg-[#D4AF37] text-black rounded-lg text-sm font-bold hover:opacity-90 transition-opacity"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Neuer Lieferant
+                    </button>
+                  </div>
+
+                  {suppliers.length === 0 ? (
+                    <div className="glass-card p-12 rounded-2xl border border-white/10 text-center space-y-4">
+                      <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto">
+                        <Factory className="w-8 h-8 text-white/20" />
+                      </div>
+                      <h3 className="text-xl font-instrument-serif text-white">Noch keine Lieferanten</h3>
+                      <p className="text-white/40 max-w-sm mx-auto">
+                        Füge deinen ersten Lieferanten hinzu, um Samples und Aufträge zu verwalten.
+                      </p>
+                      <button 
+                        onClick={() => setIsSupplierModalOpen(true)}
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-[#D4AF37] text-black rounded-xl font-bold hover:opacity-90 transition-opacity"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Jetzt hinzufügen
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {suppliers.map((supplier) => (
+                        <div key={supplier.id} className="glass-card p-6 rounded-2xl border border-white/10 space-y-4 hover:border-[#D4AF37]/30 transition-colors group">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <span className="text-[10px] uppercase tracking-widest font-bold text-[#D4AF37] bg-[#D4AF37]/10 px-2 py-0.5 rounded">
+                                {supplier.category}
+                              </span>
+                              <h3 className="text-xl font-instrument-serif text-white mt-2 group-hover:text-[#D4AF37] transition-colors">
+                                {supplier.companyName}
+                              </h3>
+                            </div>
+                            <div className="flex items-center gap-1 text-yellow-500">
+                              <Star className="w-4 h-4 fill-current" />
+                              <span className="text-sm font-bold">{supplier.rating || '-'}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2 text-sm text-white/60">
+                            <div className="flex items-center gap-2">
+                              <Globe className="w-4 h-4" />
+                              {supplier.country || 'Kein Land'}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Package className="w-4 h-4" />
+                              MOQ: {supplier.moq || 'N/A'}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4" />
+                              Lead Time: {supplier.leadTimeDays ? `${supplier.leadTimeDays} Tage` : 'N/A'}
+                            </div>
+                          </div>
+
+                          <div className="pt-4 border-t border-white/5 flex gap-3">
+                            {supplier.email && (
+                              <a href={`mailto:${supplier.email}`} className="p-2 bg-white/5 rounded-lg hover:bg-white/10 transition-colors">
+                                <Mail className="w-4 h-4" />
+                              </a>
+                            )}
+                            {supplier.phone && (
+                              <a href={`tel:${supplier.phone}`} className="p-2 bg-white/5 rounded-lg hover:bg-white/10 transition-colors">
+                                <Phone className="w-4 h-4" />
+                              </a>
+                            )}
+                            {supplier.website && (
+                              <a href={supplier.website} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 rounded-lg hover:bg-white/10 transition-colors">
+                                <ExternalLink className="w-4 h-4" />
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'samples' && (
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-xl font-instrument-serif text-white">Muster-Tracking</h2>
+                    <button 
+                      onClick={() => setIsSampleModalOpen(true)}
+                      className="flex items-center gap-2 px-4 py-2 bg-[#D4AF37] text-black rounded-lg text-sm font-bold hover:opacity-90 transition-opacity"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Neues Sample anfordern
+                    </button>
+                  </div>
+
+                  {samples.length === 0 ? (
+                    <div className="glass-card p-12 rounded-2xl border border-white/10 text-center space-y-4">
+                      <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto">
+                        <Package className="w-8 h-8 text-white/20" />
+                      </div>
+                      <h3 className="text-xl font-instrument-serif text-white">Keine Muster vorhanden</h3>
+                      <p className="text-white/40 max-w-sm mx-auto">
+                        Tracke hier deine Musterbestellungen von der Anfrage bis zur Qualitätsprüfung.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-separate border-spacing-y-3">
+                        <thead>
+                          <tr className="text-xs uppercase tracking-widest text-white/40 font-bold">
+                            <th className="px-6 py-2">Produkt</th>
+                            <th className="px-6 py-2">Lieferant</th>
+                            <th className="px-6 py-2">Status</th>
+                            <th className="px-6 py-2">Bestellt am</th>
+                            <th className="px-6 py-2">Qualität</th>
+                            <th className="px-6 py-2">Aktionen</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {samples.map((sample) => (
+                            <tr key={sample.id} className="glass-card bg-white/5 group hover:bg-white/10 transition-colors">
+                              <td className="px-6 py-4 rounded-l-xl">
+                                <div className="font-semibold text-white">{sample.productName}</div>
+                                <div className="text-xs text-white/40">ID: {sample.id.slice(-6)}</div>
+                              </td>
+                              <td className="px-6 py-4 text-white/60">
+                                {sample.supplier?.companyName || 'Unbekannt'}
+                              </td>
+                              <td className="px-6 py-4">
+                                <select
+                                  value={sample.status}
+                                  onChange={(e) => updateSampleStatus(sample.id, e.target.value)}
+                                  className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase bg-black/20 border border-white/10 outline-none cursor-pointer transition-colors ${
+                                    sample.status === 'APPROVED' ? 'text-green-400 border-green-500/30' :
+                                    sample.status === 'REJECTED' ? 'text-red-400 border-red-500/30' :
+                                    'text-[#D4AF37] border-[#D4AF37]/30'
+                                  }`}
+                                >
+                                  <option value="REQUESTED">Angefordert</option>
+                                  <option value="ORDERED">Bestellt</option>
+                                  <option value="IN_TRANSIT">Unterwegs</option>
+                                  <option value="RECEIVED">Erhalten</option>
+                                  <option value="APPROVED">Abgenommen</option>
+                                  <option value="REJECTED">Abgelehnt</option>
+                                </select>
+                              </td>
+                              <td className="px-6 py-4 text-white/60">
+                                {sample.orderedAt ? new Date(sample.orderedAt).toLocaleDateString() : '-'}
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex items-center gap-1">
+                                  {[1, 2, 3, 4, 5].map((i) => (
+                                    <Star key={i} className={`w-3 h-3 ${i <= (sample.qualityRating || 0) ? 'text-yellow-500 fill-current' : 'text-white/10'}`} />
+                                  ))}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 rounded-r-xl">
+                                <button className="text-white/40 hover:text-white transition-colors">
+                                  <ExternalLink className="w-4 h-4" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'orders' && (
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-xl font-instrument-serif text-white">Produktionsaufträge</h2>
+                    <button 
+                      onClick={() => setIsOrderModalOpen(true)}
+                      className="flex items-center gap-2 px-4 py-2 bg-[#D4AF37] text-black rounded-lg text-sm font-bold hover:opacity-90 transition-opacity"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Neuer Auftrag (PO)
+                    </button>
+                  </div>
+
+                  {orders.length === 0 ? (
+                    <div className="glass-card p-12 rounded-2xl border border-white/10 text-center space-y-4">
+                      <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto">
+                        <Truck className="w-8 h-8 text-white/20" />
+                      </div>
+                      <h3 className="text-xl font-instrument-serif text-white">Keine Aufträge</h3>
+                      <p className="text-white/40 max-w-sm mx-auto">
+                        Verwalte hier deine POs (Purchase Orders) und behalte den Lieferstatus im Blick.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 gap-4">
+                      {orders.map((order) => (
+                        <div key={order.id} className="glass-card p-6 rounded-2xl border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                          <div className="flex items-start gap-4">
+                            <div className="w-12 h-12 bg-[#D4AF37]/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                              <FileText className="w-6 h-6 text-[#D4AF37]" />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h3 className="text-lg font-bold text-white">{order.orderNumber}</h3>
+                                <select
+                                  value={order.status}
+                                  onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                                  className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-black/20 border border-white/10 outline-none cursor-pointer ${
+                                    order.status === 'DELIVERED' || order.status === 'COMPLETED' ? 'text-green-400 border-green-500/30' : 'text-blue-400 border-blue-500/30'
+                                  }`}
+                                >
+                                  <option value="DRAFT">Entwurf</option>
+                                  <option value="SENT">Gesendet</option>
+                                  <option value="CONFIRMED">Bestätigt</option>
+                                  <option value="IN_PRODUCTION">In Produktion</option>
+                                  <option value="SHIPPED">Versendet</option>
+                                  <option value="DELIVERED">Geliefert</option>
+                                  <option value="COMPLETED">Abgeschlossen</option>
+                                  <option value="CANCELLED">Storniert</option>
+                                </select>
+                              </div>
+                              <p className="text-sm text-white/60">{order.productName} • {order.supplier?.companyName}</p>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                            <div>
+                              <p className="text-[10px] uppercase tracking-widest text-white/40 font-bold mb-1">Menge</p>
+                              <p className="text-white font-semibold">{order.quantity} Stk.</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] uppercase tracking-widest text-white/40 font-bold mb-1">Gesamtpreis</p>
+                              <p className="text-white font-semibold">{order.totalPrice} {order.currency}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] uppercase tracking-widest text-white/40 font-bold mb-1">Lieferdatum</p>
+                              <p className="text-white font-semibold">{order.expectedDelivery ? new Date(order.expectedDelivery).toLocaleDateString() : 'TBD'}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] uppercase tracking-widest text-white/40 font-bold mb-1">Zahlung</p>
+                              <p className={`text-xs font-bold ${order.paymentStatus === 'FULLY_PAID' ? 'text-green-400' : 'text-yellow-500'}`}>
+                                {order.paymentStatus}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'overview' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="glass-card p-6 rounded-2xl border border-white/10 space-y-4">
+                    <div className="flex justify-between items-start">
+                      <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
+                        <Factory className="w-5 h-5 text-blue-400" />
+                      </div>
+                      <span className="text-xs text-green-400 font-bold">+2 diesen Monat</span>
+                    </div>
+                    <div>
+                      <h4 className="text-white/40 text-sm font-bold uppercase tracking-widest">Lieferanten</h4>
+                      <p className="text-3xl font-instrument-serif text-white">{suppliers.length}</p>
+                    </div>
+                  </div>
+
+                  <div className="glass-card p-6 rounded-2xl border border-white/10 space-y-4">
+                    <div className="flex justify-between items-start">
+                      <div className="w-10 h-10 bg-[#D4AF37]/10 rounded-lg flex items-center justify-center">
+                        <Package className="w-5 h-5 text-[#D4AF37]" />
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="text-white/40 text-sm font-bold uppercase tracking-widest">Offene Samples</h4>
+                      <p className="text-3xl font-instrument-serif text-white">
+                        {samples.filter(s => s.status !== 'APPROVED' && s.status !== 'REJECTED').length}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="glass-card p-6 rounded-2xl border border-white/10 space-y-4">
+                    <div className="flex justify-between items-start">
+                      <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center">
+                        <Truck className="w-5 h-5 text-purple-400" />
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="text-white/40 text-sm font-bold uppercase tracking-widest">Laufende Aufträge</h4>
+                      <p className="text-3xl font-instrument-serif text-white">
+                        {orders.filter(o => o.status !== 'COMPLETED' && o.status !== 'CANCELLED').length}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="glass-card p-6 rounded-2xl border border-white/10 space-y-4">
+                    <div className="flex justify-between items-start">
+                      <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
+                        <TrendingUp className="w-5 h-5 text-green-400" />
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="text-white/40 text-sm font-bold uppercase tracking-widest">Bestellvolumen</h4>
+                      <p className="text-3xl font-instrument-serif text-white">
+                        {orders.reduce((acc, curr) => acc + curr.totalPrice, 0).toLocaleString()} {orders[0]?.currency || 'EUR'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Prototyping Section */}
+                  <div className="col-span-full glass-card p-8 rounded-2xl border border-white/10 flex items-center justify-between">
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-instrument-serif text-white flex items-center gap-2">
+                        <AlertCircle className="w-5 h-5 text-[#D4AF37]" />
+                        Anstehende Aufgaben
+                      </h3>
+                      <p className="text-white/60">Behalte deine Deadlines und Quality-Checks im Auge.</p>
+                    </div>
+                    <div className="flex gap-4">
+                       <div className="px-4 py-2 bg-white/5 rounded-lg border border-white/10 flex items-center gap-3">
+                          <CheckCircle2 className="w-4 h-4 text-green-400" />
+                          <span className="text-sm text-white">Sample Check: Bio-Baumwolle T-Shirt</span>
+                       </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+            </div>
+      
+            {/* Modals */}
+            <AddSupplierModal
+              isOpen={isSupplierModalOpen}
+              onClose={() => setIsSupplierModalOpen(false)}
+              onSuccess={fetchData}
+              ventureId={ventureId}
+            />
+            <AddSampleModal
+              isOpen={isSampleModalOpen}
+              onClose={() => setIsSampleModalOpen(false)}
+              onSuccess={fetchData}
+              ventureId={ventureId}
+            />
+            <AddOrderModal
+              isOpen={isOrderModalOpen}
+              onClose={() => setIsOrderModalOpen(false)}
+              onSuccess={fetchData}
+              ventureId={ventureId}
+            />
+          </StudioShell>
+        );
+      }
+      

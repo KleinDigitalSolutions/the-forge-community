@@ -85,6 +85,10 @@ model User {
   moderationWarnings ModerationWarning[]
   legalDocuments LegalDocument[]
   marketingContents MarketingContent[]
+  createdSamples    Sample[]
+  createdOrders     ProductionOrder[]
+  createdCampaigns  MarketingCampaign[]
+  createdPosts      ContentPost[]
 
   // NextAuth
   accounts      Account[]
@@ -289,6 +293,11 @@ model Venture {
   brandDNA        BrandDNA?
   legalDocuments  LegalDocument[]
   marketingContents MarketingContent[]
+  suppliers       Supplier[]
+  samples         Sample[]
+  productionOrders ProductionOrder[]
+  campaigns       MarketingCampaign[]
+  posts           ContentPost[]
 
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -682,4 +691,256 @@ model SquadTransaction {
   @@index([status])
   @@index([createdAt])
   @@index([stripePaymentIntentId])
+}
+
+// ============================================
+// MARKETING STUDIO - Campaign Management
+// ============================================
+
+model MarketingCampaign {
+  id              String   @id @default(cuid())
+  ventureId       String
+  venture         Venture  @relation(fields: [ventureId], references: [id], onDelete: Cascade)
+
+  // Campaign Info
+  name            String
+  description     String?  @db.Text
+  goal            String?  // 'awareness', 'conversion', 'engagement'
+
+  // Timeline
+  startDate       DateTime?
+  endDate         DateTime?
+
+  // Budget (optional)
+  budgetAmount    Float?
+  budgetCurrency  String   @default("EUR")
+  spentAmount     Float?
+
+  // Status
+  status          CampaignStatus @default(DRAFT)
+
+  // Relations
+  posts           ContentPost[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdById     String
+  createdBy       User     @relation(fields: [createdById], references: [id])
+
+  @@index([ventureId])
+  @@index([status])
+}
+
+enum CampaignStatus {
+  DRAFT          // In Planung
+  ACTIVE         // Läuft
+  PAUSED         // Pausiert
+  COMPLETED      // Abgeschlossen
+  ARCHIVED       // Archiviert
+}
+
+model ContentPost {
+  id              String   @id @default(cuid())
+  campaignId      String?
+  campaign        MarketingCampaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+
+  ventureId       String
+  venture         Venture  @relation(fields: [ventureId], references: [id], onDelete: Cascade)
+
+  // Content
+  title           String
+  content         String   @db.Text
+  contentType     String   // 'instagram', 'blog', 'email', etc.
+
+  // Scheduling
+  status          PostStatus @default(DRAFT)
+  scheduledFor    DateTime?
+  publishedAt     DateTime?
+
+  // Channel-Specific
+  platform        String?  // 'instagram', 'linkedin', 'twitter', 'email'
+  externalId      String?  // ID from social platform (if posted via API)
+  externalUrl     String?  // URL to published post
+
+  // Media
+  imageUrls       String[] // Attached images
+
+  // Performance (optional, für später)
+  views           Int?
+  likes           Int?
+  comments        Int?
+  shares          Int?
+  clicks          Int?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdById     String
+  createdBy       User     @relation(fields: [createdById], references: [id])
+
+  @@index([campaignId])
+  @@index([ventureId])
+  @@index([status])
+  @@index([scheduledFor])
+}
+
+enum PostStatus {
+  DRAFT          // Nicht fertig
+  READY          // Bereit zum Planen
+  SCHEDULED      // Geplant für Datum X
+  PUBLISHED      // Veröffentlicht
+  FAILED         // Fehler beim Posten
+  ARCHIVED       // Archiviert
+}
+
+// ============================================
+// SOURCING STUDIO - Supplier Management
+// ============================================
+
+model Supplier {
+  id              String   @id @default(cuid())
+  ventureId       String
+  venture         Venture  @relation(fields: [ventureId], references: [id], onDelete: Cascade)
+
+  // Basic Info
+  companyName     String
+  contactName     String?
+  email           String?
+  phone           String?
+  website         String?
+  address         String?  @db.Text
+  country         String?
+
+  // Categories
+  category        String   // 'fabric', 'manufacturer', 'packaging', 'logistics'
+  specialization  String?  // e.g., 'Organic Cotton', 'Screen Printing'
+
+  // Business Details
+  moq             Int?     // Minimum Order Quantity
+  leadTimeDays    Int?     // Production lead time
+  paymentTerms    String?  // e.g., "50% upfront, 50% on delivery"
+
+  // Rating & Notes
+  rating          Int?     // 1-5 stars
+  notes           String?  @db.Text
+  tags            String[] // ['sustainable', 'fast', 'premium']
+
+  // Relations
+  samples         Sample[]
+  orders          ProductionOrder[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([ventureId])
+  @@index([category])
+  @@index([country])
+}
+
+model Sample {
+  id              String   @id @default(cuid())
+  ventureId       String
+  venture         Venture  @relation(fields: [ventureId], references: [id], onDelete: Cascade)
+
+  supplierId      String
+  supplier        Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  // Sample Details
+  productName     String
+  description     String?  @db.Text
+  quantity        Int?
+  cost            Float?
+  currency        String   @default("EUR")
+
+  // Status Tracking
+  status          SampleStatus @default(REQUESTED)
+  orderedAt       DateTime?
+  receivedAt      DateTime?
+
+  // Quality Assessment
+  approved        Boolean?
+  qualityRating   Int?     // 1-5 stars
+  feedback        String?  @db.Text
+
+  // Files
+  imageUrls       String[] // Vercel Blob URLs
+  specFileUrls    String[] // Technical specs, PDFs
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdById     String
+  createdBy       User     @relation(fields: [createdById], references: [id])
+
+  @@index([ventureId])
+  @@index([supplierId])
+  @@index([status])
+}
+
+enum SampleStatus {
+  REQUESTED      // Sample requested
+  ORDERED        // Order placed
+  IN_TRANSIT     // Shipped
+  RECEIVED       // Arrived
+  APPROVED       // Quality check passed
+  REJECTED       // Quality check failed
+}
+
+model ProductionOrder {
+  id              String   @id @default(cuid())
+  ventureId       String
+  venture         Venture  @relation(fields: [ventureId], references: [id], onDelete: Cascade)
+
+  supplierId      String
+  supplier        Supplier @relation(fields: [supplierId], references: [id])
+
+  // Order Details
+  orderNumber     String   // e.g., "PO-2025-001"
+  productName     String
+  description     String?  @db.Text
+  quantity        Int
+  unitPrice       Float
+  totalPrice      Float
+  currency        String   @default("EUR")
+
+  // Timeline
+  orderDate       DateTime @default(now())
+  expectedDelivery DateTime?
+  actualDelivery  DateTime?
+
+  // Status & Payment
+  status          OrderStatus @default(DRAFT)
+  paymentStatus   PaymentStatus @default(PENDING)
+  depositPaid     Float?
+  finalPaid       Float?
+
+  // Files & Notes
+  poFileUrl       String?  // Purchase Order PDF
+  invoiceUrls     String[] // Invoices
+  notes           String?  @db.Text
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdById     String
+  createdBy       User     @relation(fields: [createdById], references: [id])
+
+  @@index([ventureId])
+  @@index([supplierId])
+  @@index([status])
+}
+
+enum OrderStatus {
+  DRAFT          // Not sent yet
+  SENT           // PO sent to supplier
+  CONFIRMED      // Supplier confirmed
+  IN_PRODUCTION  // Manufacturing
+  SHIPPED        // On the way
+  DELIVERED      // Received
+  COMPLETED      // Closed
+  CANCELLED      // Cancelled
+}
+
+enum PaymentStatus {
+  PENDING        // Not paid
+  DEPOSIT_PAID   // Partial payment
+  FULLY_PAID     // Paid in full
+  REFUNDED       // Money returned
 }
