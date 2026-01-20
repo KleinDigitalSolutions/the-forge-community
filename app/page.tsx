@@ -23,6 +23,7 @@ import ResponsiveHeroBanner from '@/app/components/ui/ResponsiveHeroBanner';
 import AnimatedCardStack from '@/app/components/ui/AnimatedCardStack';
 import ForgeOSShowcase from '@/app/components/landing/ForgeOSShowcase';
 import EquitySimulator from '@/app/components/landing/EquitySimulator';
+import MissionLogCarousel from '@/app/components/landing/MissionLogCarousel';
 
 // --------------------------------------------------------
 
@@ -331,64 +332,7 @@ export default function Home() {
       <section id="projects" className="py-40 px-6 bg-[#0B0C0E] relative overflow-hidden">
         <div className="absolute inset-0 bg-grid-small opacity-[0.03] pointer-events-none" />
         <div className="max-w-7xl mx-auto">
-           <div className="grid lg:grid-cols-2 gap-24 items-center">
-             <div className="relative z-10">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 text-[10px] font-bold text-[var(--accent)] uppercase tracking-[0.3em] mb-8">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
-                  Aktive Mission
-                </div>
-                <h2 className="text-5xl md:text-7xl font-instrument-serif text-white mb-8">SmartStore<br/>Fulfillment</h2>
-                <p className="text-lg text-white/50 mb-12 leading-relaxed">
-                  Ein Nischen-3PL (Third Party Logistics) Provider für High-Value Goods. 
-                  Wir schließen die Lücke zwischen Garage-Shipping und Enterprise-Logistik.
-                </p>
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-sm">
-                    <div className="text-3xl font-instrument-serif text-white mb-1">€12k</div>
-                    <div className="text-[9px] text-white/30 uppercase tracking-[0.2em] font-bold">Ziel MRR (6 Mo)</div>
-                  </div>
-                  <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-sm">
-                    <div className="text-3xl font-instrument-serif text-[var(--accent)] mb-1">35%</div>
-                    <div className="text-[9px] text-white/30 uppercase tracking-[0.2em] font-bold">EBITDA Marge</div>
-                  </div>
-                </div>
-             </div>
-             
-             <div className="relative">
-                <div className="absolute -inset-20 bg-[var(--accent)]/5 rounded-full blur-[100px] pointer-events-none" />
-                <div className="relative glass-card border border-white/10 rounded-3xl p-8 shadow-2xl overflow-hidden group">
-                   <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                   <div className="flex items-center justify-between mb-10 border-b border-white/10 pb-6 relative z-10">
-                      <div className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">Operation Roadmap</div>
-                      <div className="flex gap-1.5">
-                        <div className="w-2.5 h-2.5 rounded-full bg-red-500/20 border border-red-500/50"/>
-                        <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/20 border border-yellow-500/50"/>
-                        <div className="w-2.5 h-2.5 rounded-full bg-green-500/20 border border-green-500/50"/>
-                      </div>
-                   </div>
-                   <div className="space-y-8 relative z-10">
-                      {[
-                        { step: '01', title: 'Gründung', status: 'ABGESCHLOSSEN' },
-                        { step: '02', title: 'Rechtliches & Banking', status: 'IN BEARBEITUNG' },
-                        { step: '03', title: 'Tech Stack Setup', status: 'WARTESCHLANGE' },
-                        { step: '04', title: 'Kunden-Onboarding', status: 'WARTESCHLANGE' }
-                      ].map((item, i) => (
-                        <div key={i} className="flex items-center gap-6">
-                           <div className="font-mono text-[10px] text-white/20">{item.step}</div>
-                           <div className="flex-1 font-instrument-serif text-xl text-white/90">{item.title}</div>
-                           <div className={`text-[9px] font-bold tracking-[0.2em] px-3 py-1 rounded-full border ${
-                             item.status === 'COMPLETED' ? 'border-green-500/20 bg-green-500/10 text-green-400' :
-                             item.status === 'PROCESSING' ? 'border-yellow-500/20 bg-yellow-500/10 text-yellow-400' :
-                             'border-white/5 text-white/20'
-                           }`}>
-                             {item.status}
-                           </div>
-                        </div>
-                      ))}
-                   </div>
-                </div>
-             </div>
-           </div>
+           <MissionLogCarousel />
         </div>
       </section>
 
