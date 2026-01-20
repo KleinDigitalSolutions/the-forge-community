@@ -329,11 +329,8 @@ export default function Home() {
       </section>
 
       {/* Featured Project - Mission Log Style */}
-      <section id="projects" className="py-40 px-6 bg-[#0B0C0E] relative overflow-hidden">
-        <div className="absolute inset-0 bg-grid-small opacity-[0.03] pointer-events-none" />
-        <div className="max-w-7xl mx-auto">
-           <MissionLogCarousel />
-        </div>
+      <section id="projects" className="relative overflow-hidden border-y border-white/5">
+        <MissionLogCarousel />
       </section>
 
       {/* Philosophy Interlude - Animated Stack */}

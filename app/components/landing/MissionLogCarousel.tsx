@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Zap, Target, Package, Globe, Truck, DollarSign, Lightbulb, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Truck, ShoppingBag, Lightbulb } from 'lucide-react';
 
 const PROJECTS = [
   {
@@ -20,9 +20,10 @@ const PROJECTS = [
       { step: '03', title: 'Tech Stack Setup', status: 'WARTESCHLANGE' },
       { step: '04', title: 'Kunden-Onboarding', status: 'WARTESCHLANGE' }
     ],
-    color: 'text-[var(--accent)]',
-    bg: 'bg-[var(--accent)]',
-    border: 'border-[var(--accent)]/30',
+    color: 'text-[#D4AF37]',
+    accent: '#D4AF37',
+    bgStyle: 'radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.4) 0%, rgba(0, 0, 0, 1) 100%)',
+    border: 'border-[#D4AF37]/50',
     icon: Truck
   },
   {
@@ -41,8 +42,9 @@ const PROJECTS = [
       { step: '04', title: 'Influencer Launch', status: 'WARTESCHLANGE' }
     ],
     color: 'text-orange-400',
-    bg: 'bg-orange-500',
-    border: 'border-orange-500/30',
+    accent: '#fb923c',
+    bgStyle: 'radial-gradient(circle at 50% 50%, rgba(251, 146, 60, 0.35) 0%, rgba(0, 0, 0, 1) 100%)',
+    border: 'border-orange-500/50',
     icon: ShoppingBag
   },
   {
@@ -61,8 +63,9 @@ const PROJECTS = [
       { step: '04', title: 'Scale Phase', status: 'WARTESCHLANGE' }
     ],
     color: 'text-purple-400',
-    bg: 'bg-purple-500',
-    border: 'border-purple-500/30',
+    accent: '#a855f7',
+    bgStyle: 'radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.35) 0%, rgba(0, 0, 0, 1) 100%)',
+    border: 'border-purple-500/50',
     icon: Lightbulb
   }
 ];
@@ -70,123 +73,135 @@ const PROJECTS = [
 export default function MissionLogCarousel() {
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const nextProject = () => {
-    setActiveIndex((prev) => (prev + 1) % PROJECTS.length);
-  };
-
-  const prevProject = () => {
-    setActiveIndex((prev) => (prev - 1 + PROJECTS.length) % PROJECTS.length);
-  };
+  const nextProject = () => setActiveIndex((prev) => (prev + 1) % PROJECTS.length);
+  const prevProject = () => setActiveIndex((prev) => (prev - 1 + PROJECTS.length) % PROJECTS.length);
 
   const activeProject = PROJECTS[activeIndex];
   const Icon = activeProject.icon;
 
   return (
-    <div className="relative w-full">
-      {/* Centered Navigation Controls */}
-      <div className="flex justify-center items-center gap-4 md:gap-8 mb-8 md:mb-16">
-        <button 
-          onClick={prevProject}
-          className="p-3 md:p-4 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all group"
-        >
-          <ArrowLeft className="w-5 h-5 md:w-6 md:h-6 text-white/40 group-hover:text-white" />
-        </button>
-        
-        <div className="flex gap-2">
-          {PROJECTS.map((_, i) => (
-            <div 
-              key={i} 
-              className={`h-1 transition-all duration-500 rounded-full ${
-                i === activeIndex ? `w-6 md:w-8 ${activeProject.bg}` : 'w-2 bg-white/10'
-              }`} 
-            />
-          ))}
-        </div>
+    <div className="relative w-full min-h-[900px] flex flex-col justify-center py-24 overflow-hidden bg-black">
+      
+      {/* Immersiver Hintergrund-Raum */}
+      <div 
+        className="absolute inset-0 transition-all duration-1000 ease-in-out pointer-events-none"
+        style={{ 
+          background: activeProject.bgStyle,
+          opacity: 1
+        }}
+      />
+      
+      {/* Grid Overlay */}
+      <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-[0.15] [mask-image:radial-gradient(white,transparent)] pointer-events-none" />
 
-        <button 
-          onClick={nextProject}
-          className="p-3 md:p-4 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all group"
-        >
-          <ArrowRight className="w-5 h-5 md:w-6 md:h-6 text-white/40 group-hover:text-white" />
-        </button>
+      {/* Navigation - Mittig Oben */}
+      <div className="flex flex-col items-center mb-24 gap-6 relative z-30">
+        <div className="flex items-center gap-8 bg-white/5 backdrop-blur-2xl p-2 rounded-full border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+          <button 
+            onClick={prevProject}
+            className="p-4 rounded-full hover:bg-white/10 transition-all group"
+          >
+            <ArrowLeft className="w-6 h-6 text-white/40 group-hover:text-white" />
+          </button>
+          
+          <div className="flex gap-3">
+            {PROJECTS.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setActiveIndex(i)}
+                className={`h-2 transition-all duration-500 rounded-full ${
+                  i === activeIndex ? `w-12` : 'w-3 bg-white/10'
+                }`}
+                style={{ backgroundColor: i === activeIndex ? activeProject.accent : undefined }}
+              />
+            ))}
+          </div>
+
+          <button 
+            onClick={nextProject}
+            className="p-4 rounded-full hover:bg-white/10 transition-all group"
+          >
+            <ArrowRight className="w-6 h-6 text-white/40 group-hover:text-white" />
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
-        {/* Left Content (Text) */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeProject.id}
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 30 }}
-            transition={{ duration: 0.5, ease: "circOut" }}
-            className="relative z-10 text-center lg:text-left"
-          >
-            <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-[9px] md:text-[10px] font-black ${activeProject.color} uppercase tracking-[0.3em] md:tracking-[0.4em] mb-6 md:mb-10`}>
-              <span className={`w-2 h-2 rounded-full ${activeProject.bg} animate-pulse`} />
-              MISSION LOG: {activeProject.id.toUpperCase()}
-            </div>
-            
-            <h2 className="text-4xl md:text-6xl lg:text-8xl font-instrument-serif text-white mb-2 md:mb-4 leading-[0.9] tracking-tighter">
-              {activeProject.title}
-            </h2>
-            <p className={`text-xl md:text-2xl font-instrument-serif italic ${activeProject.color} mb-6 md:mb-10`}>
-              {activeProject.subtitle}
-            </p>
-            
-            <p className="text-base md:text-xl text-white/50 mb-8 md:mb-14 leading-relaxed max-w-xl mx-auto lg:mx-0 h-auto lg:h-28">
-              {activeProject.description}
-            </p>
-            
-            <div className="grid grid-cols-2 gap-4 md:gap-8">
-              {activeProject.metrics.map((metric, i) => (
-                <div key={i} className={`p-6 md:p-8 rounded-[24px] md:rounded-[32px] border bg-white/[0.03] backdrop-blur-md transition-all duration-500 relative overflow-hidden text-left hover:bg-white/[0.05] border-white/5 group hover:${activeProject.border}`}>
-                  <div className={`text-2xl md:text-4xl font-instrument-serif text-white mb-2 group-hover:${activeProject.color} transition-colors`}>
-                    {metric.value}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-32 items-center max-w-7xl mx-auto px-6 relative z-20">
+        {/* Left: Content */}
+        <div className="min-h-[600px] flex flex-col justify-center">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeProject.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5, ease: "circOut" }}
+              className="text-center lg:text-left"
+            >
+              <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/80 border ${activeProject.border} text-[10px] font-black ${activeProject.color} uppercase tracking-[0.4em] mb-10 shadow-2xl w-fit mx-auto lg:mx-0`}>
+                <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: activeProject.accent }} />
+                Operational Mission Log
+              </div>
+              
+              <h2 className="text-5xl md:text-7xl lg:text-9xl font-instrument-serif text-white mb-4 leading-[0.8] tracking-tighter">
+                {activeProject.title}
+              </h2>
+              <p className={`text-2xl md:text-4xl font-instrument-serif italic mb-12 ${activeProject.color}`}>
+                {activeProject.subtitle}
+              </p>
+              
+              <p className="text-lg md:text-2xl text-white/70 mb-14 leading-relaxed max-w-xl mx-auto lg:mx-0 font-medium min-h-[120px]">
+                {activeProject.description}
+              </p>
+              
+              <div className="grid grid-cols-2 gap-6 max-w-md mx-auto lg:mx-0">
+                {activeProject.metrics.map((metric, i) => (
+                  <div key={i} className="p-8 rounded-3xl border border-white/10 bg-black/60 backdrop-blur-md hover:border-white/20 transition-all text-left shadow-2xl">
+                    <div className={`text-4xl font-instrument-serif text-white mb-1`}>
+                      {metric.value}
+                    </div>
+                    <div className="text-[10px] text-white/40 uppercase tracking-[0.2em] font-black">
+                      {metric.label}
+                    </div>
                   </div>
-                  <div className="text-[9px] md:text-[10px] text-white/30 uppercase tracking-[0.2em] font-black">
-                    {metric.label}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </AnimatePresence>
+                ))}
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
         
-        {/* Right Content (Visual/Roadmap) */}
+        {/* Right: The UI Card */}
         <div className="relative mt-8 lg:mt-0">
-          <div
-            className={`relative glass-card border rounded-[32px] md:rounded-[40px] p-6 md:p-14 overflow-hidden group transition-all duration-500 ${activeProject.border} bg-[#0B0C0E]/80`}
-          >
-            <div className={`absolute inset-0 bg-gradient-to-br from-white/[0.05] to-transparent pointer-events-none`} />
+          <div className={`relative backdrop-blur-3xl border rounded-[48px] p-8 md:p-16 shadow-[0_50px_100px_-20px_rgba(0,0,0,1)] overflow-hidden transition-all duration-1000 ${activeProject.border} bg-black/60 min-h-[650px] flex flex-col`}>
             
-            <div className="flex items-center justify-between mb-8 md:mb-12 border-b border-white/10 pb-6 md:pb-8 relative z-10">
-              <div className="flex items-center gap-3 md:gap-4">
-                <div className={`p-3 md:p-4 rounded-xl md:rounded-2xl bg-white/5 ${activeProject.color} border border-white/5 shadow-lg`}>
-                  <Icon className="w-6 h-6 md:w-8 md:h-8" />
+            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] to-transparent pointer-events-none" />
+            
+            <div className="flex items-center justify-between mb-12 border-b border-white/10 pb-8 relative z-10">
+              <div className="flex items-center gap-4">
+                <div className="p-5 rounded-2xl bg-black/40 border border-white/10 shadow-2xl" style={{ color: activeProject.accent }}>
+                  <Icon className="w-10 h-10" />
                 </div>
                 <div>
-                  <div className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.4em] md:tracking-[0.5em] text-white/20">Operational</div>
-                  <div className="text-xs md:text-sm font-bold text-white/60">Roadmap v2.4</div>
+                  <div className="text-[9px] font-black uppercase tracking-[0.5em] text-white/20">System Status</div>
+                  <div className="text-base font-bold text-white/80">Mission Roadmap</div>
                 </div>
               </div>
               <div className="flex gap-2">
-                <div className={`w-2.5 h-2.5 md:w-3 md:h-3 rounded-full ${activeProject.bg}`}/>
-                <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-white/5 border border-white/10"/>
+                <div className="w-4 h-4 rounded-full shadow-[0_0_20px_rgba(255,255,255,0.3)]" style={{ backgroundColor: activeProject.accent }}/>
               </div>
             </div>
 
-            <div className="space-y-6 md:space-y-10 relative z-10">
+            <div className="space-y-10 relative z-10 flex-1 flex flex-col justify-center">
               {activeProject.roadmap.map((item, i) => (
-                <div key={i} className="flex items-center gap-4 md:gap-8 group/item">
-                    <div className="font-mono text-[10px] md:text-xs text-white/10 group-hover/item:text-[var(--accent)] transition-colors w-6">{item.step}</div>
-                    <div className="flex-1 font-instrument-serif text-lg md:text-2xl text-white/90 group-hover/item:translate-x-2 transition-transform duration-500">{item.title}</div>
-                    <div className={`text-[8px] md:text-[10px] font-black tracking-[0.2em] md:tracking-[0.3em] px-3 md:px-4 py-1.5 rounded-full border transition-all duration-500 ${
-                      item.status === 'ABGESCHLOSSEN' ? `border-green-500/20 bg-green-500/10 text-green-400` :
-                      item.status === 'IN BEARBEITUNG' ? `border-yellow-500/20 bg-yellow-500/10 text-yellow-400` :
-                      'border-white/5 text-white/10'
+                <div key={i} className="flex items-center gap-8 group/item">
+                    <div className="font-mono text-xs text-white/20 group-hover/item:text-white transition-colors w-6">{item.step}</div>
+                    <div className="flex-1 font-instrument-serif text-2xl md:text-3xl text-white/90 group-hover/item:translate-x-2 transition-transform duration-500">{item.title}</div>
+                    <div className={`text-[10px] font-black tracking-[0.2em] px-5 py-2 rounded-full border transition-all ${
+                      item.status === 'ABGESCHLOSSEN' ? 'border-green-500/30 bg-green-500/10 text-green-400' :
+                      item.status === 'IN BEARBEITUNG' ? 'border-yellow-500/30 bg-yellow-500/10 text-yellow-400' :
+                      'border-white/10 text-white/20'
                     }`}>
-                      {item.status === 'IN BEARBEITUNG' ? 'LAUFEND' : item.status}
+                      {item.status}
                     </div>
                 </div>
               ))}
