@@ -8,6 +8,7 @@ import { AIGenerator } from '@/app/components/forge/AIGenerator';
 import { DocumentExport } from '@/app/components/forge/DocumentExport';
 import { Megaphone, Share2, LayoutTemplate, Mail, TrendingUp } from 'lucide-react';
 import type { BrandDNA } from '@prisma/client';
+import { useAIContext } from '@/app/context/AIContext';
 
 const CONTENT_TYPES = [
   { id: 'instagram', name: 'Instagram Post', icon: <Share2 className="w-4 h-4" /> },
@@ -26,6 +27,7 @@ export default function MarketingPage() {
   
   const ventureId = params.ventureId as string;
   const campaignId = searchParams.get('campaignId');
+  const { setContext } = useAIContext();
 
   const [brandDNA, setBrandDNA] = useState<BrandDNA | null>(null);
   const [loading, setLoading] = useState(true);
@@ -37,6 +39,10 @@ export default function MarketingPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState('');
   const [activeCampaign, setActiveCampaign] = useState<any>(null);
+
+  useEffect(() => {
+    setContext('Marketing Studio - Content Generator. Hilf beim Erstellen von Posts, Ads und Emails.');
+  }, []);
 
   // Load Brand DNA and Campaign (if present)
   useEffect(() => {

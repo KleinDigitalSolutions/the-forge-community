@@ -25,12 +25,14 @@ import {
 import { AddSupplierModal } from '@/app/components/sourcing/AddSupplierModal';
 import { AddSampleModal } from '@/app/components/sourcing/AddSampleModal';
 import { AddOrderModal } from '@/app/components/sourcing/AddOrderModal';
+import { useAIContext } from '@/app/context/AIContext';
 
 type TabType = 'suppliers' | 'samples' | 'orders' | 'overview';
 
 export default function SourcingPage() {
   const params = useParams();
   const ventureId = params.ventureId as string;
+  const { setContext } = useAIContext();
 
   const [activeTab, setActiveTab] = useState<TabType>('suppliers');
   const [loading, setLoading] = useState(true);
@@ -42,6 +44,10 @@ export default function SourcingPage() {
   const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
   const [isSampleModalOpen, setIsSampleModalOpen] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+
+  useEffect(() => {
+    setContext(`Sourcing Studio - ${activeTab}. Hilf bei Lieferantensuche, Samples und Bestellungen.`);
+  }, [activeTab]);
 
   const fetchData = async () => {
     setLoading(true);

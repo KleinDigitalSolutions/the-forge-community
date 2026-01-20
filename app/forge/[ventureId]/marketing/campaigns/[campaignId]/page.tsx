@@ -6,6 +6,7 @@ import { StudioShell } from '@/app/components/forge/StudioShell';
 import { PostCard } from '@/app/components/marketing/PostCard';
 import { TrendingUp, Calendar, Target, DollarSign, Plus, ArrowLeft, Clock, LayoutTemplate } from 'lucide-react';
 import Link from 'next/link';
+import { useAIContext } from '@/app/context/AIContext';
 
 type TabType = 'overview' | 'content' | 'calendar';
 
@@ -14,10 +15,19 @@ export default function CampaignDetailPage() {
   const ventureId = params.ventureId as string;
   const campaignId = params.campaignId as string;
   const router = useRouter();
+  const { setContext } = useAIContext();
 
   const [campaign, setCampaign] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>('overview');
+
+  useEffect(() => {
+    if (campaign) {
+      setContext(`Kampagne "${campaign.name}" - ${activeTab}. Hilf beim Optimieren der Kampagne.`);
+    } else {
+      setContext('Lade Kampagne...');
+    }
+  }, [campaign, activeTab]);
 
   useEffect(() => {
     const fetchCampaign = async () => {

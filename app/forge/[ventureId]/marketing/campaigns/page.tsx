@@ -6,14 +6,20 @@ import { StudioShell } from '@/app/components/forge/StudioShell';
 import { CampaignCard } from '@/app/components/marketing/CampaignCard';
 import { AddCampaignModal } from '@/app/components/marketing/AddCampaignModal';
 import { TrendingUp, Plus, BarChart3, Clock, Calendar } from 'lucide-react';
+import { useAIContext } from '@/app/context/AIContext';
 
 export default function CampaignsPage() {
   const params = useParams();
   const ventureId = params.ventureId as string;
+  const { setContext } = useAIContext();
 
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    setContext('Marketing Campaigns Dashboard. Hilf dem User bei der Kampagnen-Planung und Analyse.');
+  }, []);
 
   const fetchCampaigns = async () => {
     setLoading(true);
