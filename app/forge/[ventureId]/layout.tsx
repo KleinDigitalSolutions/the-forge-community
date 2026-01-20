@@ -3,6 +3,8 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import ForgeSidebar from '@/app/components/ForgeSidebar';
 import ForgeTopBar from '@/app/components/ForgeTopBar';
+import { AIContextProvider } from '@/app/context/AIContext';
+import ContextAwareAiSidebar from '@/app/components/ContextAwareAiSidebar';
 
 export default async function ForgeLayout({
   children,
@@ -64,20 +66,25 @@ export default async function ForgeLayout({
   }
 
   return (
-    <div className="min-h-screen bg-black">
-      {/* Sidebar */}
-      <ForgeSidebar ventureId={ventureId} ventureName={venture.name} />
+    <AIContextProvider>
+      <div className="min-h-screen bg-black">
+        {/* Sidebar */}
+        <ForgeSidebar ventureId={ventureId} ventureName={venture.name} />
 
-      {/* Main Content */}
-      <div className="ml-64">
-        {/* Top Bar */}
-        <ForgeTopBar venture={venture} />
+        {/* Main Content */}
+        <div className="ml-64">
+          {/* Top Bar */}
+          <ForgeTopBar venture={venture} />
 
-        {/* Content */}
-        <main className="p-8">
-          {children}
-        </main>
+          {/* Content */}
+          <main className="p-8 pb-32">
+            {children}
+          </main>
+        </div>
+
+        {/* AI Sidebar Overlay */}
+        <ContextAwareAiSidebar />
       </div>
-    </div>
+    </AIContextProvider>
   );
 }

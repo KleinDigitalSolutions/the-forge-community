@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, TrendingUp, Calendar, Target, DollarSign, Clock } from 'lucide-react';
+import { useAIContext } from '@/app/context/AIContext';
 
 interface AddCampaignModalProps {
   isOpen: boolean;
@@ -12,6 +13,8 @@ interface AddCampaignModalProps {
 
 export function AddCampaignModal({ isOpen, onClose, onSuccess, ventureId }: AddCampaignModalProps) {
   const [loading, setLoading] = useState(false);
+  const { setContext, setSidebarOpen } = useAIContext();
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -21,6 +24,16 @@ export function AddCampaignModal({ isOpen, onClose, onSuccess, ventureId }: AddC
     budgetAmount: '',
     status: 'DRAFT',
   });
+
+  useEffect(() => {
+    if (isOpen) {
+      setContext('Erstelle neue Marketing Kampagne. Hilf dem User bei Zielen, Budget und Zeitplanung.');
+      // Optional: Auto-open sidebar
+      // setSidebarOpen(true);
+    } else {
+      setContext('Marketing Studio');
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
