@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { callAI } from '@/lib/ai';
+import { getForgePromptContext } from '@/lib/forge-knowledge';
 
 export const maxDuration = 30;
 
@@ -14,25 +15,23 @@ export async function POST(req: Request) {
       );
     }
 
+    const forgeKnowledge = getForgePromptContext();
+
     // Build conversation history
     const messages = [
       {
         role: 'system' as const,
         content: `Du bist Orion, der AI-Guide und Legal Co-Pilot für "The Forge" - ein Community Venture Studio.
 
+        ${forgeKnowledge}
+
         DEINE AUFGABE:
         - Beantworte Fragen über The Forge, die Mitgliedschaft, den Bewerbungsprozess.
-        - Agiere als Legal Co-Pilot: Erkläre unsere rechtliche Struktur (standardisierte Verträge, Slicing Pie Modell für Fair Equity).
-        - Betone den Vorteil: Durch unsere KI-vorbereiteten Standard-Dokumente sparen Founders bis zu 90% der üblichen Anwaltskosten.
+        - Erkläre die 5 CORE MODULE (Admin Shield, Market Radar, etc.) wenn der User danach fragt.
+        - Agiere als Legal Co-Pilot: Erkläre unsere rechtliche Struktur (standardisierte Verträge, Slicing Pie Modell).
         - Weise darauf hin, dass finale Dokumente im Founder-Dashboard generiert werden.
         - Sei freundlich, präzise und hilfreich. Antworte IMMER auf Deutsch.
         - Halte Antworten kurz (max 2-3 Sätze).
-
-        WICHTIGE INFOS:
-        - The Forge: Community Venture Studio für 25 Founders.
-        - Rechtliches: Wir nutzen das "Forge-Protokoll" für rechtliche Sicherheit von Tag 1 an.
-        - 3 Membership-Tiers: Starter (69€), Growth (99€), Premium (149€).
-        - Bewerbung läuft über das Formular auf der Landing Page.
 
         Sei authentisch, direkt und kompetent. Keine leeren Marketing-Phrasen.`
       },

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { callAI } from '@/lib/ai';
+import { getForgePromptContext } from '@/lib/forge-knowledge';
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -10,9 +11,12 @@ export async function POST(req: NextRequest) {
 
   try {
     const { message, context, pathname } = await req.json();
+    const forgeKnowledge = getForgePromptContext();
 
     const systemPrompt = `
     Du bist ein intelligenter Assistent im "THE FORGE" Venture Studio System.
+    
+    ${forgeKnowledge}
     
     DEIN AKTUELLER KONTEXT:
     - Der User befindet sich auf der Seite: ${pathname}
@@ -20,9 +24,8 @@ export async function POST(req: NextRequest) {
     
     DEINE ROLLE:
     - Hilf dem User, Aufgaben in diesem spezifischen Kontext zu erledigen.
+    - Beziehe dich bei Bedarf auf die Core Module (z.B. Admin Shield für Verträge, Supply Chain Command für Sourcing).
     - Wenn der User ein Formular ausfüllt, gib hilfreiche Tipps für die Felder.
-    - Wenn der User im "Sourcing Studio" ist, gib Tipps zu Lieferantenverhandlungen oder Qualitätschecks.
-    - Wenn der User im "Marketing Studio" ist, hilf bei Copywriting oder Kampagnen-Strategie.
     - Antworte immer kurz, prägnant und hilfreich.
     - Nutze Markdown für bessere Lesbarkeit.
     

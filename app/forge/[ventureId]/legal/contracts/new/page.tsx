@@ -12,6 +12,7 @@ import { AIGenerator } from '@/app/components/forge/AIGenerator';
 import { DocumentExport } from '@/app/components/forge/DocumentExport';
 import { Scale, ArrowLeft, Save, Send, Loader2 } from 'lucide-react';
 import { LEGAL_DOCUMENT_TEMPLATES, type LegalDocumentType } from '@/types/legal';
+import { LegalContextInjector } from '@/app/components/forge/LegalContextInjector';
 
 export default function ContractGeneratorPage({
   params,
@@ -23,6 +24,7 @@ export default function ContractGeneratorPage({
   const templateId = searchParams.get('template');
 
   const [selectedTemplate, setSelectedTemplate] = useState<LegalDocumentType | null>(null);
+  const [templateName, setTemplateName] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [generatedContent, setGeneratedContent] = useState('');
@@ -49,6 +51,7 @@ export default function ContractGeneratorPage({
       const template = LEGAL_DOCUMENT_TEMPLATES.find((t) => t.id === templateId);
       if (template) {
         setSelectedTemplate(template.type);
+        setTemplateName(template.name);
         setFormData((prev) => ({
           ...prev,
           documentTitle: `${template.name} - [Partner Name]`,
@@ -124,19 +127,27 @@ export default function ContractGeneratorPage({
       </button>
 
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-xl bg-[#D4AF37]/10 flex items-center justify-center">
-          <Scale className="w-6 h-6 text-[#D4AF37]" />
-        </div>
-        <div>
-          <h1 className="text-4xl font-instrument-serif text-white mb-2">
-            Vertrag generieren
-          </h1>
-          <p className="text-white/40 text-sm">
-            Fülle die Details aus und lass die KI dein Rechtsdokument erstellen
-          </p>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-[#D4AF37]/10 flex items-center justify-center">
+            <Scale className="w-6 h-6 text-[#D4AF37]" />
+          </div>
+          <div>
+            <h1 className="text-4xl font-instrument-serif text-white mb-2">
+              Vertrag generieren
+            </h1>
+            <p className="text-white/40 text-sm">
+              Fülle die Details aus und lass die KI dein Rechtsdokument erstellen
+            </p>
+          </div>
         </div>
       </div>
+
+      {/* NEW: Context Injector */}
+      <LegalContextInjector 
+        ventureId={params.ventureId} 
+        templateName={templateName}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Left: Form */}
