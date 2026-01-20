@@ -22,6 +22,8 @@ import {
 import ResponsiveHeroBanner from '@/app/components/ui/ResponsiveHeroBanner';
 import AnimatedCardStack from '@/app/components/ui/AnimatedCardStack';
 
+import ForgeOSShowcase from '@/app/components/landing/ForgeOSShowcase';
+
 // --- SUB-KOMPONENTE: REVENUE SIMULATOR (Scale Focus) ---
 const RevenueSimulator = () => {
   const [revenueInput, setRevenueInput] = useState(10); // 0-100 range (Start at 100k)
@@ -401,119 +403,7 @@ export default function Home() {
 
           {/* --- NEW: THE FOUNDER OS (Feature Stack) --- */}
           <div className="mt-40 border-t border-white/5 pt-20">
-             <div className="text-center mb-16">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 text-[10px] font-bold text-[var(--accent)] uppercase tracking-[0.3em] mb-4">
-                  <Cpu className="w-3 h-3" />
-                  Orion AI Core
-                </div>
-                <h2 className="text-4xl md:text-5xl font-instrument-serif text-white mb-6">
-                   The Forge Terminal.
-                </h2>
-                <p className="text-white/50 max-w-2xl mx-auto">
-                   Kein Dashboard, sondern eine Werkstatt. Logg dich ein und teleportiere dich direkt in die Execution.
-                   Orion hält deine Brand DNA und steuert Tools, Sourcing und Assets zentral.
-                </p>
-             </div>
-
-             {/* Terminal Interface */}
-             <div className="max-w-5xl mx-auto bg-[#0B0C0E] border border-white/10 rounded-2xl overflow-hidden shadow-2xl relative">
-                {/* Terminal Header */}
-                <div className="bg-white/[0.03] border-b border-white/5 px-4 py-3 flex items-center justify-between">
-                   <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/50" />
-                      <div className="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-500/50" />
-                      <div className="w-3 h-3 rounded-full bg-green-500/20 border border-green-500/50" />
-                   </div>
-                   <div className="text-[10px] font-mono text-white/30 uppercase tracking-widest">
-                      system_modules.config
-                   </div>
-                   <div className="w-10" /> {/* Spacer */}
-                </div>
-
-                {/* Module List */}
-                <div className="divide-y divide-white/5">
-                   {[
-                      {
-                         id: '01',
-                         name: 'Admin Shield',
-                         icon: FileText,
-                         desc: 'Rechtssichere Verträge & Compliance',
-                         status: 'ACTIVE',
-                         detail: 'Auto-Generierung'
-                      },
-                      {
-                         id: '02',
-                         name: 'Market Radar',
-                         icon: Target,
-                         desc: 'Konkurrenz-Analyse & Ad-Scanning',
-                         status: 'SCANNING',
-                         detail: '24/7 Watchtower'
-                      },
-                      {
-                         id: '03',
-                         name: 'Supply Chain Command',
-                         icon: Package,
-                         desc: 'Manufaktur-Netzwerk & Sourcing',
-                         status: 'CONNECTED',
-                         detail: 'Global Access'
-                      },
-                      {
-                         id: '04',
-                         name: 'Commerce Engine',
-                         icon: Zap,
-                         desc: 'Shop-Deployment & Infrastructure',
-                         status: 'READY',
-                         detail: 'Vercel/Stripe'
-                      },
-                      {
-                         id: '05',
-                         name: 'Logistics Grid',
-                         icon: Truck,
-                         desc: 'Fulfillment & Lager-Buchung',
-                         status: 'STANDBY',
-                         detail: 'Pay-per-Use'
-                      }
-                   ].map((module, i) => (
-                      <div key={i} className="group p-6 flex flex-col md:flex-row md:items-center gap-6 hover:bg-white/[0.02] transition-colors cursor-default">
-                         {/* Icon & ID */}
-                         <div className="flex items-center gap-4 min-w-[200px]">
-                            <span className="font-mono text-xs text-white/20">#{module.id}</span>
-                            <div className="w-10 h-10 rounded bg-white/5 flex items-center justify-center text-white/60 group-hover:text-[var(--accent)] group-hover:bg-[var(--accent)]/10 transition-all">
-                               <module.icon className="w-5 h-5" />
-                            </div>
-                            <span className="font-instrument-serif text-lg text-white">{module.name}</span>
-                         </div>
-                         
-                         {/* Description */}
-                         <div className="flex-1 text-sm text-white/40 group-hover:text-white/60 transition-colors">
-                            {module.desc}
-                         </div>
-
-                         {/* Status */}
-                         <div className="flex items-center gap-6 min-w-[180px] justify-between md:justify-end">
-                            <span className="text-[10px] uppercase tracking-widest text-white/30 hidden md:block">
-                               {module.detail}
-                            </span>
-                            <div className={`text-[9px] font-bold px-2 py-1 rounded border border-white/10 uppercase tracking-widest ${
-                               module.status === 'ACTIVE' || module.status === 'READY' || module.status === 'CONNECTED' ? 'text-green-400 bg-green-400/10 border-green-400/20' :
-                               module.status === 'SCANNING' ? 'text-[var(--accent)] bg-[var(--accent)]/10 border-[var(--accent)]/20 animate-pulse' :
-                               'text-white/40'
-                            }`}>
-                               {module.status}
-                            </div>
-                         </div>
-                      </div>
-                   ))}
-                </div>
-                
-                {/* Terminal Footer */}
-                <div className="bg-white/[0.02] border-t border-white/5 px-6 py-4">
-                   <div className="flex items-center gap-2 text-[10px] font-mono text-[var(--accent)]">
-                      <span className="animate-pulse">_</span>
-                      waiting for command...
-                   </div>
-                </div>
-             </div>
+             <ForgeOSShowcase />
           </div>
         </div>
       </section>
