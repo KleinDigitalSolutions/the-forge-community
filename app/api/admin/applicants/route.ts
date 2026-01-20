@@ -41,7 +41,7 @@ export async function PATCH(req: NextRequest) {
     if (status === 'APPROVED') {
       try {
         await resend.emails.send({
-          from: 'The Forge <onboarding@resend.dev>', // You should change this to info@stakeandscale.de once domain is verified in Resend
+          from: 'STAKE & SCALE <info@stakeandscale.de>',
           to: application.email,
           subject: 'Willkommen bei STAKE & SCALE 🚀 (Action Required)',
           html: `
