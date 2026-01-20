@@ -64,7 +64,7 @@ export function DocumentExport({
       {isExporting ? (
         <>
           <Loader2 className="w-4 h-4 animate-spin" />
-          Exporting...
+          Exportiere...
         </>
       ) : (
         <>
@@ -73,7 +73,7 @@ export function DocumentExport({
           ) : (
             <Download className="w-4 h-4" />
           )}
-          Export as {format.toUpperCase()}
+          Exportieren als {format.toUpperCase()}
         </>
       )}
     </button>

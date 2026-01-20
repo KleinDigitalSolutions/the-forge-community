@@ -25,8 +25,8 @@ export function AIGenerator({
   isGenerating,
   generatedContent,
   brandContext,
-  placeholder = 'AI-generated content will appear here...',
-  buttonText = 'Generate with AI',
+  placeholder = 'KI-generierter Inhalt erscheint hier...',
+  buttonText = 'Mit KI generieren',
 }: AIGeneratorProps) {
   const [copied, setCopied] = useState(false);
 
@@ -43,7 +43,7 @@ export function AIGenerator({
       {/* Brand Context Chip */}
       {brandContext && (
         <div className="flex items-center gap-2 text-xs flex-wrap">
-          <span className="text-white/40">Using brand context:</span>
+          <span className="text-white/40">Verwendeter Marken-Kontext:</span>
           <span className="px-2 py-1 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] font-bold">
             {brandContext.brandName}
           </span>
@@ -64,7 +64,7 @@ export function AIGenerator({
         {isGenerating ? (
           <>
             <Sparkles className="w-4 h-4 animate-spin" />
-            Generating...
+            Generiere...
           </>
         ) : (
           <>
@@ -81,7 +81,7 @@ export function AIGenerator({
           <button
             onClick={handleCopy}
             className="absolute top-3 right-3 p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
-            title="Copy to clipboard"
+            title="In die Zwischenablage kopieren"
           >
             {copied ? (
               <Check className="w-4 h-4 text-green-400" />

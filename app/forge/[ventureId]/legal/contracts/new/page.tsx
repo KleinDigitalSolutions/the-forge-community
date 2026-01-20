@@ -96,11 +96,11 @@ export default function ContractGeneratorPage({
         setGeneratedContent(data.document.generatedContent);
         setSavedDocId(data.document.id);
       } else {
-        alert('Generation failed: ' + (data.error || 'Unknown error'));
+        alert('Generierung fehlgeschlagen: ' + (data.error || 'Unbekannter Fehler'));
       }
     } catch (error) {
       console.error('Generation error:', error);
-      alert('Failed to generate contract');
+      alert('Fehler beim Generieren des Vertrags');
     } finally {
       setIsGenerating(false);
     }
@@ -120,7 +120,7 @@ export default function ContractGeneratorPage({
         className="flex items-center gap-2 text-white/60 hover:text-white transition-colors text-sm"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back to Legal Studio
+        Zurück zum Legal Studio
       </button>
 
       {/* Header */}
@@ -130,10 +130,10 @@ export default function ContractGeneratorPage({
         </div>
         <div>
           <h1 className="text-4xl font-instrument-serif text-white mb-2">
-            Generate Contract
+            Vertrag generieren
           </h1>
           <p className="text-white/40 text-sm">
-            Fill in the details and let AI create your legal document
+            Fülle die Details aus und lass die KI dein Rechtsdokument erstellen
           </p>
         </div>
       </div>
@@ -142,13 +142,13 @@ export default function ContractGeneratorPage({
         {/* Left: Form */}
         <div className="glass-card p-6 rounded-xl border border-white/10 space-y-6">
           <h2 className="text-xl font-instrument-serif text-white">
-            Contract Details
+            Vertragsdetails
           </h2>
 
           {/* Document Title */}
           <div>
             <label className="block text-sm font-medium text-white/80 mb-2">
-              Document Title *
+              Dokumententitel *
             </label>
             <input
               type="text"
@@ -157,20 +157,20 @@ export default function ContractGeneratorPage({
                 setFormData({ ...formData, documentTitle: e.target.value })
               }
               className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/40 focus:border-[#D4AF37] focus:outline-none"
-              placeholder="e.g., NDA with Supplier XYZ"
+              placeholder="z.B. NDA mit Lieferant XYZ"
             />
           </div>
 
           {/* Partner Info */}
           <div className="border-t border-white/10 pt-6">
             <h3 className="text-sm font-bold text-white/80 mb-4 uppercase tracking-widest">
-              Partner Information
+              Partnerinformationen
             </h3>
 
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-white/80 mb-2">
-                  Company Name *
+                  Firmenname *
                 </label>
                 <input
                   type="text"
@@ -185,7 +185,7 @@ export default function ContractGeneratorPage({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
-                    Contact Name *
+                    Kontaktperson *
                   </label>
                   <input
                     type="text"
@@ -199,7 +199,7 @@ export default function ContractGeneratorPage({
 
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
-                    Email *
+                    E-Mail *
                   </label>
                   <input
                     type="email"
@@ -214,7 +214,7 @@ export default function ContractGeneratorPage({
 
               <div>
                 <label className="block text-sm font-medium text-white/80 mb-2">
-                  Address
+                  Adresse
                 </label>
                 <textarea
                   value={formData.partnerAddress}
@@ -231,14 +231,14 @@ export default function ContractGeneratorPage({
           {/* Contract Terms */}
           <div className="border-t border-white/10 pt-6">
             <h3 className="text-sm font-bold text-white/80 mb-4 uppercase tracking-widest">
-              Contract Terms
+              Vertragsbedingungen
             </h3>
 
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
-                    Duration
+                    Laufzeit
                   </label>
                   <input
                     type="text"
@@ -247,13 +247,13 @@ export default function ContractGeneratorPage({
                       setFormData({ ...formData, duration: e.target.value })
                     }
                     className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/40 focus:border-[#D4AF37] focus:outline-none"
-                    placeholder="e.g., 12 months"
+                    placeholder="z.B. 12 Monate"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
-                    Payment Terms
+                    Zahlungsbedingungen
                   </label>
                   <input
                     type="text"
@@ -262,14 +262,14 @@ export default function ContractGeneratorPage({
                       setFormData({ ...formData, paymentTerms: e.target.value })
                     }
                     className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/40 focus:border-[#D4AF37] focus:outline-none"
-                    placeholder="e.g., Net 30"
+                    placeholder="z.B. Zahlbar in 30 Tagen"
                   />
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-white/80 mb-2">
-                  Scope / Services
+                  Umfang / Dienstleistungen
                 </label>
                 <textarea
                   value={formData.scope}
@@ -278,13 +278,13 @@ export default function ContractGeneratorPage({
                   }
                   rows={3}
                   className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/40 focus:border-[#D4AF37] focus:outline-none resize-none"
-                  placeholder="Describe the work, services, or deliverables..."
+                  placeholder="Beschreibe die Arbeit, Dienstleistungen oder Ergebnisse..."
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-white/80 mb-2">
-                  Additional Instructions (for AI)
+                  Zusätzliche Anweisungen (für die KI)
                 </label>
                 <textarea
                   value={formData.additionalInstructions}
@@ -293,7 +293,7 @@ export default function ContractGeneratorPage({
                   }
                   rows={2}
                   className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/40 focus:border-[#D4AF37] focus:outline-none resize-none"
-                  placeholder="e.g., Include a non-compete clause..."
+                  placeholder="z.B. Wettbewerbsverbot einschließen..."
                 />
               </div>
             </div>
@@ -310,10 +310,10 @@ export default function ContractGeneratorPage({
             isGenerating={isGenerating}
             generatedContent={generatedContent}
             brandContext={{
-              brandName: 'Your Brand',
-              toneOfVoice: 'Professional',
+              brandName: 'Deine Marke',
+              toneOfVoice: 'Professionell',
             }}
-            buttonText="Generate Contract with AI"
+            buttonText="Vertrag mit KI generieren"
           />
 
           {/* Actions */}
@@ -333,12 +333,12 @@ export default function ContractGeneratorPage({
                 {isSaving ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Saving...
+                    Speichern...
                   </>
                 ) : (
                   <>
                     <Save className="w-4 h-4" />
-                    View Document
+                    Dokument anzeigen
                   </>
                 )}
               </button>

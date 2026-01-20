@@ -68,7 +68,7 @@ export function TemplateSelector({
             {isSelected && (
               <div className="mt-4 flex items-center gap-2 text-xs font-bold text-[#D4AF37]">
                 <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]" />
-                Selected
+                Ausgewählt
               </div>
             )}
           </button>

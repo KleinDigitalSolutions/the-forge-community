@@ -63,7 +63,7 @@ export default function AiAdvisor() {
         className={`fixed bottom-8 right-8 z-40 flex items-center gap-3 px-6 py-4 bg-white text-black rounded-2xl shadow-2xl hover:bg-[var(--accent)] transition-all duration-500 border border-white/10 group ${isOpen ? 'hidden' : 'flex'}`}
       >
         <Zap className="w-5 h-5 text-black group-hover:fill-current" />
-        <span className="text-[10px] font-black uppercase tracking-[0.3em]">AI Advisor</span>
+        <span className="text-[10px] font-black uppercase tracking-[0.3em]">KI Berater</span>
       </motion.button>
 
       {/* Chat Window */}
@@ -82,10 +82,10 @@ export default function AiAdvisor() {
                   <Bot className="w-6 h-6 text-black" />
                 </div>
                 <div>
-                  <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Forge Intelligence</h3>
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Forge Intelligenz</h3>
                   <div className="flex items-center gap-1.5 mt-1">
                     <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
-                    <span className="text-[8px] font-bold text-white/30 uppercase tracking-widest">Protocol Active</span>
+                    <span className="text-[8px] font-bold text-white/30 uppercase tracking-widest">Protokoll Aktiv</span>
                   </div>
                 </div>
               </div>
@@ -148,7 +148,7 @@ export default function AiAdvisor() {
                 </button>
               </div>
               <p className="text-[8px] font-bold text-center text-white/10 mt-3 uppercase tracking-widest">
-                AI can forge hallucinations. Verify all protocols.
+                KI kann Halluzinationen erzeugen. Überprüfe alle Protokolle.
               </p>
             </form>
           </motion.div>

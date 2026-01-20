@@ -50,13 +50,13 @@ export function StudioShell({
           {brandDNA && (
             <div className="glass-card p-4 rounded-xl border border-white/10 max-w-xs">
               <p className="text-xs text-white/40 uppercase tracking-widest font-bold mb-2">
-                Brand Context
+                Marken-Kontext
               </p>
               <p className="text-sm text-white font-semibold mb-1 truncate">
                 {brandDNA.brandName}
               </p>
               <p className="text-xs text-white/60 line-clamp-1">
-                {brandDNA.toneOfVoice || 'No tone set'}
+                {brandDNA.toneOfVoice || 'Kein Tonfall festgelegt'}
               </p>
             </div>
           )}
