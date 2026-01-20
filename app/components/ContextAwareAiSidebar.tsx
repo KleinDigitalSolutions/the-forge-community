@@ -1,10 +1,13 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, X, ChevronRight, Loader2, Sparkles, User, Zap } from 'lucide-react';
+import { Bot, X, ChevronRight, Loader2, Sparkles, User, Zap, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAIContext } from '@/app/context/AIContext';
 import { usePathname } from 'next/navigation';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import Link from 'next/link';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -25,7 +28,7 @@ export default function ContextAwareAiSidebar() {
   useEffect(() => {
     setMessages(prev => [
       ...prev,
-      { role: 'assistant', content: `Kontext gewechselt: ${context}. Bereit zur Unterstützung.` }
+      { role: 'assistant', content: `**Kontext gewechselt:** ${context}\n\nBereit zur Unterstützung.` }
     ]);
   }, [context]);
 
@@ -50,7 +53,7 @@ export default function ContextAwareAiSidebar() {
       const res = await fetch('/api/chat/contextual', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           message: userMsg,
           context: context,
           pathname: pathname
@@ -91,7 +94,7 @@ export default function ContextAwareAiSidebar() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 h-screen w-80 md:w-96 bg-[#0a0a0a] border-l border-white/10 z-50 flex flex-col shadow-2xl"
+            className="fixed top-0 right-0 h-screen w-80 md:w-[450px] bg-[#0a0a0a] border-l border-white/10 z-50 flex flex-col shadow-2xl"
           >
             {/* Header */}
             <div className="p-4 border-b border-white/10 bg-white/5 flex justify-between items-center backdrop-blur-md">
@@ -101,7 +104,7 @@ export default function ContextAwareAiSidebar() {
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-white">Forge AI</h3>
-                  <p className="text-[10px] text-white/40 uppercase tracking-widest truncate max-w-[150px]">
+                  <p className="text-[10px] text-white/40 uppercase tracking-widest truncate max-w-[200px]">
                     {context}
                   </p>
                 </div>
@@ -115,27 +118,61 @@ export default function ContextAwareAiSidebar() {
             </div>
 
             {/* Chat Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 space-y-6">
               {messages.map((msg, idx) => (
                 <div
                   key={idx}
                   className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[85%] p-3 rounded-2xl text-sm ${ 
+                    className={`max-w-[90%] p-4 rounded-2xl text-sm leading-relaxed shadow-sm ${ 
                       msg.role === 'user'
                         ? 'bg-[#D4AF37] text-black font-medium rounded-br-none'
-                        : 'bg-white/10 text-white/80 rounded-bl-none'
+                        : 'bg-white/5 border border-white/5 text-white/90 rounded-bl-none'
                     }`}
                   >
-                    {msg.content}
+                    {msg.role === 'user' ? (
+                      msg.content
+                    ) : (
+                      <div className="prose prose-invert prose-sm max-w-none 
+                        prose-headings:text-white prose-headings:font-bold prose-headings:text-sm prose-headings:mb-2 prose-headings:mt-4
+                        prose-p:text-white/80 prose-p:my-2
+                        prose-strong:text-[#D4AF37] prose-strong:font-bold
+                        prose-ul:list-disc prose-ul:pl-4 prose-ul:my-2
+                        prose-ol:list-decimal prose-ol:pl-4 prose-ol:my-2
+                        prose-li:text-white/70 prose-li:my-1
+                        prose-a:text-[#D4AF37] prose-a:underline hover:prose-a:text-white transition-colors
+                      ">
+                        <ReactMarkdown 
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            // Custom Link rendering for internal navigation
+                            a: ({ node, ...props }) => {
+                              const isInternal = props.href && props.href.startsWith('/');
+                              if (isInternal) {
+                                return (
+                                  <Link href={props.href as string} className="inline-flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded text-xs no-underline hover:bg-white/20 transition-colors border border-white/5 text-[#D4AF37]">
+                                    <ExternalLink className="w-3 h-3" />
+                                    {props.children}
+                                  </Link>
+                                );
+                              }
+                              return <a {...props} target="_blank" rel="noopener noreferrer" />;
+                            }
+                          }}
+                        >
+                          {msg.content}
+                        </ReactMarkdown>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-white/5 p-3 rounded-2xl rounded-bl-none">
+                  <div className="bg-white/5 p-4 rounded-2xl rounded-bl-none flex items-center gap-3">
                     <Loader2 className="w-4 h-4 text-[#D4AF37] animate-spin" />
+                    <span className="text-xs text-white/40">Forge AI analysiert...</span>
                   </div>
                 </div>
               )}
@@ -150,7 +187,7 @@ export default function ContextAwareAiSidebar() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Frag mich etwas..."
-                  className="w-full bg-black/50 border border-white/10 rounded-xl pl-4 pr-12 py-3 text-sm text-white focus:border-[#D4AF37] outline-none transition-all placeholder:text-white/20"
+                  className="w-full bg-black/50 border border-white/10 rounded-xl pl-4 pr-12 py-3 text-sm text-white focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]/50 outline-none transition-all placeholder:text-white/20"
                 />
                 <button
                   type="submit"
@@ -160,6 +197,9 @@ export default function ContextAwareAiSidebar() {
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
+              <p className="text-[10px] text-white/20 text-center mt-3 uppercase tracking-widest font-medium">
+                Powered by Gemini 2.0 • Admin Shield Active
+              </p>
             </form>
           </motion.div>
         )}
