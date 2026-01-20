@@ -84,6 +84,7 @@ model User {
   mentoringSessions MentoringSession[]
   moderationWarnings ModerationWarning[]
   legalDocuments LegalDocument[]
+  marketingContents MarketingContent[]
 
   // NextAuth
   accounts      Account[]
@@ -287,6 +288,7 @@ model Venture {
   mentoringSessions MentoringSession[]
   brandDNA        BrandDNA?
   legalDocuments  LegalDocument[]
+  marketingContents MarketingContent[]
 
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -596,6 +598,30 @@ model LinkPreview {
   @@index([url])
   @@index([fetchedAt])
 }
+
+// ============================================
+// MARKETING STUDIO - Content Generation
+// ============================================
+
+model MarketingContent {
+  id              String   @id @default(cuid())
+  ventureId       String
+  venture         Venture  @relation(fields: [ventureId], references: [id], onDelete: Cascade)
+  
+  contentType     String   // 'instagram', 'blog', 'email', etc.
+  prompt          String   @db.Text
+  generatedContent String  @db.Text
+  
+  createdAt       DateTime @default(now())
+  
+  createdById     String
+  createdBy       User     @relation(fields: [createdById], references: [id])
+
+  @@index([ventureId])
+  @@index([createdById])
+  @@index([contentType])
+}
+
 
 // ============================================
 // STRIPE CONNECT - TRANSACTION LOG
