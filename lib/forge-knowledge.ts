@@ -57,9 +57,9 @@ export const FORGE_SYSTEM_KNOWLEDGE = {
   },
 
   membershipTiers: [
-    { name: "Starter (Founder)", price: "69€/Monat", focus: "Zutritt zur Schmiede & Netzwerk" },
-    { name: "Growth", price: "99€/Monat", focus: "Erweiterte AI-Features & Support" },
-    { name: "Premium (Enterprise)", price: "149€/Monat", focus: "Volle Skalierung & Priority Execution" }
+    { name: "Validator Batch (Limited)", price: "997€ / Jahr (statt 2.388€)", focus: "Full Access + Founder Status + 50% Rabatt gegen Feedback" },
+    { name: "Monthly (Standard)", price: "199€ / Monat", focus: "Flexibler Zugang ohne Verpflichtung" },
+    { name: "Enterprise", price: "Auf Anfrage", focus: "White-Label Lösung für Agenturen" }
   ]
 };
 

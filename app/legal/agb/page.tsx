@@ -63,13 +63,31 @@ export default function AGBPage() {
             </div>
 
             <div className="pt-10 border-t border-white/5">
-              <h4 className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-6">Investitions-Parameter</h4>
+              <h4 className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-6">Investitions-Parameter & Pricing</h4>
+              
+              {/* Validator Batch Special Clause */}
+              <div className="mb-8 p-6 rounded-xl bg-[var(--accent)]/5 border border-[var(--accent)]/20">
+                <h5 className="text-[var(--accent)] font-bold text-sm mb-2 flex items-center gap-2">
+                  <Zap className="w-4 h-4" />
+                  Sonderregelung: Validator Batch
+                </h5>
+                <p className="text-white/60 text-xs leading-relaxed mb-4">
+                  Für Mitglieder des "Validator Batch" gilt ein einmaliger Vorzugspreis von <strong>997€ / Jahr</strong> (statt regulär 2.388€).
+                  Dieser Preis wird im Voraus entrichtet. Im Gegenzug verpflichtet sich das Mitglied zur aktiven Teilnahme an Feedback-Runden (Beta-Status).
+                </p>
+                <ul className="space-y-2 text-[10px] text-white/40 uppercase tracking-widest font-bold">
+                  <li>• Keine Rückerstattung bei vorzeitiger Kündigung (Commitment)</li>
+                  <li>• Tools & Features werden "as is" (Beta) bereitgestellt</li>
+                  <li>• Preisgarantie für Folgejahre bei aktiver Teilnahme</li>
+                </ul>
+              </div>
+
               <p className="text-white/60 text-sm leading-relaxed mb-4">
-                Der Beitrag richtet sich nach dem Squad-Zielkapital (25k / 50k / 100k). 
-                Zusätzlich fällt eine Plattformgebühr für die Infrastruktur an.
+                Reguläre Mitgliedschaften (Monthly) sind monatlich kündbar. 
+                Der Beitrag richtet sich nach dem gewählten Tier (Starter/Growth/Premium).
               </p>
               <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 text-[10px] font-mono text-white/40 uppercase tracking-widest">
-                Zahlungsfrist: 14 Tage nach Annahme des Dossiers.
+                Zahlungsabwicklung via Stripe. Rechnungsstellung erfolgt automatisch.
               </div>
             </div>
           </div>

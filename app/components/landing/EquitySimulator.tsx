@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { Slider } from '@/app/components/ui/slider'; // Assuming we might need a UI slider, or I'll use standard input ranges styled
 import { DollarSign, Clock, PieChart as PieIcon, Users } from 'lucide-react';
 
 const COLORS = {
@@ -165,7 +164,7 @@ export default function EquitySimulator() {
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#000', borderColor: '#333', borderRadius: '12px' }}
                     itemStyle={{ color: '#fff', fontSize: '12px' }}
-                    formatter={(value: number) => `${value.toFixed(1)}%`}
+                    formatter={(value: any) => `${parseFloat(value).toFixed(1)}%`}
                   />
                 </PieChart>
               </ResponsiveContainer>
