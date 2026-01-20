@@ -33,7 +33,7 @@ function LoginForm() {
         if (result.error === 'AccessDenied') {
           setErrorMessage('Diese Email ist nicht als Founder registriert.');
         } else {
-          setErrorMessage('Ein fitte Fehler ist aufgetreten. Bitte versuche es erneut.');
+          setErrorMessage('Ein Fehler ist aufgetreten. Bitte versuche es erneut.');
         }
         setStatus('error');
       } else {

@@ -12,7 +12,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
   providers: [
     Resend({
       apiKey: process.env.AUTH_RESEND_KEY,
-      from: 'STAKE & SCALE <info@stakeandscale.de>',
+      from: 'THE FORGE <onboarding@resend.dev>',
     }),
   ],
   callbacks: {
@@ -39,11 +39,14 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         }
 
         // 3. Fallback: Gatekeeper Check Notion (Legacy)
-        const founder = await getFounderByEmail(user.email);
-
-        if (founder && founder.status === 'active') {
-           console.log(`Access granted via Notion for: ${user.email}`);
-           return true;
+        try {
+          const founder = await getFounderByEmail(user.email);
+          if (founder && founder.status === 'active') {
+             console.log(`Access granted via Notion for: ${user.email}`);
+             return true;
+          }
+        } catch (notionError) {
+          console.warn('Notion check failed, ignoring:', notionError);
         }
 
         console.log(`Access denied for ${user.email}: Not approved.`);
