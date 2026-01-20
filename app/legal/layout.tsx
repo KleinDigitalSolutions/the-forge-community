@@ -82,8 +82,8 @@ export default function LegalLayout({
           <p className="text-[10px] font-bold text-white/20 uppercase tracking-[0.3em] mb-4">
             Fragen zu den Protokollen?
           </p>
-          <a href="mailto:legal@theforge.community" className="text-xl font-instrument-serif text-[var(--accent)] hover:underline">
-            legal@theforge.community
+          <a href="mailto:info@stakeandscale.de" className="text-xl font-instrument-serif text-[var(--accent)] hover:underline">
+            info@stakeandscale.de
           </a>
         </div>
       </div>

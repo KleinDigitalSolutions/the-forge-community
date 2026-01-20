@@ -854,7 +854,7 @@ export default function Home() {
                <div>
                   <h4 className="text-xs font-black uppercase tracking-[0.3em] text-white/20 mb-8">Kommando-Zentrale</h4>
                   <ul className="space-y-4">
-                     <li><a href="mailto:info@theforge.community" className="text-sm text-white/50 hover:text-[var(--accent)] transition-colors">info@theforge.community</a></li>
+                     <li><a href="mailto:info@stakeandscale.de" className="text-sm text-white/50 hover:text-[var(--accent)] transition-colors">info@stakeandscale.de</a></li>
                      <li className="pt-4">
                         <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5">
                            <p className="text-[10px] text-white/30 uppercase tracking-widest leading-relaxed">

@@ -48,8 +48,8 @@ export default function DatenschutzPage() {
             <p>Wittbräuckerstraße 109</p>
             <p>44287 Dortmund, Deutschland</p>
             <p className="pt-4">
-              <a href="mailto:info@kleindigitalsolutions.de" className="text-[var(--accent)] hover:underline flex items-center gap-2">
-                info@kleindigitalsolutions.de
+              <a href="mailto:info@stakeandscale.de" className="text-[var(--accent)] hover:underline flex items-center gap-2">
+                info@stakeandscale.de
               </a>
             </p>
           </div>
@@ -135,7 +135,7 @@ export default function DatenschutzPage() {
           </div>
           <div className="mt-12 p-6 rounded-2xl bg-[var(--accent)]/5 border border-[var(--accent)]/20">
             <p className="text-xs text-white/60 leading-relaxed">
-              Anfrage an <a href="mailto:datenschutz@theforge.community" className="text-[var(--accent)] font-bold">datenschutz@theforge.community</a>. 
+              Anfrage an <a href="mailto:info@stakeandscale.de" className="text-[var(--accent)] font-bold">info@stakeandscale.de</a>. 
               Bearbeitungszeit: 48h.
             </p>
           </div>

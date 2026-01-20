@@ -94,7 +94,7 @@ function LoginForm() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="founder@theforge.community"
+              placeholder="founder@stakeandscale.de"
               className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-6 py-4 text-sm text-white focus:border-[#D4AF37] focus:ring-0 outline-none transition-all placeholder:text-white/10"
               disabled={status === 'loading'}
             />

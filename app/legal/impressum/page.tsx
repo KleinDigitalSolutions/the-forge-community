@@ -64,9 +64,9 @@ export default function ImpressumPage() {
               </div>
               <div>
                 <h4 className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-3">Kontakt</h4>
-                <a href="mailto:info@kleindigitalsolutions.de" className="inline-flex items-center gap-2 text-[var(--accent)] hover:underline">
+                <a href="mailto:info@stakeandscale.de" className="inline-flex items-center gap-2 text-[var(--accent)] hover:underline">
                   <Mail className="w-4 h-4" />
-                  info@kleindigitalsolutions.de
+                  info@stakeandscale.de
                 </a>
               </div>
             </div>
