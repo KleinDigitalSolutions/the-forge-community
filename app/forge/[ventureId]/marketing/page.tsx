@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { StudioShell } from '@/app/components/forge/StudioShell';
 import { AIGenerator } from '@/app/components/forge/AIGenerator';
 import { DocumentExport } from '@/app/components/forge/DocumentExport';
-import { Megaphone, Share2, LayoutTemplate, Mail } from 'lucide-react';
+import { Megaphone, Share2, LayoutTemplate, Mail, TrendingUp } from 'lucide-react';
 import type { BrandDNA } from '@prisma/client';
 
 const CONTENT_TYPES = [
@@ -20,7 +21,11 @@ const CONTENT_TYPES = [
 
 export default function MarketingPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
   const ventureId = params.ventureId as string;
+  const campaignId = searchParams.get('campaignId');
 
   const [brandDNA, setBrandDNA] = useState<BrandDNA | null>(null);
   const [loading, setLoading] = useState(true);
@@ -31,24 +36,35 @@ export default function MarketingPage() {
   const [instructions, setInstructions] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState('');
+  const [activeCampaign, setActiveCampaign] = useState<any>(null);
 
-  // Load Brand DNA
+  // Load Brand DNA and Campaign (if present)
   useEffect(() => {
-    const fetchBrand = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch(`/api/ventures/${ventureId}/brand-dna`);
-        if (res.ok) {
-          const data = await res.json();
+        const [brandRes, campaignRes] = await Promise.all([
+          fetch(`/api/ventures/${ventureId}/brand-dna`),
+          campaignId ? fetch(`/api/ventures/${ventureId}/marketing/campaigns/${campaignId}`) : Promise.resolve(null)
+        ]);
+
+        if (brandRes.ok) {
+          const data = await brandRes.json();
           setBrandDNA(data);
         }
+
+        if (campaignRes && campaignRes.ok) {
+          const campaignData = await campaignRes.json();
+          setActiveCampaign(campaignData);
+          setTopic(campaignData.name + (campaignData.goal ? ` - Ziel: ${campaignData.goal}` : '')); // Pre-fill topic
+        }
       } catch (err) {
-        console.error('Failed to load Brand DNA', err);
+        console.error('Failed to load data', err);
       } finally {
         setLoading(false);
       }
     };
-    fetchBrand();
-  }, [ventureId]);
+    fetchData();
+  }, [ventureId, campaignId]);
 
   const handleGenerate = async () => {
     if (!topic) {
@@ -71,6 +87,12 @@ export default function MarketingPage() {
       const data = await res.json();
       if (res.ok) {
         setGeneratedContent(data.content);
+        
+        // If coming from a campaign, auto-save as draft post
+        if (campaignId) {
+          await saveToCampaign(data.content);
+        }
+
         return data.content;
       } else {
         alert('Fehler: ' + data.error);
@@ -85,6 +107,24 @@ export default function MarketingPage() {
     }
   };
 
+  const saveToCampaign = async (content: string) => {
+    try {
+      await fetch(`/api/ventures/${ventureId}/marketing/campaigns/${campaignId}/posts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: topic,
+          content: content,
+          contentType: contentType,
+          status: 'DRAFT'
+        })
+      });
+      // Optional: Notify user
+    } catch (err) {
+      console.error('Failed to save to campaign', err);
+    }
+  };
+
   if (loading) return <div className="text-white p-8">Lade Studio...</div>;
 
   return (
@@ -94,11 +134,27 @@ export default function MarketingPage() {
       icon={<Megaphone className="w-6 h-6 text-[#D4AF37]" />}
       brandDNA={brandDNA}
       aiProvider="gemini"
+      headerAction={
+        <Link 
+          href={`/forge/${ventureId}/marketing/campaigns`}
+          className="flex items-center gap-2 px-4 py-2 bg-[#D4AF37] text-black rounded-lg text-sm font-bold hover:opacity-90 transition-opacity"
+        >
+          <TrendingUp className="w-4 h-4" />
+          Kampagnen Manager
+        </Link>
+      }
     >
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Left: Configuration */}
         <div className="glass-card p-6 rounded-xl border border-white/10 space-y-6">
-          <h2 className="text-xl font-instrument-serif text-white">Kampagnen-Details</h2>
+          <div className="flex justify-between items-center">
+             <h2 className="text-xl font-instrument-serif text-white">Content Konfiguration</h2>
+             {activeCampaign && (
+                <span className="text-xs font-bold text-[#D4AF37] bg-[#D4AF37]/10 px-2 py-1 rounded border border-[#D4AF37]/30">
+                   Teil von: {activeCampaign.name}
+                </span>
+             )}
+          </div>
 
           {/* Content Type Selector */}
           <div>
