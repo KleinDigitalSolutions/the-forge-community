@@ -12,9 +12,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
   providers: [
     Resend({
       apiKey: process.env.AUTH_RESEND_KEY,
-      // WICHTIG: Nutze 'onboarding@resend.dev' solange deine Domain nicht verifiziert ist!
-      // Ändere dies erst, wenn du DNS Records bei Resend gesetzt hast.
-      from: 'THE FORGE <onboarding@resend.dev>',
+      from: 'STAKE & SCALE <info@stakeandscale.de>',
     }),
   ],
   callbacks: {
@@ -23,21 +21,33 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 
       try {
         console.log(`Checking access for: ${user.email}`);
-        // Gatekeeper: Check Notion
+
+        // 1. Check if user already exists (Standard Login)
+        const existingUser = await prisma.user.findUnique({
+          where: { email: user.email }
+        });
+        if (existingUser) return true;
+
+        // 2. Check if applicant is approved in local DB (First Registration)
+        const application = await prisma.founderApplication.findUnique({
+          where: { email: user.email }
+        });
+
+        if (application && application.status === 'APPROVED') {
+          console.log(`Access granted for applicant: ${user.email}`);
+          return true; 
+        }
+
+        // 3. Fallback: Gatekeeper Check Notion (Legacy)
         const founder = await getFounderByEmail(user.email);
 
-        if (!founder) {
-          console.log(`Access denied for ${user.email}: Not found in Notion.`);
-          return false;
+        if (founder && founder.status === 'active') {
+           console.log(`Access granted via Notion for: ${user.email}`);
+           return true;
         }
 
-        if (founder.status === 'inactive') {
-           console.log(`Access denied for ${user.email}: Inactive.`);
-           return false;
-        }
-
-        console.log(`Access granted for ${user.email}`);
-        return true;
+        console.log(`Access denied for ${user.email}: Not approved.`);
+        return false;
       } catch (error) {
         console.error('Error in signIn callback:', error);
         return false;
