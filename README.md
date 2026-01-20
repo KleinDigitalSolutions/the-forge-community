@@ -9,7 +9,34 @@
 
 ---
 
-## 🚀 Quick Start
+## 🤖 Context-Aware AI Sidebar
+
+The Forge includes a persistent AI assistant that adapts to what the user is currently doing.
+
+### How to use it for future features:
+To add AI support to any new page or modal, simply:
+
+1. **Import the Context**:
+   ```tsx
+   import { useAIContext } from '@/app/context/AIContext';
+   ```
+
+2. **Set the Context**:
+   Inside your component or modal, use a `useEffect` to update the AI's focus:
+   ```tsx
+   const { setContext } = useAIContext();
+
+   useEffect(() => {
+     setContext("Erstelle gerade ein Sourcing-Sample. Hilf dem User bei Qualitätsmerkmalen.");
+     
+     // Optional: reset when leaving
+     return () => setContext("Forge Dashboard");
+   }, []);
+   ```
+
+3. **Profit**:
+   The AI Sidebar will instantly adapt to that new context and provide relevant advice based on the user's current page and your description. 🚀
+
 
 ### Voraussetzungen
 - Node.js 18+ & npm

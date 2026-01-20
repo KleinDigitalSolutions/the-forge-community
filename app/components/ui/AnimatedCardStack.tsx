@@ -67,18 +67,18 @@ function CardContent({ contentType }: { contentType: 1 | 2 | 3 }) {
 
       <div className="relative z-10 flex flex-col h-full justify-between">
         <div>
-          <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center mb-6 border border-white/30">
+          <div className="hidden sm:flex w-12 h-12 bg-white/20 backdrop-blur-md rounded-xl items-center justify-center mb-6 border border-white/30">
             <Icon className="w-6 h-6 text-white" />
           </div>
-          <h3 className={cn("text-3xl sm:text-4xl mb-3 leading-tight", data.font)}>
+          <h3 className={cn("text-2xl sm:text-4xl mb-3 leading-tight", data.font)}>
             {data.title}
           </h3>
-          <p className="text-white/80 text-sm sm:text-base leading-relaxed max-w-[90%]">
+          <p className="text-white/80 text-xs sm:text-base leading-relaxed max-w-[90%]">
             {data.description}
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest">
+        <div className="flex items-center gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest mt-4">
           <span>Manifest lesen</span>
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </div>
