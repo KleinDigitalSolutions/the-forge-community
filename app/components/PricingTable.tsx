@@ -14,44 +14,48 @@ export function PricingTable({ onSelectPlan, isLoading }: PricingTableProps) {
   const plans = [
     {
       id: 'starter' as PlanType,
-      name: 'Starter',
-      subtitle: 'Einstieg mit wenig Hürden',
-      price: '69',
+      name: 'Standard',
+      subtitle: 'Volle Flexibilität',
+      price: '199',
+      period: '/mo',
       features: [
-        { text: '15% Rohertrag Beteiligung', highlight: true },
-        { text: 'Zugang zur Community', highlight: false },
-        { text: 'Basis Support', highlight: false },
+        { text: 'Zugang zum Forge OS', highlight: true },
+        { text: 'Alle AI-Studios inklusive', highlight: false },
+        { text: 'Monatlich kündbar', highlight: false },
+        { text: 'Standard Support', highlight: false },
       ],
-      cta: 'Starter wählen',
-      featured: false,
-    },
-    {
-      id: 'growth' as PlanType,
-      name: 'Growth',
-      subtitle: 'Skalierung nach Auftrag',
-      price: '99',
-      features: [
-        { text: '10% Rohertrag Beteiligung', highlight: true },
-        { text: '2€ pro Order Gebühr', highlight: false },
-        { text: 'Vollständiger Community-Zugang', highlight: false },
-        { text: 'Prioritäts-Support', highlight: false },
-      ],
-      cta: 'Growth wählen',
+      cta: 'Monatlich starten',
       featured: false,
     },
     {
       id: 'premium' as PlanType,
-      name: 'Premium',
-      subtitle: 'High-Volume Profi',
-      price: '149',
+      name: 'Validator Batch',
+      subtitle: 'Gründungsmitglied (Limited)',
+      price: '997',
+      period: '/jahr',
       features: [
-        { text: '5% Rohertrag Beteiligung', highlight: true },
-        { text: 'Keine Order-Gebühr', highlight: false },
-        { text: 'Doppelte Stimmkraft', highlight: true },
-        { text: 'Direkter Founder-Zugang', highlight: false },
+        { text: '50% Ersparnis (statt 2.388€)', highlight: true },
+        { text: 'Dauerhafte Preisgarantie', highlight: true },
+        { text: 'Direkter Founder-Draht', highlight: false },
+        { text: 'Case-Study Teilnahme', highlight: false },
       ],
-      cta: 'Premium wählen',
+      cta: 'Validator Deal sichern',
       featured: true,
+    },
+    {
+      id: 'growth' as PlanType,
+      name: 'Enterprise',
+      subtitle: 'White-Label & Agenturen',
+      price: 'Custom',
+      period: '',
+      features: [
+        { text: 'Eigene Domain Integration', highlight: true },
+        { text: 'Multi-Venture Management', highlight: false },
+        { text: 'Unlimitierte AI-Credits', highlight: true },
+        { text: 'Dedicated Account Manager', highlight: false },
+      ],
+      cta: 'Kontakt aufnehmen',
+      featured: false,
     },
   ];
 
@@ -94,8 +98,8 @@ export function PricingTable({ onSelectPlan, isLoading }: PricingTableProps) {
 
           <div className="relative z-10 mb-10">
             <div className="flex items-baseline gap-1">
-              <span className="text-5xl font-instrument-serif text-white">{plan.price}€</span>
-              <span className="text-xs text-white/30 uppercase tracking-widest">/mo</span>
+              <span className="text-5xl font-instrument-serif text-white">{plan.price}{plan.price !== 'Custom' && '€'}</span>
+              <span className="text-xs text-white/30 uppercase tracking-widest">{plan.period}</span>
             </div>
           </div>
 
