@@ -14,7 +14,9 @@ import {
   BarChart3,
   Users,
   Box,
-  TrendingUp
+  TrendingUp,
+  Scale,
+  FileText
 } from 'lucide-react';
 
 interface ForgeSidebarProps {
@@ -33,6 +35,13 @@ const FORGE_MENU = [
     section: 'BUILD',
     items: [
       { icon: Palette, label: 'Brand DNA', href: '/forge/[id]/brand' },
+    ]
+  },
+  {
+    section: 'LEGAL',
+    items: [
+      { icon: Scale, label: 'Documents', href: '/forge/[id]/legal' },
+      { icon: FileText, label: 'Contracts', href: '/forge/[id]/legal/contracts' },
     ]
   },
   {

@@ -2,12 +2,12 @@
  * Unified AI Helper with Gemini Flash Primary + Groq Fallback
  */
 
-interface AIMessage {
+export interface AIMessage {
   role: 'system' | 'user' | 'assistant';
   content: string;
 }
 
-interface AIResponse {
+export interface AIResponse {
   content: string;
   provider: 'gemini' | 'groq';
   error?: string;

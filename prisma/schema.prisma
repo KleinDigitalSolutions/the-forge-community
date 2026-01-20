@@ -43,6 +43,28 @@ enum SquadRole {
   GUEST   // Observer only (limited access)
 }
 
+// ============================================
+// LEGAL STUDIO - Document Types & Status
+// ============================================
+
+enum LegalDocumentType {
+  NDA                 // Non-Disclosure Agreement (Mutual or One-Way)
+  SERVICE_AGREEMENT   // Service Provider / Freelancer Contract
+  PARTNERSHIP         // B2B Partnership Agreement
+  SUPPLIER_CONTRACT   // Manufacturer / Supplier Terms
+  EMPLOYMENT          // Employment Contract (Mini-Job, Freelance)
+  CUSTOM              // Custom template
+}
+
+enum LegalDocumentStatus {
+  DRAFT       // Being edited
+  REVIEW      // Ready for review
+  SENT        // Sent to partner
+  SIGNED      // Both parties signed
+  ARCHIVED    // No longer active
+  REJECTED    // Partner declined
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -61,6 +83,7 @@ model User {
   ventureTasks  VentureTask[]
   mentoringSessions MentoringSession[]
   moderationWarnings ModerationWarning[]
+  legalDocuments LegalDocument[]
 
   // NextAuth
   accounts      Account[]
@@ -100,6 +123,7 @@ model Squad {
   roadmaps    RoadmapItem[]
   ventures    Venture[]
   transactions SquadTransaction[]
+  legalDocuments LegalDocument[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -262,6 +286,7 @@ model Venture {
   resources       VentureResource[]
   mentoringSessions MentoringSession[]
   brandDNA        BrandDNA?
+  legalDocuments  LegalDocument[]
 
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -318,6 +343,67 @@ model BrandDNA {
   updatedAt       DateTime  @updatedAt
 
   @@index([ventureId])
+}
+
+// ============================================
+// LEGAL STUDIO - Document Management
+// ============================================
+
+model LegalDocument {
+  id              String              @id @default(cuid())
+
+  // Relations
+  ventureId       String
+  venture         Venture             @relation(fields: [ventureId], references: [id], onDelete: Cascade)
+
+  squadId         String?
+  squad           Squad?              @relation(fields: [squadId], references: [id], onDelete: SetNull)
+
+  createdById     String
+  createdBy       User                @relation(fields: [createdById], references: [id], onDelete: Restrict)
+
+  // Document Details
+  documentType    LegalDocumentType
+  documentTitle   String              // "NDA with Supplier XYZ"
+  status          LegalDocumentStatus @default(DRAFT)
+
+  // AI Generation Context
+  aiPrompt        String?             @db.Text // Original prompt used
+  generatedContent String?            @db.Text // AI-generated contract text
+
+  // Partner Information
+  partnerCompanyName    String?
+  partnerContactName    String?
+  partnerContactEmail   String?
+  partnerContactPhone   String?
+  partnerAddress        String?       @db.Text
+
+  // Contract Terms (JSON for flexibility)
+  contractTerms   Json?               // { duration: "12 months", payment: "Net 30", scope: "..." }
+
+  // File Storage
+  documentUrl     String?             // PDF export URL (Vercel Blob)
+  signatureUrl    String?             // E-Signature service URL (DocuSign, HelloSign)
+
+  // Metadata
+  version         Int                 @default(1) // Track revisions
+  notes           String?             @db.Text
+
+  // Timestamps
+  sentAt          DateTime?           // When sent to partner
+  signedAt        DateTime?           // When both parties signed
+  expiresAt       DateTime?           // Contract expiry date
+
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  // Performance Indexes
+  @@index([ventureId])
+  @@index([squadId])
+  @@index([createdById])
+  @@index([status])
+  @@index([documentType])
+  @@index([createdAt])
 }
 
 model VentureStep {
