@@ -44,6 +44,36 @@ enum SquadRole {
 }
 
 // ============================================
+// ADMIN SYSTEM - Applications
+// ============================================
+
+model FounderApplication {
+  id              String   @id @default(cuid())
+  name            String
+  email           String   @unique
+  phone           String?
+  instagram       String?
+  why             String?  @db.Text
+  role            String?  // 'investor', 'builder'
+  capital         String?
+  skill           String?
+  status          ApplicationStatus @default(PENDING)
+  notionId        String?  // Optional: Link to Notion if needed
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CONTACTED
+}
+
+// ============================================
 // LEGAL STUDIO - Document Types & Status
 // ============================================
 
@@ -73,6 +103,7 @@ model User {
   image         String?
   role          Role      @default(USER)
   notionId      String?   @unique
+  onboardingComplete Boolean @default(false)
 
   // Relations
   squadMemberships SquadMember[]

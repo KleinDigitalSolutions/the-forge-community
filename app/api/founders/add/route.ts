@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { addFounder } from '@/lib/notion';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +15,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await addFounder({
+    // 1. Save to Database (Primary Source)
+    const application = await prisma.founderApplication.create({
+      data: {
+        name,
+        email,
+        phone,
+        instagram,
+        why,
+        role,
+        capital,
+        skill,
+        status: 'PENDING'
+      }
+    });
+
+    // 2. Sync to Notion (Secondary / Backup) - Non-blocking
+    addFounder({
       name,
       email,
       phone,
@@ -23,12 +40,12 @@ export async function POST(request: NextRequest) {
       role,
       capital,
       skill,
-    });
+    }).catch(err => console.error('Notion Sync Error:', err));
 
     return NextResponse.json({
       success: true,
       message: 'Founder application submitted successfully',
-      founderId: result.id,
+      founderId: application.id,
     });
   } catch (error) {
     console.error('API Error:', error);

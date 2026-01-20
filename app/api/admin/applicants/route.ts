@@ -1,73 +1,41 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { getFounders, updateFounderStatus, getGroups, notion } from '@/lib/notion';
+import { prisma } from '@/lib/prisma';
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
-
-export async function GET() {
+export async function GET(req: NextRequest) {
   const session = await auth();
+  if (!session?.user?.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  if (!session?.user?.email || session.user.email !== ADMIN_EMAIL) {
-    return new NextResponse('Unauthorized', { status: 401 });
-  }
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  if (user?.role !== 'ADMIN') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-  // Fetch only pending applicants
-  const allFounders = await getFounders();
-  const applicants = allFounders.filter(f => f.status === 'pending');
+  const applicants = await prisma.founderApplication.findMany({
+    orderBy: { createdAt: 'desc' }
+  });
 
-  // Also fetch groups for the assignment dropdown
-  const groups = await getGroups();
-  
-  const mappedGroups = groups.map(g => ({
-      id: g.id,
-      name: g.name,
-      currentCount: 0, // Todo: calculate
-      target: g.targetCapital
-  }));
-
-  return NextResponse.json({ applicants, groups: mappedGroups });
+  return NextResponse.json(applicants);
 }
 
-export async function POST(req: Request) {
-    const session = await auth();
-    if (!session?.user?.email || session.user.email !== ADMIN_EMAIL) {
-        return new NextResponse('Unauthorized', { status: 401 });
-    }
+export async function PATCH(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const body = await req.json();
-    const { founderId, action, groupId } = body;
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  if (user?.role !== 'ADMIN') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-    if (action === 'approve') {
-        // 1. Update Status to 'active'
-        await updateFounderStatus(founderId, 'active');
-        
-        // 2. Assign to Group (if provided)
-        if (groupId && process.env.NOTION_DATABASE_ID) {
-            // Find the correct property name for Group relation
-            const response = await notion.databases.retrieve({ database_id: process.env.NOTION_DATABASE_ID });
-            
-            let groupPropName = 'Group';
-            if ('properties' in response) {
-                const props = response.properties as Record<string, any>;
-                groupPropName = Object.keys(props).find(key => 
-                    key.toLowerCase() === 'group' || key === 'Gruppe' || props[key].type === 'relation'
-                ) || 'Group';
-            }
+  try {
+    const { id, status } = await req.json();
 
-            await notion.pages.update({
-                page_id: founderId,
-                properties: {
-                    [groupPropName]: {
-                        relation: [
-                            { id: groupId }
-                        ]
-                    }
-                }
-            });
-        }
-    } else if (action === 'reject') {
-        await updateFounderStatus(founderId, 'inactive');
-    }
+    const updated = await prisma.founderApplication.update({
+      where: { id },
+      data: { status }
+    });
 
-    return NextResponse.json({ success: true });
+    // TODO: If status === 'APPROVED', send invitation email (via Resend)
+    // For now, we assume this is handled manually or via a separate trigger
+
+    return NextResponse.json(updated);
+  } catch (error) {
+    return NextResponse.json({ error: 'Update failed' }, { status: 500 });
+  }
 }

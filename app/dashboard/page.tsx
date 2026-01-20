@@ -6,8 +6,10 @@ import PageShell from '@/app/components/PageShell';
 import { ArrowUpRight, Wallet, Users, MessageSquare, TrendingUp, Shield, Zap, Target } from 'lucide-react';
 import Link from 'next/link';
 import { RoadmapWidget } from '@/app/components/RoadmapWidget';
+import OnboardingWizard from '@/app/components/onboarding/OnboardingWizard';
 
 export default function Dashboard() {
+  const [user, setUser] = useState<any>(null);
   const [stats, setStats] = useState({
     capital: 0,
     squads: 0,
@@ -16,12 +18,26 @@ export default function Dashboard() {
   });
 
   useEffect(() => {
+    // Fetch user for onboarding check
+    fetch('/api/me')
+      .then(res => res.json())
+      .then(data => {
+        if (!data.error) setUser(data);
+      });
+
     setStats({ capital: 25000, squads: 3, posts: 12, growth: 15 });
   }, []);
 
   return (
     <AuthGuard>
       <PageShell>
+        {user && !user.onboardingComplete && (
+          <OnboardingWizard 
+            user={user} 
+            onComplete={() => setUser({ ...user, onboardingComplete: true })} 
+          />
+        )}
+
         <header className="mb-16 relative">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 text-[10px] font-bold text-[var(--accent)] uppercase tracking-[0.3em] mb-6">
             <Shield className="w-3 h-3" />
