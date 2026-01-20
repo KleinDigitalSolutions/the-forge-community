@@ -21,137 +21,13 @@ import {
 } from 'lucide-react';
 import ResponsiveHeroBanner from '@/app/components/ui/ResponsiveHeroBanner';
 import AnimatedCardStack from '@/app/components/ui/AnimatedCardStack';
-
 import ForgeOSShowcase from '@/app/components/landing/ForgeOSShowcase';
+import EquitySimulator from '@/app/components/landing/EquitySimulator';
 
-// --- SUB-KOMPONENTE: REVENUE SIMULATOR (Scale Focus) ---
-const RevenueSimulator = () => {
-  const [revenueInput, setRevenueInput] = useState(10); // 0-100 range (Start at 100k)
-  
-  // Non-linear mapping: 0-100 -> 0 - 10M
-  // Formula: 1000 * input^2
-  // 10 -> 100k
-  // 100 -> 10M
-  const revenue = 1000 * Math.pow(revenueInput, 2);
-  
-  // Valuation Logic
-  const multiple = revenue > 1000000 ? 5 : 3.5;
-  const valuation = revenue * multiple;
-  
-  // Profit Logic
-  const profitMargin = revenue > 1000000 ? 0.25 : 0.20;
-  const annualProfit = revenue * profitMargin;
-
-  const formatMoney = (val: number) => 
-    new Intl.NumberFormat('de-DE', { 
-      style: 'currency', 
-      currency: 'EUR', 
-      maximumFractionDigits: 0,
-      notation: val > 1000000 ? "compact" : "standard"
-    }).format(val);
-
-  const formatMoneyFull = (val: number) => 
-    new Intl.NumberFormat('de-DE', { 
-      style: 'currency', 
-      currency: 'EUR', 
-      maximumFractionDigits: 0
-    }).format(val);
-
-  return (
-    <div className="w-full max-w-4xl mx-auto p-1 rounded-3xl bg-gradient-to-b from-white/10 to-transparent">
-      <div className="bg-[#0B0C0E] rounded-[22px] border border-white/5 p-6 md:p-10 relative overflow-hidden group">
-        
-        {/* Background Glow Effects */}
-        <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-[var(--accent)]/5 blur-[100px] rounded-full pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[200px] h-[200px] bg-[var(--accent)]/5 blur-[80px] rounded-full pointer-events-none" />
-
-        <div className="relative z-10">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 text-[10px] font-bold text-[var(--accent)] uppercase tracking-widest mb-4">
-                <Cpu className="w-3 h-3" />
-                Growth Engine
-              </div>
-              <h3 className="text-3xl md:text-4xl font-instrument-serif text-white mb-2">
-                Revenue Simulator
-              </h3>
-              <p className="text-white/40 text-sm">Skaliere deinen Brand-Umsatz (0 - 10M €)</p>
-            </div>
-            <div className="text-right">
-              <div className="text-4xl font-mono text-white tracking-tighter">{formatMoneyFull(revenue)}</div>
-              <div className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Jahresumsatz (Run-Rate)</div>
-            </div>
-          </div>
-
-          {/* Slider Control */}
-          <div className="mb-12">
-            <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-white/30 mb-4">
-              <span className={revenueInput < 50 ? "text-[var(--accent)] transition-colors" : ""}>Start-Up</span>
-              <span className={revenueInput > 80 ? "text-[var(--accent)] transition-colors" : ""}>Market Leader</span>
-            </div>
-            
-            <input 
-              type="range" 
-              min="0" 
-              max="100" 
-              value={revenueInput} 
-              onChange={(e) => setRevenueInput(parseInt(e.target.value))}
-              className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:bg-[var(--accent)] [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-4 [&::-webkit-slider-thumb]:border-[#0B0C0E] [&::-webkit-slider-thumb]:shadow-[0_0_20px_rgba(212,175,55,0.5)] transition-all"
-            />
-          </div>
-
-          {/* Results Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Valuation Card */}
-            <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 relative overflow-hidden group/card hover:border-[var(--accent)]/20 transition-all">
-               <div className="absolute top-0 left-0 w-1 h-full bg-white/20 group-hover/card:bg-[var(--accent)] transition-colors" />
-               <div className="flex items-start justify-between mb-8">
-                 <div className="p-3 bg-white/5 rounded-xl text-white group-hover/card:text-[var(--accent)] transition-colors">
-                   <Target className="w-6 h-6" />
-                 </div>
-                 <div className="text-right">
-                   <div className="text-lg font-mono text-white">{multiple}x</div>
-                   <div className="text-[10px] text-white/30 uppercase tracking-widest">Exit Multiple</div>
-                 </div>
-               </div>
-               <div>
-                 <div className="text-3xl md:text-4xl font-instrument-serif text-white mb-1">{formatMoney(valuation)}</div>
-                 <div className="text-xs text-white/40">Brand Valuation (Unternehmenswert)</div>
-               </div>
-            </div>
-
-            {/* Profit Card */}
-            <div className="p-6 rounded-2xl bg-[var(--accent)]/[0.03] border border-[var(--accent)]/10 relative overflow-hidden">
-               <div className="absolute top-0 left-0 w-1 h-full bg-[var(--accent)]/50" />
-               <div className="flex items-start justify-between mb-8">
-                 <div className="p-3 bg-[var(--accent)]/10 rounded-xl text-[var(--accent)]">
-                   <TrendingUp className="w-6 h-6" />
-                 </div>
-                 <div className="text-right">
-                   <div className="text-lg font-mono text-white">~{Math.round(profitMargin * 100)}%</div>
-                   <div className="text-[10px] text-white/30 uppercase tracking-widest">EBITDA Marge</div>
-                 </div>
-               </div>
-               <div>
-                 <div className="text-3xl md:text-4xl font-instrument-serif text-white mb-1">{formatMoney(annualProfit)}</div>
-                 <div className="text-xs text-white/40">Jährlicher Profit (Vor Steuer)</div>
-               </div>
-            </div>
-          </div>
-
-          <div className="mt-8 text-center">
-             <p className="text-xs text-white/30 italic">
-               *Hypothetische Hochrechnung basierend auf echten Forge-Benchmarks.
-             </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 // --------------------------------------------------------
 
 type ChatMessage = {
+
   role: 'assistant' | 'user';
   content: string;
 };
@@ -445,7 +321,7 @@ export default function Home() {
              
              {/* Simulator Component Integration */}
              <div className="animate-fade-in-up delay-200">
-               <RevenueSimulator />
+               <EquitySimulator />
              </div>
           </div>
         </div>
