@@ -54,7 +54,6 @@ export default function ImpressumPage() {
                 <h4 className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-3">Rechtliche Vertretung</h4>
                 <p className="text-white/80 font-bold leading-relaxed">
                   Inhaber: Özgür Azap<br />
-                  <span className="text-white/40 font-medium text-xs uppercase tracking-wider">(Einzelunternehmen)</span>
                 </p>
               </div>
             </div>
