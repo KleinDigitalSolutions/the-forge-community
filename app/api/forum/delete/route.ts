@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { deleteForumPost, getForumPosts, getFounderByEmail } from '@/lib/notion';
 import { auth } from '@/auth';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request) {
   // 🔒 SECURITY: Auth-Check
@@ -17,24 +17,34 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing id' }, { status: 400 });
     }
 
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
     // 🔒 SECURITY: Owner-Check - Nur eigene Posts dürfen gelöscht werden
-    const posts = await getForumPosts();
-    const post = posts.find(p => p.id === id);
+    const post = await prisma.forumPost.findUnique({
+      where: { id },
+      select: { id: true, authorId: true }
+    });
 
     if (!post) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
     // Prüfe ob der eingeloggte User der Autor ist
-    const founder = await getFounderByEmail(session.user.email);
-    if (!founder || post.author !== founder.name) {
+    if (post.authorId !== user.id) {
       return NextResponse.json({
         error: 'Forbidden: You can only delete your own posts'
       }, { status: 403 });
     }
 
     // User ist authentifiziert UND der Autor -> Löschen erlaubt
-    await deleteForumPost(id);
+    await prisma.forumPost.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting post:', error);

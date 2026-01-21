@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getForumPosts, addForumPost, getFounderByEmail } from '@/lib/notion';
 import { auth } from '@/auth';
-import { Client } from '@notionhq/client';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -10,22 +9,44 @@ export async function GET() {
   const session = await auth();
   
   try {
-    const posts = await getForumPosts();
+    const posts = await prisma.forumPost.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        comments: {
+          orderBy: { createdAt: 'asc' },
+          select: {
+            authorName: true,
+            content: true,
+            createdAt: true
+          }
+        }
+      }
+    });
     
     // If user is logged in, attach their existing votes
-    let userVotes: any[] = [];
+    let userVotes: Map<string, number> = new Map();
     if (session?.user?.email) {
-      const { prisma } = await import('@/lib/prisma');
       const user = await prisma.user.findUnique({
         where: { email: session.user.email },
-        include: { forumVotes: true }
+        select: { forumVotes: { select: { postId: true, voteType: true } } }
       });
-      userVotes = user?.forumVotes || [];
+      userVotes = new Map((user?.forumVotes || []).map(vote => [vote.postId, vote.voteType]));
     }
 
     const postsWithVotes = posts.map(post => ({
-      ...post,
-      userVote: userVotes.find(v => v.postId === post.id)?.voteType || 0
+      id: post.id,
+      author: post.authorName,
+      founderNumber: post.founderNumber,
+      content: post.content,
+      category: post.category,
+      likes: post.likes,
+      createdTime: post.createdAt.toISOString(),
+      comments: post.comments.map(comment => ({
+        author: comment.authorName,
+        content: comment.content,
+        time: comment.createdAt.toISOString()
+      })),
+      userVote: userVotes.get(post.id) || 0
     }));
 
     return NextResponse.json(postsWithVotes);
@@ -45,19 +66,6 @@ export async function POST(request: Request) {
   }
 
   try {
-    let authorName = session.user.name || 'Anonymous Founder';
-    let founderNumber = 0;
-
-    try {
-      const founder = await getFounderByEmail(session.user.email);
-      if (founder) {
-        authorName = founder.name;
-        founderNumber = founder.founderNumber;
-      }
-    } catch (e) {
-      console.warn('API: Founder lookup failed, using session defaults');
-    }
-
     const body = await request.json();
     const { content, category } = body;
 
@@ -67,12 +75,9 @@ export async function POST(request: Request) {
 
     // AI MODERATION CHECK
     const { moderateContent, issueWarning, canUserPost } = await import('@/lib/moderation');
-    const { prisma } = await import('@/lib/prisma');
-
-    // Get user ID from session
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      select: { id: true }
+      select: { id: true, name: true, founderNumber: true }
     });
 
     if (!user) {
@@ -107,11 +112,14 @@ export async function POST(request: Request) {
     }
 
     // Erstelle den Post
-    const response = await addForumPost({
-      author: authorName,
-      founderNumber: founderNumber,
-      content,
-      category,
+    const response = await prisma.forumPost.create({
+      data: {
+        authorId: user.id,
+        authorName: user.name || 'Anonymous Founder',
+        founderNumber: user.founderNumber || 0,
+        content,
+        category
+      }
     });
     
     // Check for @forge-ai mention
@@ -126,24 +134,12 @@ export async function POST(request: Request) {
         const aiResponse = await ForumAIActions.mentionReply(question, `Category: ${category}`);
 
         if (aiResponse.content && response.id) {
-          const notion = new Client({ auth: process.env.NOTION_API_KEY });
-          await notion.blocks.children.append({
-            block_id: response.id,
-            children: [
-              { object: 'block', type: 'divider', divider: {} },
-              {
-                object: 'block',
-                type: 'callout',
-                callout: {
-                  icon: { emoji: '🤖' },
-                  color: 'blue_background',
-                  rich_text: [{
-                    type: 'text',
-                    text: { content: `**@forge-ai antwortet:**\n\n${aiResponse.content}\n\n_Powered by ${aiResponse.provider === 'gemini' ? 'Gemini Flash' : 'Groq'}_` }
-                  }]
-                }
-              }
-            ]
+          await prisma.forumComment.create({
+            data: {
+              postId: response.id,
+              authorName: '@forge-ai',
+              content: `**@forge-ai antwortet:**\n\n${aiResponse.content}\n\n_Powered by ${aiResponse.provider === 'gemini' ? 'Gemini Flash' : 'Groq'}_`
+            }
           });
         }
       } catch (aiError) {

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { updateForumPost, getForumPosts, getFounderByEmail } from '@/lib/notion';
 import { auth } from '@/auth';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request) {
   // 🔒 SECURITY: Auth-Check
@@ -17,25 +17,42 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing id or content' }, { status: 400 });
     }
 
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
     // 🔒 SECURITY: Owner-Check - Nur eigene Posts dürfen bearbeitet werden
-    const posts = await getForumPosts();
-    const post = posts.find(p => p.id === id);
+    const post = await prisma.forumPost.findUnique({
+      where: { id },
+      select: { id: true, authorId: true }
+    });
 
     if (!post) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
     // Prüfe ob der eingeloggte User der Autor ist
-    const founder = await getFounderByEmail(session.user.email);
-    if (!founder || post.author !== founder.name) {
+    if (post.authorId !== user.id) {
       return NextResponse.json({
         error: 'Forbidden: You can only edit your own posts'
       }, { status: 403 });
     }
 
     // User ist authentifiziert UND der Autor -> Bearbeiten erlaubt
-    const response = await updateForumPost(id, content);
-    return NextResponse.json(response);
+    const updated = await prisma.forumPost.update({
+      where: { id },
+      data: { content }
+    });
+    return NextResponse.json({
+      id: updated.id,
+      content: updated.content,
+      updatedAt: updated.updatedAt.toISOString()
+    });
   } catch (error) {
     console.error('Error updating post:', error);
     return NextResponse.json({ error: 'Failed to update post' }, { status: 500 });

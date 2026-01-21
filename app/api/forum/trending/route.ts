@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getForumPosts } from '@/lib/notion';
 import { callAI } from '@/lib/ai';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -20,24 +20,32 @@ type NormalizedPost = {
  */
 export async function GET() {
   try {
-    // Normalize posts
-    const allPosts = await getForumPosts();
-    const normalized: NormalizedPost[] = allPosts.map((post: any) => ({
-      id: post.id,
-      content: post.content || '',
-      category: post.category || 'General',
-      likes: post.likes || 0,
-      comments: Array.isArray(post.comments) ? post.comments.length : (post.comments || 0),
-      created: post.createdTime ? new Date(post.createdTime) : new Date(),
-    }));
-
     // Recent posts (last 30 days)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const recentPosts = normalized.filter(post => post.created >= thirtyDaysAgo);
+    const recentPosts = await prisma.forumPost.findMany({
+      where: { createdAt: { gte: thirtyDaysAgo } },
+      select: {
+        id: true,
+        content: true,
+        category: true,
+        likes: true,
+        createdAt: true,
+        _count: { select: { comments: true } }
+      }
+    });
 
-    if (recentPosts.length === 0) {
+    const normalized: NormalizedPost[] = recentPosts.map((post) => ({
+      id: post.id,
+      content: post.content || '',
+      category: post.category || 'General',
+      likes: post.likes || 0,
+      comments: post._count.comments,
+      created: post.createdAt
+    }));
+
+    if (normalized.length === 0) {
       return NextResponse.json({
         topics: [],
         message: 'Nicht genug Daten für Trend-Analyse'
@@ -45,7 +53,7 @@ export async function GET() {
     }
 
     // Prepare data for AI analysis
-    const postsData = recentPosts.map(post => ({
+    const postsData = normalized.map(post => ({
       excerpt: post.content.slice(0, 400),
       category: post.category,
       likes: post.likes,
@@ -112,12 +120,12 @@ export async function GET() {
     } catch (parseError) {
       console.error('Failed to parse AI response:', parseError);
       // Fallback: Simple category-based trending
-      topics = generateFallbackTrends(recentPosts);
+      topics = generateFallbackTrends(normalized);
     }
 
     return NextResponse.json({
       topics,
-      analyzed_posts: recentPosts.length,
+      analyzed_posts: normalized.length,
       period: '30 days',
       provider: analysis.provider,
       generated_at: new Date().toISOString()

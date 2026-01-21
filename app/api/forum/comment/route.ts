@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { addForumComment, getFounderByEmail } from '@/lib/notion';
 import { auth } from '@/auth';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -9,17 +9,6 @@ export async function POST(request: Request) {
   }
 
   try {
-    let authorName = session.user.name || 'Anonymous Founder';
-
-    try {
-      const founder = await getFounderByEmail(session.user.email);
-      if (founder) {
-        authorName = founder.name;
-      }
-    } catch (e) {
-      console.warn('API: Founder lookup failed for comment, using fallback');
-    }
-
     const body = await request.json();
     const { postId, content } = body;
 
@@ -27,8 +16,39 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing postId or content' }, { status: 400 });
     }
 
-    const response = await addForumComment(postId, authorName, content);
-    return NextResponse.json(response);
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true, name: true }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const post = await prisma.forumPost.findUnique({
+      where: { id: postId },
+      select: { id: true }
+    });
+
+    if (!post) {
+      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+    }
+
+    const comment = await prisma.forumComment.create({
+      data: {
+        postId,
+        authorId: user.id,
+        authorName: user.name || 'Anonymous Founder',
+        content
+      }
+    });
+
+    return NextResponse.json({
+      id: comment.id,
+      author: comment.authorName,
+      content: comment.content,
+      time: comment.createdAt.toISOString()
+    });
   } catch (error) {
     console.error('Error adding comment:', error);
     return NextResponse.json(

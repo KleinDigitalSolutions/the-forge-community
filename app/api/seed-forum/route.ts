@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { addForumPost } from '@/lib/notion';
+import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   const posts = [
@@ -33,11 +33,18 @@ export async function GET() {
     const results = [];
     for (const post of posts) {
       // Add small delay to avoid rate limits
-      await new Promise(r => setTimeout(r, 1000));
-      const res = await addForumPost(post);
-      results.push(res);
+      await new Promise(r => setTimeout(r, 200));
+      const res = await prisma.forumPost.create({
+        data: {
+          authorName: post.author,
+          founderNumber: post.founderNumber,
+          category: post.category,
+          content: post.content
+        }
+      });
+      results.push(res.id);
     }
-    return NextResponse.json({ success: true, created: results.length });
+    return NextResponse.json({ success: true, created: results.length, ids: results });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

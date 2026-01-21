@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getForumPosts } from '@/lib/notion';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,14 +15,22 @@ export async function POST(request: Request) {
     }
 
     // Get all posts
-    const allPosts = await getForumPosts();
+    const allPosts = await prisma.forumPost.findMany({
+      where: { id: { not: postId } },
+      select: {
+        id: true,
+        content: true,
+        category: true,
+        likes: true,
+        createdAt: true
+      }
+    });
 
     // Extract keywords from current post
     const keywords = extractKeywords(content);
 
     // Calculate similarity scores
     const postsWithScores = allPosts
-      .filter(post => post.id !== postId) // Exclude current post
       .map(post => ({
         ...post,
         score: calculateSimilarity(keywords, post.content, post.category, category)

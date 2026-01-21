@@ -108,15 +108,15 @@ model User {
   karmaScore    Int       @default(0)
   phone         String?
   birthday      String?
-  addressStreet String?
-  addressCity   String?
-  addressZip    String?
-  addressCountry String?  @default("Germany")
+  addressStreet String? @map("addressstreet")
+  addressCity   String? @map("addresscity")
+  addressZip    String? @map("addresszip")
+  addressCountry String? @default("Germany") @map("addresscountry")
   instagram     String?
   linkedin      String?
   bio           String?
   goal          String?
-  skills        String[]
+  skills        String[] @default([])
 
   // Relations
   squadMemberships SquadMember[]
@@ -126,6 +126,8 @@ model User {
   createdDecisions Decision[]
   karma         Karma[]
   forumVotes    ForumVote[]
+  forumPosts    ForumPost[]
+  forumComments ForumComment[]
   ventures      Venture[]
   ventureTasks  VentureTask[]
   mentoringSessions MentoringSession[]
@@ -300,7 +302,8 @@ model VoteResponse {
 
 model ForumVote {
   id        String   @id @default(cuid())
-  postId    String   // Notion Page ID (No Relation because Posts are in Notion)
+  postId    String
+  post      ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
@@ -309,6 +312,42 @@ model ForumVote {
 
   @@unique([postId, userId]) // Prevent double voting
   @@index([postId])
+}
+
+model ForumPost {
+  id            String   @id @default(cuid())
+  authorId      String?
+  author        User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  authorName    String
+  founderNumber Int      @default(0)
+  content       String   @db.Text
+  category      String   @default("General")
+  likes         Int      @default(0)
+
+  comments      ForumComment[]
+  votes         ForumVote[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([authorId])
+  @@index([category])
+  @@index([createdAt])
+}
+
+model ForumComment {
+  id         String   @id @default(cuid())
+  postId     String
+  post       ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId   String?
+  author     User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  authorName String
+  content    String   @db.Text
+  createdAt  DateTime @default(now())
+
+  @@index([postId])
+  @@index([authorId])
+  @@index([createdAt])
 }
 
 model Karma {
