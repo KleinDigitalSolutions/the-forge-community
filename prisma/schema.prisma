@@ -132,6 +132,9 @@ model User {
   isBanned         Boolean  @default(false)
   banReason        String?
   bannedAt         DateTime?
+  
+  // AI Credits System (Freemium)
+  credits          Int      @default(50)
 
   // Stripe Subscription (69€/mo Platform Fee)
   stripeCustomerId      String?  @unique

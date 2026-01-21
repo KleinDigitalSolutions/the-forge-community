@@ -17,6 +17,7 @@ export async function GET() {
       email: true,
       image: true,
       role: true,
+      credits: true,
       onboardingComplete: true
     }
   });

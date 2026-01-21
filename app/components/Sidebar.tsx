@@ -16,6 +16,7 @@ import {
   Rocket
 } from 'lucide-react';
 import { SignOutButton } from './SignOutButton';
+import { CreditsDisplay } from './CreditsDisplay';
 
 const navigation = [
   { name: 'Cockpit', href: '/dashboard', icon: LayoutDashboard },
@@ -84,9 +85,11 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="p-6 border-t border-white/5 relative z-10 bg-black/20">
-        <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-5 mb-6 backdrop-blur-sm relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+      <div className="border-t border-white/5 relative z-10 bg-black/20 pb-6 pt-4">
+        <CreditsDisplay />
+        <div className="px-6">
+          <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-5 mb-6 backdrop-blur-sm relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           <div className="flex items-center gap-3 text-[10px] font-bold text-white mb-2 relative z-10">
             <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
             Operator Status
@@ -97,6 +100,7 @@ export default function Sidebar() {
         </div>
         <SignOutButton />
       </div>
-    </aside>
+    </div>
+  </aside>
   );
 }

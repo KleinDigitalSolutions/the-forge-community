@@ -22,14 +22,23 @@ export async function POST(
       return NextResponse.json({ error: 'Fehlende Parameter' }, { status: 400 });
     }
 
-    // Get user
+    // Get user with credits
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      select: { id: true }
+      select: { id: true, credits: true }
     });
 
     if (!user) {
       return NextResponse.json({ error: 'Benutzer nicht gefunden' }, { status: 404 });
+    }
+
+    // CREDIT CHECK
+    const COST = 10;
+    if (user.credits < COST) {
+      return NextResponse.json({ 
+        error: 'Nicht genug Energy (Credits). Bitte lade dein Konto auf.',
+        code: 'INSUFFICIENT_CREDITS' 
+      }, { status: 402 });
     }
 
     // Verify access to venture and get BrandDNA
@@ -98,20 +107,27 @@ export async function POST(
        throw new Error(aiResponse.error);
     }
 
-    // Save to database
-    await prisma.marketingContent.create({
-      data: {
-        ventureId: id,
-        contentType,
-        prompt: userPrompt,
-        generatedContent: aiResponse.content,
-        createdById: user.id
-      }
-    });
+    // Save to database & Deduct Credits
+    await prisma.$transaction([
+      prisma.marketingContent.create({
+        data: {
+          ventureId: id,
+          contentType,
+          prompt: userPrompt,
+          generatedContent: aiResponse.content,
+          createdById: user.id
+        }
+      }),
+      prisma.user.update({
+        where: { id: user.id },
+        data: { credits: { decrement: COST } }
+      })
+    ]);
 
     return NextResponse.json({ 
       content: aiResponse.content,
-      provider: aiResponse.provider 
+      provider: aiResponse.provider,
+      creditsRemaining: user.credits - COST
     });
 
   } catch (error) {
