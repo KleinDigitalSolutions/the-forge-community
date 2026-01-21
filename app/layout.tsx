@@ -28,11 +28,40 @@ const caveat = Caveat({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://stakeandscale.de'),
   title: "STAKE & SCALE",
-  description: "Community Venture Studio fuer ambitionierte Founder",
+  description: "Community Venture Studio für ambitionierte Founder",
   icons: {
-    icon: "/favicon.png",
-    apple: "/favicon.png",
+    icon: [
+      { url: "/favicon.png" },
+      { url: "/favicon.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: [
+      { url: "/favicon.png", sizes: "180x180", type: "image/png" },
+    ],
+    shortcut: ["/favicon.png"],
+  },
+  openGraph: {
+    title: "STAKE & SCALE",
+    description: "Community Venture Studio für ambitionierte Founder",
+    url: "https://stakeandscale.de",
+    siteName: "STAKE & SCALE",
+    images: [
+      {
+        url: "/favicon.png",
+        width: 512,
+        height: 512,
+        alt: "STAKE & SCALE Logo",
+      },
+    ],
+    locale: "de_DE",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "STAKE & SCALE",
+    description: "Community Venture Studio für ambitionierte Founder",
+    images: ["/favicon.png"],
   },
 };
 
