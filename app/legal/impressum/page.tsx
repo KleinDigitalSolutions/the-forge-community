@@ -39,23 +39,29 @@ export default function ImpressumPage() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-12">
-            <div className="space-y-6">
+            <div className="space-y-8">
               <div>
-                <h4 className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-3">Betreiber</h4>
-                <p className="text-white/80 font-bold leading-relaxed">
-                  Klein Digital Solutions<br />
-                  <span className="text-white/40 font-medium">(Einzelunternehmen)</span>
+                <h4 className="text-[10px] font-black text-[var(--accent)] uppercase tracking-[0.3em] mb-4">Plattform-Betreiber</h4>
+                <p className="text-4xl font-instrument-serif text-white leading-none mb-2">
+                  STAKE & SCALE
+                </p>
+                <p className="text-white/40 text-xs uppercase tracking-widest font-bold">
+                  Ein Projekt von Klein Digital Solutions
                 </p>
               </div>
-              <div>
-                <h4 className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-3">Verantwortlich</h4>
-                <p className="text-white/80 leading-relaxed">Özgür Azap</p>
+              
+              <div className="pt-6 border-t border-white/5">
+                <h4 className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-3">Rechtliche Vertretung</h4>
+                <p className="text-white/80 font-bold leading-relaxed">
+                  Inhaber: Özgür Azap<br />
+                  <span className="text-white/40 font-medium text-xs uppercase tracking-wider">(Einzelunternehmen)</span>
+                </p>
               </div>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-8">
               <div>
-                <h4 className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-3">Postanschrift</h4>
+                <h4 className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-3">Zentrale Postanschrift</h4>
                 <p className="text-white/60 leading-relaxed">
                   Wittbräuckerstraße 109<br />
                   44287 Dortmund<br />
@@ -63,8 +69,8 @@ export default function ImpressumPage() {
                 </p>
               </div>
               <div>
-                <h4 className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-3">Kontakt</h4>
-                <a href="mailto:info@stakeandscale.de" className="inline-flex items-center gap-2 text-[var(--accent)] hover:underline">
+                <h4 className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-3">Direktkontakt</h4>
+                <a href="mailto:info@stakeandscale.de" className="inline-flex items-center gap-2 text-[var(--accent)] hover:underline font-bold">
                   <Mail className="w-4 h-4" />
                   info@stakeandscale.de
                 </a>

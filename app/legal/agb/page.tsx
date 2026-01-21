@@ -134,6 +134,34 @@ export default function AGBPage() {
             <span className="px-4 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-black uppercase tracking-widest">Keine Garantie</span>
           </div>
         </section>
+
+        {/* Section 4: AI & Energy */}
+        <section className="p-10 glass-card rounded-3xl border border-white/10 relative overflow-hidden">
+          <div className="flex items-center gap-4 mb-10">
+            <div className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-[var(--accent)]">
+              <Zap className="w-5 h-5" />
+            </div>
+            <h3 className="text-2xl font-instrument-serif text-white">§4 - KI-Nutzung & Energy System</h3>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-12">
+            <div className="space-y-6">
+              <h4 className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Credit-Modell</h4>
+              <p className="text-xs text-white/50 leading-relaxed">
+                Der Zugriff auf KI-Funktionen (Generierung von Content, Verträgen etc.) erfolgt über ein Credit-System ("Energy"). 
+                Neue Accounts erhalten ein einmaliges Startguthaben. Weitere Credits können über Mitgliedschaften oder Zukäufe erworben werden.
+              </p>
+            </div>
+            <div className="space-y-6">
+              <h4 className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Haftung für KI-Inhalte</h4>
+              <p className="text-xs text-white/50 leading-relaxed">
+                KI-generierte Inhalte (insb. rechtliche Vorlagen) stellen keine Rechtsberatung dar. 
+                Der Nutzer ist verpflichtet, alle Ergebnisse auf fachliche und rechtliche Richtigkeit zu prüfen. 
+                THE FORGE übernimmt keine Haftung für Schäden aus der Nutzung KI-generierter Texte.
+              </p>
+            </div>
+          </div>
+        </section>
       </div>
 
       <div className="pt-12 text-center border-t border-white/5">

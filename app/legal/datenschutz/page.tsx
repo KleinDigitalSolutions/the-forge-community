@@ -96,9 +96,11 @@ export default function DatenschutzPage() {
 
           <div className="space-y-4">
             {[
-              { name: "Notion", purpose: "Zentrale Datenbank (USA / EU-Standardvertragsklauseln)", url: "https://notion.so/privacy" },
+              { name: "Cloudflare", purpose: "Bot-Schutz (Turnstile) & DNS Sicherheit (USA/EU-Standardvertragsklauseln)", url: "https://www.cloudflare.com/privacypolicy/" },
+              { name: "Resend", purpose: "Versand von Magic-Links & System-Emails (USA/EU-Standardvertragsklauseln)", url: "https://resend.com/privacy" },
               { name: "Vercel", purpose: "Infrastruktur & Hosting (USA / EU-Standardvertragsklauseln)", url: "https://vercel.com/privacy" },
-              { name: "Neon", purpose: "Postgres Datenbank (EU-Server / Serverless)", url: "https://neon.tech/privacy" }
+              { name: "Neon", purpose: "Postgres Datenbank (EU-Server / Serverless)", url: "https://neon.tech/privacy" },
+              { name: "Notion", purpose: "Archiv & Bewerber-Datenbank (USA / EU-Standardvertragsklauseln)", url: "https://notion.so/privacy" }
             ].map((service, i) => (
               <a 
                 key={i} href={service.url} target="_blank" 
