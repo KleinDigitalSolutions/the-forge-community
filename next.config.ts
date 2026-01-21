@@ -28,7 +28,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' blob: data: https://hoirqrkdgbmvpwutwuwj.supabase.co https://upload.wikimedia.org https://simpleicons.org; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://hoirqrkdgbmvpwutwuwj.supabase.co; frame-src https://challenges.cloudflare.com;",
+            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://challenges.cloudflare.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' blob: data: https://hoirqrkdgbmvpwutwuwj.supabase.co https://upload.wikimedia.org https://simpleicons.org https://www.googletagmanager.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://hoirqrkdgbmvpwutwuwj.supabase.co https://www.google-analytics.com https://analytics.google.com; frame-src https://challenges.cloudflare.com;",
           },
         ],
       },

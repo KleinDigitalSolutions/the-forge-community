@@ -212,9 +212,9 @@ export default function Home() {
       />
 
       {/* Metrics Section - HUD Style */}
-      <section className="relative -mt-20 z-20 px-6">
+      <section className="relative -mt-20 z-20 px-4 md:px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             {[
               { label: 'Execution Hebel', value: '25x', sub: 'Vs. Solo Gründung' },
               { label: 'Tage bis Launch', value: 'Ø 45', sub: 'Infrastruktur Ready' },
@@ -239,7 +239,7 @@ export default function Home() {
       </section>
 
       {/* Philosophy / Features */}
-      <section id="philosophy" className="py-40 px-6 relative">
+      <section id="philosophy" className="py-40 px-4 md:px-6 relative">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-20 items-start mb-32">
             <div>
@@ -294,7 +294,7 @@ export default function Home() {
       </section>
 
        {/* --- NEUE SECTION: VALIDATOR SIMULATOR --- */}
-       <section className="py-20 px-6 relative border-y border-white/5 bg-black/40">
+       <section className="py-20 px-4 md:px-6 relative border-y border-white/5 bg-black/40">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
              <div>
@@ -342,7 +342,7 @@ export default function Home() {
       </section>
 
       {/* Philosophy Interlude - Animated Stack */}
-      <section id="principles" className="py-40 px-6 relative overflow-hidden border-b border-white/5">
+      <section id="principles" className="py-40 px-4 md:px-6 relative overflow-hidden border-b border-white/5">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[var(--accent)]/5 rounded-full blur-[150px] pointer-events-none" />
         
         <div className="max-w-7xl mx-auto flex flex-col items-center relative z-10">
@@ -358,7 +358,7 @@ export default function Home() {
       </section>
 
       {/* Pricing / Join */}
-      <section id="pricing" className="py-40 px-6 relative overflow-hidden">
+      <section id="pricing" className="py-40 px-4 md:px-6 relative overflow-hidden">
          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[var(--accent)]/5 rounded-full blur-[150px] pointer-events-none" />
          <div className="max-w-7xl mx-auto relative z-10">
             <div className="text-center mb-32">

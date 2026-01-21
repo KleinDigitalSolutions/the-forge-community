@@ -109,7 +109,9 @@ function LoginForm() {
             <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-3 text-xs text-red-400 leading-relaxed uppercase tracking-wider">
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               <span>
-                {errorMessage || 'Ein Fehler ist aufgetreten. Bitte versuche es erneut.'}
+                {errorMessage || (urlError === 'Verification' 
+                  ? 'Der Link ist abgelaufen oder wurde bereits genutzt. Bitte fordere einen neuen an.' 
+                  : 'Ein Fehler ist aufgetreten. Bitte versuche es erneut.')}
               </span>
             </div>
           )}

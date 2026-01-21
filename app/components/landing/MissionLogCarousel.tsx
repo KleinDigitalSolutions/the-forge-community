@@ -126,7 +126,7 @@ export default function MissionLogCarousel() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-32 items-center max-w-7xl mx-auto px-6 relative z-20">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-32 items-center max-w-7xl mx-auto px-4 md:px-6 relative z-20">
         {/* Left: Content */}
         <div className="min-h-[600px] flex flex-col justify-center">
           <AnimatePresence mode="wait">

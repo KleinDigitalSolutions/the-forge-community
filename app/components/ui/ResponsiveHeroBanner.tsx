@@ -170,17 +170,17 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                             </span>
                         </div>
 
-                        <h1 className="sm:text-5xl md:text-6xl lg:text-7xl leading-tight text-3xl sm:text-4xl text-white tracking-tight font-instrument-serif font-normal animate-fade-slide-in-2 px-2">
+                        <h1 className="sm:text-5xl md:text-6xl lg:text-7xl leading-tight text-3xl sm:text-4xl text-white tracking-tight font-instrument-serif font-normal animate-fade-slide-in-2 px-4 sm:px-0">
                             {title}
                             <br className="hidden sm:block" />
                             {" "}{titleLine2}
                         </h1>
 
-                        <p className="sm:text-lg animate-fade-slide-in-3 text-sm sm:text-base text-white/60 max-w-xl mt-6 mx-auto leading-relaxed px-4">
+                        <p className="sm:text-lg animate-fade-slide-in-3 text-sm sm:text-base text-white/60 max-w-xl mt-6 mx-auto leading-relaxed px-4 sm:px-0">
                             {description}
                         </p>
 
-                        <div className="flex flex-col sm:flex-row sm:gap-4 mt-10 gap-4 items-center justify-center animate-fade-slide-in-4 px-4">
+                        <div className="flex flex-col sm:flex-row sm:gap-4 mt-10 gap-4 items-center justify-center animate-fade-slide-in-4 px-4 sm:px-0">
                             <Link
                                 href={primaryButtonHref}
                                 className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-[#D4AF37] text-black hover:brightness-110 text-[10px] font-black rounded-xl py-4 px-8 uppercase tracking-[0.3em] transition-all duration-500 shadow-2xl shadow-[#D4AF37]/20"
