@@ -9,6 +9,7 @@ import {
   Sparkles, Lightbulb, CheckCircle, Search, Target
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { formatDistanceToNow } from 'date-fns';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { MicroExpander } from '@/app/components/ui/MicroExpander';
@@ -374,8 +375,29 @@ export default function Forum() {
               )}
             </AnimatePresence>
 
+            {/* Sort & Filter Bar */}
+            <div className="flex items-center justify-between mb-4 px-2">
+              <div className="flex items-center gap-1 bg-[var(--surface-muted)]/50 p-1 rounded-lg border border-[var(--border)]">
+                {['Hot', 'New', 'Top'].map((sort) => (
+                  <button
+                    key={sort}
+                    className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${
+                      sort === 'Hot' 
+                        ? 'bg-[var(--surface)] text-[var(--foreground)] shadow-sm' 
+                        : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--surface)]/50'
+                    }`}
+                  >
+                    {sort}
+                  </button>
+                ))}
+              </div>
+              <div className="text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest">
+                {filteredPosts.length} Beiträge
+              </div>
+            </div>
+
             {/* Posts List */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               {loading ? (
                 <div className="bg-[var(--surface)] p-20 text-center rounded-xl border border-[var(--border)] shadow-sm glass-card">
                   <div className="w-10 h-10 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
@@ -385,48 +407,56 @@ export default function Forum() {
                 <div key={post.id} className="flex bg-[var(--surface)] border border-[var(--border)] rounded-lg hover:border-[var(--accent)]/30 transition-all shadow-sm glass-card group relative">
                   
                   {/* Voting Sidebar */}
-                  <div className="w-10 bg-[var(--surface-muted)]/30 flex flex-col items-center pt-3 gap-1 border-r border-[var(--border)] rounded-l-lg overflow-hidden">
+                  <div className="w-12 bg-[var(--surface-muted)]/30 flex flex-col items-center pt-4 gap-1 border-r border-[var(--border)] rounded-l-lg overflow-hidden shrink-0">
                     <button onClick={() => handleVote(post.id, 1)} className="p-1 hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] rounded text-[var(--muted-foreground)] transition-all">
-                      <ArrowUp className="w-4 h-4" />
+                      <ArrowUp className="w-5 h-5" />
                     </button>
-                    <span className="text-xs font-bold text-[var(--foreground)] leading-none my-1">{post.likes}</span>
+                    <span className={`text-xs font-bold leading-none my-1 ${post.likes > 0 ? 'text-[var(--accent)]' : 'text-[var(--foreground)]'}`}>{post.likes}</span>
                     <button onClick={() => handleVote(post.id, -1)} className="p-1 hover:bg-blue-600 hover:text-white rounded text-[var(--muted-foreground)] transition-all">
-                      <ArrowDown className="w-4 h-4" />
+                      <ArrowDown className="w-5 h-5" />
                     </button>
                   </div>
 
                   {/* Content */}
-                  <div className="flex-1 p-4">
-                    <div className="flex items-center gap-2 text-[10px] mb-3 text-[var(--muted-foreground)] font-bold uppercase tracking-widest">
-                      <span className="text-[var(--accent)] bg-[var(--accent)]/10 px-1.5 py-0.5 rounded border border-[var(--accent)]/20">{post.category}</span>
+                  <div className="flex-1 p-4 min-w-0">
+                    <div className="flex items-center gap-2 text-[11px] mb-2 text-[var(--muted-foreground)]">
+                      {/* Community Icon / Avatar placeholder */}
+                      <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-purple-500 to-blue-500 flex items-center justify-center text-[8px] text-white font-bold">
+                         {post.author.charAt(0)}
+                      </div>
+                      
+                      <span className="font-bold text-[var(--foreground)] hover:underline cursor-pointer">
+                        {post.author}
+                      </span>
+                      
+                      {/* User Flair Logic (Mock) */}
+                      {post.author.includes('Lead') && (
+                        <span className="px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 text-[9px] font-bold uppercase tracking-wider">
+                          Admin
+                        </span>
+                      )}
+                      {post.author.includes('AI') && (
+                        <span className="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[9px] font-bold uppercase tracking-wider">
+                          Bot
+                        </span>
+                      )}
+                      
                       <span className="opacity-30">•</span>
-                      <span>u/{post.author.replace(/\s+/g, '').toLowerCase()}</span>
-                      <span className="opacity-30">•</span>
-                      <span className="opacity-60">{new Date(post.createdTime).toLocaleDateString()}</span>
+                      <span className="hover:underline cursor-pointer">{formatDistanceToNow(new Date(post.createdTime), { addSuffix: true })}</span>
+                      
+                      {post.category && (
+                        <span className="ml-auto px-2 py-0.5 rounded-full bg-[var(--surface-muted)] text-[var(--muted-foreground)] border border-[var(--border)] text-[9px] font-bold uppercase tracking-wider hover:bg-[var(--accent)]/10 hover:text-[var(--accent)] transition-colors cursor-pointer">
+                          {post.category}
+                        </span>
+                      )}
                     </div>
 
-                    <div className="prose prose-invert prose-sm max-w-none text-[var(--foreground)] mb-4 prose-p:leading-relaxed prose-img:rounded-lg">
-                      {editingPost === post.id ? (
-                        <div className="space-y-3">
-                          <textarea
-                            value={editContent}
-                            onChange={e => setEditContent(e.target.value)}
-                            className="w-full p-4 bg-[var(--background)] border border-[var(--accent)] rounded-xl outline-none text-sm min-h-[200px] font-mono text-[var(--foreground)]"
-                          />
-                          <div className="flex justify-end gap-3">
-                            <button onClick={() => setEditingPost(null)} className="text-xs font-bold text-[var(--muted-foreground)] hover:text-[var(--foreground)]">Cancel</button>
-                            <button onClick={() => handleEdit(post.id)} className="bg-[var(--accent)] text-[var(--accent-foreground)] px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest hover:brightness-110 transition-all">Save Changes</button>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
-                          {/* Smart Link Previews */}
-                          {extractUrls(post.content).map((url, idx) => (
-                            <LinkPreview key={idx} url={url} />
-                          ))}
-                        </>
-                      )}
+                    <h3 className="text-lg font-bold text-[var(--foreground)] mb-2 leading-tight group-hover:text-[var(--accent)] transition-colors cursor-pointer">
+                      {post.content.split('\n')[0].replace(/\*\*/g, '').replace(/#/g, '').slice(0, 100)}...
+                    </h3>
+
+                    <div className="prose prose-invert prose-sm max-w-none text-[var(--muted-foreground)] mb-3 line-clamp-3 group-hover:line-clamp-none transition-all duration-300">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
                     </div>
 
                     <div className="flex items-center gap-4">
