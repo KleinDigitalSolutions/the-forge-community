@@ -191,12 +191,14 @@ export default function MissionLogCarousel() {
               </div>
             </div>
 
-            <div className="space-y-10 relative z-10 flex-1 flex flex-col justify-center">
+            <div className="space-y-8 sm:space-y-10 relative z-10 flex-1 flex flex-col justify-center">
               {activeProject.roadmap.map((item, i) => (
-                <div key={i} className="flex items-center gap-8 group/item">
-                    <div className="font-mono text-xs text-white/20 group-hover/item:text-white transition-colors w-6">{item.step}</div>
-                    <div className="flex-1 font-instrument-serif text-2xl md:text-3xl text-white/90 group-hover/item:translate-x-2 transition-transform duration-500">{item.title}</div>
-                    <div className={`text-[10px] font-black tracking-[0.2em] px-5 py-2 rounded-full border transition-all ${
+                <div key={i} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-8 group/item">
+                    <div className="flex items-center gap-4">
+                      <div className="font-mono text-[10px] sm:text-xs text-white/20 group-hover/item:text-white transition-colors w-4 sm:w-6">{item.step}</div>
+                      <div className="flex-1 font-instrument-serif text-xl sm:text-2xl md:text-3xl text-white/90 group-hover/item:translate-x-2 transition-transform duration-500">{item.title}</div>
+                    </div>
+                    <div className={`w-fit sm:ml-auto text-[8px] sm:text-[10px] font-black tracking-[0.2em] px-3 sm:px-5 py-1.5 sm:py-2 rounded-full border transition-all ${
                       item.status === 'ABGESCHLOSSEN' ? 'border-green-500/30 bg-green-500/10 text-green-400' :
                       item.status === 'IN BEARBEITUNG' ? 'border-yellow-500/30 bg-yellow-500/10 text-yellow-400' :
                       'border-white/10 text-white/20'
