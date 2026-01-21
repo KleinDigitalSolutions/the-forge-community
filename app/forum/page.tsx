@@ -451,11 +451,7 @@ export default function Forum() {
                       )}
                     </div>
 
-                    <h3 className="text-lg font-bold text-[var(--foreground)] mb-2 leading-tight group-hover:text-[var(--accent)] transition-colors cursor-pointer">
-                      {post.content.split('\n')[0].replace(/\*\*/g, '').replace(/#/g, '').slice(0, 100)}...
-                    </h3>
-
-                    <div className="prose prose-invert prose-sm max-w-none text-[var(--muted-foreground)] mb-3 line-clamp-3 group-hover:line-clamp-none transition-all duration-300">
+                    <div className="prose prose-invert prose-sm max-w-none text-[var(--muted-foreground)] mb-3 group-hover:text-[var(--foreground)] transition-colors duration-300">
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
                     </div>
 
@@ -564,13 +560,8 @@ export default function Forum() {
                         </div>
                       )}
                     </div>
-
-                    {/* Related Posts */}
-                    <RelatedPosts
-                      postId={post.id}
-                      content={post.content}
-                      category={post.category}
-                    />
+                    
+                    {/* Related Posts Removed for cleaner UI */}
 
                     {/* AI Result Display */}
                     {aiResult && aiResult.postId === post.id && (
