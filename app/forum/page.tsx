@@ -106,6 +106,38 @@ export default function Forum() {
     fetchPosts();
   }, []);
 
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setStatusMessage('🚀 Übertrage Bild...');
+    try {
+      const response = await fetch(`/api/forum/upload?filename=${file.name}`, {
+        method: 'POST',
+        body: file,
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok || !data.url) {
+        throw new Error(data.error || 'Upload fehlgeschlagen');
+      }
+
+      const markdownImage = `\n![${file.name}](${data.url})\n`;
+      
+      if (editingPost && editingPost !== 'NEW') {
+        setEditContent(prev => prev + markdownImage);
+      } else {
+        setContent(prev => prev + markdownImage);
+      }
+      setStatusMessage('✅ Bild bereit!');
+      setTimeout(() => setStatusMessage(''), 3000);
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      setStatusMessage(`❌ Fehler: ${error.message}`);
+    }
+  };
+
   const handleVote = async (id: string, delta: number) => {
     setPosts(prev => prev.map(p => {
       if (p.id !== id) return p;

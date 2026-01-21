@@ -50,13 +50,14 @@ export function VoiceInput({ onTranscript }: VoiceInputProps) {
     recognition.onerror = (event: any) => {
       console.error('Speech recognition error:', event.error);
       setIsListening(false);
+      if (event.error === 'not-allowed') {
+        alert('Mikrofon-Zugriff wurde verweigert. Bitte in den Browser-Einstellungen erlauben.');
+      }
     };
 
     recognition.onend = () => {
-      if (isListening) {
-        // Restart if still supposed to be listening
-        recognition.start();
-      }
+      // Don't auto-restart to avoid loops, let the user toggle
+      setIsListening(false);
     };
 
     recognitionRef.current = recognition;
@@ -66,24 +67,30 @@ export function VoiceInput({ onTranscript }: VoiceInputProps) {
         recognitionRef.current.stop();
       }
     };
-  }, [isListening]);
+  }, []); // Only init once
 
   async function toggleListening() {
-    if (!recognitionRef.current) return;
+    if (!recognitionRef.current) {
+      alert('Spracherkennung wird von diesem Browser nicht unterstützt.');
+      return;
+    }
 
     if (isListening) {
-      // Stop & polish text
       recognitionRef.current.stop();
       setIsListening(false);
-
+      // Processing will happen via onresult/onend if we wanted, 
+      // but here we trigger polish manually on the last transcript
       if (transcript.trim()) {
         await polishText(transcript);
       }
     } else {
-      // Start listening
       setTranscript('');
-      recognitionRef.current.start();
-      setIsListening(true);
+      try {
+        recognitionRef.current.start();
+        setIsListening(true);
+      } catch (e) {
+        console.error('Failed to start recognition', e);
+      }
     }
   }
 
