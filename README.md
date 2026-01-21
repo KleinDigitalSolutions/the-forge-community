@@ -1,6 +1,6 @@
 # ⚡ THE FORGE - Community Venture Studio
 
-> **Stake & Scale** – Die Plattform für Solo-Gründer, um gemeinsam Ventures zu bauen.
+> **Stake & Scale** – Das KI-gestützte SaaS-Betriebssystem für Solo-Gründer, um gemeinsam skalierbare Ventures zu bauen.
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)](https://www.typescriptlang.org/)
@@ -9,7 +9,18 @@
 
 ---
 
+## 🚀 SaaS & Growth Modell (TikTok-Ready)
+
+The Forge nutzt ein **Product-Led Growth** Modell für maximale Konvertierung von Social-Media-Traffic:
+
+*   **Open Access:** Jeder kann sich per Magic Link (Email) sofort registrieren.
+*   **Energy System (AI Credits):** Neue User starten mit **50 Credits** (⚡️), um das System unentgeltlich zu testen.
+*   **Freemium:** Core-Workflows (Venture Creation, Brand DNA, Roadmap) sind gratis. AI-gestützte Features (Content Generation, Legal Drafting) kosten Credits.
+
+---
+
 ## 🤖 Context-Aware AI Sidebar
+... (bestehender Teil) ...
 
 The Forge includes a persistent AI assistant that adapts to what the user is currently doing.
 
@@ -77,11 +88,13 @@ npm run dev
 | **TypeScript** | Type-safe Code |
 | **Prisma 7** | ORM & Database Migrations |
 | **PostgreSQL** | Relationele Datenbank mit RLS |
-| **NextAuth v5** | Magic Link Authentication |
+| **NextAuth v5** | Open Magic Link Registration |
+| **Energy System** | Custom AI Credit Management |
 | **Stripe** | Subscriptions & Connect (Marketplace) |
 | **Gemini AI** | Content-Generierung & Chatbot |
 | **Tailwind CSS v4** | Styling |
 | **Vercel** | Deployment & Serverless Functions |
+| **date-fns** | Date formatting (Locale de) |
 
 ---
 
@@ -95,8 +108,9 @@ the-forge-community/
 │   ├── forge/[ventureId]/    # Venture Workspace (The Forge)
 │   │   ├── brand/            # ✅ Brand DNA Studio
 │   │   ├── legal/            # ✅ Legal Studio (Contracts)
-│   │   ├── marketing/        # 🚧 Marketing Studio (Coming Soon)
-│   │   ├── sourcing/         # 🚧 Sourcing Studio (Coming Soon)
+│   │   ├── marketing/        # ✅ Marketing Studio (AI-Campaigns)
+│   │   ├── sourcing/         # ✅ Sourcing Studio (Suppliers/Samples)
+│   │   ├── decisions/        # ✅ Decision Hall (Voting)
 │   │   └── admin/            # 🚧 Admin Studio (Coming Soon)
 │   ├── ventures/             # Venture Management
 │   └── squads/               # Squad Marketplace
@@ -125,9 +139,10 @@ AUTH_SECRET="xxx"                    # Generieren: npx auth secret
 AUTH_RESEND_KEY="re_xxx"             # Resend.com API Key
 AUTH_URL="http://localhost:3000"
 
-# AI
+# AI & SaaS
 GEMINI_API_KEY="xxx"                 # Google AI Studio
 GROQ_API_KEY="xxx"                   # Groq (Optional, Fallback)
+INITIAL_CREDITS=50                   # Startguthaben für neue User
 
 # Stripe
 STRIPE_SECRET_KEY="sk_test_xxx"
@@ -137,7 +152,7 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_test_xxx"
 # Admin
 ADMIN_EMAIL="admin@example.com"
 
-# Notion (Legacy, nur für Auth)
+# Notion (Legacy)
 NOTION_API_KEY="secret_xxx"
 NOTION_DATABASE_ID="xxx"
 ```
@@ -167,17 +182,19 @@ vercel                   # Deployment auf Vercel
 
 ### ✅ Fertiggestellt
 
-- **Brand DNA Studio** – KI-Kontext für Content-Generierung konfigurieren
-- **Legal Studio** – Verträge mit KI generieren (NDA, Service Agreement, etc.)
-- **Venture Wizard** – Guided Setup für neue Ventures
-- **Squad Marketplace** – Teams finden und beitreten
-- **AI Chatbot** – Integrierter Advisor mit Marken-Kontext
+- **Founder-Cockpit (Dashboard)** – Dynamische Übersicht der eigenen Ventures & Onboarding.
+- **Decision Hall** – Professionelles Voting-System für demokratische Squad-Entscheidungen.
+- **Brand DNA Studio** – KI-Kontext für konsistente Markenidentität.
+- **Marketing Studio** – KI-Generierung für Instagram, LinkedIn, Ads & E-Mail.
+- **Sourcing Studio** – Management von Lieferanten, Musterbestellungen und POs.
+- **Legal Studio** – Verträge mit KI generieren (NDA, Service Agreement, etc.).
+- **Venture Wizard** – Schritt-für-Schritt Setup für neue Business-Ideen.
+- **Roadmap Voting** – Upvote-System für Community-Feature-Wünsche.
 
 ### 🚧 In Entwicklung (siehe [ROADMAP.md](ROADMAP.md))
 
-- **Marketing Studio** – Social Media, Blog-Posts, Kampagnen
-- **Sourcing Studio** – Lieferanten-Datenbank, Sample-Tracking
-- **Admin Studio** – Budget-Management, Team-Verwaltung
+- **Admin Studio** – Budget-Management, Team-Verwaltung & Squad-Settings.
+- **Stripe Connect Payouts** – Automatisierte Auszahlungen für Squad-Umsätze.
 
 ---
 
