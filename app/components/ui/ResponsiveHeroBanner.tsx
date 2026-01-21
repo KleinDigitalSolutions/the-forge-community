@@ -162,35 +162,35 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
             </header>
 
             <div className="z-10 relative">
-                <div className="sm:pt-28 md:pt-32 lg:pt-40 max-w-7xl mx-auto pt-28 px-6 pb-56">
+                <div className="sm:pt-28 md:pt-32 lg:pt-40 max-w-7xl mx-auto pt-24 px-4 pb-48">
                     <div className="mx-auto max-w-3xl text-center">
                         <div className="mb-6 inline-flex items-center gap-3 rounded-full bg-white/10 px-4 py-2 ring-1 ring-white/15 backdrop-blur animate-fade-slide-in-1">
-                            <span className="text-xs font-bold text-white/90 uppercase tracking-[0.2em]">
+                            <span className="text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-[0.2em]">
                                 {badgeText}
                             </span>
                         </div>
 
-                        <h1 className="sm:text-5xl md:text-6xl lg:text-7xl leading-tight text-4xl text-white tracking-tight font-instrument-serif font-normal animate-fade-slide-in-2">
+                        <h1 className="sm:text-5xl md:text-6xl lg:text-7xl leading-tight text-3xl sm:text-4xl text-white tracking-tight font-instrument-serif font-normal animate-fade-slide-in-2 px-2">
                             {title}
                             <br className="hidden sm:block" />
-                            {titleLine2}
+                            {" "}{titleLine2}
                         </h1>
 
-                        <p className="sm:text-lg animate-fade-slide-in-3 text-base text-white/60 max-w-xl mt-6 mx-auto leading-relaxed">
+                        <p className="sm:text-lg animate-fade-slide-in-3 text-sm sm:text-base text-white/60 max-w-xl mt-6 mx-auto leading-relaxed px-4">
                             {description}
                         </p>
 
-                        <div className="flex flex-col sm:flex-row sm:gap-4 mt-10 gap-3 items-center justify-center animate-fade-slide-in-4">
+                        <div className="flex flex-col sm:flex-row sm:gap-4 mt-10 gap-4 items-center justify-center animate-fade-slide-in-4 px-4">
                             <Link
                                 href={primaryButtonHref}
-                                className="inline-flex items-center gap-3 bg-[#D4AF37] text-black hover:brightness-110 text-[10px] font-black rounded-xl py-4 px-8 uppercase tracking-[0.3em] transition-all duration-500 shadow-2xl shadow-[#D4AF37]/20"
+                                className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-[#D4AF37] text-black hover:brightness-110 text-[10px] font-black rounded-xl py-4 px-8 uppercase tracking-[0.3em] transition-all duration-500 shadow-2xl shadow-[#D4AF37]/20"
                             >
                                 {primaryButtonText}
                                 <ArrowRight className="h-4 w-4" />
                             </Link>
                             <Link
                                 href={secondaryButtonHref}
-                                className="inline-flex items-center gap-3 rounded-xl bg-white/5 border border-white/10 px-8 py-4 text-[10px] font-black text-white hover:bg-white/10 uppercase tracking-[0.3em] transition-all duration-500"
+                                className="w-full sm:w-auto inline-flex items-center justify-center gap-3 rounded-xl bg-white/5 border border-white/10 px-8 py-4 text-[10px] font-black text-white hover:bg-white/10 uppercase tracking-[0.3em] transition-all duration-500"
                             >
                                 {secondaryButtonText}
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">

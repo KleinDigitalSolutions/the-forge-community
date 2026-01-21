@@ -213,15 +213,15 @@ export default function Home() {
               { label: 'Risiko-Faktor', value: '-96%', sub: 'Durch Kapital-Split' },
               { label: 'Community Owned', value: '100%', sub: 'Keine VCs. Echte Werte.' },
             ].map((stat, i) => (
-              <div key={i} className="glass-card backdrop-blur-2xl p-8 rounded-3xl border border-white/10 flex flex-col items-center justify-center hover:border-[var(--accent)]/50 transition-all duration-700 group overflow-hidden relative shadow-2xl">
+              <div key={i} className="glass-card backdrop-blur-2xl p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-white/10 flex flex-col items-center justify-center hover:border-[var(--accent)]/50 transition-all duration-700 group overflow-hidden relative shadow-2xl">
                 <div className="absolute inset-0 bg-gradient-to-b from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                <div className="text-4xl md:text-5xl font-instrument-serif text-white mb-3 relative z-10">
+                <div className="text-2xl sm:text-4xl md:text-5xl font-instrument-serif text-white mb-2 sm:mb-3 relative z-10 text-center">
                   {stat.value}
                 </div>
-                <div className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--accent)] mb-1.5 relative z-10">
+                <div className="text-[7px] sm:text-[9px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[var(--accent)] mb-1 relative z-10 text-center">
                   {stat.label}
                 </div>
-                <div className="text-[8px] font-bold text-white/30 uppercase tracking-[0.2em] relative z-10">
+                <div className="text-[7px] sm:text-[8px] font-bold text-white/30 uppercase tracking-[0.1em] sm:tracking-[0.2em] relative z-10 text-center">
                   {stat.sub}
                 </div>
               </div>
@@ -245,7 +245,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="space-y-12">
+            <div className="space-y-8 sm:space-y-12">
               {[
                 {
                   icon: Users,
@@ -263,15 +263,15 @@ export default function Home() {
                   desc: "Statt 50k alleine zu riskieren, splitten wir das Risiko. Maximale Hebelwirkung bei minimalem Einsatz."
                 }
               ].map((feature, i) => (
-                <div key={i} className="flex gap-6 group">
-                  <div className="flex-shrink-0 mt-1">
-                    <div className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:border-[var(--accent)] group-hover:bg-[var(--accent)]/10 transition-all duration-500">
-                      <feature.icon className="w-5 h-5 text-white/60 group-hover:text-[var(--accent)] transition-colors" />
+                <div key={i} className="flex flex-col sm:flex-row gap-4 sm:gap-6 group">
+                  <div className="flex-shrink-0">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:border-[var(--accent)] group-hover:bg-[var(--accent)]/10 transition-all duration-500">
+                      <feature.icon className="w-4 h-4 sm:w-5 sm:h-5 text-white/60 group-hover:text-[var(--accent)] transition-colors" />
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-2xl font-instrument-serif text-white mb-2 group-hover:text-[var(--accent)] transition-colors">{feature.title}</h3>
-                    <p className="text-white/50 text-sm leading-relaxed max-w-md">{feature.desc}</p>
+                    <h3 className="text-xl sm:text-2xl font-instrument-serif text-white mb-1 sm:mb-2 group-hover:text-[var(--accent)] transition-colors">{feature.title}</h3>
+                    <p className="text-white/50 text-xs sm:text-sm leading-relaxed max-w-md">{feature.desc}</p>
                   </div>
                 </div>
               ))}
@@ -409,36 +409,36 @@ export default function Home() {
                                  {/* NEW: Quick Access Card */}
                                  <Link
                                     href="/login"
-                                    className="p-8 rounded-2xl border border-[#D4AF37]/30 bg-[#D4AF37]/5 hover:border-[#D4AF37] hover:bg-[#D4AF37]/10 transition-all text-left group relative overflow-hidden"
+                                    className="p-5 sm:p-8 rounded-2xl border border-[#D4AF37]/30 bg-[#D4AF37]/5 hover:border-[#D4AF37] hover:bg-[#D4AF37]/10 transition-all text-left group relative overflow-hidden"
                                  >
-                                    <div className="absolute top-0 right-0 p-3 bg-[#D4AF37] text-black text-[8px] font-black uppercase tracking-widest rounded-bl-xl">
+                                    <div className="absolute top-0 right-0 p-2 sm:p-3 bg-[#D4AF37] text-black text-[7px] sm:text-[8px] font-black uppercase tracking-widest rounded-bl-xl">
                                        Sofort-Zugriff
                                     </div>
-                                    <div className="flex items-center gap-4 mb-2">
-                                       <Zap className="w-6 h-6 text-[#D4AF37]" />
-                                       <div className="font-instrument-serif text-3xl text-white group-hover:text-[var(--accent)] transition-colors">Free Trial</div>
+                                    <div className="flex items-center gap-3 sm:gap-4 mb-2">
+                                       <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-[#D4AF37]" />
+                                       <div className="font-instrument-serif text-xl sm:text-3xl text-white group-hover:text-[var(--accent)] transition-colors">Free Trial</div>
                                     </div>
-                                    <div className="text-sm text-white/60 leading-relaxed max-w-md">
+                                    <div className="text-xs sm:text-sm text-white/60 leading-relaxed max-w-md">
                                        Geh direkt rein. Erhalte <strong>50 AI-Credits</strong> gratis und erkunde alle Forge-Studios unentgeltlich.
                                     </div>
                                  </Link>
 
-                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                     <button
                                        type="button"
                                        onClick={() => handleSelectRole('investor')}
-                                       className="p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-[var(--accent)]/50 hover:bg-[var(--accent)]/5 transition-all text-left group"
+                                       className="p-5 sm:p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-[var(--accent)]/50 hover:bg-[var(--accent)]/5 transition-all text-left group"
                                     >
-                                       <div className="font-instrument-serif text-2xl text-white mb-2 group-hover:text-[var(--accent)] transition-colors">Kapital-Partner</div>
-                                       <div className="text-xs text-white/40 leading-relaxed">Passive Beteiligung. Bewerbung für Batches.</div>
+                                       <div className="font-instrument-serif text-lg sm:text-2xl text-white mb-1 sm:mb-2 group-hover:text-[var(--accent)] transition-colors">Kapital-Partner</div>
+                                       <div className="text-[10px] sm:text-xs text-white/40 leading-relaxed">Passive Beteiligung. Bewerbung für Batches.</div>
                                     </button>
                                     <button
                                        type="button"
                                        onClick={() => handleSelectRole('builder')}
-                                       className="p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-[var(--accent)]/50 hover:bg-[var(--accent)]/5 transition-all text-left group"
+                                       className="p-5 sm:p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-[var(--accent)]/50 hover:bg-[var(--accent)]/5 transition-all text-left group"
                                     >
-                                       <div className="font-instrument-serif text-2xl text-white mb-2 group-hover:text-[var(--accent)] transition-colors">Builder</div>
-                                       <div className="text-xs text-white/40 leading-relaxed">Aktive Beteiligung. Sweat Equity & Skills.</div>
+                                       <div className="font-instrument-serif text-lg sm:text-2xl text-white mb-1 sm:mb-2 group-hover:text-[var(--accent)] transition-colors">Builder</div>
+                                       <div className="text-[10px] sm:text-xs text-white/40 leading-relaxed">Aktive Beteiligung. Sweat Equity & Skills.</div>
                                     </button>
                                  </div>
                               </div>

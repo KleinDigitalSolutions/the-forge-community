@@ -65,7 +65,7 @@ export function PricingTable({ onSelectPlan, isLoading }: PricingTableProps) {
         <div 
           key={plan.id}
           className={cn(
-            "relative group flex flex-col p-10 rounded-3xl transition-all duration-700 overflow-hidden border",
+            "relative group flex flex-col p-6 sm:p-10 rounded-3xl transition-all duration-700 overflow-hidden border",
             plan.featured 
               ? "bg-[#0F1113] border-[var(--accent)]/40 shadow-[0_0_50px_-12px_rgba(212,175,55,0.2)]" 
               : "bg-white/[0.02] border-white/10 hover:border-white/20 shadow-2xl"
