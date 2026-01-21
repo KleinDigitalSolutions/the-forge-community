@@ -104,6 +104,8 @@ model User {
   role          Role      @default(USER)
   notionId      String?   @unique
   onboardingComplete Boolean @default(false)
+  founderNumber Int       @default(0)
+  karmaScore    Int       @default(0)
 
   // Relations
   squadMemberships SquadMember[]

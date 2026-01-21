@@ -283,24 +283,61 @@ export default function Forum() {
 
           {/* RIGHT SIDEBAR */}
           <aside className="hidden xl:block sticky top-8 h-fit space-y-6">
-            {/* User Profile Widget */}
-            <div className="bg-[#121212] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
-              <div className="h-16 bg-gradient-to-r from-[#D4AF37] to-amber-900 opacity-50" />
-              <div className="px-6 pb-6 -mt-8">
-                <div className="w-16 h-16 rounded-2xl bg-[#121212] border-4 border-[#050505] flex items-center justify-center text-2xl font-black text-[#D4AF37] mb-4">
-                  {user?.name?.charAt(0)}
+            {/* User Profile Widget - PRO REDESIGN */}
+            <div className="bg-[#121212] border border-white/10 rounded-3xl overflow-hidden shadow-2xl group">
+              <div className="h-20 bg-gradient-to-br from-[#D4AF37] via-amber-600 to-black relative overflow-hidden">
+                 <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
+              </div>
+              <div className="px-6 pb-6 -mt-10 relative z-10">
+                <div className="flex justify-between items-end mb-4">
+                  <div className="w-20 h-20 rounded-full bg-[#121212] border-4 border-[#050505] flex items-center justify-center text-3xl font-black text-[#D4AF37] shadow-xl overflow-hidden">
+                    {user?.image ? (
+                      <img src={user.image} alt={user.name || ''} className="w-full h-full object-cover" />
+                    ) : (
+                      user?.name?.charAt(0)
+                    )}
+                  </div>
+                  <div className="pb-1">
+                    <span className="px-2 py-1 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] text-[9px] font-bold uppercase tracking-widest border border-[#D4AF37]/20">
+                      {user?.role || 'FOUNDER'}
+                    </span>
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold text-white mb-1">{user?.name}</h3>
-                <p className="text-xs text-white/40 mb-4">Founder ID #{user?.founderNumber}</p>
-                <div className="bg-white/5 rounded-xl p-3 flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
-                  <span className="text-white/40">Karma</span>
-                  <span className="text-[#D4AF37]">{user?.karma || 0}</span>
+
+                <div className="space-y-1 mb-6">
+                  <h3 className="text-xl font-bold text-white group-hover:text-[#D4AF37] transition-colors">{user?.name}</h3>
+                  <div className="flex items-center gap-2 text-[10px] font-mono text-white/30 uppercase tracking-widest">
+                    <span>Founder #{user?.founderNumber?.toString().padStart(3, '0')}</span>
+                    <span>•</span>
+                    <span className="text-white/50">{user?.email}</span>
+                  </div>
                 </div>
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 gap-2 mb-6">
+                  <div className="bg-white/5 rounded-2xl p-3 border border-white/5 hover:bg-white/10 transition-colors">
+                    <p className="text-[9px] font-bold text-white/20 uppercase tracking-wider mb-1">Karma</p>
+                    <p className="text-lg font-bold text-[#D4AF37]">{user?.karmaScore || 0}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-2xl p-3 border border-white/5 hover:bg-white/10 transition-colors">
+                    <p className="text-[9px] font-bold text-white/20 uppercase tracking-wider mb-1">Ventures</p>
+                    <p className="text-lg font-bold text-white">{(user as any)?._count?.ventures || 0}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-2xl p-3 border border-white/5 hover:bg-white/10 transition-colors">
+                    <p className="text-[9px] font-bold text-white/20 uppercase tracking-wider mb-1">Squads</p>
+                    <p className="text-lg font-bold text-white">{(user as any)?._count?.squadMemberships || 0}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-2xl p-3 border border-white/5 hover:bg-white/10 transition-colors">
+                    <p className="text-[9px] font-bold text-white/20 uppercase tracking-wider mb-1">Credits</p>
+                    <p className="text-lg font-bold text-blue-400">{(user as any)?.credits || 0}</p>
+                  </div>
+                </div>
+
                 <button 
                   onClick={() => setEditingPost('NEW')}
-                  className="w-full mt-6 bg-[#D4AF37] text-black py-3 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] hover:brightness-110 active:scale-95 transition-all"
+                  className="w-full bg-[#D4AF37] text-black py-4 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-[#D4AF37]/10"
                 >
-                  Beitrag erstellen
+                  Neuen Beitrag erstellen
                 </button>
               </div>
             </div>

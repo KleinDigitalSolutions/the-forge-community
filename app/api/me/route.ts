@@ -18,7 +18,15 @@ export async function GET() {
       image: true,
       role: true,
       credits: true,
-      onboardingComplete: true
+      onboardingComplete: true,
+      founderNumber: true,
+      karmaScore: true,
+      _count: {
+        select: {
+          ventures: true,
+          squadMemberships: true
+        }
+      }
     }
   });
 
