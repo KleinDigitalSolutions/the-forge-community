@@ -113,23 +113,40 @@ export default function RootLayout({
   return (
     <html lang="de">
       <head>
+        {/* Google Tag Manager */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-3GP315ZWWP"
-          strategy="afterInteractive"
+          strategy="beforeInteractive"
+          async
         />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-
-            gtag('config', 'G-3GP315ZWWP');
-          `}
-        </Script>
+        <Script 
+          id="gtag-init" 
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-3GP315ZWWP', {
+                page_path: window.location.pathname,
+                send_page_view: true
+              });
+            `,
+          }}
+        />
       </head>
       <body
         className={`${sora.variable} ${bodoniModa.variable} ${instrumentSerif.variable} ${caveat.variable} antialiased`}
       >
+        {/* Google Tag Manager (noscript) */}
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=G-3GP315ZWWP"
+            height="0"
+            width="0"
+            style={{ display: 'none', visibility: 'hidden' }}
+          />
+        </noscript>
         <StructuredData />
         <Providers>
           {children}
