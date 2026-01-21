@@ -6,17 +6,17 @@ import AuthGuard from '@/app/components/AuthGuard';
 import {
   MessageSquare, Send, ArrowUp, ArrowDown, Users,
   Quote, Reply, MessageCircle, Edit2, Trash2, Image as ImageIcon, Eye, Code, X, Menu,
-  Sparkles, Lightbulb, CheckCircle, Search, Target
+  Sparkles, Lightbulb, CheckCircle, Search, Target,
+  TrendingUp, Trophy
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { formatDistanceToNow } from 'date-fns';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { MicroExpander } from '@/app/components/ui/MicroExpander';
 import { LinkPreview, extractUrls } from '@/app/components/LinkPreview';
-import { RelatedPosts } from '@/app/components/RelatedPosts';
 import { VoiceInput } from '@/app/components/VoiceInput';
 import { TrendingTopics } from '@/app/components/TrendingTopics';
+import { formatDistanceToNow } from 'date-fns';
 
 interface Comment {
   author: string;
@@ -42,14 +42,12 @@ interface UserProfile {
   karma?: number;
 }
 
-const categories = ['All', 'Ideas', 'Support', 'General'];
-
 export default function Forum() {
   const [posts, setPosts] = useState<ForumPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [content, setContent] = useState('');
-  const [filterCategory, setFilterCategory] = useState('All');
+  const [activeChannel, setActiveChannel] = useState('All');
   const [postCategory, setPostCategory] = useState('General');
   const [statusMessage, setStatusMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,6 +61,16 @@ export default function Forum() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResult, setAiResult] = useState<{postId: string; content: string; action: string} | null>(null);
   const [moderationWarning, setModerationWarning] = useState<{number: number; message: string; banned: boolean} | null>(null);
+
+  const CHANNELS = [
+    { id: 'All', name: 'Alle Themen', icon: MessageCircle },
+    { id: 'General', name: 'General', icon: MessageSquare },
+    { id: 'Ideas', name: 'Ideen & Feedback', icon: Lightbulb },
+    { id: 'Growth', name: 'Growth & Marketing', icon: TrendingUp },
+    { id: 'Tech', name: 'Tech & Tools', icon: Code },
+    { id: 'Wins', name: 'Wins & Success', icon: Trophy },
+    { id: 'Support', name: 'Hilfe & Support', icon: Users },
+  ];
 
   const fetchUser = async () => {
     try {
@@ -141,7 +149,6 @@ export default function Forum() {
       const data = await response.json();
 
       if (!response.ok) {
-        // Check if it's a moderation warning
         if (data.warning) {
           setModerationWarning(data.warning);
           setEditingPost(null);
@@ -248,20 +255,46 @@ export default function Forum() {
     }
   };
 
-  const filteredPosts = filterCategory === 'All' 
+  const filteredPosts = activeChannel === 'All' 
     ? posts 
-    : posts.filter(p => p.category === filterCategory);
+    : posts.filter(p => p.category === activeChannel);
 
   return (
     <AuthGuard>
       <PageShell>
-
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 items-start">
+        <div className="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          <main className="flex-1 space-y-6 min-w-0">
+          {/* LEFT: Channel Navigation (New) */}
+          <aside className="hidden lg:block lg:col-span-2 sticky top-8 space-y-6">
+            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 glass-card">
+              <h3 className="text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-[0.2em] mb-4 px-2">Channels</h3>
+              <nav className="space-y-1">
+                {CHANNELS.map((channel) => {
+                  const Icon = channel.icon;
+                  const isActive = activeChannel === channel.id;
+                  return (
+                    <button
+                      key={channel.id}
+                      onClick={() => setActiveChannel(channel.id)}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold transition-all ${isActive 
+                          ? 'bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20' 
+                          : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--surface-muted)]'
+                      }`}
+                    >
+                      <Icon className={`w-4 h-4 ${isActive ? 'text-[var(--accent)]' : 'opacity-70'}`} />
+                      {channel.name}
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
+          </aside>
+
+          {/* CENTER: Main Feed */}
+          <main className="lg:col-span-7 space-y-6 min-w-0">
             
-            {/* Reddit-style Create Post Trigger */}
-            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-3 flex items-center gap-3 shadow-sm glass-card mb-6">
+            {/* Create Post Input */}
+            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-3 flex items-center gap-3 shadow-sm glass-card">
               <div className="w-10 h-10 bg-[var(--surface-muted)] border border-[var(--border)] rounded-full flex-shrink-0 flex items-center justify-center font-bold text-[var(--accent)] text-sm">
                 {user?.name?.charAt(0).toUpperCase() || '?'}
               </div>
@@ -280,109 +313,19 @@ export default function Forum() {
               </button>
             </div>
 
-            {/* Posting Modal */}
-            <AnimatePresence>
-              {editingPost === 'NEW' && (
-                <motion.div 
-                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
-                >
-                  <motion.div 
-                    initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }}
-                    className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
-                  >
-                    <div className="p-4 border-b border-[var(--border)] flex justify-between items-center bg-[var(--surface-muted)]/50">
-                      <div className="flex gap-4">
-                        <button 
-                          onClick={() => setIsPreview(false)}
-                          className={`flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full transition-all ${!isPreview ? 'bg-[var(--accent)] text-[var(--accent-foreground)]' : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'}`}
-                        >
-                          <Edit2 className="w-3.5 h-3.5" /> Beitrag
-                        </button>
-                        <button 
-                          onClick={() => setIsPreview(true)}
-                          className={`flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full transition-all ${isPreview ? 'bg-[var(--accent)] text-[var(--accent-foreground)]' : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'}`}
-                        >
-                          <Eye className="w-3.5 h-3.5" /> Vorschau
-                        </button>
-                      </div>
-                      <button onClick={() => setEditingPost(null)} className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] text-xl font-light">✕</button>
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[var(--background)]">
-                      {!isPreview ? (
-                        <>
-                          <div className="flex gap-4">
-                            <select
-                              value={postCategory}
-                              onChange={e => setPostCategory(e.target.value)}
-                              className="bg-[var(--surface)] border border-[var(--border)] rounded-lg px-4 py-2 text-xs font-bold text-[var(--foreground)] outline-none focus:border-[var(--accent)]"
-                            >
-                              {categories.filter(c => c !== 'All').map(c => (
-                                <option key={c} value={c}>{c}</option>
-                              ))}
-                            </select>
-                            <button
-                              onClick={() => fileInputRef.current?.click()}
-                              className="flex items-center gap-2 text-xs font-bold text-[var(--muted-foreground)] hover:text-[var(--accent)] border border-[var(--border)] px-4 py-2 rounded-lg bg-[var(--surface)] transition-all"
-                            >
-                              <ImageIcon className="w-4 h-4" /> Add Image
-                            </button>
-                            <input type="file" ref={fileInputRef} onChange={handleUpload} className="hidden" accept="image/*" />
-
-                            <VoiceInput
-                              onTranscript={(text) => setContent((prev) => prev + (prev ? '\n\n' : '') + text)}
-                            />
-                          </div>
-                          <textarea
-                            autoFocus
-                            value={content}
-                            onChange={e => setContent(e.target.value)}
-                            placeholder="Markdown unterstützt: **fett**, *kursiv*, # Überschrift...&#10;&#10;💡 Tipp: Nutze @forge-ai um die AI zu fragen!"
-                            className="w-full min-h-[300px] p-4 text-sm font-mono bg-[var(--surface)] border border-[var(--border)] rounded-xl outline-none focus:border-[var(--accent)] transition-all resize-none text-[var(--foreground)]"
-                          />
-                          <div className="flex items-center gap-2 text-[10px] text-purple-400 bg-purple-500/10 px-3 py-2 rounded-lg border border-purple-500/20">
-                            <Sparkles className="w-3 h-3" />
-                            <span className="font-bold">Pro-Tipp: Schreib <code className="bg-purple-500/20 px-1.5 py-0.5 rounded">@forge-ai [deine Frage]</code> für eine direkte AI-Antwort!</span>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="prose prose-invert prose-sm max-w-none p-6 bg-[var(--surface)] border border-[var(--border)] rounded-xl min-h-[300px]">
-                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{content || '*Nothing to preview*'}</ReactMarkdown>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="p-4 border-t border-[var(--border)] flex justify-between items-center bg-[var(--surface-muted)]/50">
-                      <span className="text-[10px] text-[var(--accent)] font-bold uppercase tracking-widest">{statusMessage}</span>
-                      <div className="flex gap-3">
-                        <button 
-                          onClick={() => setEditingPost(null)}
-                          className="px-6 py-2 text-sm font-bold text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all"
-                        >
-                          Abbrechen
-                        </button>
-                        <button 
-                          onClick={handleSubmit} disabled={isSubmitting || !content.trim()}
-                          className="bg-[var(--accent)] hover:brightness-110 text-[var(--accent-foreground)] px-10 py-2 rounded-full font-bold text-sm disabled:opacity-50 transition-all shadow-lg active:scale-95 uppercase tracking-widest"
-                        >
-                          {isSubmitting ? 'Poste...' : 'Jetzt posten'}
-                        </button>
-                      </div>
-                    </div>
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Sort & Filter Bar */}
-            <div className="flex items-center justify-between mb-4 px-2">
+            {/* Channel Header & Filter */}
+            <div className="flex items-center justify-between px-1">
+              <div className="flex items-center gap-2">
+                 <h2 className="text-xl font-instrument-serif text-white">
+                    {CHANNELS.find(c => c.id === activeChannel)?.name || 'Forum'}
+                 </h2>
+              </div>
+              
               <div className="flex items-center gap-1 bg-[var(--surface-muted)]/50 p-1 rounded-lg border border-[var(--border)]">
                 {['Hot', 'New', 'Top'].map((sort) => (
                   <button
                     key={sort}
-                    className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${
-                      sort === 'Hot' 
+                    className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${sort === 'Hot' 
                         ? 'bg-[var(--surface)] text-[var(--foreground)] shadow-sm' 
                         : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--surface)]/50'
                     }`}
@@ -391,17 +334,22 @@ export default function Forum() {
                   </button>
                 ))}
               </div>
-              <div className="text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest">
-                {filteredPosts.length} Beiträge
-              </div>
             </div>
 
             {/* Posts List */}
-            <div className="space-y-3">
+            <div className="space-y-4">
               {loading ? (
                 <div className="bg-[var(--surface)] p-20 text-center rounded-xl border border-[var(--border)] shadow-sm glass-card">
                   <div className="w-10 h-10 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
                   <p className="text-[var(--muted-foreground)] text-xs font-bold uppercase tracking-[0.3em] animate-pulse">Gathering intelligence...</p>
+                </div>
+              ) : filteredPosts.length === 0 ? (
+                <div className="text-center py-20 bg-[var(--surface)] rounded-xl border border-[var(--border)]">
+                   <div className="w-16 h-16 bg-[var(--surface-muted)] rounded-full flex items-center justify-center mx-auto mb-4">
+                      <MessageSquare className="w-8 h-8 text-[var(--muted-foreground)]" />
+                   </div>
+                   <h3 className="text-lg font-bold text-white mb-2">Noch keine Beiträge</h3>
+                   <p className="text-white/40 text-sm">Sei der Erste, der in diesem Channel etwas postet!</p>
                 </div>
               ) : filteredPosts.map((post) => (
                 <div key={post.id} className="flex bg-[var(--surface)] border border-[var(--border)] rounded-lg hover:border-[var(--accent)]/30 transition-all shadow-sm glass-card group relative">
@@ -420,7 +368,7 @@ export default function Forum() {
                   {/* Content */}
                   <div className="flex-1 p-4 min-w-0">
                     <div className="flex items-center gap-2 text-[11px] mb-2 text-[var(--muted-foreground)]">
-                      {/* Community Icon / Avatar placeholder */}
+                      {/* Avatar */}
                       <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-purple-500 to-blue-500 flex items-center justify-center text-[8px] text-white font-bold">
                          {post.author.charAt(0)}
                       </div>
@@ -429,7 +377,7 @@ export default function Forum() {
                         {post.author}
                       </span>
                       
-                      {/* User Flair Logic (Mock) */}
+                      {/* User Flairs */}
                       {post.author.includes('Lead') && (
                         <span className="px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 text-[9px] font-bold uppercase tracking-wider">
                           Admin
@@ -452,7 +400,26 @@ export default function Forum() {
                     </div>
 
                     <div className="prose prose-invert prose-sm max-w-none text-[var(--muted-foreground)] mb-3 group-hover:text-[var(--foreground)] transition-colors duration-300">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
+                      {editingPost === post.id ? (
+                        <div className="space-y-3">
+                          <textarea
+                            value={editContent}
+                            onChange={e => setEditContent(e.target.value)}
+                            className="w-full p-4 bg-[var(--background)] border border-[var(--accent)] rounded-xl outline-none text-sm min-h-[200px] font-mono text-[var(--foreground)]"
+                          />
+                          <div className="flex justify-end gap-3">
+                            <button onClick={() => setEditingPost(null)} className="text-xs font-bold text-[var(--muted-foreground)] hover:text-[var(--foreground)]">Cancel</button>
+                            <button onClick={() => handleEdit(post.id)} className="bg-[var(--accent)] text-[var(--accent-foreground)] px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest hover:brightness-110 transition-all">Save Changes</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
+                          {extractUrls(post.content).map((url, idx) => (
+                            <LinkPreview key={idx} url={url} />
+                          ))}
+                        </>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-4">
@@ -473,8 +440,7 @@ export default function Forum() {
                         <button
                           onClick={() => setAiMenuOpen(aiMenuOpen === post.id ? null : post.id)}
                           disabled={aiLoading}
-                          className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-all ${
-                            aiMenuOpen === post.id
+                          className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-all ${aiMenuOpen === post.id
                               ? 'bg-purple-500/20 border border-purple-500/30 text-purple-400'
                               : 'text-[var(--muted-foreground)] hover:text-purple-400 hover:bg-purple-500/10'
                           } disabled:opacity-50`}
@@ -493,60 +459,20 @@ export default function Forum() {
                               style={{ zIndex: 1000 }}
                             >
                               <div className="p-2 space-y-1">
-                                <button
-                                  onClick={() => handleAIAction(post.id, post.content, post.category, 'summarize')}
-                                  className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-left hover:bg-[var(--accent)]/10 rounded-lg transition-all text-[var(--foreground)]"
-                                >
-                                  <Sparkles className="w-4 h-4 text-blue-400" />
-                                  <div>
-                                    <div>Zusammenfassen</div>
-                                    <div className="text-[9px] text-[var(--muted-foreground)] font-normal">TL;DR generieren</div>
-                                  </div>
-                                </button>
-
-                                <button
-                                  onClick={() => handleAIAction(post.id, post.content, post.category, 'feedback')}
-                                  className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-left hover:bg-[var(--accent)]/10 rounded-lg transition-all text-[var(--foreground)]"
-                                >
-                                  <CheckCircle className="w-4 h-4 text-green-400" />
-                                  <div>
-                                    <div>Feedback geben</div>
-                                    <div className="text-[9px] text-[var(--muted-foreground)] font-normal">Konstruktive Kritik</div>
-                                  </div>
-                                </button>
-
-                                <button
-                                  onClick={() => handleAIAction(post.id, post.content, post.category, 'expand')}
-                                  className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-left hover:bg-[var(--accent)]/10 rounded-lg transition-all text-[var(--foreground)]"
-                                >
-                                  <Lightbulb className="w-4 h-4 text-yellow-400" />
-                                  <div>
-                                    <div>Ideen erweitern</div>
-                                    <div className="text-[9px] text-[var(--muted-foreground)] font-normal">Brainstorming</div>
-                                  </div>
-                                </button>
-
-                                <button
-                                  onClick={() => handleAIAction(post.id, post.content, post.category, 'factCheck')}
-                                  className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-left hover:bg-[var(--accent)]/10 rounded-lg transition-all text-[var(--foreground)]"
-                                >
-                                  <Search className="w-4 h-4 text-purple-400" />
-                                  <div>
-                                    <div>Fact-Check</div>
-                                    <div className="text-[9px] text-[var(--muted-foreground)] font-normal">Infos verifizieren</div>
-                                  </div>
-                                </button>
-
-                                <button
-                                  onClick={() => handleAIAction(post.id, post.content, post.category, 'nextSteps')}
-                                  className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-left hover:bg-[var(--accent)]/10 rounded-lg transition-all text-[var(--foreground)]"
-                                >
-                                  <Target className="w-4 h-4 text-orange-400" />
-                                  <div>
-                                    <div>Nächste Schritte</div>
-                                    <div className="text-[9px] text-[var(--muted-foreground)] font-normal">Action Items</div>
-                                  </div>
-                                </button>
+                                {/* AI Action Buttons */}
+                                {['summarize', 'feedback', 'expand', 'factCheck', 'nextSteps'].map((action) => (
+                                   <button
+                                     key={action}
+                                     onClick={() => handleAIAction(post.id, post.content, post.category, action)}
+                                     className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-left hover:bg-[var(--accent)]/10 rounded-lg transition-all text-[var(--foreground)]"
+                                   >
+                                     <Sparkles className="w-4 h-4 text-blue-400" />
+                                     <div>
+                                       <div>{action.charAt(0).toUpperCase() + action.slice(1)}</div>
+                                       <div className="text-[9px] text-[var(--muted-foreground)] font-normal">AI Assistant</div>
+                                     </div>
+                                   </button>
+                                ))}
                               </div>
                             </motion.div>
                           )}
@@ -560,8 +486,6 @@ export default function Forum() {
                         </div>
                       )}
                     </div>
-                    
-                    {/* Related Posts Removed for cleaner UI */}
 
                     {/* AI Result Display */}
                     {aiResult && aiResult.postId === post.id && (
@@ -572,19 +496,8 @@ export default function Forum() {
                       >
                         <div className="flex items-center gap-2 mb-3">
                           <Sparkles className="w-4 h-4 text-purple-400" />
-                          <span className="text-xs font-bold uppercase tracking-widest text-purple-400">
-                            {aiResult.action === 'summarize' && 'AI Zusammenfassung'}
-                            {aiResult.action === 'feedback' && 'AI Feedback'}
-                            {aiResult.action === 'expand' && 'AI Ideen'}
-                            {aiResult.action === 'factCheck' && 'AI Fact-Check'}
-                            {aiResult.action === 'nextSteps' && 'AI Nächste Schritte'}
-                          </span>
-                          <button
-                            onClick={() => setAiResult(null)}
-                            className="ml-auto p-1 hover:bg-white/10 rounded transition-all"
-                          >
-                            <X className="w-3 h-3 text-white/40" />
-                          </button>
+                          <span className="text-xs font-bold uppercase tracking-widest text-purple-400">AI Response</span>
+                          <button onClick={() => setAiResult(null)} className="ml-auto p-1 hover:bg-white/10 rounded transition-all"><X className="w-3 h-3 text-white/40" /></button>
                         </div>
                         <p className="text-sm text-white/80 leading-relaxed whitespace-pre-wrap">{aiResult.content}</p>
                       </motion.div>
@@ -641,7 +554,8 @@ export default function Forum() {
             </div>
           </main>
 
-          <aside className="w-full lg:w-[360px] space-y-6 flex-shrink-0 sticky top-24">
+          {/* RIGHT: User & Trending */}
+          <aside className="lg:col-span-3 space-y-6 flex-shrink-0 sticky top-24">
             <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-xl overflow-hidden glass-card">
               <div className="h-16 bg-gradient-to-r from-[var(--accent)] to-[var(--color-forge-ember)] opacity-80" />
               <div className="p-5 pt-0 -mt-8 text-center md:text-left">
@@ -689,6 +603,101 @@ export default function Forum() {
 
         </div>
 
+        {/* Posting Modal */}
+        <AnimatePresence>
+          {editingPost === 'NEW' && (
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+            >
+              <motion.div 
+                initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }}
+                className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
+              >
+                <div className="p-4 border-b border-[var(--border)] flex justify-between items-center bg-[var(--surface-muted)]/50">
+                  <div className="flex gap-4">
+                    <button 
+                      onClick={() => setIsPreview(false)}
+                      className={`flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full transition-all ${!isPreview ? 'bg-[var(--accent)] text-[var(--accent-foreground)]' : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'}`}
+                    >
+                      <Edit2 className="w-3.5 h-3.5" /> Beitrag
+                    </button>
+                    <button 
+                      onClick={() => setIsPreview(true)}
+                      className={`flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full transition-all ${isPreview ? 'bg-[var(--accent)] text-[var(--accent-foreground)]' : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'}`}
+                    >
+                      <Eye className="w-3.5 h-3.5" /> Vorschau
+                    </button>
+                  </div>
+                  <button onClick={() => setEditingPost(null)} className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] text-xl font-light">✕</button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[var(--background)]">
+                  {!isPreview ? (
+                    <>
+                      <div className="flex gap-4">
+                        <select
+                          value={postCategory}
+                          onChange={e => setPostCategory(e.target.value)}
+                          className="bg-[var(--surface)] border border-[var(--border)] rounded-lg px-4 py-2 text-xs font-bold text-[var(--foreground)] outline-none focus:border-[var(--accent)]"
+                        >
+                          {CHANNELS.filter(c => c.id !== 'All').map(c => (
+                            <option key={c.id} value={c.id}>{c.name}</option>
+                          ))}
+                        </select>
+                        <button
+                          onClick={() => fileInputRef.current?.click()}
+                          className="flex items-center gap-2 text-xs font-bold text-[var(--muted-foreground)] hover:text-[var(--accent)] border border-[var(--border)] px-4 py-2 rounded-lg bg-[var(--surface)] transition-all"
+                        >
+                          <ImageIcon className="w-4 h-4" /> Add Image
+                        </button>
+                        <input type="file" ref={fileInputRef} onChange={handleUpload} className="hidden" accept="image/*" />
+
+                        <VoiceInput
+                          onTranscript={(text) => setContent((prev) => prev + (prev ? '\n\n' : '') + text)}
+                        />
+                      </div>
+                      <textarea
+                        autoFocus
+                        value={content}
+                        onChange={e => setContent(e.target.value)}
+                        placeholder="Markdown unterstützt: **fett**, *kursiv*, # Überschrift...&#10;&#10;💡 Tipp: Nutze @forge-ai um die AI zu fragen!"
+                        className="w-full min-h-[300px] p-4 text-sm font-mono bg-[var(--surface)] border border-[var(--border)] rounded-xl outline-none focus:border-[var(--accent)] transition-all resize-none text-[var(--foreground)]"
+                      />
+                      <div className="flex items-center gap-2 text-[10px] text-purple-400 bg-purple-500/10 px-3 py-2 rounded-lg border border-purple-500/20">
+                        <Sparkles className="w-3 h-3" />
+                        <span className="font-bold">Pro-Tipp: Schreib <code className="bg-purple-500/20 px-1.5 py-0.5 rounded">@forge-ai [deine Frage]</code> für eine direkte AI-Antwort!</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="prose prose-invert prose-sm max-w-none p-6 bg-[var(--surface)] border border-[var(--border)] rounded-xl min-h-[300px]">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{content || '*Nothing to preview*'}</ReactMarkdown>
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-4 border-t border-[var(--border)] flex justify-between items-center bg-[var(--surface-muted)]/50">
+                  <span className="text-[10px] text-[var(--accent)] font-bold uppercase tracking-widest">{statusMessage}</span>
+                  <div className="flex gap-3">
+                    <button 
+                      onClick={() => setEditingPost(null)}
+                      className="px-6 py-2 text-sm font-bold text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all"
+                    >
+                      Abbrechen
+                    </button>
+                    <button 
+                      onClick={handleSubmit} disabled={isSubmitting || !content.trim()}
+                      className="bg-[var(--accent)] hover:brightness-110 text-[var(--accent-foreground)] px-10 py-2 rounded-full font-bold text-sm disabled:opacity-50 transition-all shadow-lg active:scale-95 uppercase tracking-widest"
+                    >
+                      {isSubmitting ? 'Poste...' : 'Jetzt posten'}
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Moderation Warning Modal */}
         <AnimatePresence>
           {moderationWarning && (
@@ -704,8 +713,7 @@ export default function Forum() {
                 animate={{ scale: 1, y: 0 }}
                 exit={{ scale: 0.9, y: 20 }}
                 onClick={(e) => e.stopPropagation()}
-                className={`w-full max-w-md rounded-2xl border p-8 glass-card ${
-                  moderationWarning.number >= 3
+                className={`w-full max-w-md rounded-2xl border p-8 glass-card ${moderationWarning.number >= 3
                     ? 'bg-red-950/50 border-red-500/30'
                     : moderationWarning.number === 2
                     ? 'bg-orange-950/50 border-orange-500/30'
@@ -713,9 +721,7 @@ export default function Forum() {
                 }`}
               >
                 <div className="text-center mb-6">
-                  <div className={`w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center text-4xl ${
-                    moderationWarning.number >= 3 ? 'bg-red-500/20' : moderationWarning.number === 2 ? 'bg-orange-500/20' : 'bg-yellow-500/20'
-                  }`}>
+                  <div className={`w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center text-4xl ${moderationWarning.number >= 3 ? 'bg-red-500/20' : moderationWarning.number === 2 ? 'bg-orange-500/20' : 'bg-yellow-500/20'}`}>
                     {moderationWarning.banned ? '🔒' : '⚠️'}
                   </div>
                   <h2 className="text-2xl font-bold text-white mb-2">
@@ -735,8 +741,7 @@ export default function Forum() {
                       {[...Array(3)].map((_, i) => (
                         <div
                           key={i}
-                          className={`flex-1 h-2 rounded-full ${
-                            i < moderationWarning.number
+                          className={`flex-1 h-2 rounded-full ${i < moderationWarning.number
                               ? moderationWarning.number >= 3
                                 ? 'bg-red-500'
                                 : moderationWarning.number === 2
@@ -757,8 +762,7 @@ export default function Forum() {
 
                 <button
                   onClick={() => setModerationWarning(null)}
-                  className={`w-full mt-6 py-4 rounded-xl font-bold text-sm uppercase tracking-widest transition-all ${
-                    moderationWarning.banned
+                  className={`w-full mt-6 py-4 rounded-xl font-bold text-sm uppercase tracking-widest transition-all ${moderationWarning.banned
                       ? 'bg-red-500 hover:bg-red-600 text-white'
                       : 'bg-white text-black hover:bg-gray-200'
                   }`}
