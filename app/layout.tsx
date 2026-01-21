@@ -33,14 +33,15 @@ export const metadata: Metadata = {
   description: "Community Venture Studio für ambitionierte Founder",
   icons: {
     icon: [
-      { url: "/favicon.png" },
-      { url: "/favicon.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon.ico" },
     ],
     apple: [
-      { url: "/favicon.png", sizes: "180x180", type: "image/png" },
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
-    shortcut: ["/favicon.png"],
   },
+  manifest: "/site.webmanifest",
   openGraph: {
     title: "STAKE & SCALE",
     description: "Community Venture Studio für ambitionierte Founder",
@@ -48,7 +49,7 @@ export const metadata: Metadata = {
     siteName: "STAKE & SCALE",
     images: [
       {
-        url: "/favicon.png",
+        url: "/android-chrome-512x512.png",
         width: 512,
         height: 512,
         alt: "STAKE & SCALE Logo",
@@ -61,7 +62,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "STAKE & SCALE",
     description: "Community Venture Studio für ambitionierte Founder",
-    images: ["/favicon.png"],
+    images: ["/android-chrome-512x512.png"],
   },
 };
 
