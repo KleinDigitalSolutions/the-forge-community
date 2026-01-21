@@ -201,7 +201,8 @@ export async function getUserVentures() {
         select: {
           tasks: {
             where: { status: 'DONE' }
-          }
+          },
+          steps: true
         }
       }
     },
