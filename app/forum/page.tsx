@@ -255,9 +255,9 @@ export default function Forum() {
     <AuthGuard>
       <PageShell>
 
-        <div className="max-w-[1800px] mx-auto px-4 md:px-6 pt-24 pb-12 flex flex-col lg:flex-row gap-8 items-start">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 items-start">
           
-          <main className="flex-1 space-y-4 min-w-0">
+          <main className="flex-1 space-y-6 min-w-0">
             
             {/* Reddit-style Create Post Trigger */}
             <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-3 flex items-center gap-3 shadow-sm glass-card mb-6">
