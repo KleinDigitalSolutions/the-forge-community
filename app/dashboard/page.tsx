@@ -12,7 +12,8 @@ import {
   CheckCircle2,
   AlertCircle,
   MoreHorizontal,
-  Layout
+  Layout,
+  Users
 } from 'lucide-react';
 import Link from 'next/link';
 import OnboardingWizard from '@/app/components/onboarding/OnboardingWizard';
