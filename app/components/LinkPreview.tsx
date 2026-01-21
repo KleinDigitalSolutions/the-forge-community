@@ -16,12 +16,25 @@ interface PreviewData {
   aiSummary?: string;
 }
 
+/**
+ * Utility: Extract YouTube ID from URL
+ */
+export function getYouTubeId(url: string): string | null {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
+}
+
 export function LinkPreview({ url }: LinkPreviewProps) {
   const [preview, setPreview] = useState<PreviewData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
+  const youtubeId = getYouTubeId(url);
+
   useEffect(() => {
+    // If it's a YouTube video, we might not even need the API preview, 
+    // but we'll fetch it anyway for title/description
     fetchPreview();
   }, [url]);
 
@@ -54,6 +67,35 @@ export function LinkPreview({ url }: LinkPreviewProps) {
         <div className="h-4 bg-white/5 rounded w-3/4 mb-2"></div>
         <div className="h-3 bg-white/5 rounded w-1/2"></div>
       </div>
+    );
+  }
+
+  if (youtubeId) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="my-6 space-y-3"
+      >
+        <div className="aspect-video w-full rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black">
+          <iframe
+            width="100%"
+            height="100%"
+            src={`https://www.youtube.com/embed/${youtubeId}`}
+            title="YouTube video player"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+            className="w-full h-full"
+          ></iframe>
+        </div>
+        {preview && (
+          <div className="px-2">
+            <h4 className="text-sm font-bold text-white/90">{preview.title}</h4>
+            <p className="text-[10px] text-white/40 uppercase tracking-widest mt-1">YouTube Video</p>
+          </div>
+        )}
+      </motion.div>
     );
   }
 
