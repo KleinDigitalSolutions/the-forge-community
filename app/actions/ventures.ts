@@ -10,6 +10,7 @@ export async function createVenture(data: {
   type: string;
   description?: string;
 }) {
+  console.log('Server Action: createVenture called with', data);
   const session = await auth();
   if (!session?.user?.email) {
     throw new Error('Unauthorized');
