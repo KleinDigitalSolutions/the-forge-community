@@ -108,7 +108,9 @@ model User {
   // Relations
   squadMemberships SquadMember[]
 
-  votes         Vote[]
+  voteResponses VoteResponse[]
+  roadmapVotes  RoadmapVote[]
+  createdDecisions Decision[]
   karma         Karma[]
   ventures      Venture[]
   ventureTasks  VentureTask[]
@@ -157,6 +159,7 @@ model Squad {
 
   members     SquadMember[]
   roadmaps    RoadmapItem[]
+  decisions   Decision[]
   ventures    Venture[]
   transactions SquadTransaction[]
   legalDocuments LegalDocument[]
@@ -205,13 +208,13 @@ model RoadmapItem {
   squadId     String
   squad       Squad    @relation(fields: [squadId], references: [id])
   
-  votes       Vote[]
+  votes       RoadmapVote[]
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
-model Vote {
+model RoadmapVote {
   id            String      @id @default(cuid())
   userId        String
   user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -222,6 +225,60 @@ model Vote {
   createdAt     DateTime    @default(now())
 
   @@unique([userId, roadmapItemId]) // Prevent duplicate votes
+}
+
+model Decision {
+  id            String      @id @default(cuid())
+  squadId       String
+  squad         Squad       @relation(fields: [squadId], references: [id], onDelete: Cascade)
+  ventureId     String?
+  venture       Venture?    @relation(fields: [ventureId], references: [id], onDelete: Cascade)
+
+  // Question
+  question      String
+  description   String?     @db.Text
+  type          String      @default("multiple-choice") // multiple-choice, yes-no, ranking
+  options       String[]    // For multiple choice
+
+  // Status
+  status        String      @default("open") // open, closed
+  deadline      DateTime?
+
+  // Results
+  requiredQuorum   Int      @default(50) // % of members required to vote
+  winningThreshold Int      @default(50) // % required to win
+  winningOption    String?
+
+  // Relations
+  responses     VoteResponse[]
+
+  // Metadata
+  createdById   String?
+  createdBy     User?       @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt     DateTime    @default(now())
+  closedAt      DateTime?
+
+  @@index([squadId])
+  @@index([status])
+}
+
+model VoteResponse {
+  id            String      @id @default(cuid())
+  decisionId    String
+  decision      Decision    @relation(fields: [decisionId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Response
+  choice        String
+  comment       String?
+
+  // Metadata
+  votedAt       DateTime    @default(now())
+
+  @@unique([decisionId, userId]) // One vote per user per decision
+  @@index([decisionId])
+  @@index([userId])
 }
 
 model Karma {
@@ -329,6 +386,7 @@ model Venture {
   productionOrders ProductionOrder[]
   campaigns       MarketingCampaign[]
   posts           ContentPost[]
+  decisions       Decision[]
 
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt

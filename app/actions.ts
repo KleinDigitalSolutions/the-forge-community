@@ -85,7 +85,7 @@ export async function toggleVote(roadmapItemId: string) {
   }
 
   // 3. Check existing vote
-  const existingVote = await prisma.vote.findUnique({
+  const existingVote = await prisma.roadmapVote.findUnique({
     where: {
       userId_roadmapItemId: {
         userId: user.id,
@@ -96,14 +96,14 @@ export async function toggleVote(roadmapItemId: string) {
 
   if (existingVote) {
     // 4a. Remove Vote
-    await prisma.vote.delete({
+    await prisma.roadmapVote.delete({
       where: { id: existingVote.id },
     });
     console.log(`Vote removed by ${user.email}`);
   } else {
     // 4b. Add Vote & Karma
     await prisma.$transaction([
-      prisma.vote.create({
+      prisma.roadmapVote.create({
         data: {
           userId: user.id,
           roadmapItemId: roadmapItemId,
@@ -122,5 +122,5 @@ export async function toggleVote(roadmapItemId: string) {
   }
 
   // 5. Revalidate
-  revalidatePath('/dashboard'); // Assuming the dashboard shows the votes
+  revalidatePath('/dashboard');
 }

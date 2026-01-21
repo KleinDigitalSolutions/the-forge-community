@@ -16,7 +16,8 @@ import {
   Box,
   TrendingUp,
   Scale,
-  FileText
+  FileText,
+  Gavel
 } from 'lucide-react';
 
 interface ForgeSidebarProps {
@@ -62,6 +63,7 @@ const FORGE_MENU = [
   {
     section: 'ADMIN',
     items: [
+      { icon: Gavel, label: 'Abstimmungen', href: '/forge/[id]/decisions' },
       { icon: Wallet, label: 'Budget', href: '/forge/[id]/admin' },
       { icon: Users, label: 'Team', href: '/forge/[id]/team' },
       { icon: Settings, label: 'Settings', href: '/forge/[id]/settings' },
