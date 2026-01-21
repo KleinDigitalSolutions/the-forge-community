@@ -60,7 +60,6 @@ export function TrendingTopics() {
     return <Activity className="w-4 h-4 text-yellow-400" />;
   }
 
-  return (
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <div className="bg-[var(--surface)] rounded-xl p-5 border border-[var(--border)]">
       {children}
