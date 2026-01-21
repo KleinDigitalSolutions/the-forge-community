@@ -32,6 +32,7 @@ interface ForumPost {
   createdTime: string;
   likes: number;
   category: string;
+  userVote?: number;
   comments?: Comment[];
 }
 
@@ -170,14 +171,42 @@ export default function Forum() {
   };
 
   const handleVote = async (id: string, delta: number) => {
-    setPosts(prev => prev.map(p => p.id === id ? { ...p, likes: p.likes + delta } : p));
+    // Optimistic Update
+    setPosts(prev => prev.map(p => {
+      if (p.id !== id) return p;
+      
+      const currentVote = p.userVote || 0;
+      let newLikes = p.likes;
+      let newUserVote = 0;
+
+      if (currentVote === delta) {
+        // Undo vote
+        newLikes -= delta;
+        newUserVote = 0;
+      } else if (currentVote === 0) {
+        // New vote
+        newLikes += delta;
+        newUserVote = delta;
+      } else {
+        // Flip vote (e.g. from -1 to +1)
+        newLikes += (delta * 2);
+        newUserVote = delta;
+      }
+
+      return { ...p, likes: newLikes, userVote: newUserVote };
+    }));
+
     try {
-      await fetch('/api/forum/like', {
+      const res = await fetch('/api/forum/like', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, delta }),
       });
-    } catch (e) { console.error(e); }
+      if (!res.ok) fetchPosts(); // Rollback on error
+    } catch (e) { 
+      console.error(e);
+      fetchPosts();
+    }
   };
 
   const [isReplying, setIsReplying] = useState<string | null>(null);
@@ -356,11 +385,23 @@ export default function Forum() {
                   
                   {/* Voting Sidebar */}
                   <div className="w-12 bg-[var(--surface-muted)]/30 flex flex-col items-center pt-4 gap-1 border-r border-[var(--border)] rounded-l-lg overflow-hidden shrink-0">
-                    <button onClick={() => handleVote(post.id, 1)} className="p-1 hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] rounded text-[var(--muted-foreground)] transition-all">
+                    <button 
+                      onClick={() => handleVote(post.id, 1)} 
+                      className={`p-1 rounded transition-all ${
+                        post.userVote === 1 ? 'bg-[var(--accent)] text-[var(--accent-foreground)]' : 'hover:bg-[var(--accent)]/20 text-[var(--muted-foreground)]'
+                      }`}
+                    >
                       <ArrowUp className="w-5 h-5" />
                     </button>
-                    <span className={`text-xs font-bold leading-none my-1 ${post.likes > 0 ? 'text-[var(--accent)]' : 'text-[var(--foreground)]'}`}>{post.likes}</span>
-                    <button onClick={() => handleVote(post.id, -1)} className="p-1 hover:bg-blue-600 hover:text-white rounded text-[var(--muted-foreground)] transition-all">
+                    <span className={`text-xs font-bold leading-none my-1 ${
+                      post.userVote === 1 ? 'text-[var(--accent)]' : post.userVote === -1 ? 'text-blue-400' : 'text-[var(--foreground)]'
+                    }`}>{post.likes}</span>
+                    <button 
+                      onClick={() => handleVote(post.id, -1)} 
+                      className={`p-1 rounded transition-all ${
+                        post.userVote === -1 ? 'bg-blue-600 text-white' : 'hover:bg-blue-600/20 text-[var(--muted-foreground)]'
+                      }`}
+                    >
                       <ArrowDown className="w-5 h-5" />
                     </button>
                   </div>

@@ -7,9 +7,28 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export async function GET() {
+  const session = await auth();
+  
   try {
     const posts = await getForumPosts();
-    return NextResponse.json(posts);
+    
+    // If user is logged in, attach their existing votes
+    let userVotes: any[] = [];
+    if (session?.user?.email) {
+      const { prisma } = await import('@/lib/prisma');
+      const user = await prisma.user.findUnique({
+        where: { email: session.user.email },
+        include: { forumVotes: true }
+      });
+      userVotes = user?.forumVotes || [];
+    }
+
+    const postsWithVotes = posts.map(post => ({
+      ...post,
+      userVote: userVotes.find(v => v.postId === post.id)?.voteType || 0
+    }));
+
+    return NextResponse.json(postsWithVotes);
   } catch (error) {
     console.error('Error fetching forum posts:', error);
     return NextResponse.json(

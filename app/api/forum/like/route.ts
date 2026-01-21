@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { updateForumPostLikes } from '@/lib/notion';
 import { auth } from '@/auth';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request) {
-  // 🔒 SECURITY: Auth-Check - Nur eingeloggte User dürfen liken
   const session = await auth();
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -11,33 +11,65 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { id, delta } = body;
+    const { id: postId, delta } = body; // delta is 1 or -1
 
-    if (!id || typeof delta !== 'number') {
-      return NextResponse.json(
-        { error: 'Missing id or delta' },
-        { status: 400 }
-      );
+    if (!postId || typeof delta !== 'number' || Math.abs(delta) !== 1) {
+      return NextResponse.json({ error: 'Invalid vote' }, { status: 400 });
     }
 
-    // 🔒 SECURITY: Delta limitieren (nur +1 oder -1 erlauben)
-    if (delta !== 1 && delta !== -1) {
-      return NextResponse.json(
-        { error: 'Delta must be +1 or -1' },
-        { status: 400 }
-      );
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    });
+
+    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+
+    // 1. Check for existing vote
+    const existingVote = await prisma.forumVote.findUnique({
+      where: {
+        postId_userId: { postId, userId: user.id }
+      }
+    });
+
+    let notionDelta = 0;
+
+    if (existingVote) {
+      if (existingVote.voteType === delta) {
+        // User clicked the SAME arrow again -> Undo vote
+        await prisma.forumVote.delete({
+          where: { id: existingVote.id }
+        });
+        notionDelta = -delta; // If it was +1, now -1 to go back to 0
+      } else {
+        // User changed vote from Up to Down or vice versa
+        await prisma.forumVote.update({
+          where: { id: existingVote.id },
+          data: { voteType: delta }
+        });
+        notionDelta = delta * 2; // e.g. from -1 to +1 is +2
+      }
+    } else {
+      // New vote
+      await prisma.forumVote.create({
+        data: {
+          postId,
+          userId: user.id,
+          voteType: delta
+        }
+      });
+      notionDelta = delta;
     }
 
-    // TODO: Rate Limiting implementieren (pro User max 1x up/down pro Post)
-    // Aktuell kann ein User mehrfach voten, aber zumindest nur +1/-1
+    // 2. Sync with Notion (Primary Counter)
+    const likes = await updateForumPostLikes(postId, notionDelta);
+    
+    return NextResponse.json({ 
+      id: postId, 
+      likes, 
+      userVote: notionDelta === -delta ? 0 : delta 
+    });
 
-    const likes = await updateForumPostLikes(id, delta);
-    return NextResponse.json({ id, likes });
   } catch (error) {
     console.error('Error updating forum likes:', error);
-    return NextResponse.json(
-      { error: 'Failed to update forum likes' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed' }, { status: 500 });
   }
 }

@@ -112,6 +112,7 @@ model User {
   roadmapVotes  RoadmapVote[]
   createdDecisions Decision[]
   karma         Karma[]
+  forumVotes    ForumVote[]
   ventures      Venture[]
   ventureTasks  VentureTask[]
   mentoringSessions MentoringSession[]
@@ -282,6 +283,19 @@ model VoteResponse {
   @@unique([decisionId, userId]) // One vote per user per decision
   @@index([decisionId])
   @@index([userId])
+}
+
+model ForumVote {
+  id        String   @id @default(cuid())
+  postId    String   // Notion Page ID (No Relation because Posts are in Notion)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  voteType  Int      // 1 (Up) or -1 (Down)
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId]) // Prevent double voting
+  @@index([postId])
 }
 
 model Karma {
