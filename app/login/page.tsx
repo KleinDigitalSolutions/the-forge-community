@@ -132,7 +132,6 @@ function LoginForm() {
             )}
           </button>
 
-          {/* Cloudflare Turnstile */}
           <div className="flex justify-center py-2 scale-90">
             <Turnstile
               siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'} 
