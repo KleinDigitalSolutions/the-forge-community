@@ -55,34 +55,43 @@ export async function GET() {
       address_country: user.addressCountry,
     });
   } catch (error: any) {
-    // Fallback für Umgebungen ohne neue Spalten, um 500er zu vermeiden
+    // Fallback für fehlende Spalten
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      console.warn('GET /api/me fallback (DB lacks new profile fields):', error.message);
-    } else {
-      console.error('GET /api/me failed:', error);
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        image: true,
-        role: true,
-        credits: true,
-        onboardingComplete: true,
-        founderNumber: true,
-        karmaScore: true,
-        _count: {
-          select: { ventures: true, squadMemberships: true }
+      console.warn('GET /api/me fallback (missing profile fields):', error.message);
+      const user = await prisma.user.findUnique({
+        where: { email: session.user.email },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+          role: true,
+          credits: true,
+          onboardingComplete: true,
+          founderNumber: true,
+          karmaScore: true,
+          _count: {
+            select: { ventures: true, squadMemberships: true }
+          }
         }
-      }
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      });
+      if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json(user);
     }
-    return NextResponse.json(user);
+
+    // Fallback für DB-Connectivity: liefere Minimaldaten aus der Session
+    console.error('GET /api/me failed:', error);
+    return NextResponse.json({
+      id: session.user.email,
+      name: session.user.name,
+      email: session.user.email,
+      image: session.user.image || null,
+      role: 'USER',
+      credits: 0,
+      onboardingComplete: false,
+      founderNumber: 0,
+      karmaScore: 0,
+      _count: { ventures: 0, squadMemberships: 0 }
+    }, { status: 200 });
   }
 }

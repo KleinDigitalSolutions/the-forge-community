@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 
 export async function GET() {
   const session = await auth();
@@ -9,65 +10,85 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
-    include: {
-      ventures: {
-        orderBy: { updatedAt: 'desc' },
-        include: {
-          squad: true,
-          tasks: {
-            where: { status: { not: 'DONE' } },
-            orderBy: { dueDate: 'asc' },
-            take: 5
-          },
-          _count: {
-            select: { steps: true }
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      include: {
+        ventures: {
+          orderBy: { updatedAt: 'desc' },
+          include: {
+            squad: true,
+            tasks: {
+              where: { status: { not: 'DONE' } },
+              orderBy: { dueDate: 'asc' },
+              take: 5
+            },
+            _count: {
+              select: { steps: true }
+            }
           }
-        }
-      },
-      squadMemberships: {
-        include: {
-          squad: {
-            include: {
-              _count: {
-                select: { members: true }
+        },
+        squadMemberships: {
+          include: {
+            squad: {
+              include: {
+                _count: {
+                  select: { members: true }
+                }
               }
             }
           }
-        }
-      },
-      _count: {
-        select: {
-          createdPosts: true,
+        },
+        _count: {
+          select: {
+            createdPosts: true,
+          }
         }
       }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-  });
 
-  if (!user) {
-    return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    const stats = {
+      myVentures: user.ventures.length,
+      mySquads: user.squadMemberships.length,
+      karma: 0,
+      forumPosts: user._count.createdPosts
+    };
+
+    return NextResponse.json({
+      user: {
+        id: user.id,
+        name: user.name,
+        image: user.image,
+        onboardingComplete: user.onboardingComplete,
+        role: user.role
+      },
+      ventures: user.ventures,
+      squads: user.squadMemberships.map(m => m.squad),
+      stats
+    });
+  } catch (error: any) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      console.warn('GET /api/dashboard fallback (DB issue):', error.message);
+    } else {
+      console.error('GET /api/dashboard failed:', error);
+    }
+
+    // Minimal Fallback, damit die Seite nicht mit 500 stirbt
+    return NextResponse.json({
+      user: {
+        id: session.user.email,
+        name: session.user.name,
+        image: session.user.image || null,
+        onboardingComplete: false,
+        role: 'USER'
+      },
+      ventures: [],
+      squads: [],
+      stats: { myVentures: 0, mySquads: 0, karma: 0, forumPosts: 0 }
+    }, { status: 200 });
   }
-
-  // Calculate generic stats (in a real app, these would be aggregated from DB)
-  // For now, we simulate "Community Stats" or user-specific stats
-  const stats = {
-    myVentures: user.ventures.length,
-    mySquads: user.squadMemberships.length,
-    karma: 0, // Implement karma fetching if needed
-    forumPosts: user._count.createdPosts
-  };
-
-  return NextResponse.json({
-    user: {
-      id: user.id,
-      name: user.name,
-      image: user.image,
-      onboardingComplete: user.onboardingComplete,
-      role: user.role
-    },
-    ventures: user.ventures,
-    squads: user.squadMemberships.map(m => m.squad),
-    stats
-  });
 }
