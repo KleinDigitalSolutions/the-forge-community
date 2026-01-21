@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Bodoni_Moda, Sora, Instrument_Serif, Caveat } from "next/font/google";
 import { Providers } from "@/app/components/Providers";
 import StructuredData from "@/app/components/StructuredData";
+import Script from "next/script";
 import "./globals.css";
 
 const sora = Sora({
@@ -111,6 +112,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="de">
+      <head>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-3GP315ZWWP"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-3GP315ZWWP');
+          `}
+        </Script>
+      </head>
       <body
         className={`${sora.variable} ${bodoniModa.variable} ${instrumentSerif.variable} ${caveat.variable} antialiased`}
       >
