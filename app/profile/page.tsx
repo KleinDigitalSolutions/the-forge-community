@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import PageShell from '@/app/components/PageShell';
 import AuthGuard from '@/app/components/AuthGuard';
-import { User, MapPin, Briefcase, Target, Phone, Instagram, Linkedin, Save, CheckCircle, Shield, Rocket, Zap } from 'lucide-react';
+import { User, MapPin, Briefcase, Target, Phone, Instagram, Linkedin, Save, CheckCircle, Shield, Rocket, Zap, Camera, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const skillOptions = ['Tech', 'Marketing', 'Sales', 'Operations', 'Finance', 'Legal', 'Creative', 'E-Commerce'];
@@ -12,8 +12,11 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: '',
+    image: '',
     phone: '',
     birthday: '',
     address_street: '',
@@ -40,6 +43,28 @@ export default function ProfilePage() {
     }
     loadProfile();
   }, []);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const response = await fetch(`/api/me/update-image?filename=${file.name}`, {
+        method: 'POST',
+        body: file,
+      });
+
+      if (response.ok) {
+        const newBlob = await response.json();
+        setFormData(prev => ({ ...prev, image: newBlob.url }));
+      }
+    } catch (error) {
+      console.error('Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleToggleSkill = (skill: string) => {
     setFormData(prev => ({
@@ -100,14 +125,46 @@ export default function ProfilePage() {
                 </div>
                 <h2 className="text-xl font-instrument-serif text-white uppercase tracking-wider">Persönliche Angaben</h2>
               </div>
-              <div className="p-10 grid md:grid-cols-2 gap-8 relative z-10">
-                <div className="space-y-3">
-                  <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] ml-1">Vollständiger Name</label>
-                  <input 
-                    type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
-                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-6 py-4 text-sm text-white focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-white/10"
-                  />
+              <div className="p-10 relative z-10">
+                {/* Avatar Upload */}
+                <div className="flex flex-col items-center mb-12">
+                  <div className="relative group">
+                    <div className="w-32 h-24 md:w-32 md:h-32 rounded-full bg-white/5 border-2 border-white/10 flex items-center justify-center text-4xl font-black text-[#D4AF37] overflow-hidden shadow-2xl transition-all group-hover:border-[#D4AF37]/50">
+                      {formData.image ? (
+                        <img src={formData.image} alt="Profile" className="w-full h-full object-cover" />
+                      ) : (
+                        formData.name?.charAt(0) || '?'
+                      )}
+                      
+                      {uploading && (
+                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                          <Loader2 className="w-8 h-8 text-[#D4AF37] animate-spin" />
+                        </div>
+                      )}
+                    </div>
+                    
+                    <button 
+                      onClick={() => fileInputRef.current?.click()}
+                      className="absolute bottom-0 right-0 p-2.5 bg-[#D4AF37] rounded-full text-black shadow-xl hover:scale-110 active:scale-95 transition-all border-4 border-[#050505]"
+                    >
+                      <Camera className="w-4 h-4" />
+                    </button>
+                    <input 
+                      type="file" ref={fileInputRef} onChange={handleImageUpload} 
+                      className="hidden" accept="image/*" 
+                    />
+                  </div>
+                  <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] mt-4">Identitäts-Bild ändern</p>
                 </div>
+
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] ml-1">Vollständiger Name</label>
+                    <input 
+                      type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
+                      className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-6 py-4 text-sm text-white focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-white/10"
+                    />
+                  </div>
                 <div className="space-y-3">
                   <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] ml-1">Geburtsdatum</label>
                   <input 
