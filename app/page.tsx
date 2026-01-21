@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, type ChangeEvent, type FormEvent } from 'react';
 import Link from 'next/link';
+import { Turnstile } from '@marsidev/react-turnstile';
 import { PricingTable } from '@/app/components/PricingTable';
 import {
   Check,
@@ -62,6 +63,7 @@ export default function Home() {
   });
   const [formStatus, setFormStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [formMessage, setFormMessage] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const refreshFoundersCount = useCallback(async () => {
     try {
@@ -161,12 +163,18 @@ export default function Home() {
       return;
     }
 
+    if (!turnstileToken) {
+      setFormStatus('error');
+      setFormMessage('Sicherheitsscheck erforderlich (Turnstile).');
+      return;
+    }
+
     setFormStatus('loading');
     try {
       const response = await fetch('/api/founders/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, role }),
+        body: JSON.stringify({ ...formData, role, turnstileToken }),
       });
 
       if (!response.ok) throw new Error('Failed to submit');
@@ -513,11 +521,18 @@ export default function Home() {
                               
                               {formMessage && <p className="text-red-500 text-[10px] text-center uppercase tracking-widest">{formMessage}</p>}
 
+                              <div className="flex justify-center py-4">
+                                <Turnstile
+                                  siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
+                                  onSuccess={(token) => setTurnstileToken(token)}
+                                />
+                              </div>
+
                               <div className="flex justify-between pt-4">
                                  <button type="button" onClick={handlePrevStep} className="text-[10px] font-bold text-white/40 hover:text-white uppercase tracking-widest">ZURÜCK</button>
                                  <button 
                                     type="submit" 
-                                    disabled={formStatus === 'loading'}
+                                    disabled={formStatus === 'loading' || !turnstileToken}
                                     className="px-8 py-3 bg-[var(--accent)] text-[var(--accent-foreground)] rounded-xl text-[10px] font-bold hover:brightness-110 transition-all disabled:opacity-30 uppercase tracking-[0.2em]"
                                  >
                                     {formStatus === 'loading' ? 'ÜBERTRAGE...' : 'BEWERBUNG ABSCHICKEN'}
