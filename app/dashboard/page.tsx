@@ -3,30 +3,75 @@
 import { useEffect, useState } from 'react';
 import AuthGuard from '@/app/components/AuthGuard';
 import PageShell from '@/app/components/PageShell';
-import { ArrowUpRight, Wallet, Users, MessageSquare, TrendingUp, Shield, Zap, Target } from 'lucide-react';
+import { 
+  ArrowUpRight, 
+  Wallet, 
+  Users, 
+  MessageSquare, 
+  TrendingUp, 
+  Shield, 
+  Zap, 
+  Target, 
+  Rocket,
+  Plus,
+  ArrowRight,
+  LayoutDashboard
+} from 'lucide-react';
 import Link from 'next/link';
 import { RoadmapWidget } from '@/app/components/RoadmapWidget';
 import OnboardingWizard from '@/app/components/onboarding/OnboardingWizard';
+import { formatDistanceToNow } from 'date-fns';
+import { de } from 'date-fns/locale';
+
+interface DashboardData {
+  user: any;
+  ventures: any[];
+  squads: any[];
+  stats: {
+    myVentures: number;
+    mySquads: number;
+    forumPosts: number;
+    karma: number;
+  };
+}
 
 export default function Dashboard() {
-  const [user, setUser] = useState<any>(null);
-  const [stats, setStats] = useState({
-    capital: 0,
-    squads: 0,
-    posts: 0,
-    growth: 0
-  });
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchDashboard = async () => {
+    try {
+      const res = await fetch('/api/dashboard');
+      if (res.ok) {
+        setData(await res.json());
+      }
+    } catch (err) {
+      console.error('Failed to load dashboard', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Fetch user for onboarding check
-    fetch('/api/me')
-      .then(res => res.json())
-      .then(data => {
-        if (!data.error) setUser(data);
-      });
-
-    setStats({ capital: 25000, squads: 3, posts: 12, growth: 15 });
+    fetchDashboard();
   }, []);
+
+  if (loading) {
+    return (
+      <AuthGuard>
+        <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+            <p className="text-white/40 font-mono text-xs uppercase tracking-widest">Initialisiere Cockpit...</p>
+          </div>
+        </div>
+      </AuthGuard>
+    );
+  }
+
+  if (!data) return null;
+
+  const { user, ventures, squads, stats } = data;
 
   return (
     <AuthGuard>
@@ -34,118 +79,182 @@ export default function Dashboard() {
         {user && !user.onboardingComplete && (
           <OnboardingWizard 
             user={user} 
-            onComplete={() => setUser({ ...user, onboardingComplete: true })} 
+            onComplete={() => {
+              // Optimistic update
+              setData(prev => prev ? { ...prev, user: { ...prev.user, onboardingComplete: true } } : null);
+            }} 
           />
         )}
 
-        <header className="mb-16 relative">
+        <header className="mb-12 relative">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 text-[10px] font-bold text-[var(--accent)] uppercase tracking-[0.3em] mb-6">
             <Shield className="w-3 h-3" />
-            Verschlüsselte Verbindung aktiv
+            Operator Access: Granted
           </div>
-          <h1 className="text-5xl md:text-6xl font-instrument-serif text-white tracking-tight mb-4">Cockpit</h1>
-          <p className="text-white/40 uppercase tracking-[0.2em] text-xs font-bold">Willkommen zurück, Operator. Statusbericht bereit.</p>
+          <h1 className="text-5xl md:text-6xl font-instrument-serif text-white tracking-tight mb-4">
+            Willkommen, {user.name || 'Founder'}.
+          </h1>
+          <p className="text-white/40 uppercase tracking-[0.2em] text-xs font-bold">
+            Status: {ventures.length > 0 ? 'Active Deployment' : 'Ready to Launch'} • System V2.0 Online
+          </p>
         </header>
 
-        {/* KPI Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+        {/* Ventures Section - THE CORE */}
+        <section className="mb-16">
+          <div className="flex justify-between items-end mb-8">
+             <h2 className="text-2xl font-instrument-serif text-white">Deine Ventures</h2>
+             {ventures.length > 0 && (
+                <Link href="/ventures/new" className="text-xs font-bold text-[#D4AF37] hover:text-white transition-colors flex items-center gap-2 uppercase tracking-widest">
+                   <Plus className="w-4 h-4" /> Neues Venture
+                </Link>
+             )}
+          </div>
+
+          {ventures.length === 0 ? (
+            // EMPTY STATE - CALL TO ACTION
+            <div className="glass-card p-12 rounded-3xl border border-white/10 relative overflow-hidden group">
+               <div className="absolute inset-0 bg-gradient-to-r from-[#D4AF37]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+               <div className="relative z-10 flex flex-col md:flex-row items-center gap-8 text-center md:text-left">
+                  <div className="w-24 h-24 bg-[#D4AF37]/10 rounded-full flex items-center justify-center border border-[#D4AF37]/20 shrink-0">
+                     <Rocket className="w-10 h-10 text-[#D4AF37]" />
+                  </div>
+                  <div className="flex-1">
+                     <h3 className="text-3xl font-instrument-serif text-white mb-2">Starte deine Reise</h3>
+                     <p className="text-white/50 max-w-xl leading-relaxed">
+                        Die Forge ist bereit für deine Idee. Nutze unsere AI-gestützten Tools für Brand DNA, Legal und Marketing, um von 0 auf 1 zu skalieren.
+                     </p>
+                  </div>
+                  <Link 
+                    href="/ventures/new"
+                    className="px-8 py-4 bg-[#D4AF37] text-black font-bold rounded-xl hover:bg-[#FFD700] transition-colors flex items-center gap-2 shrink-0"
+                  >
+                    Venture Erstellen <ArrowRight className="w-4 h-4" />
+                  </Link>
+               </div>
+            </div>
+          ) : (
+            // VENTURE LIST
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+               {ventures.map((venture) => (
+                  <Link key={venture.id} href={`/forge/${venture.id}`} className="group">
+                    <div className="glass-card p-8 rounded-3xl border border-white/10 h-full hover:border-[#D4AF37]/30 transition-all duration-500 relative overflow-hidden">
+                       <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
+                       
+                       <div className="flex justify-between items-start mb-6">
+                          <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-[#D4AF37]/50 transition-colors">
+                             <Zap className="w-6 h-6 text-white group-hover:text-[#D4AF37]" />
+                          </div>
+                          <span className="px-3 py-1 bg-white/5 rounded-full text-[10px] font-bold uppercase tracking-widest text-white/40 group-hover:bg-[#D4AF37]/10 group-hover:text-[#D4AF37] transition-colors">
+                             {venture.status}
+                          </span>
+                       </div>
+
+                       <h3 className="text-2xl font-instrument-serif text-white mb-2 group-hover:translate-x-1 transition-transform">{venture.name}</h3>
+                       <p className="text-white/40 text-sm line-clamp-2 mb-6 h-10">
+                          {venture.description || 'Keine Beschreibung'}
+                       </p>
+
+                       <div className="pt-6 border-t border-white/5 flex justify-between items-center">
+                          <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">
+                             {formatDistanceToNow(new Date(venture.updatedAt), { addSuffix: true, locale: de })}
+                          </span>
+                          <span className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
+                             <ArrowUpRight className="w-4 h-4" />
+                          </span>
+                       </div>
+                    </div>
+                  </Link>
+               ))}
+               
+               {/* Add New Card (Mini) */}
+               <Link href="/ventures/new" className="glass-card p-8 rounded-3xl border border-white/10 border-dashed hover:border-[#D4AF37]/50 hover:bg-white/[0.02] transition-all flex flex-col items-center justify-center gap-4 group text-center cursor-pointer">
+                  <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                     <Plus className="w-6 h-6 text-white/40 group-hover:text-white" />
+                  </div>
+                  <span className="text-xs font-bold uppercase tracking-widest text-white/40 group-hover:text-white">Neues Venture</span>
+               </Link>
+            </div>
+          )}
+        </section>
+
+        {/* Stats & Quick Actions Grid */}
+        <div className="grid lg:grid-cols-4 gap-6 mb-16">
           <KpiCard 
-            title="Gesamtes Kapital" 
-            value={`€ ${stats.capital.toLocaleString()}`} 
-            icon={Wallet} 
-            trend="+2.5% diesen Monat"
-          />
-          <KpiCard 
-            title="Aktive Squads" 
-            value={stats.squads} 
+            title="Meine Squads" 
+            value={stats.mySquads} 
             icon={Users} 
-            trend="Rekrutierungs-Phase"
+            trend={stats.mySquads > 0 ? "Aktiv" : "Suchend"}
+            href="/squads"
           />
           <KpiCard 
-            title="Forum Aktivität" 
-            value={stats.posts} 
+            title="Forum Beiträge" 
+            value={stats.forumPosts} 
             icon={MessageSquare} 
-            trend="+12 neue Beiträge"
+            href="/forum"
           />
           <KpiCard 
-            title="Netzwerk Wert" 
-            value={`${stats.growth}k`} 
+            title="Kapitalbedarf" 
+            value="€ 0" 
+            icon={Wallet} 
+            trend="Pre-Seed"
+            opacity={true}
+          />
+          <KpiCard 
+            title="System Status" 
+            value="Online" 
             icon={TrendingUp} 
-            trend="Geschätzte Reichweite"
+            trend="V 1.0.2"
+            opacity={true}
           />
         </div>
 
         <div className="grid lg:grid-cols-3 gap-12">
-          {/* Main Content Area */}
-          <div className="lg:col-span-2 space-y-12">
-             <div className="glass-card rounded-3xl border border-white/10 p-8 relative overflow-hidden group">
-                <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
-                <RoadmapWidget />
+          {/* Roadmap Widget */}
+          <div className="lg:col-span-2 space-y-8">
+             <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-instrument-serif text-white">Community Roadmap</h2>
+                <Link href="/roadmap" className="text-xs font-bold text-white/40 hover:text-white uppercase tracking-widest transition-colors">
+                   Alle Anzeigen
+                </Link>
              </div>
-             
-             {/* Quick Actions */}
-             <div className="grid md:grid-cols-2 gap-8">
-                <div className="glass-card p-10 rounded-3xl border border-white/10 hover:border-[var(--accent)]/30 transition-all duration-700 relative overflow-hidden group">
-                  <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="h-14 w-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-white mb-8 group-hover:border-[var(--accent)]/50 transition-all">
-                    <Target className="w-6 h-6 group-hover:text-[var(--accent)] transition-colors" />
-                  </div>
-                  <h3 className="text-2xl font-instrument-serif text-white mb-3">Squad Markt</h3>
-                  <p className="text-white/40 text-sm mb-8 leading-relaxed">
-                    Finde Mitgründer oder investiere in bestehende Teams der Schmiede.
-                  </p>
-                  <Link href="/squads" className="inline-flex items-center gap-3 text-[10px] font-black text-[var(--accent)] hover:brightness-110 transition-all uppercase tracking-[0.2em]">
-                    ZUM MARKTPLATZ <ArrowUpRight className="w-4 h-4" />
-                  </Link>
-                </div>
-
-                <div className="glass-card p-10 rounded-3xl border border-white/10 hover:border-[var(--accent)]/30 transition-all duration-700 relative overflow-hidden group">
-                  <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="h-14 w-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-white mb-8 group-hover:border-[var(--accent)]/50 transition-all">
-                    <MessageSquare className="w-6 h-6 group-hover:text-[var(--accent)] transition-colors" />
-                  </div>
-                  <h3 className="text-2xl font-instrument-serif text-white mb-3">Community Forum</h3>
-                  <p className="text-white/40 text-sm mb-8 leading-relaxed">
-                    Diskutiere Strategien, hole Feedback ein und teile Protokolle.
-                  </p>
-                  <Link href="/forum" className="inline-flex items-center gap-3 text-[10px] font-black text-[var(--accent)] hover:brightness-110 transition-all uppercase tracking-[0.2em]">
-                    DISKUSSION STARTEN <ArrowUpRight className="w-4 h-4" />
-                  </Link>
-                </div>
+             <div className="glass-card rounded-3xl border border-white/10 p-8 relative overflow-hidden">
+                <RoadmapWidget />
              </div>
           </div>
 
-          {/* Sidebar Area */}
+          {/* Quick Links / Resources */}
           <div className="space-y-8">
-             <div className="glass-card p-8 rounded-3xl border border-white/10 relative overflow-hidden">
-                <div className="absolute inset-0 bg-white/[0.01] pointer-events-none" />
-                <h3 className="text-[10px] font-black text-white/30 mb-8 uppercase tracking-[0.4em]">Letzte Aktivitäten</h3>
-                <div className="space-y-8">
-                   {[
-                     { user: 'Max M.', action: 'stimmte für', target: 'SmartStore V2' },
-                     { user: 'Sarah K.', action: 'startete Squad', target: 'CleanSaaS' },
-                     { user: 'Özgür A.', action: 'aktualisierte', target: 'Infrastruktur' },
-                   ].map((item, i) => (
-                      <div key={i} className="flex gap-4 items-start group">
-                         <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] mt-1.5 shrink-0 shadow-[0_0_10px_var(--accent)]" />
-                         <div className="flex flex-col">
-                           <p className="text-xs text-white/60 leading-relaxed">
-                             <span className="font-bold text-white group-hover:text-[var(--accent)] transition-colors">{item.user}</span> {item.action} <span className="text-white font-medium">{item.target}</span>
-                           </p>
-                           <span className="text-[9px] text-white/20 uppercase tracking-widest mt-1">vor 2 Stunden</span>
-                         </div>
-                      </div>
-                   ))}
+             <h2 className="text-xl font-instrument-serif text-white mb-4">Quick Links</h2>
+             
+             <Link href="/squads" className="glass-card p-6 rounded-2xl border border-white/10 flex items-center gap-4 hover:bg-white/5 transition-colors group">
+                <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
+                   <Target className="w-5 h-5" />
                 </div>
-             </div>
+                <div>
+                   <h4 className="text-white font-bold">Squad finden</h4>
+                   <p className="text-xs text-white/50">Schließe dich Experten an</p>
+                </div>
+             </Link>
 
-             <div className="bg-gradient-to-br from-[var(--accent)] to-[#FF5500] p-8 rounded-3xl relative overflow-hidden group cursor-pointer shadow-2xl">
-                <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
-                <Zap className="w-12 h-14 text-white/20 absolute -right-2 -bottom-2" />
-                <h4 className="text-white font-instrument-serif text-2xl mb-2 relative z-10">Batch #002</h4>
-                <p className="text-white/80 text-[10px] uppercase tracking-widest font-bold relative z-10 mb-6">In Vorbereitung</p>
-                <button className="bg-white text-black px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest relative z-10 hover:brightness-90 transition-all">Vormerken</button>
-             </div>
+             <Link href="/forum" className="glass-card p-6 rounded-2xl border border-white/10 flex items-center gap-4 hover:bg-white/5 transition-colors group">
+                <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
+                   <MessageSquare className="w-5 h-5" />
+                </div>
+                <div>
+                   <h4 className="text-white font-bold">Community</h4>
+                   <p className="text-xs text-white/50">Austausch & Hilfe</p>
+                </div>
+             </Link>
+
+             <Link href="/resources" className="glass-card p-6 rounded-2xl border border-white/10 flex items-center gap-4 hover:bg-white/5 transition-colors group">
+                <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center text-green-400 group-hover:scale-110 transition-transform">
+                   <LayoutDashboard className="w-5 h-5" />
+                </div>
+                <div>
+                   <h4 className="text-white font-bold">Ressourcen</h4>
+                   <p className="text-xs text-white/50">Tools & Guides</p>
+                </div>
+             </Link>
           </div>
         </div>
       </PageShell>
@@ -153,11 +262,11 @@ export default function Dashboard() {
   );
 }
 
-function KpiCard({ title, value, icon: Icon, trend }: any) {
-  return (
-    <div className="glass-card p-8 rounded-3xl border border-white/10 hover:border-[var(--accent)]/40 transition-all duration-700 relative overflow-hidden group">
+function KpiCard({ title, value, icon: Icon, trend, href, opacity }: any) {
+  const CardContent = (
+    <div className={`glass-card p-8 rounded-3xl border border-white/10 hover:border-[var(--accent)]/40 transition-all duration-700 relative overflow-hidden group h-full ${opacity ? 'opacity-60 hover:opacity-100' : ''}`}>
       <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-      <div className="flex justify-between items-start mb-8 relative z-10">
+      <div className="flex justify-between items-start mb-6 relative z-10">
         <div className="p-3 bg-white/5 border border-white/10 rounded-xl group-hover:border-[var(--accent)]/30 transition-all">
           <Icon className="w-5 h-5 text-white group-hover:text-[var(--accent)] transition-colors" />
         </div>
@@ -165,8 +274,13 @@ function KpiCard({ title, value, icon: Icon, trend }: any) {
       </div>
       <div className="relative z-10">
         <div className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em] mb-2">{title}</div>
-        <div className="text-3xl font-instrument-serif text-white tracking-tight">{value}</div>
+        <div className="text-2xl font-instrument-serif text-white tracking-tight">{value}</div>
       </div>
     </div>
   );
+
+  if (href) {
+    return <Link href={href} className="block h-full">{CardContent}</Link>;
+  }
+  return <div className="h-full">{CardContent}</div>;
 }
