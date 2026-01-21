@@ -15,7 +15,15 @@ export async function GET() {
       ventures: {
         orderBy: { updatedAt: 'desc' },
         include: {
-          squad: true
+          squad: true,
+          tasks: {
+            where: { status: { not: 'DONE' } },
+            orderBy: { dueDate: 'asc' },
+            take: 5
+          },
+          _count: {
+            select: { steps: true }
+          }
         }
       },
       squadMemberships: {
