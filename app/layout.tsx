@@ -30,6 +30,10 @@ const caveat = Caveat({
 export const metadata: Metadata = {
   title: "STAKE & SCALE",
   description: "Community Venture Studio fuer ambitionierte Founder",
+  icons: {
+    icon: "/favicon.png",
+    apple: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
