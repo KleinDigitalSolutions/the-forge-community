@@ -5,21 +5,37 @@ import { callAI } from '@/lib/ai';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
 
+type NormalizedPost = {
+  id: string;
+  content: string;
+  category: string;
+  likes: number;
+  comments: number;
+  created: Date;
+};
+
 /**
  * Analyze trending topics from forum discussions
  * Uses AI to identify patterns and emerging themes
  */
 export async function GET() {
   try {
-    // Get recent posts (last 30 days)
+    // Normalize posts
     const allPosts = await getForumPosts();
+    const normalized: NormalizedPost[] = allPosts.map((post: any) => ({
+      id: post.id,
+      content: post.content || '',
+      category: post.category || 'General',
+      likes: post.likes || 0,
+      comments: Array.isArray(post.comments) ? post.comments.length : (post.comments || 0),
+      created: post.createdTime ? new Date(post.createdTime) : new Date(),
+    }));
+
+    // Recent posts (last 30 days)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const recentPosts = allPosts.filter(post => {
-      const postDate = new Date(post.created_at);
-      return postDate >= thirtyDaysAgo;
-    });
+    const recentPosts = normalized.filter(post => post.created >= thirtyDaysAgo);
 
     if (recentPosts.length === 0) {
       return NextResponse.json({
@@ -30,11 +46,11 @@ export async function GET() {
 
     // Prepare data for AI analysis
     const postsData = recentPosts.map(post => ({
-      title: post.title,
+      excerpt: post.content.slice(0, 400),
       category: post.category,
-      upvotes: post.upvotes,
+      likes: post.likes,
       comments: post.comments,
-      created: post.created_at
+      created: post.created.toISOString()
     }));
 
     // Use AI to analyze trends
@@ -46,9 +62,16 @@ export async function GET() {
         AUFGABE:
         Analysiere die Forum-Posts und identifiziere die TOP 5 Trending Topics.
 
+        FELDER:
+        - excerpt: kurzer Textauszug des Posts
+        - category: Kategorie des Posts
+        - likes: Anzahl Likes
+        - comments: Anzahl Kommentare
+        - created: ISO Datum
+
         KRITERIEN für ein "Trending Topic":
         - Häufigkeit: Wird das Thema in mehreren Posts diskutiert?
-        - Engagement: Viele Upvotes & Comments?
+        - Engagement: Viele Likes & Comments?
         - Aktualität: Neue/wachsende Diskussion?
         - Relevanz: Wichtig für die Community?
 
@@ -84,7 +107,7 @@ export async function GET() {
     // Parse AI response
     let topics = [];
     try {
-      const parsed = JSON.parse(analysis.content);
+      const parsed = JSON.parse(analysis.content || '{}');
       topics = parsed.topics || [];
     } catch (parseError) {
       console.error('Failed to parse AI response:', parseError);
@@ -113,20 +136,20 @@ export async function GET() {
  * Fallback: Simple category-based trending
  * Used if AI analysis fails
  */
-function generateFallbackTrends(posts: any[]) {
+function generateFallbackTrends(posts: NormalizedPost[]) {
   const categoryStats: Record<string, {
     count: number;
-    upvotes: number;
+    likes: number;
     comments: number;
   }> = {};
 
   // Aggregate by category
   posts.forEach(post => {
     if (!categoryStats[post.category]) {
-      categoryStats[post.category] = { count: 0, upvotes: 0, comments: 0 };
+      categoryStats[post.category] = { count: 0, likes: 0, comments: 0 };
     }
     categoryStats[post.category].count++;
-    categoryStats[post.category].upvotes += post.upvotes || 0;
+    categoryStats[post.category].likes += post.likes || 0;
     categoryStats[post.category].comments += post.comments || 0;
   });
 
@@ -135,7 +158,7 @@ function generateFallbackTrends(posts: any[]) {
     .map(([category, stats]) => {
       const heat = Math.min(
         100,
-        (stats.count * 20) + (stats.upvotes * 5) + (stats.comments * 3)
+        (stats.count * 20) + (stats.likes * 5) + (stats.comments * 3)
       );
       return {
         topic: category,

@@ -70,6 +70,7 @@ export default function Forum() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResult, setAiResult] = useState<{postId: string; content: string; action: string} | null>(null);
   const [moderationWarning, setModerationWarning] = useState<{number: number; message: string; banned: boolean} | null>(null);
+  const [statusMessage, setStatusMessage] = useState('');
 
   const FEEDS = [
     { id: 'All', name: 'Home Feed', icon: Home },
@@ -105,6 +106,44 @@ export default function Forum() {
     fetchUser();
     fetchPosts();
   }, []);
+
+  const handleChannelClick = (id: string) => {
+    setActiveChannel(id);
+    if (id === 'Popular') {
+      setSortMode('Top');
+    }
+  };
+
+  const resolvePostCategory = () => {
+    return CHANNELS.some(c => c.id === activeChannel) ? activeChannel : 'General';
+  };
+
+  const sortPosts = (list: ForumPost[], mode: string) => {
+    const now = Date.now();
+    const hotScore = (post: ForumPost) => {
+      const created = new Date(post.createdTime || Date.now()).getTime();
+      const ageHours = Math.max(1, (now - created) / 3_600_000);
+      const engagement = (post.likes || 0) + (post.comments?.length || 0) + 1;
+      return engagement / Math.pow(ageHours + 2, 1.3);
+    };
+
+    const clone = [...list];
+    switch (mode) {
+      case 'New':
+        return clone.sort((a, b) => new Date(b.createdTime).getTime() - new Date(a.createdTime).getTime());
+      case 'Top':
+        return clone.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+      case 'Hot':
+      default:
+        return clone.sort((a, b) => hotScore(b) - hotScore(a));
+    }
+  };
+
+  const filteredPosts = (activeChannel === 'All' || activeChannel === 'Popular')
+    ? posts
+    : posts.filter(p => p.category === activeChannel);
+
+  const postsToRender = sortPosts(filteredPosts, activeChannel === 'Popular' ? 'Top' : sortMode);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -163,10 +202,11 @@ export default function Forum() {
     if (!content.trim()) return;
     setIsSubmitting(true);
     try {
+      const category = resolvePostCategory();
       const response = await fetch('/api/forum', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: content.trim(), category: activeChannel === 'All' ? 'General' : activeChannel }),
+        body: JSON.stringify({ content: content.trim(), category }),
       });
       if (response.ok) {
         setContent('');
@@ -176,10 +216,6 @@ export default function Forum() {
     } catch (error) { console.error(error); }
     finally { setIsSubmitting(false); }
   };
-
-  const filteredPosts = activeChannel === 'All' || activeChannel === 'Popular'
-    ? posts 
-    : posts.filter(p => p.category === activeChannel);
 
   const NavItem = ({ item, active, onClick }: any) => {
     const Icon = item.icon;
@@ -207,12 +243,12 @@ export default function Forum() {
           <aside className="hidden lg:block sticky top-8 h-fit space-y-8">
             <div className="space-y-1">
               <p className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] px-3 mb-2">Feeds</p>
-              {FEEDS.map(f => <NavItem key={f.id} item={f} active={activeChannel === f.id} onClick={setActiveChannel} />)}
+              {FEEDS.map(f => <NavItem key={f.id} item={f} active={activeChannel === f.id} onClick={handleChannelClick} />)}
             </div>
 
             <div className="space-y-1">
               <p className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] px-3 mb-2">Topics</p>
-              {CHANNELS.map(c => <NavItem key={c.id} item={c} active={activeChannel === c.id} onClick={setActiveChannel} />)}
+              {CHANNELS.map(c => <NavItem key={c.id} item={c} active={activeChannel === c.id} onClick={handleChannelClick} />)}
             </div>
 
             <div className="pt-6 border-t border-white/5">
@@ -269,7 +305,7 @@ export default function Forum() {
                   <div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin mx-auto" />
                   <p className="text-white/20 text-[10px] font-bold uppercase tracking-widest">Loading Intelligence...</p>
                 </div>
-              ) : filteredPosts.map(post => (
+              ) : postsToRender.map(post => (
                 <div key={post.id} className="bg-[#121212] border border-white/10 rounded-xl flex hover:border-white/20 transition-all group overflow-hidden">
                   {/* Vote Sidebar */}
                   <div className="w-12 bg-black/20 flex flex-col items-center py-4 gap-1 shrink-0">
