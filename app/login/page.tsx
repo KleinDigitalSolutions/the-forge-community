@@ -3,7 +3,7 @@
 import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Shield, ArrowRight, Loader2, AlertCircle, CheckCircle2, Zap } from 'lucide-react';
+import { Shield, ArrowRight, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Turnstile } from '@marsidev/react-turnstile';
 
@@ -135,7 +135,7 @@ function LoginForm() {
           {/* Cloudflare Turnstile */}
           <div className="flex justify-center py-2 scale-90">
             <Turnstile
-              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'} // Testing key if not provided
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'} 
               onSuccess={(token: string) => setToken(token)}
               onError={() => setStatus('error')}
               options={{ theme: 'dark' }}
