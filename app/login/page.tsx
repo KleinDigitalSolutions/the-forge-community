@@ -5,10 +5,12 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Shield, ArrowRight, Loader2, AlertCircle, CheckCircle2, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 function LoginForm() {
   const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
+  const [token, setToken] = useState<string | null>(null);
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   
@@ -17,6 +19,13 @@ function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!token) {
+       setErrorMessage('Bitte bestätige, dass du kein Bot bist.');
+       setStatus('error');
+       return;
+    }
+
     setStatus('loading');
     setErrorMessage('');
 
@@ -30,11 +39,7 @@ function LoginForm() {
       });
 
       if (result?.error) {
-        if (result.error === 'AccessDenied') {
-          setErrorMessage('Diese Email ist nicht als Founder registriert.');
-        } else {
-          setErrorMessage('Ein Fehler ist aufgetreten. Bitte versuche es erneut.');
-        }
+        setErrorMessage('Ein Fehler ist aufgetreten. Bitte versuche es erneut.');
         setStatus('error');
       } else {
         setStatus('success');
@@ -104,9 +109,7 @@ function LoginForm() {
             <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-3 text-xs text-red-400 leading-relaxed uppercase tracking-wider">
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               <span>
-                {urlError === 'AccessDenied' 
-                  ? 'Zugriff verweigert. Diese Email ist nicht in der Datenbank.' 
-                  : errorMessage || 'Ein Fehler ist aufgetreten.'}
+                {errorMessage || 'Ein Fehler ist aufgetreten. Bitte versuche es erneut.'}
               </span>
             </div>
           )}
@@ -128,6 +131,16 @@ function LoginForm() {
               </>
             )}
           </button>
+
+          {/* Cloudflare Turnstile */}
+          <div className="flex justify-center py-2 scale-90">
+            <Turnstile
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'} // Testing key if not provided
+              onSuccess={(token: string) => setToken(token)}
+              onError={() => setStatus('error')}
+              options={{ theme: 'dark' }}
+            />
+          </div>
         </form>
 
         <div className="mt-10 text-center relative z-10 border-t border-white/5 pt-8">

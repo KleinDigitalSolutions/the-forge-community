@@ -404,24 +404,43 @@ export default function Home() {
 
                         {currentStep === 1 && (
                            <div className="animate-fade-in-up">
-                              <label className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold mb-8 block">Operator Modus wählen</label>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                 <button
-                                    type="button"
-                                    onClick={() => handleSelectRole('investor')}
-                                    className="p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-[var(--accent)]/50 hover:bg-[var(--accent)]/5 transition-all text-left group"
+                              <label className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold mb-8 block">Zugangs-Modus wählen</label>
+                              <div className="grid grid-cols-1 gap-4">
+                                 {/* NEW: Quick Access Card */}
+                                 <Link
+                                    href="/login"
+                                    className="p-8 rounded-2xl border border-[#D4AF37]/30 bg-[#D4AF37]/5 hover:border-[#D4AF37] hover:bg-[#D4AF37]/10 transition-all text-left group relative overflow-hidden"
                                  >
-                                    <div className="font-instrument-serif text-2xl text-white mb-2 group-hover:text-[var(--accent)] transition-colors">Kapital-Partner</div>
-                                    <div className="text-xs text-white/40 leading-relaxed">Passive Beteiligung. Rein finanzieller Beitrag.</div>
-                                 </button>
-                                 <button
-                                    type="button"
-                                    onClick={() => handleSelectRole('builder')}
-                                    className="p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-[var(--accent)]/50 hover:bg-[var(--accent)]/5 transition-all text-left group"
-                                 >
-                                    <div className="font-instrument-serif text-2xl text-white mb-2 group-hover:text-[var(--accent)] transition-colors">Builder</div>
-                                    <div className="text-xs text-white/40 leading-relaxed">Aktive Beteiligung. Sweat Equity & Skills.</div>
-                                 </button>
+                                    <div className="absolute top-0 right-0 p-3 bg-[#D4AF37] text-black text-[8px] font-black uppercase tracking-widest rounded-bl-xl">
+                                       Sofort-Zugriff
+                                    </div>
+                                    <div className="flex items-center gap-4 mb-2">
+                                       <Zap className="w-6 h-6 text-[#D4AF37]" />
+                                       <div className="font-instrument-serif text-3xl text-white group-hover:text-[var(--accent)] transition-colors">Free Trial</div>
+                                    </div>
+                                    <div className="text-sm text-white/60 leading-relaxed max-w-md">
+                                       Geh direkt rein. Erhalte <strong>50 AI-Credits</strong> gratis und erkunde alle Forge-Studios unentgeltlich.
+                                    </div>
+                                 </Link>
+
+                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <button
+                                       type="button"
+                                       onClick={() => handleSelectRole('investor')}
+                                       className="p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-[var(--accent)]/50 hover:bg-[var(--accent)]/5 transition-all text-left group"
+                                    >
+                                       <div className="font-instrument-serif text-2xl text-white mb-2 group-hover:text-[var(--accent)] transition-colors">Kapital-Partner</div>
+                                       <div className="text-xs text-white/40 leading-relaxed">Passive Beteiligung. Bewerbung für Batches.</div>
+                                    </button>
+                                    <button
+                                       type="button"
+                                       onClick={() => handleSelectRole('builder')}
+                                       className="p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-[var(--accent)]/50 hover:bg-[var(--accent)]/5 transition-all text-left group"
+                                    >
+                                       <div className="font-instrument-serif text-2xl text-white mb-2 group-hover:text-[var(--accent)] transition-colors">Builder</div>
+                                       <div className="text-xs text-white/40 leading-relaxed">Aktive Beteiligung. Sweat Equity & Skills.</div>
+                                    </button>
+                                 </div>
                               </div>
                            </div>
                         )}
