@@ -86,6 +86,14 @@ export default function Forum() {
     { id: 'Support', name: 'Hilfe & Support', icon: Users },
   ];
 
+  const AI_ACTIONS = [
+    { id: 'summarize', label: 'Kurzfassung' },
+    { id: 'feedback', label: 'Feedback' },
+    { id: 'expand', label: 'Weiter ausführen' },
+    { id: 'factCheck', label: 'Faktencheck' },
+    { id: 'nextSteps', label: 'Nächste Schritte' },
+  ];
+
   const fetchUser = async () => {
     try {
       const res = await fetch('/api/me');
@@ -151,8 +159,10 @@ export default function Forum() {
 
     setStatusMessage('🚀 Übertrage Bild...');
     try {
-      const response = await fetch(`/api/forum/upload?filename=${file.name}`, {
+      const safeName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+      const response = await fetch(`/api/forum/upload?filename=${encodeURIComponent(safeName)}`, {
         method: 'POST',
+        headers: { 'content-type': file.type || 'application/octet-stream' },
         body: file,
       });
 
@@ -195,6 +205,27 @@ export default function Forum() {
         body: JSON.stringify({ id, delta }),
       });
     } catch (e) { fetchPosts(); }
+  };
+
+  const handleAIAction = async (post: ForumPost, action: string) => {
+    setAiLoading(true);
+    setAiResult(null);
+    setAiMenuOpen(post.id);
+    try {
+      const res = await fetch('/api/forum/ai-action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, postContent: post.content, category: post.category })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'AI fehlgeschlagen');
+      setAiResult({ postId: post.id, content: data.content, action: data.action });
+    } catch (error) {
+      console.error('AI action error:', error);
+      setAiResult({ postId: post.id, content: 'AI konnte keine Antwort liefern.', action });
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   const handleSubmit = async (event: FormEvent) => {
@@ -346,11 +377,38 @@ export default function Forum() {
                       <button className="flex items-center gap-2 text-[10px] font-bold text-white/40 hover:text-white uppercase tracking-widest transition-all">
                         <MessageSquare className="w-3.5 h-3.5" /> {post.comments?.length || 0} Comments
                       </button>
-                      <button className="flex items-center gap-2 text-[10px] font-bold text-white/40 hover:text-white uppercase tracking-widest transition-all">
-                        <Sparkles className="w-3.5 h-3.5" /> AI Insight
-                      </button>
+                      <div className="relative">
+                        <button
+                          onClick={() => setAiMenuOpen(aiMenuOpen === post.id ? null : post.id)}
+                          className="flex items-center gap-2 text-[10px] font-bold text-white/40 hover:text-white uppercase tracking-widest transition-all"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" /> {aiLoading && aiMenuOpen === post.id ? 'Lädt...' : 'AI Insight'}
+                        </button>
+                        {aiMenuOpen === post.id && (
+                          <div className="absolute left-0 mt-2 w-48 rounded-xl border border-white/10 bg-[#0d0d0d] shadow-2xl z-20">
+                            {AI_ACTIONS.map(action => (
+                              <button
+                                key={action.id}
+                                onClick={() => handleAIAction(post, action.id)}
+                                className="w-full text-left px-4 py-2 text-[11px] text-white/70 hover:bg-white/5 transition-colors"
+                              >
+                                {action.label}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                       <button className="ml-auto p-1.5 text-white/20 hover:text-white transition-all"><X className="w-4 h-4" /></button>
                     </div>
+
+                    {aiResult?.postId === post.id && (
+                      <div className="mt-3 p-3 rounded-lg bg-white/5 border border-white/10 text-sm text-white/80">
+                        <div className="text-[10px] uppercase tracking-widest text-white/40 mb-1">
+                          AI · {AI_ACTIONS.find(a => a.id === aiResult.action)?.label || aiResult.action}
+                        </div>
+                        <p className="whitespace-pre-line leading-relaxed">{aiResult.content}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

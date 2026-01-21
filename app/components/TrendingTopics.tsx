@@ -60,46 +60,51 @@ export function TrendingTopics() {
     return <Activity className="w-4 h-4 text-yellow-400" />;
   }
 
-  if (loading) {
-    return (
-      <div className="bg-gradient-to-br from-[#0a0a0a] to-[#1a1a1a] rounded-2xl p-6 border border-white/5">
-        <div className="flex items-center justify-center gap-3 py-8">
-          <Loader2 className="w-5 h-5 animate-spin text-white/40" />
-          <span className="text-sm text-white/40">Analysiere Trends mit AI...</span>
-        </div>
-      </div>
-    );
-  }
+  return (
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
+    <div className="bg-[var(--surface)] rounded-xl p-5 border border-[var(--border)]">
+      {children}
+    </div>
+  );
 
-  if (error || !data) {
-    return (
-      <div className="bg-gradient-to-br from-[#0a0a0a] to-[#1a1a1a] rounded-2xl p-6 border border-white/5">
-        <div className="text-center py-8">
-          <p className="text-sm text-white/40">Trends konnten nicht geladen werden</p>
-          <button
-            onClick={loadTrends}
-            className="mt-4 px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white/5 hover:bg-white/10 rounded-lg text-white/70 hover:text-white transition-colors"
-          >
-            Erneut versuchen
-          </button>
-        </div>
+  const LoadingView = (
+    <Wrapper>
+      <div className="flex items-center justify-center gap-3 py-8">
+        <Loader2 className="w-5 h-5 animate-spin text-white/40" />
+        <span className="text-sm text-white/40">Analysiere Trends mit AI...</span>
       </div>
-    );
-  }
+    </Wrapper>
+  );
+
+  const ErrorView = (
+    <Wrapper>
+      <div className="text-center py-8">
+        <p className="text-sm text-white/40">Trends konnten nicht geladen werden</p>
+        <button
+          onClick={loadTrends}
+          className="mt-4 px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white/5 hover:bg-white/10 rounded-lg text-white/70 hover:text-white transition-colors"
+        >
+          Erneut versuchen
+        </button>
+      </div>
+    </Wrapper>
+  );
+
+  if (loading) return LoadingView;
+  if (error || !data) return ErrorView;
 
   return (
-    <div className="bg-[var(--surface)] rounded-xl p-6 border border-[var(--border)] glass-card">
+    <Wrapper>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500/20 to-orange-500/20 flex items-center justify-center">
-            <TrendingUp className="w-5 h-5 text-red-400" />
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/70">
+            <TrendingUp className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="font-bold text-[var(--foreground)] text-lg">Trending Topics</h3>
-            <p className="text-xs text-[var(--muted-foreground)]">
-              {data.analyzed_posts} Posts analysiert
-              {data.provider && ` · AI: ${data.provider}`}
+            <h3 className="font-bold text-white text-base leading-none">Trending Topics</h3>
+            <p className="text-[11px] text-white/40">
+              {data.analyzed_posts} Posts analysiert{data.provider && ` · AI: ${data.provider}`}
             </p>
           </div>
         </div>
@@ -107,7 +112,7 @@ export function TrendingTopics() {
         <button
           onClick={loadTrends}
           disabled={loading}
-          className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest bg-[var(--surface-muted)] hover:bg-[var(--surface-muted)]/80 rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors disabled:opacity-50"
+          className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] bg-white/5 hover:bg-white/10 rounded-lg text-white/70 hover:text-white transition-colors disabled:opacity-50"
         >
           Aktualisieren
         </button>
@@ -115,81 +120,54 @@ export function TrendingTopics() {
 
       {/* Topics List */}
       {data.topics.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-sm text-white/40">
-            Noch nicht genug Daten für Trend-Analyse
-          </p>
+        <div className="text-sm text-white/40 py-6 text-center">
+          Noch nicht genug Daten für Trend-Analyse
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="divide-y divide-white/5">
           {data.topics.map((topic, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="group relative"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className="flex items-start gap-3 py-3"
             >
-              {/* Rank Badge */}
-              <div className="absolute -left-2 -top-2 w-6 h-6 rounded-full bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center z-10">
-                <span className="text-[10px] font-bold text-white/60">
-                  {index + 1}
-                </span>
-              </div>
+              {/* Heat stripe */}
+              <div
+                className={`w-1 rounded-full bg-gradient-to-b ${getHeatColor(topic.heat)}`}
+                aria-hidden
+              />
 
-              {/* Topic Card */}
-              <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-white/[0.03] to-white/[0.01] border border-white/5 p-4 hover:border-white/10 transition-all">
-                {/* Heat Bar Background */}
-                <div
-                  className={`absolute top-0 left-0 h-full bg-gradient-to-r ${getHeatColor(topic.heat)} opacity-5`}
-                  style={{ width: `${topic.heat}%` }}
-                />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-[11px] font-bold text-white/50">#{index + 1}</span>
+                    <span className="text-sm font-semibold text-white truncate">{topic.topic}</span>
+                  </div>
+                  <span className="text-[11px] text-white/50 whitespace-nowrap">
+                    {topic.posts_count} Posts
+                  </span>
+                </div>
 
-                <div className="relative flex items-start gap-3">
-                  {/* Icon */}
-                  <div className="flex-shrink-0 mt-1">
+                <p className="text-xs text-white/60 leading-relaxed mb-2 line-clamp-2">
+                  {topic.description}
+                </p>
+
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1">
                     {getHeatIcon(topic.heat)}
+                    <span className="text-[11px] font-bold text-white/60">{topic.heat}%</span>
                   </div>
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-3 mb-1">
-                      <h4 className="font-bold text-white text-sm">
-                        {topic.topic}
-                      </h4>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <span className="text-[10px] font-bold text-white/40">
-                          {topic.posts_count} Posts
-                        </span>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-white/50 mb-2">
-                      {topic.description}
-                    </p>
-
-                    {/* Stats */}
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[9px] font-bold uppercase tracking-widest text-white/30">
-                          Heat
-                        </span>
-                        <div className="w-20 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full bg-gradient-to-r ${getHeatColor(topic.heat)} transition-all duration-500`}
-                            style={{ width: `${topic.heat}%` }}
-                          />
-                        </div>
-                        <span className="text-[10px] font-bold text-white/50">
-                          {topic.heat}%
-                        </span>
-                      </div>
-
-                      <div className="px-2 py-0.5 rounded-full bg-white/5 text-[9px] font-bold uppercase tracking-widest text-white/40">
-                        {topic.category}
-                      </div>
-                    </div>
+                  <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full bg-gradient-to-r ${getHeatColor(topic.heat)}`}
+                      style={{ width: `${topic.heat}%` }}
+                    />
                   </div>
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-white/60 uppercase tracking-[0.12em]">
+                    {topic.category}
+                  </span>
                 </div>
               </div>
             </motion.div>
@@ -198,11 +176,11 @@ export function TrendingTopics() {
       )}
 
       {/* Footer */}
-      <div className="mt-4 pt-4 border-t border-white/5">
-        <p className="text-[9px] text-white/30 text-center">
+      <div className="mt-4 pt-3 border-t border-white/5">
+        <p className="text-[10px] text-white/35">
           Letzte Aktualisierung: {new Date(data.generated_at).toLocaleString('de-DE')}
         </p>
       </div>
-    </div>
+    </Wrapper>
   );
 }
