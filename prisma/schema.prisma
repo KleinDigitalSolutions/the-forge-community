@@ -106,6 +106,17 @@ model User {
   onboardingComplete Boolean @default(false)
   founderNumber Int       @default(0)
   karmaScore    Int       @default(0)
+  phone         String?
+  birthday      String?
+  addressStreet String?
+  addressCity   String?
+  addressZip    String?
+  addressCountry String?  @default("Germany")
+  instagram     String?
+  linkedin      String?
+  bio           String?
+  goal          String?
+  skills        String[]
 
   // Relations
   squadMemberships SquadMember[]

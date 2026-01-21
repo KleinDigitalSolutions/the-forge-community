@@ -385,7 +385,7 @@ export default function Forum() {
                           <Sparkles className="w-3.5 h-3.5" /> {aiLoading && aiMenuOpen === post.id ? 'Lädt...' : 'AI Insight'}
                         </button>
                         {aiMenuOpen === post.id && (
-                          <div className="absolute left-0 mt-2 w-48 rounded-xl border border-white/10 bg-[#0d0d0d] shadow-2xl z-20">
+                          <div className="absolute left-0 bottom-full mb-2 w-48 rounded-xl border border-white/10 bg-[#0d0d0d] shadow-2xl z-20">
                             {AI_ACTIONS.map(action => (
                               <button
                                 key={action.id}

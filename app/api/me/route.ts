@@ -21,6 +21,17 @@ export async function GET() {
       onboardingComplete: true,
       founderNumber: true,
       karmaScore: true,
+      phone: true,
+      birthday: true,
+      addressStreet: true,
+      addressCity: true,
+      addressZip: true,
+      addressCountry: true,
+      instagram: true,
+      linkedin: true,
+      bio: true,
+      goal: true,
+      skills: true,
       _count: {
         select: {
           ventures: true,
@@ -34,5 +45,12 @@ export async function GET() {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
   }
 
-  return NextResponse.json(user);
+  // Map to frontend keys (snake_case)
+  return NextResponse.json({
+    ...user,
+    address_street: user.addressStreet,
+    address_city: user.addressCity,
+    address_zip: user.addressZip,
+    address_country: user.addressCountry,
+  });
 }
