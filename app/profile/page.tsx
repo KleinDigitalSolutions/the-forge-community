@@ -129,7 +129,7 @@ export default function ProfilePage() {
                 {/* Avatar Upload */}
                 <div className="flex flex-col items-center mb-12">
                   <div className="relative group">
-                    <div className="w-32 h-24 md:w-32 md:h-32 rounded-full bg-white/5 border-2 border-white/10 flex items-center justify-center text-4xl font-black text-[#D4AF37] overflow-hidden shadow-2xl transition-all group-hover:border-[#D4AF37]/50">
+                    <div className="w-32 h-32 md:w-32 md:h-32 rounded-full bg-white/5 border-2 border-white/10 flex items-center justify-center text-4xl font-black text-[#D4AF37] overflow-hidden shadow-2xl transition-all group-hover:border-[#D4AF37]/50">
                       {formData.image ? (
                         <img src={formData.image} alt="Profile" className="w-full h-full object-cover" />
                       ) : (
