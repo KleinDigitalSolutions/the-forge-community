@@ -1,0 +1,48 @@
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
+
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ slug: string }> }
+) {
+  try {
+    const { slug } = await params;
+
+    const course = await prisma.trainingCourse.findUnique({
+      where: { slug },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        summary: true,
+        category: true,
+        level: true,
+        coverImage: true,
+        durationMins: true,
+        createdAt: true,
+        updatedAt: true,
+        modules: {
+          orderBy: { order: 'asc' },
+          select: {
+            id: true,
+            order: true,
+            title: true,
+            summary: true,
+            content: true,
+          },
+        },
+      },
+    });
+
+    if (!course) {
+      return NextResponse.json({ error: 'Training not found' }, { status: 404 });
+    }
+
+    return NextResponse.json(course);
+  } catch (error) {
+    console.error('Training detail error:', error);
+    return NextResponse.json({ error: 'Failed to load training' }, { status: 500 });
+  }
+}

@@ -389,6 +389,40 @@ model UserAchievement {
   @@index([achievementId])
 }
 
+model TrainingCourse {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  title         String
+  summary       String?
+  category      String
+  level         String?
+  coverImage    String?
+  durationMins  Int?
+
+  modules       TrainingModule[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([category])
+}
+
+model TrainingModule {
+  id        String   @id @default(cuid())
+  courseId  String
+  course    TrainingCourse @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  order     Int
+  title     String
+  summary   String?
+  content   String   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([courseId, order])
+  @@index([courseId])
+}
+
 model Karma {
   id        String   @id @default(cuid())
   points    Int

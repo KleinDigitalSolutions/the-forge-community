@@ -8,7 +8,7 @@ import {
   Users,
   CheckSquare,
   PieChart,
-  FileText,
+  BookOpen,
   Settings,
   LogOut,
   Zap,
@@ -25,7 +25,7 @@ const navigation = [
   { name: 'Squad Markt', href: '/squads', icon: Users },
   { name: 'Mission Control', href: '/tasks', icon: CheckSquare },
   { name: 'Finanzen', href: '/transparency', icon: PieChart },
-  { name: 'Wissen', href: '/resources', icon: FileText },
+  { name: 'Academy', href: '/resources', icon: BookOpen },
 ];
 
 export default function Sidebar() {
