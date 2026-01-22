@@ -5,13 +5,10 @@ import { prisma } from '@/lib/prisma';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
 
-const CACHE_TTL_MS = 1000 * 60 * 15;
+const CACHE_TTL_HOURS = 4;
 const cacheHeaders = {
-  'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=600',
+  'Cache-Control': 'public, s-maxage=14400, stale-while-revalidate=3600',
 };
-
-let cachedResult: { data: any; expiresAt: number } | null = null;
-let inflight: Promise<any> | null = null;
 
 type NormalizedPost = {
   id: string;
@@ -22,8 +19,7 @@ type NormalizedPost = {
   created: Date;
 };
 
-const CACHE_KEY = 'system://forum-trends';
-const CACHE_TTL_HOURS = 4;
+const CACHE_KEY = 'forum:trends';
 
 /**
  * Analyze trending topics from forum discussions
@@ -36,13 +32,13 @@ export async function GET(request: Request) {
     
     // 1. Check DB Cache first
     if (!forceRefresh) {
-      const cached = await prisma.linkPreview.findUnique({
-        where: { url: CACHE_KEY }
+      const cached = await prisma.systemCache.findUnique({
+        where: { key: CACHE_KEY }
       });
 
-      if (cached && cached.expiresAt && cached.expiresAt > new Date() && cached.aiSummary) {
+      if (cached && cached.expiresAt && cached.expiresAt > new Date() && cached.value) {
         try {
-          const data = JSON.parse(cached.aiSummary);
+          const data = JSON.parse(cached.value);
           return NextResponse.json(data, { 
             headers: { ...cacheHeaders, 'X-Cache': 'HIT-DB' } 
           });
@@ -129,18 +125,16 @@ export async function GET(request: Request) {
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + CACHE_TTL_HOURS);
 
-    await prisma.linkPreview.upsert({
-      where: { url: CACHE_KEY },
+    await prisma.systemCache.upsert({
+      where: { key: CACHE_KEY },
       update: {
-        aiSummary: JSON.stringify(result),
-        fetchedAt: new Date(),
-        expiresAt: expiresAt,
+        value: JSON.stringify(result),
+        expiresAt,
       },
       create: {
-        url: CACHE_KEY,
-        aiSummary: JSON.stringify(result),
-        fetchedAt: new Date(),
-        expiresAt: expiresAt,
+        key: CACHE_KEY,
+        value: JSON.stringify(result),
+        expiresAt,
       }
     });
 
@@ -151,8 +145,6 @@ export async function GET(request: Request) {
       { error: 'Failed to analyze trends', details: error.message },
       { status: 500 }
     );
-  } finally {
-    inflight = null;
   }
 }
 
