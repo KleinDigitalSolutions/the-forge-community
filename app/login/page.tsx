@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Shield, ArrowRight, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
@@ -13,6 +13,22 @@ function LoginForm() {
   const [token, setToken] = useState<string | null>(null);
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [isLocalhost, setIsLocalhost] = useState(false);
+
+  const turnstileBypass = process.env.NEXT_PUBLIC_TURNSTILE_BYPASS === '1';
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const host = window.location.hostname;
+      setIsLocalhost(host === 'localhost' || host === '127.0.0.1');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (turnstileBypass || isLocalhost) {
+      setToken('local-bypass');
+    }
+  }, [turnstileBypass, isLocalhost]);
   
   const isVerify = searchParams.get('verify') === 'true';
   const urlError = searchParams.get('error');
@@ -20,7 +36,7 @@ function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!token) {
+    if (!token && !(turnstileBypass || isLocalhost)) {
        setErrorMessage('Bitte bestätige, dass du kein Bot bist.');
        setStatus('error');
        return;
@@ -134,14 +150,16 @@ function LoginForm() {
             )}
           </button>
 
-          <div className="flex justify-center py-2 scale-90">
-            <Turnstile
-              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'} 
-              onSuccess={(token: string) => setToken(token)}
-              onError={() => setStatus('error')}
-              options={{ theme: 'dark' }}
-            />
-          </div>
+          {!turnstileBypass && !isLocalhost && (
+            <div className="flex justify-center py-2 scale-90">
+              <Turnstile
+                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'} 
+                onSuccess={(token: string) => setToken(token)}
+                onError={() => setStatus('error')}
+                options={{ theme: 'dark' }}
+              />
+            </div>
+          )}
         </form>
 
         <div className="mt-10 text-center relative z-10 border-t border-white/5 pt-8">
