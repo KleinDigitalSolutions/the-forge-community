@@ -21,6 +21,17 @@ The Forge nutzt ein **Product-Led Growth** Modell für maximale Konvertierung vo
 
 ## 🧾 Letzte 24h (Changelog)
 
+### 2026-01-22
+
+*   **Forum AI → Orion:** @orion/atorion Mentions, Orion Insight Label, AI-Kommentare als `@orion`.
+*   **Forum AI Kontext:** Serverseitiges Fetch des Post-Contents für AI-Actions (kein Client-Only Payload).
+*   **Forge AI Context Injection:** Venture-, BrandDNA-, Tasks-, Kosten- und Squad-Summary im Prompt.
+*   **Forge AI Guardrails:** Free‑Tier‑First, Unsicherheits‑Hinweis, 1 Rückfrage bei fehlendem Kontext.
+*   **Rate Limits:** Forum Posts, Kommentare und Uploads begrenzt.
+*   **Upload/Content Validation:** Datei-Typ & Größe geprüft, Post/Kommentar-Längen validiert.
+*   **Notifications robust:** Fehlende Tabelle führt nicht mehr zu 500ern.
+*   **Trend Cache:** TTL auf 1h reduziert.
+
 *   **Direct Messages (neu):** Eigener `/messages`‑Bereich mit Inbox‑Sidebar, Suche, Thread‑Ansicht und Composer.
 *   **DM‑Backend:** Neue Prisma‑Modelle `DirectThread`, `DirectParticipant`, `DirectMessage` + API‑Routen für Threads, Messages und User‑Search.
 *   **Forum‑Kommentare:** Replies mit Thread‑Struktur (`parentId`), Kommentar‑Likes + Voting, sowie Edit/Delete (Author/Admin).

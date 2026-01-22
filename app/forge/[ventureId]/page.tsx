@@ -3,6 +3,7 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import { ArrowRight, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
+import ForgeAIContextSetter from '@/app/components/forge/ForgeAIContextSetter';
 
 export default async function ForgeDashboardPage({
   params,
@@ -72,6 +73,9 @@ export default async function ForgeDashboardPage({
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
+      <ForgeAIContextSetter
+        context={`Forge Dashboard - ${venture.name}. Hilf dem Founder mit Priorisierung, Launch-Plan und Marketing.`}
+      />
       {/* Header */}
       <div>
         <h1 className="text-4xl font-instrument-serif text-white mb-2">
