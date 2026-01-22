@@ -214,6 +214,23 @@ export default function Forum() {
     } catch (e) { fetchPosts(); }
   };
 
+  const handleDelete = async (id: string) => {
+    const confirmed = window.confirm('Beitrag wirklich loeschen?');
+    if (!confirmed) return;
+    try {
+      const response = await fetch('/api/forum/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      if (!response.ok) throw new Error('Delete failed');
+      setPosts(prev => prev.filter(p => p.id !== id));
+    } catch (error) {
+      console.error('Delete error:', error);
+      fetchPosts();
+    }
+  };
+
   const handleAIAction = async (post: ForumPost, action: string) => {
     setAiLoading(true);
     setAiResult(null);
@@ -427,7 +444,15 @@ export default function Forum() {
                           </div>
                         )}
                       </div>
-                      <button className="ml-auto p-1.5 text-white/20 hover:text-white transition-all"><X className="w-4 h-4" /></button>
+                      {user && (user.role === 'ADMIN' || (user.id && post.authorId === user.id)) && (
+                        <button
+                          onClick={() => handleDelete(post.id)}
+                          className="ml-auto p-1.5 text-white/20 hover:text-white transition-all"
+                          aria-label="Beitrag loeschen"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
 
                     {aiResult?.postId === post.id && (
