@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { SignOutButton } from './SignOutButton';
 import { CreditsDisplay } from './CreditsDisplay';
+import { useUnreadMessages } from '@/app/hooks/useUnreadMessages';
 
 const navigation = [
   { name: 'Cockpit', href: '/dashboard', icon: LayoutDashboard },
@@ -32,6 +33,8 @@ const navigation = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { unreadCount } = useUnreadMessages();
+  const messageBadge = unreadCount > 99 ? '99+' : String(unreadCount);
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-[#08090A] border-r border-white/5 flex flex-col z-50 overflow-hidden">
@@ -46,6 +49,7 @@ export default function Sidebar() {
         {navigation.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
+          const showBadge = item.name === 'Messages' && unreadCount > 0;
           return (
             <Link
               key={item.name}
@@ -58,6 +62,11 @@ export default function Sidebar() {
             >
               <Icon className={`w-4 h-4 transition-transform duration-500 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
               {item.name}
+              {showBadge && (
+                <span className="ml-auto min-w-[18px] h-[18px] px-1.5 rounded-full bg-[#D4AF37] text-[9px] font-bold text-black flex items-center justify-center shadow-[0_0_10px_rgba(212,175,55,0.35)]">
+                  {messageBadge}
+                </span>
+              )}
             </Link>
           );
         })}

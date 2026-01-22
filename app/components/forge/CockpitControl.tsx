@@ -8,11 +8,13 @@ import {
   Layout, 
   User as UserIcon,
   MessageCircle,
+  MessageSquare,
   X,
   Zap,
   ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
+import { useUnreadMessages } from '@/app/hooks/useUnreadMessages';
 
 interface CockpitControlProps {
   userImage?: string | null;
@@ -33,15 +35,17 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
   const parallaxCurrent = useRef({ x: 0, y: 0 });
   const [orbitSize, setOrbitSize] = useState(720);
   const [orbitRadius, setOrbitRadius] = useState(220);
+  const { unreadCount } = useUnreadMessages();
 
   const accent = '#D4AF37';
   const menuItems = [
     { icon: Rocket, label: 'Ventures', action: () => onToggleView('ventures'), color: accent, angle: 270 },
-    { icon: Users, label: 'Squads', href: '/squads', color: accent, angle: 330 },
-    { icon: Layout, label: 'Academy', href: '/resources', color: accent, angle: 30 },
-    { icon: UserIcon, label: 'Profile', href: '/profile', color: accent, angle: 90 },
-    { icon: MessageCircle, label: 'Messages', href: '/messages', color: accent, angle: 150 },
-    { icon: Zap, label: 'Missions', action: () => onToggleView('missions'), color: accent, angle: 210 },
+    { icon: Users, label: 'Squads', href: '/squads', color: accent, angle: 321 },
+    { icon: Layout, label: 'Academy', href: '/resources', color: accent, angle: 12 },
+    { icon: UserIcon, label: 'Profile', href: '/profile', color: accent, angle: 63 },
+    { icon: MessageCircle, label: 'Messages', href: '/messages', color: accent, angle: 114, badgeCount: unreadCount },
+    { icon: MessageSquare, label: 'Forum', href: '/forum', color: accent, angle: 165 },
+    { icon: Zap, label: 'Missions', action: () => onToggleView('missions'), color: accent, angle: 216 },
   ];
 
   useEffect(() => {
@@ -261,13 +265,21 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
 }
 
 function SatelliteContent({ item }: { item: any }) {
+  const badge = Number(item.badgeCount || 0);
+  const badgeText = badge > 99 ? '99+' : String(badge);
+
   return (
     <div className="flex flex-col items-center gap-3">
       {/* Icon Circle */}
       <div 
-        className="w-16 h-16 rounded-2xl bg-[#0b0c0f] border border-white/10 flex items-center justify-center shadow-[0_0_24px_rgba(0,0,0,0.6)] transition-all duration-300 group-hover:scale-110 group-hover:border-[#D4AF37]/60 group-hover:shadow-[0_0_40px_rgba(212,175,55,0.25)]"
+        className="relative w-16 h-16 rounded-2xl bg-[#0b0c0f] border border-white/10 flex items-center justify-center shadow-[0_0_24px_rgba(0,0,0,0.6)] transition-all duration-300 group-hover:scale-110 group-hover:border-[#D4AF37]/60 group-hover:shadow-[0_0_40px_rgba(212,175,55,0.25)]"
       >
         <item.icon className="w-6 h-6 text-white/70 transition-colors group-hover:text-white" />
+        {badge > 0 && (
+          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1.5 rounded-full bg-[#D4AF37] text-[9px] font-bold text-black flex items-center justify-center shadow-[0_0_12px_rgba(212,175,55,0.4)]">
+            {badgeText}
+          </span>
+        )}
       </div>
 
       <div className="mt-3 flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.25em] text-white/50">

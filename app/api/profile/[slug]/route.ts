@@ -15,6 +15,11 @@ export async function GET(
 
   const { slug } = await params;
 
+  const viewer = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    select: { id: true },
+  });
+
   const user = await prisma.user.findFirst({
     where: {
       OR: [{ profileSlug: slug }, { id: slug }],
@@ -69,6 +74,7 @@ export async function GET(
   return NextResponse.json({
     ...user,
     profileSlug,
+    viewerId: viewer?.id ?? null,
     achievements,
     stats: {
       ventures: user._count.ventures,

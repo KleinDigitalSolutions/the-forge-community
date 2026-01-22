@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useMemo, useState, type ElementType } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import PageShell from '@/app/components/PageShell';
 import AuthGuard from '@/app/components/AuthGuard';
 import Link from 'next/link';
-import { Award, MessageSquare, Rocket } from 'lucide-react';
+import { Award, MessageCircle, MessageSquare, Rocket, Loader2 } from 'lucide-react';
 
 type Achievement = {
   key: string;
@@ -21,6 +21,7 @@ type ProfileData = {
   id: string;
   name: string;
   profileSlug: string;
+  viewerId?: string | null;
   image?: string | null;
   role?: string;
   founderNumber?: number;
@@ -59,6 +60,7 @@ const categoryTone: Record<Achievement['category'], string> = {
 
 export default function PublicProfilePage() {
   const params = useParams();
+  const router = useRouter();
   const slug = useMemo(() => {
     const raw = params?.slug;
     return Array.isArray(raw) ? raw[0] : raw;
@@ -67,6 +69,8 @@ export default function PublicProfilePage() {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [creatingThread, setCreatingThread] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!slug) return;
@@ -91,6 +95,31 @@ export default function PublicProfilePage() {
   }, [slug]);
 
   const earnedBadges = profile?.achievements?.filter((badge) => badge.earnedAt) || [];
+  const canMessage = Boolean(profile?.viewerId && profile.viewerId !== profile.id);
+
+  const handleStartThread = async () => {
+    if (!profile) return;
+    setActionError(null);
+    setCreatingThread(true);
+    try {
+      const response = await fetch('/api/messages/threads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipientId: profile.id })
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || 'Thread konnte nicht erstellt werden');
+      }
+      const payload = await response.json();
+      router.push(`/messages?thread=${payload.threadId}`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Thread konnte nicht erstellt werden';
+      setActionError(message);
+    } finally {
+      setCreatingThread(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -147,14 +176,33 @@ export default function PublicProfilePage() {
                 )}
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4 text-center w-full md:w-auto">
-              <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                <div className="text-[10px] text-white/40 uppercase tracking-widest">Ventures</div>
-                <div className="text-2xl font-bold text-white">{profile.stats.ventures}</div>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                <div className="text-[10px] text-white/40 uppercase tracking-widest">Forum</div>
-                <div className="text-2xl font-bold text-white">{profile.stats.forumPosts}</div>
+            <div className="flex flex-col gap-4 w-full md:w-auto md:items-end">
+              {canMessage && (
+                <div className="flex flex-col items-start md:items-end gap-2 w-full">
+                  <button
+                    onClick={handleStartThread}
+                    disabled={creatingThread}
+                    className="w-full md:w-auto inline-flex items-center justify-center gap-2 rounded-full border border-[#D4AF37]/40 bg-[#D4AF37]/10 px-5 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#D4AF37] transition hover:bg-[#D4AF37]/20 disabled:opacity-60"
+                  >
+                    {creatingThread ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <MessageCircle className="h-4 w-4" />
+                    )}
+                    Nachricht senden
+                  </button>
+                  {actionError && <span className="text-[10px] text-red-400">{actionError}</span>}
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-4 text-center w-full md:w-auto">
+                <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                  <div className="text-[10px] text-white/40 uppercase tracking-widest">Ventures</div>
+                  <div className="text-2xl font-bold text-white">{profile.stats.ventures}</div>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                  <div className="text-[10px] text-white/40 uppercase tracking-widest">Forum</div>
+                  <div className="text-2xl font-bold text-white">{profile.stats.forumPosts}</div>
+                </div>
               </div>
             </div>
           </section>

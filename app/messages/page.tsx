@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import PageShell from '@/app/components/PageShell';
 import AuthGuard from '@/app/components/AuthGuard';
 import { MessageCircle, Search, Send, Loader2, UserPlus } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 
 interface ThreadParticipant {
   id: string;
@@ -80,6 +81,8 @@ function initialsFromName(name?: string | null) {
 }
 
 export default function MessagesPage() {
+  const searchParams = useSearchParams();
+  const preferredThreadId = searchParams.get('thread');
   const [threads, setThreads] = useState<ThreadSummary[]>([]);
   const [viewerId, setViewerId] = useState<string | null>(null);
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
@@ -114,7 +117,8 @@ export default function MessagesPage() {
       setViewerId(payload.viewerId || null);
 
       if (selectThread) {
-        const nextThreadId = payload.threads?.[0]?.id || null;
+        const hasPreferred = preferredThreadId && payload.threads?.some((thread: ThreadSummary) => thread.id === preferredThreadId);
+        const nextThreadId = hasPreferred ? preferredThreadId : (payload.threads?.[0]?.id || null);
         setActiveThreadId(prev => prev || nextThreadId);
       }
     } catch (error) {
@@ -142,6 +146,12 @@ export default function MessagesPage() {
   useEffect(() => {
     loadThreads();
   }, []);
+
+  useEffect(() => {
+    if (!preferredThreadId || threads.length === 0) return;
+    const exists = threads.some((thread) => thread.id === preferredThreadId);
+    if (exists) setActiveThreadId(preferredThreadId);
+  }, [preferredThreadId, threads]);
 
   useEffect(() => {
     if (activeThreadId) {
