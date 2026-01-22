@@ -7,7 +7,7 @@ import {
   MessageSquare, Send, ArrowUp, ArrowDown, Users,
   Quote, Reply, MessageCircle, Edit2, Trash2, Image as ImageIcon, Eye, Code, X,
   Sparkles, Lightbulb, CheckCircle, Search, Target,
-  TrendingUp, Trophy, Home, Hash, Zap, Bell, Info, Filter, Plus, Heart
+  TrendingUp, Trophy, Home, Hash, Zap, Bell, Info, Filter, Plus, Heart, Smile, Bold, Italic, List, Link as LinkIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
@@ -20,6 +20,7 @@ import { VoiceInput } from '@/app/components/VoiceInput';
 import { TrendingTopics } from '@/app/components/TrendingTopics';
 import { formatDistanceToNow } from 'date-fns';
 import { de } from 'date-fns/locale';
+import EmojiPicker, { Theme, EmojiClickData } from 'emoji-picker-react';
 
 export interface Comment {
   id: string;
@@ -145,6 +146,8 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
   const [notifications, setNotifications] = useState<ForumNotification[]>([]);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
   const [notificationsUnread, setNotificationsUnread] = useState(0);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const editorRef = useRef<HTMLTextAreaElement>(null);
 
   const FEEDS = [
     { id: 'All', name: 'Home Feed', icon: Home },
@@ -276,6 +279,45 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
 
   const postsToRender = sortPosts(filteredPosts, activeChannel === 'Popular' ? 'Top' : sortMode);
 
+  const insertText = (text: string) => {
+    const textarea = editorRef.current;
+    if (!textarea) {
+      // Fallback
+      if (editingPost === 'NEW') setContent(prev => prev + text);
+      else setEditContent(prev => prev + text);
+      return;
+    }
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const currentText = editingPost === 'NEW' ? content : editContent;
+    
+    const newText = currentText.substring(0, start) + text + currentText.substring(end);
+    
+    if (editingPost === 'NEW') setContent(newText);
+    else setEditContent(newText);
+
+    // Focus zurück und Cursor positionieren
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + text.length, start + text.length);
+    }, 0);
+  };
+
+  const handleEmojiClick = (emojiData: EmojiClickData) => {
+    insertText(emojiData.emoji);
+    setShowEmojiPicker(false);
+  };
+
+  const formatText = (format: 'bold' | 'italic' | 'list' | 'link') => {
+    switch (format) {
+      case 'bold': insertText('**Fett**'); break;
+      case 'italic': insertText('_Kursiv_'); break;
+      case 'list': insertText('\n- Liste\n'); break;
+      case 'link': insertText('[Link Text](https://)'); break;
+    }
+  };
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -305,12 +347,8 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
       }
 
       const markdownImage = `\n![${file.name}](${data.url})\n`;
+      insertText(markdownImage);
       
-      if (editingPost && editingPost !== 'NEW') {
-        setEditContent(prev => prev + markdownImage);
-      } else {
-        setContent(prev => prev + markdownImage);
-      }
       setStatusMessage('✅ Bild bereit!');
       setTimeout(() => setStatusMessage(''), 3000);
     } catch (error: any) {
@@ -1267,9 +1305,37 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
 
                     {/* Editor Tools */}
                     <div className="flex items-center gap-2 bg-white/5 p-1.5 rounded-xl border border-white/10">
+                      <div className="flex items-center gap-1 border-r border-white/10 pr-2 mr-2">
+                        <button onClick={() => formatText('bold')} className="p-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-all"><Bold className="w-4 h-4" /></button>
+                        <button onClick={() => formatText('italic')} className="p-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-all"><Italic className="w-4 h-4" /></button>
+                        <button onClick={() => formatText('list')} className="p-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-all"><List className="w-4 h-4" /></button>
+                        <button onClick={() => formatText('link')} className="p-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-all"><LinkIcon className="w-4 h-4" /></button>
+                      </div>
+                      
+                      <div className="relative">
+                        <button 
+                          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                          className={`p-2 hover:bg-white/10 rounded-lg transition-all ${showEmojiPicker ? 'text-[#D4AF37] bg-white/10' : 'text-white/60 hover:text-white'}`}
+                        >
+                          <Smile className="w-4 h-4" />
+                        </button>
+                        {showEmojiPicker && (
+                          <div className="absolute top-full right-0 mt-2 z-50 shadow-2xl rounded-2xl overflow-hidden border border-white/10">
+                            <EmojiPicker 
+                              theme={Theme.DARK} 
+                              onEmojiClick={handleEmojiClick}
+                              width={320}
+                              height={400}
+                              lazyLoadEmojis={true}
+                              searchPlaceHolder="Suche..."
+                            />
+                          </div>
+                        )}
+                      </div>
+
                       <button 
                         onClick={() => fileInputRef.current?.click()}
-                        className="p-2.5 hover:bg-white/10 rounded-lg text-white/60 hover:text-[#D4AF37] transition-all title-tooltip" title="Bild hochladen"
+                        className="p-2.5 hover:bg-white/10 rounded-lg text-white/60 hover:text-[#D4AF37] transition-all" title="Bild hochladen"
                       >
                         <ImageIcon className="w-4 h-4" />
                       </button>
@@ -1279,11 +1345,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                       
                       <VoiceInput
                         onTranscript={(text) => {
-                          if (editingPost === 'NEW') {
-                            setContent(prev => prev + (prev ? '\n' : '') + text);
-                          } else {
-                            setEditContent(prev => prev + (prev ? '\n' : '') + text);
-                          }
+                          insertText(text);
                         }}
                       />
                       
@@ -1311,6 +1373,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                       </div>
                     ) : (
                       <textarea
+                        ref={editorRef}
                         autoFocus
                         value={editingPost === 'NEW' ? content : editContent}
                         onChange={e => editingPost === 'NEW' ? setContent(e.target.value) : setEditContent(e.target.value)}
@@ -1319,16 +1382,6 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                       />
                     )}
                   </div>
-
-                  {/* Formatting Tips */}
-                  {!isPreview && (
-                    <div className="flex items-center gap-6 text-[10px] font-mono text-white/20 border-t border-white/5 pt-6">
-                      <span className="flex items-center gap-1.5"><code className="bg-white/5 px-1 rounded text-white/40">**fett**</code></span>
-                      <span className="flex items-center gap-1.5"><code className="bg-white/5 px-1 rounded text-white/40"># Titel</code></span>
-                      <span className="flex items-center gap-1.5"><code className="bg-white/5 px-1 rounded text-white/40">![]() Bild</code></span>
-                      <span className="ml-auto text-[#D4AF37]/40 uppercase tracking-widest font-black">Markdown aktiv</span>
-                    </div>
-                  )}
                 </div>
 
                 <div className="p-8 border-t border-white/5 flex items-center justify-between bg-white/[0.01]">
