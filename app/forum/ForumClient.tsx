@@ -26,6 +26,9 @@ export interface Comment {
   authorId?: string | null;
   parentId?: string | null;
   author: string;
+  authorImage?: string | null;
+  authorSlug?: string | null;
+  founderNumber?: number;
   content: string;
   time: string;
   likes: number;
@@ -65,6 +68,58 @@ export interface UserProfile {
 interface ForumClientProps {
   initialPosts: ForumPost[];
   initialUser: UserProfile | null;
+}
+
+function extractAiInsight(comments?: Comment[]) {
+  if (!comments || comments.length === 0) return null;
+  const aiComments = comments.filter(comment =>
+    comment.author === '@forge-ai' &&
+    /\*\*AI Insight ·/i.test(comment.content)
+  );
+  if (aiComments.length === 0) return null;
+  const latest = aiComments[aiComments.length - 1];
+  const match = latest.content.match(/\*\*AI Insight · (.+?)\*\*\s*/i);
+  const label = match?.[1]?.trim() || 'AI Insight';
+  const content = match ? latest.content.replace(match[0], '').trim() : latest.content.trim();
+  return { label, content };
+}
+
+function slugifyName(value: string) {
+  return value
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function buildProfileHref(post: ForumPost) {
+  if (post.authorSlug) return `/profile/${post.authorSlug}`;
+  if (post.authorId) return `/profile/${post.authorId}`;
+  if (post.founderNumber && post.author) {
+    const base = slugifyName(post.author);
+    if (base) {
+      return `/profile/${base}-${String(post.founderNumber).padStart(3, '0')}`;
+    }
+  }
+  return null;
+}
+
+function buildAuthorHref(
+  authorId?: string | null,
+  authorSlug?: string | null,
+  authorName?: string,
+  founderNumber?: number
+) {
+  if (authorSlug) return `/profile/${authorSlug}`;
+  if (authorId) return `/profile/${authorId}`;
+  if (founderNumber && authorName) {
+    const base = slugifyName(authorName);
+    if (base) {
+      return `/profile/${base}-${String(founderNumber).padStart(3, '0')}`;
+    }
+  }
+  return null;
 }
 
 export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
@@ -401,11 +456,17 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
       const res = await fetch('/api/forum/ai-action', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, postContent: post.content, category: post.category })
+        body: JSON.stringify({ postId: post.id, action, postContent: post.content, category: post.category })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'AI fehlgeschlagen');
       setAiResult({ postId: post.id, content: data.content, action: data.action });
+      if (data.comment) {
+        setPosts(prev => prev.map(p => p.id === post.id ? {
+          ...p,
+          comments: [...(p.comments || []), data.comment]
+        } : p));
+      }
     } catch (error) {
       console.error('AI action error:', error);
       setAiResult({ postId: post.id, content: 'AI konnte keine Antwort liefern.', action });
@@ -575,7 +636,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                   <p className="text-white/20 text-[10px] font-bold uppercase tracking-widest">Loading Intelligence...</p>
                 </div>
               ) : postsToRender.map(post => {
-                const profileHref = post.authorSlug || post.authorId ? `/profile/${post.authorSlug || post.authorId}` : null;
+                const profileHref = buildProfileHref(post);
 
                 return (
                 <div key={post.id} id={post.id} className="bg-[#121212] border border-white/10 rounded-xl flex hover:border-white/20 transition-all group overflow-hidden">
@@ -683,26 +744,39 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                       )}
                     </div>
 
-                    {aiResult?.postId === post.id && (
-                      <div className="mt-3 p-4 rounded-xl bg-white/5 border border-white/10 text-sm text-white/80">
-                        <div className="text-[10px] uppercase tracking-widest text-white/40 mb-1">
-                          AI · {AI_ACTIONS.find(a => a.id === aiResult.action)?.label || aiResult.action}
+                    {(() => {
+                      const liveInsight = aiResult?.postId === post.id
+                        ? {
+                            label: AI_ACTIONS.find(a => a.id === aiResult.action)?.label || 'AI Insight',
+                            content: aiResult.content
+                          }
+                        : null;
+                      const persistedInsight = liveInsight ? null : extractAiInsight(post.comments);
+                      const insight = liveInsight || persistedInsight;
+
+                      if (!insight) return null;
+
+                      return (
+                        <div className="mt-3 p-4 rounded-xl bg-white/5 border border-white/10 text-sm text-white/80">
+                          <div className="text-[10px] uppercase tracking-widest text-white/40 mb-1">
+                            AI · {insight.label}
+                          </div>
+                          <div className="prose prose-invert prose-sm max-w-none 
+                            prose-headings:text-white prose-headings:font-bold prose-headings:text-sm prose-headings:mb-2 prose-headings:mt-4
+                            prose-p:text-white/80 prose-p:my-2
+                            prose-strong:text-[#D4AF37] prose-strong:font-bold
+                            prose-ul:list-disc prose-ul:pl-4 prose-ul:my-2
+                            prose-ol:list-decimal prose-ol:pl-4 prose-ol:my-2
+                            prose-li:text-white/70 prose-li:my-1
+                            prose-a:text-[#D4AF37] prose-a:underline hover:prose-a:text-white transition-colors
+                          ">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                              {insight.content}
+                            </ReactMarkdown>
+                          </div>
                         </div>
-                        <div className="prose prose-invert prose-sm max-w-none 
-                          prose-headings:text-white prose-headings:font-bold prose-headings:text-sm prose-headings:mb-2 prose-headings:mt-4
-                          prose-p:text-white/80 prose-p:my-2
-                          prose-strong:text-[#D4AF37] prose-strong:font-bold
-                          prose-ul:list-disc prose-ul:pl-4 prose-ul:my-2
-                          prose-ol:list-decimal prose-ol:pl-4 prose-ol:my-2
-                          prose-li:text-white/70 prose-li:my-1
-                          prose-a:text-[#D4AF37] prose-a:underline hover:prose-a:text-white transition-colors
-                        ">
-                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                            {aiResult.content}
-                          </ReactMarkdown>
-                        </div>
-                      </div>
-                    )}
+                      );
+                    })()}
 
                     {expandedPosts[post.id] && (
                       <div className="mt-4 rounded-xl border border-white/10 bg-black/20 p-4 space-y-4">
@@ -716,6 +790,12 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                               const canManage = user && (user.role === 'ADMIN' || (user.id && comment.authorId === user.id));
                               const isEditing = commentEditingId === comment.id;
                               const parent = comment.parentId ? nodes.get(comment.parentId) : null;
+                              const commentProfileHref = buildAuthorHref(
+                                comment.authorId,
+                                comment.authorSlug,
+                                comment.author,
+                                comment.founderNumber
+                              );
 
                               return (
                                 <div key={comment.id} className={`relative ${depth > 0 ? 'pl-6' : ''}`}>
@@ -733,7 +813,29 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                                     }`}
                                   >
                                     <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-white/40 mb-2">
-                                      <span className="font-bold text-white/70">{comment.author}</span>
+                                      {commentProfileHref ? (
+                                        <Link href={commentProfileHref} className="flex items-center gap-2 hover:text-white transition-colors">
+                                          <div className="w-5 h-5 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[8px] text-[#D4AF37] font-bold overflow-hidden">
+                                            {comment.authorImage ? (
+                                              <img src={comment.authorImage} alt={comment.author} className="w-full h-full object-cover" />
+                                            ) : (
+                                              comment.author.charAt(0)
+                                            )}
+                                          </div>
+                                          <span className="font-bold text-white/70">{comment.author}</span>
+                                        </Link>
+                                      ) : (
+                                        <div className="flex items-center gap-2">
+                                          <div className="w-5 h-5 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[8px] text-[#D4AF37] font-bold overflow-hidden">
+                                            {comment.authorImage ? (
+                                              <img src={comment.authorImage} alt={comment.author} className="w-full h-full object-cover" />
+                                            ) : (
+                                              comment.author.charAt(0)
+                                            )}
+                                          </div>
+                                          <span className="font-bold text-white/70">{comment.author}</span>
+                                        </div>
+                                      )}
                                       {isAI && (
                                         <span className="px-2 py-0.5 rounded-full bg-[#D4AF37]/20 text-[#D4AF37] text-[9px] font-bold tracking-widest">
                                           AI

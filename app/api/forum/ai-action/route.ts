@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { ForumAIActions } from '@/lib/ai';
 import { RateLimiters } from '@/lib/rate-limit';
+import { prisma } from '@/lib/prisma';
 
 export const maxDuration = 30;
 
@@ -16,11 +17,11 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { action, postContent, category } = await request.json();
+    const { action, postContent, category, postId } = await request.json();
 
-    if (!action || !postContent) {
+    if (!action || !postContent || !postId) {
       return NextResponse.json(
-        { error: 'Missing action or postContent' },
+        { error: 'Missing action, postContent or postId' },
         { status: 400 }
       );
     }
@@ -47,10 +48,39 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
 
+    const actionLabels: Record<string, string> = {
+      summarize: 'Kurzfassung',
+      feedback: 'Feedback',
+      expand: 'Weiter ausführen',
+      factCheck: 'Faktencheck',
+      nextSteps: 'Nächste Schritte',
+    };
+
+    const label = actionLabels[action] || 'AI Insight';
+    const aiContent = `**AI Insight · ${label}**\n\n${result.content}`;
+
+    const comment = await prisma.forumComment.create({
+      data: {
+        postId,
+        authorName: '@forge-ai',
+        content: aiContent,
+      },
+    });
+
     return NextResponse.json({
       content: result.content,
       provider: result.provider,
-      action
+      action,
+      comment: {
+        id: comment.id,
+        authorId: comment.authorId,
+        parentId: comment.parentId,
+        author: comment.authorName,
+        content: comment.content,
+        likes: comment.likes,
+        userVote: 0,
+        time: comment.createdAt.toISOString(),
+      },
     });
   } catch (error: any) {
     console.error('AI Action error:', error);
