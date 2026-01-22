@@ -21,8 +21,25 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   try {
+    let user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true }
+    });
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email: session.user.email,
+          name: session.user.name ?? null
+        },
+        select: { id: true }
+      });
+    }
+
+    const safeFilename = filename.replace(/[^a-zA-Z0-9._-]/g, '-');
+
     // 1. Upload to Vercel Blob
-    const blob = await put(`avatars/${session.user.email}-${filename}`, request.body, {
+    const blob = await put(`avatars/${user.id}-${safeFilename}`, request.body, {
       access: 'public',
     });
 

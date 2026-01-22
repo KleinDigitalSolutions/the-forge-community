@@ -13,6 +13,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -30,13 +31,29 @@ export default function ProfilePage() {
     goal: ''
   });
 
+  const normalizeProfileData = (data: any) => ({
+    name: data?.name || '',
+    image: data?.image || '',
+    phone: data?.phone || '',
+    birthday: data?.birthday || '',
+    address_street: data?.address_street || '',
+    address_city: data?.address_city || '',
+    address_zip: data?.address_zip || '',
+    address_country: data?.address_country || 'Germany',
+    instagram: data?.instagram || '',
+    linkedin: data?.linkedin || '',
+    bio: data?.bio || '',
+    skills: Array.isArray(data?.skills) ? data.skills : [],
+    goal: data?.goal || ''
+  });
+
   useEffect(() => {
     async function loadProfile() {
       try {
         const res = await fetch('/api/me');
         if (res.ok) {
           const data = await res.json();
-          setFormData(prev => ({ ...prev, ...data }));
+          setFormData(prev => ({ ...prev, ...normalizeProfileData(data) }));
         }
       } catch (e) { console.error(e); }
       finally { setLoading(false); }
@@ -49,18 +66,22 @@ export default function ProfilePage() {
     if (!file) return;
 
     setUploading(true);
+    setUploadError('');
     try {
-      const response = await fetch(`/api/me/update-image?filename=${file.name}`, {
+      const response = await fetch(`/api/me/update-image?filename=${encodeURIComponent(file.name)}`, {
         method: 'POST',
         body: file,
       });
 
-      if (response.ok) {
-        const newBlob = await response.json();
-        setFormData(prev => ({ ...prev, image: newBlob.url }));
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload?.error || 'Upload fehlgeschlagen');
       }
+
+      setFormData(prev => ({ ...prev, image: payload.url }));
     } catch (error) {
-      console.error('Upload failed');
+      console.error('Upload failed', error);
+      setUploadError('Upload fehlgeschlagen. Bitte erneut versuchen.');
     } finally {
       setUploading(false);
     }
@@ -155,6 +176,9 @@ export default function ProfilePage() {
                     />
                   </div>
                   <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] mt-4">Identitäts-Bild ändern</p>
+                  {uploadError && (
+                    <p className="mt-2 text-[10px] uppercase tracking-widest text-red-300">{uploadError}</p>
+                  )}
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-8">

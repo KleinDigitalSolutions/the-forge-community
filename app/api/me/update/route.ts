@@ -3,7 +3,7 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
 
-export async function POST(req: NextRequest) {
+async function handleUpdate(req: NextRequest) {
   const session = await auth();
 
   if (!session?.user?.email) {
@@ -66,4 +66,12 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json(user);
   }
+}
+
+export async function POST(req: NextRequest) {
+  return handleUpdate(req);
+}
+
+export async function PATCH(req: NextRequest) {
+  return handleUpdate(req);
 }
