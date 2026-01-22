@@ -431,11 +431,23 @@ export default function Forum() {
                     </div>
 
                     {aiResult?.postId === post.id && (
-                      <div className="mt-3 p-3 rounded-lg bg-white/5 border border-white/10 text-sm text-white/80">
+                      <div className="mt-3 p-4 rounded-xl bg-white/5 border border-white/10 text-sm text-white/80">
                         <div className="text-[10px] uppercase tracking-widest text-white/40 mb-1">
                           AI · {AI_ACTIONS.find(a => a.id === aiResult.action)?.label || aiResult.action}
                         </div>
-                        <p className="whitespace-pre-line leading-relaxed">{aiResult.content}</p>
+                        <div className="prose prose-invert prose-sm max-w-none 
+                          prose-headings:text-white prose-headings:font-bold prose-headings:text-sm prose-headings:mb-2 prose-headings:mt-4
+                          prose-p:text-white/80 prose-p:my-2
+                          prose-strong:text-[#D4AF37] prose-strong:font-bold
+                          prose-ul:list-disc prose-ul:pl-4 prose-ul:my-2
+                          prose-ol:list-decimal prose-ol:pl-4 prose-ol:my-2
+                          prose-li:text-white/70 prose-li:my-1
+                          prose-a:text-[#D4AF37] prose-a:underline hover:prose-a:text-white transition-colors
+                        ">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {aiResult.content}
+                          </ReactMarkdown>
+                        </div>
                       </div>
                     )}
                   </div>
