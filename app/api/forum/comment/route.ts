@@ -89,20 +89,26 @@ export async function POST(request: Request) {
       }
     }
 
-    await Promise.all(
-      Array.from(recipients.entries()).map(([recipientId, payload]) =>
-        prisma.notification.create({
-          data: {
-            userId: recipientId,
-            actorId: user.id,
-            type: payload.type,
-            title: payload.title,
-            message: payload.message,
-            href: `/forum#${postId}`,
-          },
-        })
-      )
-    );
+    if (recipients.size > 0) {
+      try {
+        await Promise.all(
+          Array.from(recipients.entries()).map(([recipientId, payload]) =>
+            prisma.notification.create({
+              data: {
+                userId: recipientId,
+                actorId: user.id,
+                type: payload.type,
+                title: payload.title,
+                message: payload.message,
+                href: `/forum#${postId}`,
+              },
+            })
+          )
+        );
+      } catch (notificationError) {
+        console.error('Notification creation failed:', notificationError);
+      }
+    }
 
     return NextResponse.json({
       id: comment.id,

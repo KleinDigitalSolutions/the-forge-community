@@ -217,7 +217,11 @@ export async function POST(request: Request) {
       }
     }
 
-    await syncUserAchievements(user.id);
+    try {
+      await syncUserAchievements(user.id);
+    } catch (achievementError) {
+      console.error('Achievement sync failed:', achievementError);
+    }
 
     return NextResponse.json(response);
   } catch (error: any) {
