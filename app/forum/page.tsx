@@ -203,11 +203,14 @@ export default function Forum() {
       return { ...p, likes: newLikes, userVote: newUserVote };
     }));
     try {
-      await fetch('/api/forum/like', {
+      const response = await fetch('/api/forum/like', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, delta }),
       });
+      if (!response.ok) throw new Error('Vote failed');
+      const data = await response.json();
+      setPosts(prev => prev.map(p => p.id === id ? { ...p, likes: data.likes, userVote: data.userVote } : p));
     } catch (e) { fetchPosts(); }
   };
 
