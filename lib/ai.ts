@@ -72,8 +72,10 @@ async function callGemini(
     });
   }
 
+  const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash-latest';
+  const apiVersion = process.env.GEMINI_API_VERSION || 'v1beta';
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/${apiVersion}/models/${model}:generateContent?key=${apiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

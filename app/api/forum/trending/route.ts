@@ -136,7 +136,7 @@ export async function GET(request: Request) {
       // Parse AI response
       let topics = [];
       try {
-        const parsed = JSON.parse(analysis.content || '{}');
+        const parsed = JSON.parse(extractJson(analysis.content || '') || '{}');
         topics = parsed.topics || [];
       } catch (parseError) {
         console.error('Failed to parse AI response:', parseError);
@@ -209,4 +209,13 @@ function generateFallbackTrends(posts: NormalizedPost[]) {
     })
     .sort((a, b) => b.heat - a.heat)
     .slice(0, 5);
+}
+
+function extractJson(content: string) {
+  const cleaned = content.replace(/```json|```/gi, '').trim();
+  if (cleaned.startsWith('{') || cleaned.startsWith('[')) {
+    return cleaned;
+  }
+  const match = cleaned.match(/\{[\s\S]*\}/);
+  return match ? match[0] : '';
 }
