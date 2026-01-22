@@ -19,30 +19,42 @@ export async function POST(request: Request) {
   try {
     const { action, postContent, category, postId } = await request.json();
 
-    if (!action || !postContent || !postId) {
+    if (!action || !postId) {
       return NextResponse.json(
-        { error: 'Missing action, postContent or postId' },
+        { error: 'Missing action or postId' },
         { status: 400 }
       );
+    }
+
+    const post = await prisma.forumPost.findUnique({
+      where: { id: postId },
+      select: { content: true, category: true },
+    });
+
+    const resolvedContent = post?.content || postContent;
+    const resolvedCategory = post?.category || category || 'General';
+
+    if (!resolvedContent) {
+      return NextResponse.json({ error: 'Post content not found' }, { status: 404 });
     }
 
     let result;
 
     switch (action) {
       case 'summarize':
-        result = await ForumAIActions.summarize(postContent);
+        result = await ForumAIActions.summarize(resolvedContent);
         break;
       case 'feedback':
-        result = await ForumAIActions.feedback(postContent, category || 'General');
+        result = await ForumAIActions.feedback(resolvedContent, resolvedCategory);
         break;
       case 'expand':
-        result = await ForumAIActions.expand(postContent);
+        result = await ForumAIActions.expand(resolvedContent);
         break;
       case 'factCheck':
-        result = await ForumAIActions.factCheck(postContent);
+        result = await ForumAIActions.factCheck(resolvedContent);
         break;
       case 'nextSteps':
-        result = await ForumAIActions.nextSteps(postContent);
+        result = await ForumAIActions.nextSteps(resolvedContent);
         break;
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
@@ -56,13 +68,13 @@ export async function POST(request: Request) {
       nextSteps: 'Nächste Schritte',
     };
 
-    const label = actionLabels[action] || 'AI Insight';
-    const aiContent = `**AI Insight · ${label}**\n\n${result.content}`;
+    const label = actionLabels[action] || 'Orion Insight';
+    const aiContent = `**Orion Insight · ${label}**\n\n${result.content}`;
 
     const comment = await prisma.forumComment.create({
       data: {
         postId,
-        authorName: '@forge-ai',
+        authorName: '@orion',
         content: aiContent,
       },
     });

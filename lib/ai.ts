@@ -13,6 +13,14 @@ export interface AIResponse {
   error?: string;
 }
 
+const forumOrionBasePrompt = `
+Du bist Orion, der Forum-AI-Spezialist von STAKE & SCALE.
+Dein Job: Hilf Foundern im Forum mit klaren, ehrlichen Antworten.
+Wenn dir Infos fehlen, sag das offen. Keine Halluzinationen.
+Wenn externe Recherche nötig waere, sag das und gib eine kurze Empfehlung, wie man es pruefen kann.
+Antworte immer auf Deutsch, kurz und handlungsorientiert.
+`;
+
 /**
  * Call Gemini Flash 2.0 with Groq as fallback
  */
@@ -175,7 +183,7 @@ export const ForumAIActions = {
     return callAI([
       {
         role: 'system',
-        content: 'Du bist ein präziser Zusammenfassungs-Assistent. Erstelle eine knappe TL;DR (max 2 Sätze) auf Deutsch.'
+        content: `${forumOrionBasePrompt}\nErstelle eine knappe TL;DR (max 2 Saetze).`
       },
       {
         role: 'user',
@@ -188,7 +196,7 @@ export const ForumAIActions = {
     return callAI([
       {
         role: 'system',
-        content: `Du bist ein konstruktiver Mentor für Founders. Gib hilfreiches, ehrliches Feedback zu einem ${category}-Post. Sei prägnant (max 3 Sätze) und handlungsorientiert.`
+        content: `${forumOrionBasePrompt}\nGib hilfreiches, ehrliches Feedback zu einem ${category}-Post. Sei praegnant (max 3 Saetze) und handlungsorientiert.`
       },
       {
         role: 'user',
@@ -201,7 +209,7 @@ export const ForumAIActions = {
     return callAI([
       {
         role: 'system',
-        content: 'Du bist ein kreativer Brainstorming-Partner. Erweitere die Idee mit 2-3 konkreten Vorschlägen auf Deutsch.'
+        content: `${forumOrionBasePrompt}\nErweitere die Idee mit 2-3 konkreten Vorschlaegen.`
       },
       {
         role: 'user',
@@ -214,7 +222,7 @@ export const ForumAIActions = {
     return callAI([
       {
         role: 'system',
-        content: 'Du bist ein Fact-Checker. Prüfe Aussagen auf Plausibilität und weise auf mögliche Ungenauigkeiten hin. Sei kurz (max 3 Sätze).'
+        content: `${forumOrionBasePrompt}\nPruefe Aussagen auf Plausibilitaet und weise auf moegliche Ungenauigkeiten hin. Sei kurz (max 3 Saetze).`
       },
       {
         role: 'user',
@@ -227,7 +235,7 @@ export const ForumAIActions = {
     return callAI([
       {
         role: 'system',
-        content: 'Du bist ein Action-Coach. Leite 2-3 konkrete nächste Schritte ab, die der Founder umsetzen kann. Kurz und klar auf Deutsch.'
+        content: `${forumOrionBasePrompt}\nLeite 2-3 konkrete naechste Schritte ab. Kurz und klar.`
       },
       {
         role: 'user',
@@ -240,9 +248,7 @@ export const ForumAIActions = {
     return callAI([
       {
         role: 'system',
-        content: `Du bist der Forge AI Assistant. Beantworte Fragen prägnant und hilfreich. Bleib auf Deutsch und sei konkret. Wenn du dir nicht sicher bist, sag es ehrlich.
-
-        Context: Du bist Teil einer Community-Plattform für Founders die gemeinsam Ventures bauen.`
+        content: `${forumOrionBasePrompt}\nKontext: Du bist Teil einer Community-Plattform fuer Founders, die gemeinsam Ventures bauen.\nBeantworte die Frage praegnAnt und konkret.`
       },
       {
         role: 'user',

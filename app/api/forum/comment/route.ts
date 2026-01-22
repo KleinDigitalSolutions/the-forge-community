@@ -41,7 +41,7 @@ export async function POST(request: Request) {
 
     const post = await prisma.forumPost.findUnique({
       where: { id: postId },
-      select: { id: true, authorId: true }
+      select: { id: true, authorId: true, content: true, category: true }
     });
 
     if (!post) {
@@ -49,10 +49,11 @@ export async function POST(request: Request) {
     }
 
     let parentAuthorId: string | null = null;
+    let parentContent: string | null = null;
     if (parentId) {
       const parent = await prisma.forumComment.findUnique({
         where: { id: parentId },
-        select: { id: true, postId: true, authorId: true }
+        select: { id: true, postId: true, authorId: true, content: true }
       });
 
       if (!parent || parent.postId !== postId) {
@@ -60,6 +61,7 @@ export async function POST(request: Request) {
       }
 
       parentAuthorId = parent.authorId || null;
+      parentContent = parent.content || null;
     }
 
     const founderNumber = await assignFounderNumberIfMissing(user.id);
@@ -103,10 +105,10 @@ export async function POST(request: Request) {
 
     if (recipients.size > 0) {
       try {
-        await Promise.all(
-          Array.from(recipients.entries()).map(([recipientId, payload]) =>
-            prisma.notification.create({
-              data: {
+    await Promise.all(
+      Array.from(recipients.entries()).map(([recipientId, payload]) =>
+        prisma.notification.create({
+          data: {
                 userId: recipientId,
                 actorId: user.id,
                 type: payload.type,
@@ -115,8 +117,42 @@ export async function POST(request: Request) {
                 href: `/forum#${postId}`,
               },
             })
-          )
+      )
+    );
+
+    const mentionRegex = /(?:@orion|atorion)\b\s*([^\n]*)/i;
+    const mentionMatch = trimmedContent.match(mentionRegex);
+    if (mentionMatch) {
+      try {
+        const { ForumAIActions } = await import('@/lib/ai');
+        const question = mentionMatch[1]?.trim() || trimmedContent;
+        const contextParts = [
+          `Kategorie: ${post.category}`,
+          `Beitrag:\n${post.content}`,
+        ];
+        if (parentContent) {
+          contextParts.push(`Parent-Kommentar:\n${parentContent}`);
+        }
+        contextParts.push(`Aktueller Kommentar:\n${trimmedContent}`);
+        const aiResponse = await ForumAIActions.mentionReply(
+          question,
+          contextParts.join('\n\n')
         );
+
+        if (aiResponse.content) {
+          await prisma.forumComment.create({
+            data: {
+              postId,
+              parentId: comment.id,
+              authorName: '@orion',
+              content: `**@orion antwortet:**\n\n${aiResponse.content}\n\n_Powered by ${aiResponse.provider === 'gemini' ? 'Gemini Flash' : 'Groq'}_`
+            }
+          });
+        }
+      } catch (aiError) {
+        console.error('Orion comment reply failed:', aiError);
+      }
+    }
       } catch (notificationError) {
         console.error('Notification creation failed:', notificationError);
       }

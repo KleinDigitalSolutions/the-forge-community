@@ -87,16 +87,19 @@ interface ForumClientProps {
   initialUser: UserProfile | null;
 }
 
+const AI_AUTHORS = new Set(['@orion', '@forge-ai']);
+const INSIGHT_HEADER = /\*\*(?:Orion|AI) Insight · (.+?)\*\*\s*/i;
+
 function extractAiInsight(comments?: Comment[]) {
   if (!comments || comments.length === 0) return null;
   const aiComments = comments.filter(comment =>
-    comment.author === '@forge-ai' &&
-    /\*\*AI Insight ·/i.test(comment.content)
+    AI_AUTHORS.has(comment.author) &&
+    INSIGHT_HEADER.test(comment.content)
   );
   if (aiComments.length === 0) return null;
   const latest = aiComments[aiComments.length - 1];
-  const match = latest.content.match(/\*\*AI Insight · (.+?)\*\*\s*/i);
-  const label = match?.[1]?.trim() || 'AI Insight';
+  const match = latest.content.match(INSIGHT_HEADER);
+  const label = match?.[1]?.trim() || 'Orion Insight';
   const content = match ? latest.content.replace(match[0], '').trim() : latest.content.trim();
   return { label, content };
 }

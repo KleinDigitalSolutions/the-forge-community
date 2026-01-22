@@ -207,23 +207,26 @@ export async function POST(request: Request) {
       }
     });
     
-    // Check for @forge-ai mention
-    const mentionRegex = /@forge-ai\s+(.+)/i;
+    // Check for @orion mention
+    const mentionRegex = /(?:@orion|atorion)\b\s*([^\n]*)/i;
     const mentionMatch = finalContent.match(mentionRegex);
 
     if (mentionMatch) {
       // User mentioned AI - respond directly
       try {
         const { ForumAIActions } = await import('@/lib/ai');
-        const question = mentionMatch[1];
-        const aiResponse = await ForumAIActions.mentionReply(question, `Category: ${category}`);
+        const question = mentionMatch[1]?.trim() || finalContent;
+        const aiResponse = await ForumAIActions.mentionReply(
+          question,
+          `Kategorie: ${category}\n\nBeitrag:\n${finalContent}`
+        );
 
         if (aiResponse.content && response.id) {
           await prisma.forumComment.create({
             data: {
               postId: response.id,
-              authorName: '@forge-ai',
-              content: `**@forge-ai antwortet:**\n\n${aiResponse.content}\n\n_Powered by ${aiResponse.provider === 'gemini' ? 'Gemini Flash' : 'Groq'}_`
+              authorName: '@orion',
+              content: `**@orion antwortet:**\n\n${aiResponse.content}\n\n_Powered by ${aiResponse.provider === 'gemini' ? 'Gemini Flash' : 'Groq'}_`
             }
           });
         }
