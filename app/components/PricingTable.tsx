@@ -20,9 +20,10 @@ export function PricingTable({ onSelectPlan, isLoading }: PricingTableProps) {
       price: isBeta ? '0' : '199',
       period: isBeta ? '/monat' : '/mo',
       features: [
-        { text: 'Forge OS + alle Studios (Brand, Legal, Marketing, Sourcing)', highlight: true },
+        { text: 'Forge OS Core (Dashboard, Ventures, Mission Control)', highlight: true },
+        { text: 'Studios: Brand, Legal, Marketing, Sourcing', highlight: true },
         { text: 'Community Hub: Forum, Squads, DMs', highlight: false },
-        { text: 'Academy (Playbooks & Trainings)', highlight: false },
+        { text: 'Academy: Playbooks & Trainings', highlight: false },
         { text: 'AI Credits: Starter-Kontingent', highlight: false },
         { text: 'Monatlich kündbar (nach Beta)', highlight: false },
       ],
@@ -52,6 +53,7 @@ export function PricingTable({ onSelectPlan, isLoading }: PricingTableProps) {
       price: 'Custom',
       period: '',
       features: [
+        { text: 'Alles aus Validator', highlight: true },
         { text: 'Private Instanz + Custom Domain', highlight: true },
         { text: 'Multi-Venture Ops + Rollen/SSO (geplant)', highlight: false },
         { text: 'Unlimitierte AI-Credits (vertraglich)', highlight: true },
@@ -76,17 +78,20 @@ export function PricingTable({ onSelectPlan, isLoading }: PricingTableProps) {
           )}
         >
           {plan.featured && (
-            <div className="absolute top-0 right-0 p-8 opacity-20 group-hover:opacity-40 transition-opacity">
-              <Zap className="w-20 h-20 text-[var(--accent)]" />
-            </div>
-          )}
-          {isBeta && (
-            <div className="absolute left-6 top-6 z-20 rounded-full border border-[var(--accent)]/30 bg-[var(--accent)]/10 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.25em] text-[var(--accent)]">
-              Beta · kostenlos
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+              <div className="absolute inset-0 opacity-0 transition-opacity duration-700 group-hover:opacity-60">
+                <div className="absolute inset-12 rounded-[2rem] bg-[radial-gradient(circle,rgba(212,175,55,0.18)_0%,transparent_65%)]" />
+              </div>
+              <Zap className="h-40 w-40 text-[var(--accent)] opacity-10 transition-all duration-700 group-hover:opacity-40 group-hover:scale-110" />
             </div>
           )}
           
           <div className="relative z-10 mb-10">
+            {isBeta && (
+              <div className="mb-4 inline-flex rounded-full border border-[var(--accent)]/30 bg-[var(--accent)]/10 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.25em] text-[var(--accent)]">
+                Beta · kostenlos
+              </div>
+            )}
             <div className="flex items-center justify-between mb-4">
                <h3 className={cn(
                  "text-2xl font-instrument-serif",
@@ -117,7 +122,7 @@ export function PricingTable({ onSelectPlan, isLoading }: PricingTableProps) {
               <li key={i} className="flex items-start gap-4 group/item">
                 <Check className={cn(
                   "w-4 h-4 mt-0.5 transition-colors",
-                  feature.highlight ? "text-[var(--accent)]" : "text-white/20"
+                  feature.highlight ? "text-[var(--accent)]" : "text-[var(--accent)]/40"
                 )} />
                 <span className={cn(
                   "text-sm leading-relaxed transition-colors",
