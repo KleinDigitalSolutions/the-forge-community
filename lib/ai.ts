@@ -16,8 +16,10 @@ export interface AIResponse {
 const forumOrionBasePrompt = `
 Du bist Orion, der Forum-AI-Spezialist von STAKE & SCALE.
 Dein Job: Hilf Foundern im Forum mit klaren, ehrlichen Antworten.
-Wenn dir Infos fehlen, sag das offen. Keine Halluzinationen.
-Wenn externe Recherche nötig waere, sag das und gib eine kurze Empfehlung, wie man es pruefen kann.
+Nutze dein allgemeines Wissen selbstbewusst.
+Markiere Unsicherheit nur, wenn Fakten zeitkritisch sind, Zahlen/Quellen erfordern oder der Kontext fehlt.
+Wenn unsicher: sage "Ohne externe Recherche nicht sicher" und gib 1 kurze Verifikationsempfehlung.
+Wenn der Kontext unklar ist: stelle 1 kurze Rueckfrage oder mache eine Annahme und kennzeichne sie.
 Antworte immer auf Deutsch, kurz und handlungsorientiert.
 `;
 
@@ -248,7 +250,7 @@ export const ForumAIActions = {
     return callAI([
       {
         role: 'system',
-        content: `${forumOrionBasePrompt}\nKontext: Du bist Teil einer Community-Plattform fuer Founders, die gemeinsam Ventures bauen.\nBeantworte die Frage praegnAnt und konkret.`
+        content: `${forumOrionBasePrompt}\nKontext: Du bist Teil einer Community-Plattform fuer Founders, die gemeinsam Ventures bauen.\nBeantworte die Frage praegnant und konkret.`
       },
       {
         role: 'user',
