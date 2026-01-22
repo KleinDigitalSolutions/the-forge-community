@@ -50,6 +50,23 @@ export interface ForumPost {
   comments?: Comment[];
 }
 
+interface ForumNotification {
+  id: string;
+  type: string;
+  title: string;
+  message?: string | null;
+  href?: string | null;
+  isRead: boolean;
+  createdAt: string;
+  actor?: {
+    id: string;
+    name: string | null;
+    image?: string | null;
+    profileSlug?: string | null;
+    founderNumber?: number | null;
+  } | null;
+}
+
 export interface UserProfile {
   id?: string;
   name: string | null;
@@ -84,41 +101,15 @@ function extractAiInsight(comments?: Comment[]) {
   return { label, content };
 }
 
-function slugifyName(value: string) {
-  return value
-    .toLowerCase()
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
-
 function buildProfileHref(post: ForumPost) {
   if (post.authorSlug) return `/profile/${post.authorSlug}`;
   if (post.authorId) return `/profile/${post.authorId}`;
-  if (post.founderNumber && post.author) {
-    const base = slugifyName(post.author);
-    if (base) {
-      return `/profile/${base}-${String(post.founderNumber).padStart(3, '0')}`;
-    }
-  }
   return null;
 }
 
-function buildAuthorHref(
-  authorId?: string | null,
-  authorSlug?: string | null,
-  authorName?: string,
-  founderNumber?: number
-) {
+function buildAuthorHref(authorId?: string | null, authorSlug?: string | null) {
   if (authorSlug) return `/profile/${authorSlug}`;
   if (authorId) return `/profile/${authorId}`;
-  if (founderNumber && authorName) {
-    const base = slugifyName(authorName);
-    if (base) {
-      return `/profile/${base}-${String(founderNumber).padStart(3, '0')}`;
-    }
-  }
   return null;
 }
 
@@ -147,6 +138,10 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
   const [aiResult, setAiResult] = useState<{postId: string; content: string; action: string} | null>(null);
   const [moderationWarning, setModerationWarning] = useState<{number: number; message: string; banned: boolean} | null>(null);
   const [statusMessage, setStatusMessage] = useState('');
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState<ForumNotification[]>([]);
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
+  const [notificationsUnread, setNotificationsUnread] = useState(0);
 
   const FEEDS = [
     { id: 'All', name: 'Home Feed', icon: Home },
@@ -193,6 +188,52 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
     if (!initialUser) fetchUser();
     if (initialPosts.length === 0) fetchPosts();
   }, [initialPosts.length, initialUser]);
+
+  useEffect(() => {
+    if (user && notifications.length === 0) {
+      fetchNotifications();
+    }
+  }, [user?.id]);
+
+  const fetchNotifications = async () => {
+    try {
+      setNotificationsLoading(true);
+      const response = await fetch('/api/notifications');
+      if (!response.ok) return;
+      const payload = await response.json();
+      setNotifications(payload.notifications || []);
+      setNotificationsUnread(payload.unreadCount || 0);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setNotificationsLoading(false);
+    }
+  };
+
+  const markNotificationsRead = async (ids?: string[]) => {
+    if (!ids || ids.length === 0) return;
+    await fetch('/api/notifications', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids }),
+    });
+  };
+
+  const markAllNotificationsRead = async () => {
+    await fetch('/api/notifications', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ all: true }),
+    });
+  };
+
+  const handleToggleNotifications = async () => {
+    const next = !notificationsOpen;
+    setNotificationsOpen(next);
+    if (next) {
+      await fetchNotifications();
+    }
+  };
 
   const handleChannelClick = (id: string) => {
     setActiveChannel(id);
@@ -336,7 +377,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
           if (currentVote === delta) { newLikes -= delta; newUserVote = 0; }
           else if (currentVote === 0) { newLikes += delta; newUserVote = delta; }
           else { newLikes += (delta * 2); newUserVote = delta; }
-          return { ...comment, likes: Math.max(newLikes, 0), userVote: newUserVote };
+          return { ...comment, likes: newLikes, userVote: newUserVote };
         })
       };
     }));
@@ -582,8 +623,19 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
             </div>
 
             <div className="pt-6 border-t border-white/5">
-               <button className="w-full flex items-center gap-3 px-3 py-2 text-white/40 hover:text-white transition-all text-xs">
-                  <Bell className="w-4 h-4" /> Notifications
+               <button
+                 onClick={handleToggleNotifications}
+                 className={`w-full flex items-center gap-3 px-3 py-2 transition-all text-xs ${
+                   notificationsOpen ? 'text-white' : 'text-white/40 hover:text-white'
+                 }`}
+               >
+                  <Bell className={`w-4 h-4 ${notificationsOpen ? 'text-[#D4AF37]' : ''}`} />
+                  Notifications
+                  {notificationsUnread > 0 && (
+                    <span className="ml-auto rounded-full bg-[#D4AF37]/20 text-[#D4AF37] text-[9px] font-bold px-2 py-0.5">
+                      {notificationsUnread}
+                    </span>
+                  )}
                </button>
                <button className="w-full flex items-center gap-3 px-3 py-2 text-white/40 hover:text-white transition-all text-xs">
                   <Info className="w-4 h-4" /> Help Center
@@ -792,9 +844,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                               const parent = comment.parentId ? nodes.get(comment.parentId) : null;
                               const commentProfileHref = buildAuthorHref(
                                 comment.authorId,
-                                comment.authorSlug,
-                                comment.author,
-                                comment.founderNumber
+                                comment.authorSlug
                               );
 
                               return (
@@ -976,6 +1026,93 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
 
           {/* RIGHT SIDEBAR */}
           <aside className="hidden xl:block sticky top-8 h-fit space-y-6">
+            {notificationsOpen && (
+              <div className="bg-[#121212] border border-white/10 rounded-2xl p-6">
+                <div className="flex items-center justify-between mb-5">
+                  <h4 className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em] flex items-center gap-2">
+                    <Bell className="w-3.5 h-3.5 text-[#D4AF37]" /> Notifications
+                  </h4>
+                  {notificationsUnread > 0 && (
+                    <button
+                      onClick={async () => {
+                        await markAllNotificationsRead();
+                        setNotifications(prev => prev.map(item => ({ ...item, isRead: true })));
+                        setNotificationsUnread(0);
+                      }}
+                      className="text-[9px] uppercase tracking-widest text-white/40 hover:text-white transition-all"
+                    >
+                      Alle gelesen
+                    </button>
+                  )}
+                </div>
+
+                {notificationsLoading ? (
+                  <div className="py-8 text-center text-[10px] uppercase tracking-widest text-white/30">
+                    Lädt ...
+                  </div>
+                ) : notifications.length === 0 ? (
+                  <div className="py-6 text-center text-[10px] uppercase tracking-widest text-white/30">
+                    Noch keine Benachrichtigungen.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {notifications.map(notification => {
+                      const actor = notification.actor;
+                      const actorLabel = actor?.name || 'System';
+                      const handleClick = async () => {
+                        if (!notification.isRead) {
+                          setNotifications(prev =>
+                            prev.map(item =>
+                              item.id === notification.id ? { ...item, isRead: true } : item
+                            )
+                          );
+                          setNotificationsUnread(prev => Math.max(0, prev - 1));
+                          await markNotificationsRead([notification.id]);
+                        }
+                        if (notification.href) {
+                          window.location.href = notification.href;
+                        }
+                      };
+
+                      return (
+                        <button
+                          key={notification.id}
+                          onClick={handleClick}
+                          className={`w-full text-left rounded-xl border px-3 py-3 transition-all ${
+                            notification.isRead
+                              ? 'border-white/10 bg-white/[0.02] text-white/60'
+                              : 'border-[#D4AF37]/30 bg-[#D4AF37]/10 text-white'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-full bg-black/40 border border-white/10 flex items-center justify-center text-[11px] font-bold text-[#D4AF37] overflow-hidden">
+                              {actor?.image ? (
+                                <img src={actor.image} alt={actorLabel} className="w-full h-full object-cover" />
+                              ) : (
+                                actorLabel.charAt(0)
+                              )}
+                            </div>
+                            <div className="flex-1 space-y-1">
+                              <div className="flex items-center justify-between gap-3">
+                                <span className="text-[11px] font-bold">{notification.title}</span>
+                                <span className="text-[9px] text-white/30 uppercase tracking-widest">
+                                  {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true, locale: de })}
+                                </span>
+                              </div>
+                              <div className="text-[11px] text-white/60">
+                                <span className="text-white/80 font-semibold">{actorLabel}</span>
+                                {notification.message ? ` · ${notification.message}` : ''}
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* User Profile Widget - PRO REDESIGN */}
             <div className="bg-[#121212] border border-white/10 rounded-3xl overflow-hidden shadow-2xl group">
               <div className="h-20 bg-gradient-to-br from-[#D4AF37] via-amber-600 to-black relative overflow-hidden">

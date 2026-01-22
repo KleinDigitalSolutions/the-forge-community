@@ -54,7 +54,7 @@ export async function GET() {
     const stats = {
       myVentures: user.ventures.length,
       mySquads: user.squadMemberships.length,
-      karma: 0,
+      karma: user.karmaScore ?? 0,
       forumPosts: user._count.createdPosts
     };
 

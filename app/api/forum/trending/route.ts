@@ -5,9 +5,9 @@ import { prisma } from '@/lib/prisma';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
 
-const CACHE_TTL_HOURS = 4;
+const CACHE_TTL_HOURS = 1;
 const cacheHeaders = {
-  'Cache-Control': 'public, s-maxage=14400, stale-while-revalidate=3600',
+  'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=900',
 };
 
 type NormalizedPost = {

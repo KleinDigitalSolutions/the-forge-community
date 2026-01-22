@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { syncUserAchievements } from '@/lib/achievements';
+import { applyKarmaDelta, karmaDeltaFromScores } from '@/lib/karma';
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -72,12 +73,21 @@ export async function POST(request: Request) {
         userVote = delta;
       }
 
-      const nextLikes = Math.max(0, post.likes + likesDelta);
+      const nextLikes = post.likes + likesDelta;
       const updated = await tx.forumPost.update({
         where: { id: postId },
         data: { likes: nextLikes },
         select: { likes: true }
       });
+
+      if (post.authorId && post.authorId !== user.id) {
+        const karmaDelta = karmaDeltaFromScores(post.likes, nextLikes);
+        await applyKarmaDelta(tx, {
+          userId: post.authorId,
+          points: karmaDelta,
+          reason: 'forum_post_vote',
+        });
+      }
 
       return { likes: updated.likes, userVote, authorId: post.authorId };
     });

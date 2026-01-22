@@ -2,6 +2,7 @@
 
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
+import { applyKarmaDelta } from '@/lib/karma';
 import { revalidatePath } from 'next/cache';
 
 export async function getRoadmapItems() {
@@ -96,28 +97,34 @@ export async function toggleVote(roadmapItemId: string) {
 
   if (existingVote) {
     // 4a. Remove Vote
-    await prisma.roadmapVote.delete({
-      where: { id: existingVote.id },
+    await prisma.$transaction(async (tx) => {
+      await tx.roadmapVote.delete({
+        where: { id: existingVote.id },
+      });
+      await applyKarmaDelta(tx, {
+        userId: user.id,
+        points: -10,
+        reason: 'roadmap_vote_removed',
+        squadId: item.squadId,
+      });
     });
     console.log(`Vote removed by ${user.email}`);
   } else {
     // 4b. Add Vote & Karma
-    await prisma.$transaction([
-      prisma.roadmapVote.create({
+    await prisma.$transaction(async (tx) => {
+      await tx.roadmapVote.create({
         data: {
           userId: user.id,
           roadmapItemId: roadmapItemId,
         },
-      }),
-      prisma.karma.create({
-        data: {
-          points: 10,
-          reason: 'Voted on Roadmap Item',
-          userId: user.id,
-          squadId: item.squadId,
-        },
-      }),
-    ]);
+      });
+      await applyKarmaDelta(tx, {
+        userId: user.id,
+        points: 10,
+        reason: 'roadmap_vote',
+        squadId: item.squadId,
+      });
+    });
     console.log(`Vote added by ${user.email}`);
   }
 

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
+import { applyKarmaDelta, karmaDeltaFromScores } from '@/lib/karma';
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
     const updated = await prisma.$transaction(async (tx) => {
       const comment = await tx.forumComment.findUnique({
         where: { id },
-        select: { id: true, likes: true }
+        select: { id: true, likes: true, authorId: true }
       });
 
       if (!comment) {
@@ -65,11 +66,21 @@ export async function POST(request: Request) {
         newUserVote = delta;
       }
 
+      const nextLikes = comment.likes + likeDelta;
       const updatedComment = await tx.forumComment.update({
         where: { id },
-        data: { likes: Math.max(comment.likes + likeDelta, 0) },
+        data: { likes: nextLikes },
         select: { likes: true }
       });
+
+      if (comment.authorId && comment.authorId !== user.id) {
+        const karmaDelta = karmaDeltaFromScores(comment.likes, nextLikes);
+        await applyKarmaDelta(tx, {
+          userId: comment.authorId,
+          points: karmaDelta,
+          reason: 'forum_comment_vote',
+        });
+      }
 
       return { likes: updatedComment.likes, userVote: newUserVote };
     });

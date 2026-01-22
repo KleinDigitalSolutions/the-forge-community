@@ -27,6 +27,10 @@ interface CockpitControlProps {
 export default function CockpitControl({ userImage, userName, stats, onToggleView }: CockpitControlProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const parallaxRef = useRef<HTMLDivElement>(null);
+  const parallaxRafRef = useRef<number | null>(null);
+  const parallaxTarget = useRef({ x: 0, y: 0 });
+  const parallaxCurrent = useRef({ x: 0, y: 0 });
   const [orbitSize, setOrbitSize] = useState(720);
   const [orbitRadius, setOrbitRadius] = useState(220);
 
@@ -51,6 +55,73 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
     return () => window.removeEventListener('resize', update);
   }, []);
 
+  useEffect(() => {
+    const container = containerRef.current;
+    const layer = parallaxRef.current;
+    if (!container || !layer) return;
+
+    const prefersReduced =
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) return;
+
+    const maxOffset = 18;
+
+    const animate = () => {
+      const { x, y } = parallaxCurrent.current;
+      const target = parallaxTarget.current;
+      const nextX = x + (target.x - x) * 0.08;
+      const nextY = y + (target.y - y) * 0.08;
+
+      parallaxCurrent.current = { x: nextX, y: nextY };
+      layer.style.transform = `translate3d(${nextX}px, ${nextY}px, 0)`;
+
+      if (Math.abs(target.x - nextX) > 0.1 || Math.abs(target.y - nextY) > 0.1) {
+        parallaxRafRef.current = requestAnimationFrame(animate);
+      } else {
+        parallaxRafRef.current = null;
+      }
+    };
+
+    const handleMove = (event: MouseEvent | PointerEvent) => {
+      const rect = container.getBoundingClientRect();
+      const relX = (event.clientX - rect.left) / rect.width - 0.5;
+      const relY = (event.clientY - rect.top) / rect.height - 0.5;
+      parallaxTarget.current = {
+        x: relX * maxOffset,
+        y: relY * maxOffset,
+      };
+      if (parallaxRafRef.current === null) {
+        parallaxRafRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    const handleLeave = () => {
+      parallaxTarget.current = { x: 0, y: 0 };
+      if (parallaxRafRef.current === null) {
+        parallaxRafRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    layer.style.willChange = 'transform';
+    container.addEventListener('mousemove', handleMove);
+    container.addEventListener('mouseleave', handleLeave);
+    container.addEventListener('pointermove', handleMove);
+    container.addEventListener('pointerleave', handleLeave);
+
+    return () => {
+      container.removeEventListener('mousemove', handleMove);
+      container.removeEventListener('mouseleave', handleLeave);
+      container.removeEventListener('pointermove', handleMove);
+      container.removeEventListener('pointerleave', handleLeave);
+      if (parallaxRafRef.current !== null) {
+        cancelAnimationFrame(parallaxRafRef.current);
+        parallaxRafRef.current = null;
+      }
+    };
+  }, []);
+
   const displayName = userName?.trim().split(' ')[0] || 'Operator';
   const initials = userName
     ? userName.split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase()
@@ -60,7 +131,10 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
     <div ref={containerRef} className="relative flex items-center justify-center w-[min(720px,90vw)] h-[min(720px,90vw)]">
       
       {/* --- BACKGROUND AMBIENCE (Deep Glow) --- */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+      <div
+        ref={parallaxRef}
+        className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
+      >
          <div className={`transition-all duration-1000 absolute w-[300px] h-[300px] bg-[#D4AF37]/6 blur-[100px] rounded-full ${isOpen ? 'scale-150 opacity-40' : 'scale-100 opacity-20'}`} />
          
          {/* Rotating Tech Rings (Subtle) */}
