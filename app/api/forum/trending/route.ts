@@ -22,6 +22,9 @@ type NormalizedPost = {
   created: Date;
 };
 
+const CACHE_KEY = 'system://forum-trends';
+const CACHE_TTL_HOURS = 4;
+
 /**
  * Analyze trending topics from forum discussions
  * Uses AI to identify patterns and emerging themes
@@ -30,136 +33,118 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const forceRefresh = searchParams.get('refresh') === '1';
-    const now = Date.now();
-    if (!forceRefresh && cachedResult && cachedResult.expiresAt > now) {
-      return NextResponse.json(cachedResult.data, { headers: cacheHeaders });
-    }
-
-    if (inflight) {
-      const data = await inflight;
-      return NextResponse.json(data, { headers: cacheHeaders });
-    }
-
-    inflight = (async () => {
-      // Recent posts (last 30 days)
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-      const recentPosts = await prisma.forumPost.findMany({
-        where: { createdAt: { gte: thirtyDaysAgo } },
-        select: {
-          id: true,
-          content: true,
-          category: true,
-          likes: true,
-          createdAt: true,
-          _count: { select: { comments: true } },
-        },
+    
+    // 1. Check DB Cache first
+    if (!forceRefresh) {
+      const cached = await prisma.linkPreview.findUnique({
+        where: { url: CACHE_KEY }
       });
 
-      const normalized: NormalizedPost[] = recentPosts.map((post) => ({
-        id: post.id,
-        content: post.content || '',
-        category: post.category || 'General',
-        likes: post.likes || 0,
-        comments: post._count.comments,
-        created: post.createdAt,
-      }));
-
-      if (normalized.length === 0) {
-        return {
-          topics: [],
-          message: 'Nicht genug Daten für Trend-Analyse',
-        };
-      }
-
-      // Prepare data for AI analysis
-      const postsData = normalized.map(post => ({
-        excerpt: post.content.slice(0, 400),
-        category: post.category,
-        likes: post.likes,
-        comments: post.comments,
-        created: post.created.toISOString(),
-      }));
-
-      // Use AI to analyze trends
-      const analysis = await callAI([
-        {
-          role: 'system',
-          content: `Du bist ein Data Analyst für Community-Trends.
-
-        AUFGABE:
-        Analysiere die Forum-Posts und identifiziere die TOP 5 Trending Topics.
-
-        FELDER:
-        - excerpt: kurzer Textauszug des Posts
-        - category: Kategorie des Posts
-        - likes: Anzahl Likes
-        - comments: Anzahl Kommentare
-        - created: ISO Datum
-
-        KRITERIEN für ein "Trending Topic":
-        - Häufigkeit: Wird das Thema in mehreren Posts diskutiert?
-        - Engagement: Viele Likes & Comments?
-        - Aktualität: Neue/wachsende Diskussion?
-        - Relevanz: Wichtig für die Community?
-
-        OUTPUT FORMAT (JSON):
-        {
-          "topics": [
-            {
-              "topic": "Kurzer prägnanter Name des Trends",
-              "description": "1 Satz Erklärung",
-              "heat": 0-100 (Trend-Stärke),
-              "posts_count": Anzahl relevanter Posts,
-              "category": "Hauptkategorie"
-            }
-          ]
+      if (cached && cached.expiresAt && cached.expiresAt > new Date() && cached.aiSummary) {
+        try {
+          const data = JSON.parse(cached.aiSummary);
+          return NextResponse.json(data, { 
+            headers: { ...cacheHeaders, 'X-Cache': 'HIT-DB' } 
+          });
+        } catch (e) {
+          console.error('Failed to parse cached trends:', e);
         }
-
-        REGELN:
-        - Maximal 5 Topics
-        - Sortiert nach "heat" (höchste zuerst)
-        - Nur echte Trends, keine Einzelthemen
-        - Deutsche Namen & Beschreibungen
-        - Antworte NUR mit JSON, keine Erklärungen`,
-        },
-        {
-          role: 'user',
-          content: `Analysiere diese ${recentPosts.length} Forum-Posts:\n\n${JSON.stringify(postsData, null, 2)}`,
-        },
-      ], {
-        temperature: 0.4,
-        maxTokens: 1000,
-      });
-
-      // Parse AI response
-      let topics = [];
-      try {
-        const parsed = JSON.parse(extractJson(analysis.content || '') || '{}');
-        topics = parsed.topics || [];
-      } catch (parseError) {
-        console.error('Failed to parse AI response:', parseError);
-        // Fallback: Simple category-based trending
-        topics = generateFallbackTrends(normalized);
       }
+    }
 
-      return {
-        topics,
-        analyzed_posts: normalized.length,
-        period: '30 days',
-        provider: analysis.provider,
-        generated_at: new Date().toISOString(),
-      };
-    })();
+    // 2. Prepare Data
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const data = await inflight;
-    cachedResult = {
-      data,
-      expiresAt: Date.now() + CACHE_TTL_MS,
+    const recentPosts = await prisma.forumPost.findMany({
+      where: { createdAt: { gte: thirtyDaysAgo } },
+      select: {
+        id: true,
+        content: true,
+        category: true,
+        likes: true,
+        createdAt: true,
+        _count: { select: { comments: true } },
+      },
+    });
+
+    const normalized: NormalizedPost[] = recentPosts.map((post) => ({
+      id: post.id,
+      content: post.content || '',
+      category: post.category || 'General',
+      likes: post.likes || 0,
+      comments: post._count.comments,
+      created: post.createdAt,
+    }));
+
+    if (normalized.length === 0) {
+      return NextResponse.json({
+        topics: [],
+        message: 'Nicht genug Daten für Trend-Analyse',
+      });
+    }
+
+    const postsData = normalized.map(post => ({
+      excerpt: post.content.slice(0, 400),
+      category: post.category,
+      likes: post.likes,
+      comments: post.comments,
+      created: post.created.toISOString(),
+    }));
+
+    // 3. Call AI
+    const analysis = await callAI([
+      {
+        role: 'system',
+        content: `Du bist ein Data Analyst für Community-Trends. Analysiere die Forum-Posts und identifiziere die TOP 5 Trending Topics.
+        Antworte NUR mit JSON: { "topics": [{ "topic": string, "description": string, "heat": 0-100, "posts_count": number, "category": string }] }`,
+      },
+      {
+        role: 'user',
+        content: `Posts:\n${JSON.stringify(postsData)}`,
+      },
+    ], {
+      temperature: 0.3,
+      maxTokens: 1000,
+    });
+
+    let topics = [];
+    try {
+      const parsed = JSON.parse(extractJson(analysis.content || '') || '{}');
+      topics = parsed.topics || [];
+    } catch (parseError) {
+      console.error('Failed to parse AI response:', parseError);
+      topics = generateFallbackTrends(normalized);
+    }
+
+    const result = {
+      topics,
+      analyzed_posts: normalized.length,
+      period: '30 days',
+      provider: analysis.provider,
+      generated_at: new Date().toISOString(),
     };
 
-    return NextResponse.json(data, { headers: cacheHeaders });
+    // 4. Save to DB Cache
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + CACHE_TTL_HOURS);
+
+    await prisma.linkPreview.upsert({
+      where: { url: CACHE_KEY },
+      update: {
+        aiSummary: JSON.stringify(result),
+        fetchedAt: new Date(),
+        expiresAt: expiresAt,
+      },
+      create: {
+        url: CACHE_KEY,
+        aiSummary: JSON.stringify(result),
+        fetchedAt: new Date(),
+        expiresAt: expiresAt,
+      }
+    });
+
+    return NextResponse.json(result, { headers: cacheHeaders });
   } catch (error: any) {
     console.error('Trending topics error:', error);
     return NextResponse.json(

@@ -62,15 +62,18 @@ async function callGemini(
 
   const modelCandidates = Array.from(new Set([
     process.env.GEMINI_MODEL,
-    'gemini-1.5-flash',
-    'gemini-1.5-flash-latest',
-    'gemini-2.0-flash-exp',
-    'gemini-1.5-pro'
+    'gemini-2.0-flash',
+    'gemini-2.0-flash-001',
+    'gemini-2.0-flash-lite',
+    'gemini-2.0-flash-lite-001',
+    'gemini-2.5-flash',
+    'gemini-2.5-flash-lite',
+    'gemini-2.5-pro'
   ].filter(Boolean))) as string[];
 
   const apiVersionCandidates = Array.from(new Set([
-    process.env.GEMINI_API_VERSION || 'v1beta',
-    'v1'
+    process.env.GEMINI_API_VERSION || 'v1',
+    'v1beta'
   ]));
 
   // Format messages for Gemini
