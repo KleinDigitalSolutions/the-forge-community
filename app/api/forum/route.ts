@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { ensureProfileSlug } from '@/lib/profile';
 import { assignFounderNumberIfMissing } from '@/lib/founder-number';
 import { syncUserAchievements } from '@/lib/achievements';
+import { RateLimiters } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -103,6 +104,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const rateLimitResponse = await RateLimiters.forumPost(request);
+  if (rateLimitResponse) return rateLimitResponse;
+
   const session = await auth();
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -114,6 +118,17 @@ export async function POST(request: Request) {
 
     if (!content || !category) {
       return NextResponse.json({ error: 'Missing content or category' }, { status: 400 });
+    }
+
+    const trimmedContent = String(content).trim();
+    if (trimmedContent.length < 2) {
+      return NextResponse.json({ error: 'Content too short' }, { status: 400 });
+    }
+    if (trimmedContent.length > 8000) {
+      return NextResponse.json({ error: 'Content too long' }, { status: 400 });
+    }
+    if (typeof category !== 'string' || category.trim().length === 0) {
+      return NextResponse.json({ error: 'Invalid category' }, { status: 400 });
     }
 
     // AI MODERATION CHECK
@@ -137,11 +152,11 @@ export async function POST(request: Request) {
     }
 
     // Run toxicity check
-    const moderationResult = await moderateContent(content);
-    let finalContent = content;
+    const moderationResult = await moderateContent(trimmedContent);
+    let finalContent = trimmedContent;
 
     if (moderationResult.isToxic && moderationResult.confidence > 0.6) {
-      const warningResult = await issueWarning(user.id, content, moderationResult);
+      const warningResult = await issueWarning(user.id, trimmedContent, moderationResult);
 
       if (warningResult.shouldBan) {
         return NextResponse.json({
@@ -170,7 +185,7 @@ export async function POST(request: Request) {
         }, { status: 400 });
       }
 
-      finalContent = await sanitizeToxicContent(content, moderationResult);
+      finalContent = await sanitizeToxicContent(trimmedContent, moderationResult);
     }
 
     const founderNumber = await assignFounderNumberIfMissing(user.id);
@@ -188,7 +203,7 @@ export async function POST(request: Request) {
         authorName: user.name || 'Anonymous Founder',
         founderNumber,
         content: finalContent,
-        category
+        category: category.trim()
       }
     });
     

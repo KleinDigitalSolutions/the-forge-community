@@ -3,8 +3,12 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { assignFounderNumberIfMissing } from '@/lib/founder-number';
 import { ensureProfileSlug } from '@/lib/profile';
+import { RateLimiters } from '@/lib/rate-limit';
 
 export async function POST(request: Request) {
+  const rateLimitResponse = await RateLimiters.forumComment(request);
+  if (rateLimitResponse) return rateLimitResponse;
+
   const session = await auth();
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -16,6 +20,14 @@ export async function POST(request: Request) {
 
     if (!postId || !content) {
       return NextResponse.json({ error: 'Missing postId or content' }, { status: 400 });
+    }
+
+    const trimmedContent = String(content).trim();
+    if (trimmedContent.length < 1) {
+      return NextResponse.json({ error: 'Content too short' }, { status: 400 });
+    }
+    if (trimmedContent.length > 4000) {
+      return NextResponse.json({ error: 'Content too long' }, { status: 400 });
     }
 
     const user = await prisma.user.findUnique({
@@ -64,7 +76,7 @@ export async function POST(request: Request) {
         parentId: parentId || null,
         authorId: user.id,
         authorName: user.name || 'Anonymous Founder',
-        content
+        content: trimmedContent
       }
     });
 

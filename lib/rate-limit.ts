@@ -161,5 +161,23 @@ export const RateLimiters = {
     maxRequests: 10,
     windowMs: 60 * 60 * 1000,
     message: 'Rate limit exceeded for this operation. Try again in an hour.'
+  }),
+
+  forumPost: createRateLimiter({
+    maxRequests: 6,
+    windowMs: 60 * 1000,
+    message: 'Zu viele Beiträge. Bitte warte kurz.'
+  }),
+
+  forumComment: createRateLimiter({
+    maxRequests: 12,
+    windowMs: 60 * 1000,
+    message: 'Zu viele Kommentare. Bitte warte kurz.'
+  }),
+
+  forumUpload: createRateLimiter({
+    maxRequests: 6,
+    windowMs: 10 * 60 * 1000,
+    message: 'Zu viele Uploads. Bitte warte kurz.'
   })
 };

@@ -277,6 +277,15 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) {
+      setStatusMessage('❌ Bitte nur JPG, PNG, WEBP oder GIF hochladen.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setStatusMessage('❌ Datei ist zu groß (max. 5 MB).');
+      return;
+    }
+
     setStatusMessage('🚀 Übertrage Bild...');
     try {
       const safeName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
@@ -347,7 +356,8 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
       });
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data?.error || 'Comment failed');
+        setCommentStatus(prev => ({ ...prev, [postId]: data?.error || 'Kommentar fehlgeschlagen. Bitte erneut.' }));
+        return;
       }
       setPosts(prev => prev.map(post => post.id === postId ? {
         ...post,
@@ -531,7 +541,11 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
           body: JSON.stringify({ id: editingPost, content: draft }),
         });
         const data = await response.json();
-        if (!response.ok) throw new Error(data?.error || 'Edit failed');
+        if (!response.ok) {
+          setStatusMessage(`❌ ${data?.error || 'Update fehlgeschlagen.'}`);
+          setTimeout(() => setStatusMessage(''), 3000);
+          return;
+        }
         setPosts(prev => prev.map(post => post.id === editingPost ? {
           ...post,
           content: data.content,
@@ -552,7 +566,9 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
             setModerationWarning(data.warning);
             return;
           }
-          throw new Error(data?.error || 'Post failed');
+          setStatusMessage(`❌ ${data?.error || 'Post fehlgeschlagen.'}`);
+          setTimeout(() => setStatusMessage(''), 3000);
+          return;
         }
         setContent('');
         setEditingPost(null);
