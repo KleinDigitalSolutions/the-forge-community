@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
   MessageSquare,
+  MessageCircle,
   Users,
   CheckSquare,
   PieChart,
@@ -22,6 +23,7 @@ const navigation = [
   { name: 'Cockpit', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Ventures', href: '/ventures', icon: Rocket },
   { name: 'Forum', href: '/forum', icon: MessageSquare },
+  { name: 'Messages', href: '/messages', icon: MessageCircle },
   { name: 'Squad Markt', href: '/squads', icon: Users },
   { name: 'Mission Control', href: '/tasks', icon: CheckSquare },
   { name: 'Finanzen', href: '/transparency', icon: PieChart },

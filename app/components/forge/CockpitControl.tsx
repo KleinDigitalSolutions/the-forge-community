@@ -7,6 +7,7 @@ import {
   Users, 
   Layout, 
   User as UserIcon,
+  MessageCircle,
   X,
   Zap,
   ChevronRight
@@ -35,6 +36,7 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
     { icon: Users, label: 'Squads', href: '/squads', color: accent, angle: 330 },
     { icon: Layout, label: 'Academy', href: '/resources', color: accent, angle: 30 },
     { icon: UserIcon, label: 'Profile', href: '/profile', color: accent, angle: 90 },
+    { icon: MessageCircle, label: 'Messages', href: '/messages', color: accent, angle: 150 },
     { icon: Zap, label: 'Missions', action: () => onToggleView('missions'), color: accent, angle: 210 },
   ];
 
