@@ -11,50 +11,53 @@ interface PricingTableProps {
 }
 
 export function PricingTable({ onSelectPlan, isLoading }: PricingTableProps) {
+  const isBeta = true;
   const plans = [
     {
       id: 'starter' as PlanType,
       name: 'Standard',
-      subtitle: 'Volle Flexibilität',
-      price: '199',
-      period: '/mo',
+      subtitle: 'Beta Access',
+      price: isBeta ? '0' : '199',
+      period: isBeta ? '/monat' : '/mo',
       features: [
-        { text: 'Zugang zum Forge OS', highlight: true },
-        { text: 'Alle AI-Studios inklusive', highlight: false },
-        { text: 'Monatlich kündbar', highlight: false },
-        { text: 'Standard Support', highlight: false },
+        { text: 'Forge OS + alle Studios (Brand, Legal, Marketing, Sourcing)', highlight: true },
+        { text: 'Community Hub: Forum, Squads, DMs', highlight: false },
+        { text: 'Academy (Playbooks & Trainings)', highlight: false },
+        { text: 'AI Credits: Starter-Kontingent', highlight: false },
+        { text: 'Monatlich kündbar (nach Beta)', highlight: false },
       ],
-      cta: 'Monatlich starten',
+      cta: isBeta ? 'Beta läuft' : 'Monatlich starten',
       featured: false,
     },
     {
       id: 'premium' as PlanType,
       name: 'Validator Batch',
       subtitle: 'Gründungsmitglied (Limited)',
-      price: '997',
-      period: '/jahr',
+      price: isBeta ? '0' : '997',
+      period: isBeta ? '/jahr' : '/jahr',
       features: [
-        { text: '50% Ersparnis (statt 2.388€)', highlight: true },
+        { text: 'Alles aus Standard', highlight: true },
         { text: 'Dauerhafte Preisgarantie', highlight: true },
         { text: 'Direkter Founder-Draht', highlight: false },
+        { text: 'Early Feature Access + Feedback Loops', highlight: false },
         { text: 'Case-Study Teilnahme', highlight: false },
       ],
-      cta: 'Validator Deal sichern',
+      cta: isBeta ? 'Beta läuft' : 'Validator Deal sichern',
       featured: true,
     },
     {
       id: 'growth' as PlanType,
       name: 'Enterprise',
-      subtitle: 'White-Label & Agenturen',
+      subtitle: 'White-Label & Enterprise',
       price: 'Custom',
       period: '',
       features: [
-        { text: 'Eigene Domain Integration', highlight: true },
-        { text: 'Multi-Venture Management', highlight: false },
-        { text: 'Unlimitierte AI-Credits', highlight: true },
+        { text: 'Private Instanz + Custom Domain', highlight: true },
+        { text: 'Multi-Venture Ops + Rollen/SSO (geplant)', highlight: false },
+        { text: 'Unlimitierte AI-Credits (vertraglich)', highlight: true },
         { text: 'Dedicated Account Manager', highlight: false },
       ],
-      cta: 'Kontakt aufnehmen',
+      cta: isBeta ? 'Beta läuft' : 'Kontakt aufnehmen',
       featured: false,
     },
   ];
@@ -68,12 +71,18 @@ export function PricingTable({ onSelectPlan, isLoading }: PricingTableProps) {
             "relative group flex flex-col p-6 sm:p-10 rounded-3xl transition-all duration-700 overflow-hidden border",
             plan.featured 
               ? "bg-[#0F1113] border-[var(--accent)]/40 shadow-[0_0_50px_-12px_rgba(212,175,55,0.2)]" 
-              : "bg-white/[0.02] border-white/10 hover:border-white/20 shadow-2xl"
+              : "bg-white/[0.02] border-white/10 hover:border-white/20 shadow-2xl",
+            isBeta && "opacity-60 saturate-75"
           )}
         >
           {plan.featured && (
             <div className="absolute top-0 right-0 p-8 opacity-20 group-hover:opacity-40 transition-opacity">
               <Zap className="w-20 h-20 text-[var(--accent)]" />
+            </div>
+          )}
+          {isBeta && (
+            <div className="absolute left-6 top-6 z-20 rounded-full border border-[var(--accent)]/30 bg-[var(--accent)]/10 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.25em] text-[var(--accent)]">
+              Beta · kostenlos
             </div>
           )}
           
@@ -122,12 +131,13 @@ export function PricingTable({ onSelectPlan, isLoading }: PricingTableProps) {
 
           <button
             onClick={() => onSelectPlan(plan.id)}
-            disabled={isLoading}
+            disabled={isLoading || isBeta}
             className={cn(
               "relative z-10 w-full py-4 rounded-xl font-bold uppercase tracking-[0.2em] text-[10px] transition-all duration-500",
               plan.featured
                 ? "bg-[var(--accent)] text-[var(--accent-foreground)] shadow-lg hover:brightness-110 active:scale-[0.98]"
-                : "bg-white/10 text-white border border-white/20 hover:bg-white/15 hover:border-white/30 active:scale-[0.98]"
+                : "bg-white/10 text-white border border-white/20 hover:bg-white/15 hover:border-white/30 active:scale-[0.98]",
+              isBeta && "cursor-not-allowed opacity-70"
             )}
           >
             {isLoading ? 'Processing...' : plan.cta}

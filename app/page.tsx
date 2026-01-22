@@ -363,7 +363,7 @@ export default function Home() {
          <div className="max-w-7xl mx-auto relative z-10">
             <div className="text-center mb-32">
                <h2 className="text-5xl md:text-7xl font-instrument-serif text-white mb-6">Mitgliedschaften</h2>
-               <p className="text-white/40 uppercase tracking-[0.3em] text-[10px] font-bold">Wähle dein Level an Beteiligung.</p>
+               <p className="text-white/40 uppercase tracking-[0.3em] text-[10px] font-bold">Beta-Phase aktiv – Zugang aktuell kostenlos.</p>
             </div>
             <PricingTable 
               isLoading={false} 
