@@ -22,19 +22,46 @@ interface TrendingData {
 
 export function TrendingTopics() {
   const [data, setData] = useState<TrendingData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadTrends();
+    let cancelled = false;
+    type IdleCallback = (deadline: { didTimeout: boolean; timeRemaining: () => number }) => void;
+    type IdleOptions = { timeout: number };
+    const win = window as Window & {
+      requestIdleCallback?: (cb: IdleCallback, options?: IdleOptions) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+    const start = () => {
+      if (cancelled) return;
+      setHasStarted(true);
+      loadTrends();
+    };
+
+    if (typeof win.requestIdleCallback === 'function') {
+      const idleId = win.requestIdleCallback(start, { timeout: 2000 });
+      return () => {
+        cancelled = true;
+        win.cancelIdleCallback?.(idleId);
+      };
+    }
+
+    const timeoutId = window.setTimeout(start, 800);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
   }, []);
 
-  async function loadTrends() {
+  async function loadTrends(forceRefresh = false) {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('/api/forum/trending');
+      const url = forceRefresh ? '/api/forum/trending?refresh=1' : '/api/forum/trending';
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to load trends');
 
       const data = await response.json();
@@ -89,6 +116,15 @@ export function TrendingTopics() {
     </Wrapper>
   );
 
+  if (!hasStarted) {
+    return (
+      <Wrapper>
+        <div className="flex items-center justify-center gap-3 py-8">
+          <span className="text-xs text-white/40 uppercase tracking-widest">Trends werden geladen...</span>
+        </div>
+      </Wrapper>
+    );
+  }
   if (loading) return LoadingView;
   if (error || !data) return ErrorView;
 
@@ -109,7 +145,7 @@ export function TrendingTopics() {
         </div>
 
         <button
-          onClick={loadTrends}
+          onClick={() => loadTrends(true)}
           disabled={loading}
           className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] bg-white/5 hover:bg-white/10 rounded-lg text-white/70 hover:text-white transition-colors disabled:opacity-50"
         >

@@ -36,17 +36,9 @@ export default function Sidebar() {
       {/* Subtle Sidebar Glow */}
       <div className="absolute top-0 left-0 w-full h-[300px] bg-gradient-to-b from-[var(--accent)]/5 to-transparent pointer-events-none" />
 
-      {/* Brand */}
-      <div className="p-8 relative z-10">
-        <Link href="/dashboard" className="flex flex-col group">
-          <span className="font-caveat text-2xl tracking-normal text-white group-hover:text-[var(--accent)] transition-colors lowercase">stake & scale</span>
-          <span className="text-[8px] font-black text-white/20 tracking-[0.3em] uppercase ml-1">Operator v1.0</span>
-        </Link>
-      </div>
-
       {/* Nav */}
       <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto relative z-10 scrollbar-hide">
-        <div className="text-[9px] font-bold text-white/20 uppercase tracking-[0.3em] px-4 mb-4 mt-2">
+        <div className="text-[9px] font-bold text-white/20 uppercase tracking-[0.3em] px-4 mb-4">
           Platform
         </div>
         {navigation.map((item) => {
@@ -87,20 +79,17 @@ export default function Sidebar() {
       {/* Footer */}
       <div className="border-t border-white/5 relative z-10 bg-black/20 pb-6 pt-4">
         <CreditsDisplay />
-        <div className="px-6">
-          <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-5 mb-6 backdrop-blur-sm relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className="flex items-center gap-3 text-[10px] font-bold text-white mb-2 relative z-10">
-            <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
-            Operator Status
+        <div className="px-6 space-y-3">
+          <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.02] px-3 py-2 text-[9px] font-bold uppercase tracking-[0.3em] text-white/30">
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
+              <span>Operator</span>
+            </div>
+            <span className="text-white/60 tracking-widest">Access aktiv</span>
           </div>
-          <p className="text-[9px] text-white/30 uppercase tracking-widest leading-relaxed relative z-10">
-            Investment aktiv.<br/>Vollständiger Zugriff.
-          </p>
+          <SignOutButton />
         </div>
-        <SignOutButton />
       </div>
-    </div>
   </aside>
   );
 }
