@@ -16,7 +16,7 @@ const resendFrom =
 export const { auth, signIn, signOut, handlers } = NextAuth({
   ...authConfig,
   adapter: PrismaAdapter(prisma),
-  debug: true,
+  debug: process.env.NODE_ENV === 'development',
   providers: [
     Resend({
       apiKey: process.env.AUTH_RESEND_KEY,
