@@ -6,6 +6,11 @@ import { prisma } from '@/lib/prisma';
 import { Resend as ResendClient } from 'resend';
 
 const resendClient = new ResendClient(process.env.AUTH_RESEND_KEY);
+const resendFrom =
+  process.env.AUTH_RESEND_FROM ||
+  (process.env.NODE_ENV === 'production'
+    ? 'STAKE & SCALE <info@stakeandscale.de>'
+    : 'onboarding@resend.dev');
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
   ...authConfig,
@@ -14,7 +19,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
   providers: [
     Resend({
       apiKey: process.env.AUTH_RESEND_KEY,
-      from: 'STAKE & SCALE <info@stakeandscale.de>',
+      from: resendFrom,
       async sendVerificationRequest({ identifier: email, url }) {
         try {
           await resendClient.emails.send({
