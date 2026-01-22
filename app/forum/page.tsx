@@ -15,6 +15,7 @@ import remarkGfm from 'remark-gfm';
 import Link from 'next/link';
 import { MicroExpander } from '@/app/components/ui/MicroExpander';
 import { LinkPreview, extractUrls } from '@/app/components/LinkPreview';
+import { RelatedPosts } from '@/app/components/RelatedPosts';
 import { VoiceInput } from '@/app/components/VoiceInput';
 import { TrendingTopics } from '@/app/components/TrendingTopics';
 import { formatDistanceToNow } from 'date-fns';
@@ -64,8 +65,10 @@ export default function Forum() {
   const [activeChannel, setActiveChannel] = useState('All');
   const [sortMode, setSortMode] = useState('Hot');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [replyTo, setReplyTo] = useState<string | null>(null);
-  const [replyContent, setReplyContent] = useState('');
+  const [expandedPosts, setExpandedPosts] = useState<Record<string, boolean>>({});
+  const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
+  const [commentSubmitting, setCommentSubmitting] = useState<string | null>(null);
+  const [commentStatus, setCommentStatus] = useState<Record<string, string>>({});
   const [editingPost, setEditingPost] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
   const [isPreview, setIsPreview] = useState(false);
@@ -214,6 +217,50 @@ export default function Forum() {
     } catch (e) { fetchPosts(); }
   };
 
+  const toggleComments = (postId: string) => {
+    setExpandedPosts(prev => ({ ...prev, [postId]: !prev[postId] }));
+  };
+
+  const handleCommentSubmit = async (postId: string) => {
+    const draft = (commentDrafts[postId] || '').trim();
+    if (!draft || commentSubmitting) return;
+    setCommentSubmitting(postId);
+    try {
+      const response = await fetch('/api/forum/comment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ postId, content: draft }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error || 'Comment failed');
+      }
+      setPosts(prev => prev.map(post => post.id === postId ? {
+        ...post,
+        comments: [...(post.comments || []), data],
+      } : post));
+      setCommentStatus(prev => ({ ...prev, [postId]: '' }));
+      setCommentDrafts(prev => ({ ...prev, [postId]: '' }));
+    } catch (error) {
+      console.error('Comment error:', error);
+      setCommentStatus(prev => ({ ...prev, [postId]: 'Kommentar fehlgeschlagen. Bitte erneut.' }));
+    } finally {
+      setCommentSubmitting(null);
+    }
+  };
+
+  const startEdit = (post: ForumPost) => {
+    setEditingPost(post.id);
+    setEditContent(post.content);
+    setIsPreview(false);
+    setModerationWarning(null);
+  };
+
+  const startNewPost = () => {
+    setEditingPost('NEW');
+    setModerationWarning(null);
+  };
+
   const handleDelete = async (id: string) => {
     const confirmed = window.confirm('Beitrag wirklich loeschen?');
     if (!confirmed) return;
@@ -254,21 +301,51 @@ export default function Forum() {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    if (!content.trim()) return;
+    const isEditing = editingPost && editingPost !== 'NEW';
+    const draft = (isEditing ? editContent : content).trim();
+    if (!draft) return;
     setIsSubmitting(true);
+    setModerationWarning(null);
     try {
-      const category = resolvePostCategory();
-      const response = await fetch('/api/forum', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: content.trim(), category }),
-      });
-      if (response.ok) {
+      if (isEditing && editingPost) {
+        const response = await fetch('/api/forum/edit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: editingPost, content: draft }),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data?.error || 'Edit failed');
+        setPosts(prev => prev.map(post => post.id === editingPost ? {
+          ...post,
+          content: data.content,
+          createdTime: post.createdTime,
+        } : post));
+        setEditContent('');
+        setEditingPost(null);
+      } else {
+        const category = resolvePostCategory();
+        const response = await fetch('/api/forum', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: draft, category }),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          if (data?.warning) {
+            setModerationWarning(data.warning);
+            return;
+          }
+          throw new Error(data?.error || 'Post failed');
+        }
         setContent('');
         setEditingPost(null);
         fetchPosts();
       }
-    } catch (error) { console.error(error); }
+    } catch (error) {
+      console.error(error);
+      setStatusMessage('❌ Beitrag fehlgeschlagen');
+      setTimeout(() => setStatusMessage(''), 3000);
+    }
     finally { setIsSubmitting(false); }
   };
 
@@ -324,14 +401,14 @@ export default function Forum() {
                 {user?.name?.charAt(0)}
               </div>
               <button 
-                onClick={() => setEditingPost('NEW')}
+                onClick={startNewPost}
                 className="flex-1 bg-white/5 border border-white/10 hover:border-white/20 rounded-lg px-4 py-2.5 text-sm text-left text-white/40 transition-all"
               >
                 Was brennt dir auf der Seele?
               </button>
               <div className="flex gap-1">
-                <button onClick={() => setEditingPost('NEW')} className="p-2 text-white/40 hover:text-white hover:bg-white/5 rounded-lg"><ImageIcon className="w-5 h-5" /></button>
-                <button onClick={() => setEditingPost('NEW')} className="p-2 text-white/40 hover:text-white hover:bg-white/5 rounded-lg"><Plus className="w-5 h-5" /></button>
+                <button onClick={startNewPost} className="p-2 text-white/40 hover:text-white hover:bg-white/5 rounded-lg"><ImageIcon className="w-5 h-5" /></button>
+                <button onClick={startNewPost} className="p-2 text-white/40 hover:text-white hover:bg-white/5 rounded-lg"><Plus className="w-5 h-5" /></button>
               </div>
             </div>
 
@@ -364,7 +441,7 @@ export default function Forum() {
                 const profileHref = post.authorSlug || post.authorId ? `/profile/${post.authorSlug || post.authorId}` : null;
 
                 return (
-                <div key={post.id} className="bg-[#121212] border border-white/10 rounded-xl flex hover:border-white/20 transition-all group overflow-hidden">
+                <div key={post.id} id={post.id} className="bg-[#121212] border border-white/10 rounded-xl flex hover:border-white/20 transition-all group overflow-hidden">
                   {/* Vote Sidebar */}
                   <div className="w-12 bg-black/20 flex flex-col items-center py-4 gap-1 shrink-0">
                     <button 
@@ -420,7 +497,12 @@ export default function Forum() {
                     </div>
 
                     <div className="flex items-center gap-4 pt-3 border-t border-white/5">
-                      <button className="flex items-center gap-2 text-[10px] font-bold text-white/40 hover:text-white uppercase tracking-widest transition-all">
+                      <button
+                        onClick={() => toggleComments(post.id)}
+                        className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-all ${
+                          expandedPosts[post.id] ? 'text-white' : 'text-white/40 hover:text-white'
+                        }`}
+                      >
                         <MessageSquare className="w-3.5 h-3.5" /> {post.comments?.length || 0} Comments
                       </button>
                       <div className="relative">
@@ -444,6 +526,15 @@ export default function Forum() {
                           </div>
                         )}
                       </div>
+                      {user && user.id && post.authorId === user.id && (
+                        <button
+                          onClick={() => startEdit(post)}
+                          className="p-1.5 text-white/20 hover:text-white transition-all"
+                          aria-label="Beitrag bearbeiten"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                      )}
                       {user && (user.role === 'ADMIN' || (user.id && post.authorId === user.id)) && (
                         <button
                           onClick={() => handleDelete(post.id)}
@@ -473,6 +564,69 @@ export default function Forum() {
                             {aiResult.content}
                           </ReactMarkdown>
                         </div>
+                      </div>
+                    )}
+
+                    {expandedPosts[post.id] && (
+                      <div className="mt-4 rounded-xl border border-white/10 bg-black/20 p-4 space-y-4">
+                        <div className="space-y-3">
+                          {(post.comments || []).length === 0 ? (
+                            <p className="text-xs text-white/30 uppercase tracking-widest font-bold">Noch keine Kommentare.</p>
+                          ) : (
+                            (post.comments || []).map((comment, idx) => {
+                              const isAI = comment.author === '@forge-ai';
+                              return (
+                                <div
+                                  key={`${post.id}-comment-${idx}`}
+                                  className={`rounded-xl border px-4 py-3 ${
+                                    isAI
+                                      ? 'bg-[#D4AF37]/10 border-[#D4AF37]/30'
+                                      : 'bg-white/5 border-white/10'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-white/40 mb-2">
+                                    <span className="font-bold text-white/70">{comment.author}</span>
+                                    {isAI && (
+                                      <span className="px-2 py-0.5 rounded-full bg-[#D4AF37]/20 text-[#D4AF37] text-[9px] font-bold tracking-widest">
+                                        AI
+                                      </span>
+                                    )}
+                                    <span>•</span>
+                                    <span>{formatDistanceToNow(new Date(comment.time), { addSuffix: true, locale: de })}</span>
+                                  </div>
+                                  <div className="prose prose-invert prose-sm max-w-none text-white/80">
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{comment.content}</ReactMarkdown>
+                                  </div>
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
+
+                        <div className="pt-3 border-t border-white/10 space-y-3">
+                          {commentStatus[post.id] && (
+                            <div className="text-[10px] uppercase tracking-widest text-red-300 bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2">
+                              {commentStatus[post.id]}
+                            </div>
+                          )}
+                          <textarea
+                            value={commentDrafts[post.id] || ''}
+                            onChange={(e) => setCommentDrafts(prev => ({ ...prev, [post.id]: e.target.value }))}
+                            placeholder="Antworte oder ergänze den Thread..."
+                            className="w-full min-h-[90px] bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/10 outline-none focus:border-[#D4AF37] transition-all"
+                          />
+                          <div className="flex justify-end">
+                            <button
+                              onClick={() => handleCommentSubmit(post.id)}
+                              disabled={commentSubmitting === post.id || !(commentDrafts[post.id] || '').trim()}
+                              className="bg-[#D4AF37] text-black px-6 py-2 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] disabled:opacity-20 hover:brightness-110 transition-all"
+                            >
+                              {commentSubmitting === post.id ? 'Sendet...' : 'Kommentar senden'}
+                            </button>
+                          </div>
+                        </div>
+
+                        <RelatedPosts postId={post.id} content={post.content} category={post.category} />
                       </div>
                     )}
                   </div>
@@ -535,7 +689,7 @@ export default function Forum() {
                 </div>
 
                 <button 
-                  onClick={() => setEditingPost('NEW')}
+                  onClick={startNewPost}
                   className="w-full bg-[#D4AF37] text-black py-4 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-[#D4AF37]/10"
                 >
                   Neuen Beitrag erstellen
@@ -569,7 +723,7 @@ export default function Forum() {
 
         {/* POSTING MODAL - PRO RESTORATION */}
         <AnimatePresence>
-          {editingPost === 'NEW' && (
+          {editingPost && (
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4 backdrop-blur-xl"
@@ -582,25 +736,38 @@ export default function Forum() {
                 
                 <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
                   <div>
-                    <h2 className="text-2xl font-bold text-white mb-1">Beitrag schmieden</h2>
-                    <p className="text-xs text-white/30 uppercase tracking-widest font-bold">Wissen teilen • Community stärken</p>
+                    <h2 className="text-2xl font-bold text-white mb-1">
+                      {editingPost === 'NEW' ? 'Beitrag schmieden' : 'Beitrag bearbeiten'}
+                    </h2>
+                    <p className="text-xs text-white/30 uppercase tracking-widest font-bold">
+                      {editingPost === 'NEW' ? 'Wissen teilen • Community stärken' : 'Schärfe deinen Beitrag'}
+                    </p>
                   </div>
                   <button onClick={() => setEditingPost(null)} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">✕</button>
                 </div>
 
+                {moderationWarning && (
+                  <div className="mx-8 mt-6 p-4 rounded-2xl border border-red-500/30 bg-red-500/10 text-xs text-red-200 uppercase tracking-widest">
+                    <div className="font-bold text-red-300 mb-1">Moderation • Hinweis #{moderationWarning.number}</div>
+                    <div className="text-red-200/90 normal-case tracking-normal">{moderationWarning.message}</div>
+                  </div>
+                )}
+
                 <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
                   {/* Category & Tools Bar */}
                   <div className="flex flex-wrap items-center gap-4">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-1">Channel wählen</label>
-                      <select
-                        value={activeChannel === 'All' || activeChannel === 'Popular' ? 'General' : activeChannel}
-                        onChange={e => setActiveChannel(e.target.value)}
-                        className="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-[#D4AF37] transition-all cursor-pointer"
-                      >
-                        {CHANNELS.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                      </select>
-                    </div>
+                    {editingPost === 'NEW' && (
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-1">Channel wählen</label>
+                        <select
+                          value={activeChannel === 'All' || activeChannel === 'Popular' ? 'General' : activeChannel}
+                          onChange={e => setActiveChannel(e.target.value)}
+                          className="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-[#D4AF37] transition-all cursor-pointer"
+                        >
+                          {CHANNELS.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        </select>
+                      </div>
+                    )}
 
                     <div className="flex-1" />
 
@@ -616,7 +783,15 @@ export default function Forum() {
                       
                       <div className="w-px h-4 bg-white/10 mx-1" />
                       
-                      <VoiceInput onTranscript={(text) => setContent(prev => prev + (prev ? '\n' : '') + text)} />
+                      <VoiceInput
+                        onTranscript={(text) => {
+                          if (editingPost === 'NEW') {
+                            setContent(prev => prev + (prev ? '\n' : '') + text);
+                          } else {
+                            setEditContent(prev => prev + (prev ? '\n' : '') + text);
+                          }
+                        }}
+                      />
                       
                       <div className="w-px h-4 bg-white/10 mx-1" />
                       
@@ -636,13 +811,15 @@ export default function Forum() {
                   <div className="relative min-h-[350px]">
                     {isPreview ? (
                       <div className="prose prose-invert prose-lg max-w-none p-8 bg-white/[0.02] border border-white/5 rounded-3xl min-h-[350px]">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{content || '*Schreibe etwas, um die Vorschau zu sehen...*'}</ReactMarkdown>
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {(editingPost === 'NEW' ? content : editContent) || '*Schreibe etwas, um die Vorschau zu sehen...*'}
+                        </ReactMarkdown>
                       </div>
                     ) : (
                       <textarea
                         autoFocus
-                        value={content}
-                        onChange={e => setContent(e.target.value)}
+                        value={editingPost === 'NEW' ? content : editContent}
+                        onChange={e => editingPost === 'NEW' ? setContent(e.target.value) : setEditContent(e.target.value)}
                         placeholder="Was gibt es neues im Netzwerk? Teile deine Gedanken, Updates oder Fragen..."
                         className="w-full min-h-[350px] bg-transparent border-none outline-none text-xl text-white placeholder:text-white/10 resize-none leading-relaxed"
                       />
@@ -662,8 +839,10 @@ export default function Forum() {
 
                 <div className="p-8 border-t border-white/5 flex items-center justify-between bg-white/[0.01]">
                   <div className="flex items-center gap-3">
-                    <div className={`w-2 h-2 rounded-full ${content.length > 0 ? 'bg-green-500 animate-pulse' : 'bg-white/10'}`} />
-                    <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">{statusMessage || (content.length > 0 ? `${content.length} Zeichen` : 'System bereit')}</span>
+                    <div className={`w-2 h-2 rounded-full ${(editingPost === 'NEW' ? content : editContent).length > 0 ? 'bg-green-500 animate-pulse' : 'bg-white/10'}`} />
+                    <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">
+                      {statusMessage || ((editingPost === 'NEW' ? content : editContent).length > 0 ? `${(editingPost === 'NEW' ? content : editContent).length} Zeichen` : 'System bereit')}
+                    </span>
                   </div>
                   
                   <div className="flex gap-4">
@@ -675,7 +854,7 @@ export default function Forum() {
                     </button>
                     <button 
                       onClick={handleSubmit} 
-                      disabled={isSubmitting || !content.trim()}
+                      disabled={isSubmitting || !(editingPost === 'NEW' ? content : editContent).trim()}
                       className="bg-[#D4AF37] text-black px-12 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-[0_10px_40px_rgba(212,175,55,0.2)] disabled:opacity-20 disabled:shadow-none hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3"
                     >
                       {isSubmitting ? (
@@ -685,7 +864,7 @@ export default function Forum() {
                         </>
                       ) : (
                         <>
-                          <Send className="w-4 h-4" /> Beitrag posten
+                          <Send className="w-4 h-4" /> {editingPost === 'NEW' ? 'Beitrag posten' : 'Update speichern'}
                         </>
                       )}
                     </button>
