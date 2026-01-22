@@ -11,6 +11,7 @@ export interface ModerationResult {
   severity: 'LOW' | 'MEDIUM' | 'HIGH';
   reason: string;
   confidence: number;
+  category?: 'HARASSMENT' | 'HATE_SPEECH' | 'VIOLENCE' | 'SPAM' | 'NSFW' | 'OTHER';
 }
 
 /**
@@ -36,7 +37,8 @@ export async function moderateContent(content: string): Promise<ModerationResult
             "isToxic": true/false,
             "severity": "LOW"/"MEDIUM"/"HIGH",
             "reason": "kurze Begründung auf Deutsch",
-            "confidence": 0.0-1.0
+            "confidence": 0.0-1.0,
+            "category": "HARASSMENT"/"HATE_SPEECH"/"VIOLENCE"/"SPAM"/"NSFW"/"OTHER"
           }
 
           Severity Guidelines:
@@ -66,7 +68,8 @@ export async function moderateContent(content: string): Promise<ModerationResult
       isToxic: result.isToxic || false,
       severity: result.severity || 'LOW',
       reason: result.reason || 'No specific reason provided',
-      confidence: result.confidence || 0.5
+      confidence: result.confidence || 0.5,
+      category: result.category || 'OTHER'
     };
   } catch (error) {
     console.error('Moderation check failed:', error);
@@ -75,8 +78,63 @@ export async function moderateContent(content: string): Promise<ModerationResult
       isToxic: false,
       severity: 'LOW',
       reason: 'Moderation service unavailable',
-      confidence: 0
+      confidence: 0,
+      category: 'OTHER'
     };
+  }
+}
+
+const BAD_WORDS = [
+  'idiot',
+  'dumm',
+  'scheisse',
+  'scheiße',
+  'arsch',
+  'asshole',
+  'bitch',
+  'fuck',
+  'f*ck',
+  'bastard',
+  'hurensohn'
+];
+
+const MODERATION_NOTE = '_Moderation: Beitrag wurde sprachlich entschärft._\n\n';
+
+function maskBadWords(content: string) {
+  const pattern = new RegExp(`\\b(${BAD_WORDS.join('|')})\\b`, 'gi');
+  return content.replace(pattern, '*****');
+}
+
+export async function sanitizeToxicContent(
+  content: string,
+  moderationResult: ModerationResult
+) {
+  try {
+    const response = await callAI(
+      [
+        {
+          role: 'system',
+          content: `Du bist ein professioneller Moderator. Schreibe den Text so um, dass er respektvoll, sachlich und konstruktiv ist.
+
+          Regeln:
+          - Entferne Beleidigungen, Drohungen, Hassrede.
+          - Behalte den inhaltlichen Kern (Problem, Wunsch, Kritik).
+          - Kein Spott, keine Ironie, keine Bewertung des Autors.
+          - Wenn kein sinnvoller Kern vorhanden ist, antworte exakt mit: "Inhalt entfernt wegen beleidigender Sprache."`
+        },
+        {
+          role: 'user',
+          content: `Original:\n${content}\n\nBegründung: ${moderationResult.reason}`
+        }
+      ],
+      { temperature: 0.2, maxTokens: 300 }
+    );
+
+    const cleaned = response.content?.trim() || 'Inhalt entfernt wegen beleidigender Sprache.';
+    return maskBadWords(`${MODERATION_NOTE}${cleaned}`);
+  } catch (error) {
+    console.error('Content sanitization failed:', error);
+    return `${MODERATION_NOTE}Inhalt entfernt wegen beleidigender Sprache.`;
   }
 }
 

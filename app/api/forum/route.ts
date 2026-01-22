@@ -86,7 +86,7 @@ export async function POST(request: Request) {
     }
 
     // AI MODERATION CHECK
-    const { moderateContent, issueWarning, canUserPost } = await import('@/lib/moderation');
+    const { moderateContent, issueWarning, canUserPost, sanitizeToxicContent } = await import('@/lib/moderation');
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
       select: { id: true, name: true, founderNumber: true, profileSlug: true }
@@ -107,20 +107,39 @@ export async function POST(request: Request) {
 
     // Run toxicity check
     const moderationResult = await moderateContent(content);
+    let finalContent = content;
 
     if (moderationResult.isToxic && moderationResult.confidence > 0.6) {
-      // Issue warning
       const warningResult = await issueWarning(user.id, content, moderationResult);
 
-      // Don't create the post - reject it
-      return NextResponse.json({
-        error: 'Content violates community guidelines',
-        warning: {
-          number: warningResult.warningNumber,
-          message: warningResult.message,
-          banned: warningResult.shouldBan
-        }
-      }, { status: 400 });
+      if (warningResult.shouldBan) {
+        return NextResponse.json({
+          error: 'Content violates community guidelines',
+          warning: {
+            number: warningResult.warningNumber,
+            message: warningResult.message,
+            banned: warningResult.shouldBan
+          }
+        }, { status: 400 });
+      }
+
+      const canSanitize =
+        moderationResult.confidence >= 0.7 &&
+        moderationResult.severity === 'MEDIUM' &&
+        ['HARASSMENT', 'HATE_SPEECH'].includes(moderationResult.category || '');
+
+      if (!canSanitize) {
+        return NextResponse.json({
+          error: 'Content violates community guidelines',
+          warning: {
+            number: warningResult.warningNumber,
+            message: warningResult.message,
+            banned: warningResult.shouldBan
+          }
+        }, { status: 400 });
+      }
+
+      finalContent = await sanitizeToxicContent(content, moderationResult);
     }
 
     await ensureProfileSlug(user);
@@ -131,14 +150,14 @@ export async function POST(request: Request) {
         authorId: user.id,
         authorName: user.name || 'Anonymous Founder',
         founderNumber: user.founderNumber || 0,
-        content,
+        content: finalContent,
         category
       }
     });
     
     // Check for @forge-ai mention
     const mentionRegex = /@forge-ai\s+(.+)/i;
-    const mentionMatch = content.match(mentionRegex);
+    const mentionMatch = finalContent.match(mentionRegex);
 
     if (mentionMatch) {
       // User mentioned AI - respond directly
