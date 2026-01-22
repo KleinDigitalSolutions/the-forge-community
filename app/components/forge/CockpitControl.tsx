@@ -191,11 +191,11 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
           </div>
 
           {/* Icon */}
-          <div className="relative z-10 flex flex-col items-center gap-2">
+          <div className="relative z-10 flex flex-col items-center gap-1.5 text-center translate-y-2">
             {isOpen ? (
-               <div className="flex flex-col items-center gap-2">
+               <div className="flex flex-col items-center gap-1.5">
                  <X className="w-8 h-8 text-[#D4AF37]" />
-                 <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/40">Close</span>
+                 <span className="text-[10px] leading-none font-mono uppercase tracking-[0.3em] text-white/40">Close</span>
                </div>
             ) : (
               <>
@@ -206,13 +206,8 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
                     <span className="text-xs font-bold text-[#D4AF37]">{initials}</span>
                   )}
                 </div>
-                <div className="text-[10px] font-mono text-white/70 tracking-widest uppercase">
+                <div className="text-[10px] leading-none font-mono text-white/70 tracking-widest uppercase">
                   {displayName}
-                </div>
-                <div className="flex items-center gap-2 text-[8px] uppercase tracking-[0.25em] text-white/35">
-                  <span>{stats.ventures} Ventures</span>
-                  <span>•</span>
-                  <span>{stats.tasks} Tasks</span>
                 </div>
               </>
             )}
