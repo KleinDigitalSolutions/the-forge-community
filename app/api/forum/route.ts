@@ -27,8 +27,10 @@ export async function GET() {
           select: {
             id: true,
             authorId: true,
+            parentId: true,
             authorName: true,
             content: true,
+            likes: true,
             createdAt: true
           }
         }
@@ -37,12 +39,17 @@ export async function GET() {
     
     // If user is logged in, attach their existing votes
     let userVotes: Map<string, number> = new Map();
+    let commentVotes: Map<string, number> = new Map();
     if (session?.user?.email) {
       const user = await prisma.user.findUnique({
         where: { email: session.user.email },
-        select: { forumVotes: { select: { postId: true, voteType: true } } }
+        select: {
+          forumVotes: { select: { postId: true, voteType: true } },
+          forumCommentVotes: { select: { commentId: true, voteType: true } }
+        }
       });
       userVotes = new Map((user?.forumVotes || []).map(vote => [vote.postId, vote.voteType]));
+      commentVotes = new Map((user?.forumCommentVotes || []).map(vote => [vote.commentId, vote.voteType]));
     }
 
     const postsWithVotes = posts.map(post => ({
@@ -59,9 +66,12 @@ export async function GET() {
       comments: post.comments.map(comment => ({
         id: comment.id,
         authorId: comment.authorId,
+        parentId: comment.parentId,
         author: comment.authorName,
         content: comment.content,
-        time: comment.createdAt.toISOString()
+        likes: comment.likes,
+        time: comment.createdAt.toISOString(),
+        userVote: commentVotes.get(comment.id) || 0
       })),
       userVote: userVotes.get(post.id) || 0
     }));

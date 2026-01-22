@@ -50,8 +50,10 @@ async function getInitialPosts(email: string | null): Promise<ForumPost[]> {
         select: {
           id: true,
           authorId: true,
+          parentId: true,
           authorName: true,
           content: true,
+          likes: true,
           createdAt: true,
         },
       },
@@ -59,12 +61,17 @@ async function getInitialPosts(email: string | null): Promise<ForumPost[]> {
   });
 
   let userVotes: Map<string, number> = new Map();
+  let commentVotes: Map<string, number> = new Map();
   if (email) {
     const user = await prisma.user.findUnique({
       where: { email },
-      select: { forumVotes: { select: { postId: true, voteType: true } } },
+      select: {
+        forumVotes: { select: { postId: true, voteType: true } },
+        forumCommentVotes: { select: { commentId: true, voteType: true } },
+      },
     });
     userVotes = new Map((user?.forumVotes || []).map(vote => [vote.postId, vote.voteType]));
+    commentVotes = new Map((user?.forumCommentVotes || []).map(vote => [vote.commentId, vote.voteType]));
   }
 
   return posts.map(post => ({
@@ -81,9 +88,12 @@ async function getInitialPosts(email: string | null): Promise<ForumPost[]> {
     comments: post.comments.map(comment => ({
       id: comment.id,
       authorId: comment.authorId,
+      parentId: comment.parentId,
       author: comment.authorName,
       content: comment.content,
+      likes: comment.likes,
       time: comment.createdAt.toISOString(),
+      userVote: commentVotes.get(comment.id) || 0,
     })),
     userVote: userVotes.get(post.id) || 0,
   }));

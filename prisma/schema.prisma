@@ -135,6 +135,7 @@ model User {
   forumVotes    ForumVote[]
   forumPosts    ForumPost[]
   forumComments ForumComment[]
+  forumCommentVotes ForumCommentVote[]
   achievements  UserAchievement[]
   ventures      Venture[]
   ventureTasks  VentureTask[]
@@ -347,15 +348,35 @@ model ForumComment {
   id         String   @id @default(cuid())
   postId     String
   post       ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  parentId   String?
+  parent     ForumComment? @relation("CommentThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies    ForumComment[] @relation("CommentThread")
   authorId   String?
   author     User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
   authorName String
   content    String   @db.Text
+  likes      Int      @default(0)
+  votes      ForumCommentVote[]
   createdAt  DateTime @default(now())
 
   @@index([postId])
+  @@index([parentId])
   @@index([authorId])
   @@index([createdAt])
+}
+
+model ForumCommentVote {
+  id        String   @id @default(cuid())
+  commentId String
+  comment   ForumComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  voteType  Int
+  createdAt DateTime @default(now())
+
+  @@unique([commentId, userId])
+  @@index([commentId])
 }
 
 model Achievement {

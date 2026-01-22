@@ -7,7 +7,7 @@ import {
   MessageSquare, Send, ArrowUp, ArrowDown, Users,
   Quote, Reply, MessageCircle, Edit2, Trash2, Image as ImageIcon, Eye, Code, X,
   Sparkles, Lightbulb, CheckCircle, Search, Target,
-  TrendingUp, Trophy, Home, Hash, Zap, Bell, Info, Filter, Plus
+  TrendingUp, Trophy, Home, Hash, Zap, Bell, Info, Filter, Plus, Heart
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
@@ -21,12 +21,15 @@ import { TrendingTopics } from '@/app/components/TrendingTopics';
 import { formatDistanceToNow } from 'date-fns';
 import { de } from 'date-fns/locale';
 
-interface Comment {
+export interface Comment {
   id: string;
   authorId?: string | null;
+  parentId?: string | null;
   author: string;
   content: string;
   time: string;
+  likes: number;
+  userVote?: number;
 }
 
 export interface ForumPost {
@@ -79,6 +82,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
   const [commentEditingId, setCommentEditingId] = useState<string | null>(null);
   const [commentEditDrafts, setCommentEditDrafts] = useState<Record<string, string>>({});
   const [commentEditSubmitting, setCommentEditSubmitting] = useState<string | null>(null);
+  const [replyTargets, setReplyTargets] = useState<Record<string, Comment | null>>({});
   const [editingPost, setEditingPost] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
   const [isPreview, setIsPreview] = useState(false);
@@ -239,10 +243,11 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
     if (!draft || commentSubmitting) return;
     setCommentSubmitting(postId);
     try {
+      const parentId = replyTargets[postId]?.id || null;
       const response = await fetch('/api/forum/comment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ postId, content: draft }),
+        body: JSON.stringify({ postId, content: draft, parentId }),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -254,11 +259,50 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
       } : post));
       setCommentStatus(prev => ({ ...prev, [postId]: '' }));
       setCommentDrafts(prev => ({ ...prev, [postId]: '' }));
+      setReplyTargets(prev => ({ ...prev, [postId]: null }));
     } catch (error) {
       console.error('Comment error:', error);
       setCommentStatus(prev => ({ ...prev, [postId]: 'Kommentar fehlgeschlagen. Bitte erneut.' }));
     } finally {
       setCommentSubmitting(null);
+    }
+  };
+
+  const handleCommentVote = async (postId: string, commentId: string, delta: number) => {
+    setPosts(prev => prev.map(post => {
+      if (post.id !== postId) return post;
+      return {
+        ...post,
+        comments: (post.comments || []).map(comment => {
+          if (comment.id !== commentId) return comment;
+          const currentVote = comment.userVote || 0;
+          let newLikes = comment.likes || 0;
+          let newUserVote = 0;
+          if (currentVote === delta) { newLikes -= delta; newUserVote = 0; }
+          else if (currentVote === 0) { newLikes += delta; newUserVote = delta; }
+          else { newLikes += (delta * 2); newUserVote = delta; }
+          return { ...comment, likes: Math.max(newLikes, 0), userVote: newUserVote };
+        })
+      };
+    }));
+    try {
+      const response = await fetch('/api/forum/comment/like', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: commentId, delta }),
+      });
+      if (!response.ok) throw new Error('Vote failed');
+      const data = await response.json();
+      setPosts(prev => prev.map(post => post.id === postId ? {
+        ...post,
+        comments: (post.comments || []).map(comment =>
+          comment.id === commentId ? { ...comment, likes: data.likes, userVote: data.userVote } : comment
+        )
+      } : post));
+    } catch (error) {
+      console.error('Comment vote error:', error);
+      setCommentStatus(prev => ({ ...prev, [postId]: 'Kommentar-Like fehlgeschlagen.' }));
+      fetchPosts({ silent: true });
     }
   };
 
@@ -418,6 +462,28 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
       setTimeout(() => setStatusMessage(''), 3000);
     }
     finally { setIsSubmitting(false); }
+  };
+
+  type CommentNode = Comment & { children: CommentNode[] };
+
+  const buildCommentTree = (comments: Comment[]) => {
+    const nodes = new Map<string, CommentNode>();
+    comments.forEach(comment => {
+      nodes.set(comment.id, { ...comment, children: [] });
+    });
+
+    const roots: CommentNode[] = [];
+    comments.forEach(comment => {
+      const node = nodes.get(comment.id);
+      if (!node) return;
+      if (comment.parentId && nodes.has(comment.parentId)) {
+        nodes.get(comment.parentId)?.children.push(node);
+      } else {
+        roots.push(node);
+      }
+    });
+
+    return { roots, nodes };
   };
 
   const NavItem = ({ item, active, onClick }: any) => {
@@ -643,80 +709,123 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                         <div className="space-y-3">
                           {(post.comments || []).length === 0 ? (
                             <p className="text-xs text-white/30 uppercase tracking-widest font-bold">Noch keine Kommentare.</p>
-                          ) : (
-                            (post.comments || []).map((comment, idx) => {
+                          ) : (() => {
+                            const { roots, nodes } = buildCommentTree(post.comments || []);
+                            const renderCommentNode = (comment: CommentNode, depth: number) => {
                               const isAI = comment.author === '@forge-ai';
                               const canManage = user && (user.role === 'ADMIN' || (user.id && comment.authorId === user.id));
                               const isEditing = commentEditingId === comment.id;
+                              const parent = comment.parentId ? nodes.get(comment.parentId) : null;
+
                               return (
-                                <div
-                                  key={`${post.id}-comment-${idx}`}
-                                  className={`rounded-xl border px-4 py-3 ${
-                                    isAI
-                                      ? 'bg-[#D4AF37]/10 border-[#D4AF37]/30'
-                                      : 'bg-white/5 border-white/10'
-                                  }`}
-                                >
-                                  <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-white/40 mb-2">
-                                    <span className="font-bold text-white/70">{comment.author}</span>
-                                    {isAI && (
-                                      <span className="px-2 py-0.5 rounded-full bg-[#D4AF37]/20 text-[#D4AF37] text-[9px] font-bold tracking-widest">
-                                        AI
-                                      </span>
+                                <div key={comment.id} className={`relative ${depth > 0 ? 'pl-6' : ''}`}>
+                                  {depth > 0 && (
+                                    <>
+                                      <span className="absolute left-2 top-0 bottom-0 w-px bg-white/10" />
+                                      <span className="absolute left-1.5 top-5 w-2 h-2 rounded-full bg-white/20" />
+                                    </>
+                                  )}
+                                  <div
+                                    className={`rounded-xl border px-4 py-3 ${
+                                      isAI
+                                        ? 'bg-[#D4AF37]/10 border-[#D4AF37]/30'
+                                        : 'bg-white/5 border-white/10'
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-white/40 mb-2">
+                                      <span className="font-bold text-white/70">{comment.author}</span>
+                                      {isAI && (
+                                        <span className="px-2 py-0.5 rounded-full bg-[#D4AF37]/20 text-[#D4AF37] text-[9px] font-bold tracking-widest">
+                                          AI
+                                        </span>
+                                      )}
+                                      <span>•</span>
+                                      <span>{formatDistanceToNow(new Date(comment.time), { addSuffix: true, locale: de })}</span>
+                                    </div>
+
+                                    {parent && (
+                                      <div className="text-[10px] uppercase tracking-widest text-white/30 mb-2">
+                                        Antwort auf <span className="text-white/60">@{parent.author}</span>
+                                      </div>
                                     )}
-                                    <span>•</span>
-                                    <span>{formatDistanceToNow(new Date(comment.time), { addSuffix: true, locale: de })}</span>
-                                    {canManage && (
-                                      <span className="ml-auto flex items-center gap-2">
+
+                                    {isEditing ? (
+                                      <div className="space-y-3">
+                                        <textarea
+                                          value={commentEditDrafts[comment.id] || ''}
+                                          onChange={(e) => setCommentEditDrafts(prev => ({ ...prev, [comment.id]: e.target.value }))}
+                                          className="w-full min-h-[90px] bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/10 outline-none focus:border-[#D4AF37] transition-all"
+                                        />
+                                        <div className="flex justify-end gap-2">
+                                          <button
+                                            onClick={cancelCommentEdit}
+                                            className="px-4 py-2 text-[10px] uppercase tracking-widest text-white/40 hover:text-white transition-all"
+                                          >
+                                            Abbrechen
+                                          </button>
+                                          <button
+                                            onClick={() => handleCommentEdit(post.id, comment.id)}
+                                            disabled={commentEditSubmitting === comment.id || !(commentEditDrafts[comment.id] || '').trim()}
+                                            className="bg-[#D4AF37] text-black px-5 py-2 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] disabled:opacity-20 hover:brightness-110 transition-all"
+                                          >
+                                            {commentEditSubmitting === comment.id ? 'Speichert...' : 'Speichern'}
+                                          </button>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className="prose prose-invert prose-sm max-w-none text-white/80">
+                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{comment.content}</ReactMarkdown>
+                                      </div>
+                                    )}
+
+                                    {!isEditing && (
+                                      <div className="mt-3 flex flex-wrap items-center gap-3 text-[10px] uppercase tracking-widest text-white/40">
                                         <button
-                                          onClick={() => startCommentEdit(comment)}
-                                          className="p-1 text-white/30 hover:text-white transition-all"
-                                          aria-label="Kommentar bearbeiten"
+                                          onClick={() => handleCommentVote(post.id, comment.id, 1)}
+                                          className={`flex items-center gap-1.5 transition-all ${
+                                            (comment.userVote || 0) === 1 ? 'text-[#D4AF37]' : 'text-white/40 hover:text-white'
+                                          }`}
                                         >
-                                          <Edit2 className="w-3.5 h-3.5" />
+                                          <Heart className={`w-3.5 h-3.5 ${(comment.userVote || 0) === 1 ? 'fill-[#D4AF37]' : ''}`} />
+                                          <span>{comment.likes || 0}</span>
                                         </button>
                                         <button
-                                          onClick={() => handleCommentDelete(post.id, comment.id)}
-                                          className="p-1 text-white/30 hover:text-white transition-all"
-                                          aria-label="Kommentar löschen"
+                                          onClick={() => setReplyTargets(prev => ({ ...prev, [post.id]: comment }))}
+                                          className="flex items-center gap-1.5 text-white/40 hover:text-white transition-all"
                                         >
-                                          <Trash2 className="w-3.5 h-3.5" />
+                                          <Reply className="w-3.5 h-3.5" /> Antworten
                                         </button>
-                                      </span>
+                                        {canManage && (
+                                          <>
+                                            <button
+                                              onClick={() => startCommentEdit(comment)}
+                                              className="flex items-center gap-1.5 text-white/40 hover:text-white transition-all"
+                                            >
+                                              <Edit2 className="w-3.5 h-3.5" /> Bearbeiten
+                                            </button>
+                                            <button
+                                              onClick={() => handleCommentDelete(post.id, comment.id)}
+                                              className="flex items-center gap-1.5 text-white/40 hover:text-white transition-all"
+                                            >
+                                              <Trash2 className="w-3.5 h-3.5" /> Löschen
+                                            </button>
+                                          </>
+                                        )}
+                                      </div>
                                     )}
                                   </div>
-                                  {isEditing ? (
-                                    <div className="space-y-3">
-                                      <textarea
-                                        value={commentEditDrafts[comment.id] || ''}
-                                        onChange={(e) => setCommentEditDrafts(prev => ({ ...prev, [comment.id]: e.target.value }))}
-                                        className="w-full min-h-[90px] bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/10 outline-none focus:border-[#D4AF37] transition-all"
-                                      />
-                                      <div className="flex justify-end gap-2">
-                                        <button
-                                          onClick={cancelCommentEdit}
-                                          className="px-4 py-2 text-[10px] uppercase tracking-widest text-white/40 hover:text-white transition-all"
-                                        >
-                                          Abbrechen
-                                        </button>
-                                        <button
-                                          onClick={() => handleCommentEdit(post.id, comment.id)}
-                                          disabled={commentEditSubmitting === comment.id || !(commentEditDrafts[comment.id] || '').trim()}
-                                          className="bg-[#D4AF37] text-black px-5 py-2 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] disabled:opacity-20 hover:brightness-110 transition-all"
-                                        >
-                                          {commentEditSubmitting === comment.id ? 'Speichert...' : 'Speichern'}
-                                        </button>
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <div className="prose prose-invert prose-sm max-w-none text-white/80">
-                                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{comment.content}</ReactMarkdown>
+
+                                  {comment.children.length > 0 && (
+                                    <div className="mt-3 space-y-3">
+                                      {comment.children.map(child => renderCommentNode(child, depth + 1))}
                                     </div>
                                   )}
                                 </div>
                               );
-                            })
-                          )}
+                            };
+
+                            return roots.map(comment => renderCommentNode(comment, 0));
+                          })()}
                         </div>
 
                         <div className="pt-3 border-t border-white/10 space-y-3">
@@ -725,10 +834,21 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                               {commentStatus[post.id]}
                             </div>
                           )}
+                          {replyTargets[post.id] && (
+                            <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.02] px-3 py-2 text-[10px] uppercase tracking-widest text-white/50">
+                              <span>Antwort an @{replyTargets[post.id]?.author}</span>
+                              <button
+                                onClick={() => setReplyTargets(prev => ({ ...prev, [post.id]: null }))}
+                                className="text-white/40 hover:text-white transition-all"
+                              >
+                                Abbrechen
+                              </button>
+                            </div>
+                          )}
                           <textarea
                             value={commentDrafts[post.id] || ''}
                             onChange={(e) => setCommentDrafts(prev => ({ ...prev, [post.id]: e.target.value }))}
-                            placeholder="Antworte oder ergänze den Thread..."
+                            placeholder={replyTargets[post.id] ? 'Antwort schreiben...' : 'Antworte oder ergänze den Thread...'}
                             className="w-full min-h-[90px] bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/10 outline-none focus:border-[#D4AF37] transition-all"
                           />
                           <div className="flex justify-end">

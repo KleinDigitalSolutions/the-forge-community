@@ -10,7 +10,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { postId, content } = body;
+    const { postId, content, parentId } = body;
 
     if (!postId || !content) {
       return NextResponse.json({ error: 'Missing postId or content' }, { status: 400 });
@@ -34,9 +34,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
+    if (parentId) {
+      const parent = await prisma.forumComment.findUnique({
+        where: { id: parentId },
+        select: { id: true, postId: true }
+      });
+
+      if (!parent || parent.postId !== postId) {
+        return NextResponse.json({ error: 'Invalid parent comment' }, { status: 400 });
+      }
+    }
+
     const comment = await prisma.forumComment.create({
       data: {
         postId,
+        parentId: parentId || null,
         authorId: user.id,
         authorName: user.name || 'Anonymous Founder',
         content
@@ -46,8 +58,11 @@ export async function POST(request: Request) {
     return NextResponse.json({
       id: comment.id,
       authorId: comment.authorId,
+      parentId: comment.parentId,
       author: comment.authorName,
       content: comment.content,
+      likes: comment.likes,
+      userVote: 0,
       time: comment.createdAt.toISOString()
     });
   } catch (error) {
