@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
+import { ensureProfileSlug } from '@/lib/profile';
+import { syncUserAchievements } from '@/lib/achievements';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -12,6 +14,13 @@ export async function GET() {
     const posts = await prisma.forumPost.findMany({
       orderBy: { createdAt: 'desc' },
       include: {
+        author: {
+          select: {
+            id: true,
+            image: true,
+            profileSlug: true,
+          },
+        },
         comments: {
           orderBy: { createdAt: 'asc' },
           select: {
@@ -35,7 +44,10 @@ export async function GET() {
 
     const postsWithVotes = posts.map(post => ({
       id: post.id,
+      authorId: post.authorId,
       author: post.authorName,
+      authorImage: post.author?.image || null,
+      authorSlug: post.author?.profileSlug || null,
       founderNumber: post.founderNumber,
       content: post.content,
       category: post.category,
@@ -77,7 +89,7 @@ export async function POST(request: Request) {
     const { moderateContent, issueWarning, canUserPost } = await import('@/lib/moderation');
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      select: { id: true, name: true, founderNumber: true }
+      select: { id: true, name: true, founderNumber: true, profileSlug: true }
     });
 
     if (!user) {
@@ -110,6 +122,8 @@ export async function POST(request: Request) {
         }
       }, { status: 400 });
     }
+
+    await ensureProfileSlug(user);
 
     // Erstelle den Post
     const response = await prisma.forumPost.create({
@@ -146,6 +160,8 @@ export async function POST(request: Request) {
         console.error('AI Mention Reply failed:', aiError);
       }
     }
+
+    await syncUserAchievements(user.id);
 
     return NextResponse.json(response);
   } catch (error: any) {

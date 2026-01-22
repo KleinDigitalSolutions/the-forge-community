@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
+import { ensureProfileSlug } from '@/lib/profile';
 import { Prisma } from '@prisma/client';
 
 export async function GET() {
@@ -16,6 +17,7 @@ export async function GET() {
       select: {
         id: true,
         name: true,
+        profileSlug: true,
         email: true,
         image: true,
         role: true,
@@ -47,8 +49,11 @@ export async function GET() {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    const profileSlug = await ensureProfileSlug(user);
+
     return NextResponse.json({
       ...user,
+      profileSlug,
       address_street: user.addressStreet,
       address_city: user.addressCity,
       address_zip: user.addressZip,
@@ -76,7 +81,7 @@ export async function GET() {
         }
       });
       if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
-      return NextResponse.json(user);
+      return NextResponse.json({ ...user, profileSlug: null });
     }
 
     // Fallback für DB-Connectivity: liefere Minimaldaten aus der Session
@@ -84,6 +89,7 @@ export async function GET() {
     return NextResponse.json({
       id: session.user.email,
       name: session.user.name,
+      profileSlug: null,
       email: session.user.email,
       image: session.user.image || null,
       role: 'USER',

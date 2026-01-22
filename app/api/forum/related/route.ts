@@ -22,7 +22,8 @@ export async function POST(request: Request) {
         content: true,
         category: true,
         likes: true,
-        createdAt: true
+        createdAt: true,
+        authorName: true
       }
     });
 
@@ -32,7 +33,12 @@ export async function POST(request: Request) {
     // Calculate similarity scores
     const postsWithScores = allPosts
       .map(post => ({
-        ...post,
+        id: post.id,
+        author: post.authorName,
+        content: post.content,
+        category: post.category,
+        likes: post.likes,
+        createdTime: post.createdAt.toISOString(),
         score: calculateSimilarity(keywords, post.content, post.category, category)
       }))
       .filter(post => post.score > 0.1) // Minimum threshold

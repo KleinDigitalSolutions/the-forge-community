@@ -12,6 +12,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import Link from 'next/link';
 import { MicroExpander } from '@/app/components/ui/MicroExpander';
 import { LinkPreview, extractUrls } from '@/app/components/LinkPreview';
 import { VoiceInput } from '@/app/components/VoiceInput';
@@ -27,7 +28,10 @@ interface Comment {
 
 interface ForumPost {
   id: string;
+  authorId?: string | null;
   author: string;
+  authorImage?: string | null;
+  authorSlug?: string | null;
   founderNumber: number;
   content: string;
   createdTime: string;
@@ -336,7 +340,10 @@ export default function Forum() {
                   <div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin mx-auto" />
                   <p className="text-white/20 text-[10px] font-bold uppercase tracking-widest">Loading Intelligence...</p>
                 </div>
-              ) : postsToRender.map(post => (
+              ) : postsToRender.map(post => {
+                const profileHref = post.authorSlug || post.authorId ? `/profile/${post.authorSlug || post.authorId}` : null;
+
+                return (
                 <div key={post.id} className="bg-[#121212] border border-white/10 rounded-xl flex hover:border-white/20 transition-all group overflow-hidden">
                   {/* Vote Sidebar */}
                   <div className="w-12 bg-black/20 flex flex-col items-center py-4 gap-1 shrink-0">
@@ -360,10 +367,29 @@ export default function Forum() {
                   {/* Post Content */}
                   <div className="flex-1 p-4 min-w-0">
                     <div className="flex items-center gap-2 text-[11px] text-white/40 mb-3">
-                      <div className="w-5 h-5 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[8px] text-[#D4AF37] font-bold">
-                        {post.author.charAt(0)}
-                      </div>
-                      <span className="font-bold text-white/80">u/{post.author.replace(/\s/g, '').toLowerCase()}</span>
+                      {profileHref ? (
+                        <Link href={profileHref} className="flex items-center gap-2 hover:text-white transition-colors">
+                          <div className="w-5 h-5 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[8px] text-[#D4AF37] font-bold overflow-hidden">
+                            {post.authorImage ? (
+                              <img src={post.authorImage} alt={post.author} className="w-full h-full object-cover" />
+                            ) : (
+                              post.author.charAt(0)
+                            )}
+                          </div>
+                          <span className="font-bold text-white/80">u/{post.author.replace(/\s/g, '').toLowerCase()}</span>
+                        </Link>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <div className="w-5 h-5 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[8px] text-[#D4AF37] font-bold overflow-hidden">
+                            {post.authorImage ? (
+                              <img src={post.authorImage} alt={post.author} className="w-full h-full object-cover" />
+                            ) : (
+                              post.author.charAt(0)
+                            )}
+                          </div>
+                          <span className="font-bold text-white/80">u/{post.author.replace(/\s/g, '').toLowerCase()}</span>
+                        </div>
+                      )}
                       <span>•</span>
                       <span>{formatDistanceToNow(new Date(post.createdTime), { addSuffix: true, locale: de })}</span>
                       <span className="ml-auto bg-white/5 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider">{post.category}</span>
@@ -411,7 +437,8 @@ export default function Forum() {
                     )}
                   </div>
                 </div>
-              ))}
+              );
+            })}
             </div>
           </main>
 

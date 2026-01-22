@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
+import { syncUserAchievements } from '@/lib/achievements';
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -25,7 +26,7 @@ export async function POST(request: Request) {
     const result = await prisma.$transaction(async (tx) => {
       const post = await tx.forumPost.findUnique({
         where: { id: postId },
-        select: { likes: true }
+        select: { likes: true, authorId: true }
       });
 
       if (!post) {
@@ -78,9 +79,13 @@ export async function POST(request: Request) {
         select: { likes: true }
       });
 
-      return { likes: updated.likes, userVote };
+      return { likes: updated.likes, userVote, authorId: post.authorId };
     });
-    
+
+    if (result.authorId) {
+      await syncUserAchievements(result.authorId);
+    }
+
     return NextResponse.json({ 
       id: postId, 
       likes: result.likes, 

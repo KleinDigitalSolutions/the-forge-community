@@ -95,9 +95,16 @@ enum LegalDocumentStatus {
   REJECTED    // Partner declined
 }
 
+enum AchievementCategory {
+  LAUNCH
+  COMMUNITY
+  EXPERTISE
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
+  profileSlug   String?   @unique
   email         String    @unique
   emailVerified DateTime?
   image         String?
@@ -128,6 +135,7 @@ model User {
   forumVotes    ForumVote[]
   forumPosts    ForumPost[]
   forumComments ForumComment[]
+  achievements  UserAchievement[]
   ventures      Venture[]
   ventureTasks  VentureTask[]
   mentoringSessions MentoringSession[]
@@ -348,6 +356,37 @@ model ForumComment {
   @@index([postId])
   @@index([authorId])
   @@index([createdAt])
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  title       String
+  description String
+  category    AchievementCategory
+  icon        String
+  tier        Int      @default(1)
+
+  userAchievements UserAchievement[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model UserAchievement {
+  id            String   @id @default(cuid())
+  userId        String
+  achievementId String
+  earnedAt      DateTime @default(now())
+  contextType   String?
+  contextId     String?
+
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement  Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@index([userId])
+  @@index([achievementId])
 }
 
 model Karma {
