@@ -19,7 +19,7 @@ export async function POST(request: Request) {
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      select: { id: true }
+      select: { id: true, role: true }
     });
 
     if (!user) {
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     }
 
     // Prüfe ob der eingeloggte User der Autor ist
-    if (post.authorId !== user.id) {
+    if (post.authorId !== user.id && user.role !== 'ADMIN') {
       return NextResponse.json({
         error: 'Forbidden: You can only delete your own posts'
       }, { status: 403 });
