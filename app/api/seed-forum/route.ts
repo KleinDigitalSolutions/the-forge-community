@@ -13,7 +13,7 @@ export async function GET() {
       author: 'Sarah (AI Lead)',
       founderNumber: 2,
       category: 'Ideas',
-      content: '🤖 **Pro-Tipp: Dein AI Co-Founder**\n\nWusstet ihr schon? Unsere AI hier ist nicht einfach nur ein Chatbot.\n\nWenn ihr `@forge-ai` in einem Post erwähnt, kennt sie bereits den Kontext eures Ventures (sofern ihr das wollt). \n\nBeispiel: "Hey @forge-ai, schreib mir mal 3 Hooks für mein Eco-Fashion Venture basierend auf meiner Zielgruppe."\n\nProbiert\'s mal aus! Spart echt Zeit.'
+      content: '🤖 **Pro-Tipp: Dein AI Co-Founder**\n\nWusstet ihr schon? Unsere AI hier ist nicht einfach nur ein Chatbot.\n\nWenn ihr `@orion` in einem Post erwähnt, kennt er den Kontext des Beitrags. \n\nBeispiel: "Hey @orion, schreib mir mal 3 Hooks für mein Eco-Fashion Venture basierend auf meiner Zielgruppe."\n\nProbiert\'s mal aus! Spart echt Zeit.'
     },
     {
       author: 'Tom (Builder)',

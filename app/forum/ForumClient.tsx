@@ -513,7 +513,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
         body: JSON.stringify({ postId: post.id, action, postContent: post.content, category: post.category })
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'AI fehlgeschlagen');
+      if (!res.ok) throw new Error(data.error || 'Orion fehlgeschlagen');
       setAiResult({ postId: post.id, content: data.content, action: data.action });
       if (data.comment) {
         setPosts(prev => prev.map(p => p.id === post.id ? {
@@ -523,7 +523,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
       }
     } catch (error) {
       console.error('AI action error:', error);
-      setAiResult({ postId: post.id, content: 'AI konnte keine Antwort liefern.', action });
+      setAiResult({ postId: post.id, content: 'Orion konnte keine Antwort liefern.', action });
     } finally {
       setAiLoading(false);
     }
@@ -779,7 +779,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                           onClick={() => setAiMenuOpen(aiMenuOpen === post.id ? null : post.id)}
                           className="flex items-center gap-2 text-[10px] font-bold text-white/40 hover:text-white uppercase tracking-widest transition-all"
                         >
-                          <Sparkles className="w-3.5 h-3.5" /> {aiLoading && aiMenuOpen === post.id ? 'Lädt...' : 'AI Insight'}
+                          <Sparkles className="w-3.5 h-3.5" /> {aiLoading && aiMenuOpen === post.id ? 'Lädt...' : 'Orion Insight'}
                         </button>
                         {aiMenuOpen === post.id && (
                           <div className="absolute left-0 bottom-full mb-2 w-48 rounded-xl border border-white/10 bg-[#0d0d0d] shadow-2xl z-20">
@@ -818,7 +818,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                     {(() => {
                       const liveInsight = aiResult?.postId === post.id
                         ? {
-                            label: AI_ACTIONS.find(a => a.id === aiResult.action)?.label || 'AI Insight',
+                            label: AI_ACTIONS.find(a => a.id === aiResult.action)?.label || 'Orion Insight',
                             content: aiResult.content
                           }
                         : null;
@@ -830,7 +830,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                       return (
                         <div className="mt-3 p-4 rounded-xl bg-white/5 border border-white/10 text-sm text-white/80">
                           <div className="text-[10px] uppercase tracking-widest text-white/40 mb-1">
-                            AI · {insight.label}
+                            Orion · {insight.label}
                           </div>
                           <div className="prose prose-invert prose-sm max-w-none 
                             prose-headings:text-white prose-headings:font-bold prose-headings:text-sm prose-headings:mb-2 prose-headings:mt-4
@@ -857,7 +857,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                           ) : (() => {
                             const { roots, nodes } = buildCommentTree(post.comments || []);
                             const renderCommentNode = (comment: CommentNode, depth: number) => {
-                              const isAI = comment.author === '@forge-ai';
+                              const isAI = AI_AUTHORS.has(comment.author);
                               const canManage = user && (user.role === 'ADMIN' || (user.id && comment.authorId === user.id));
                               const isEditing = commentEditingId === comment.id;
                               const parent = comment.parentId ? nodes.get(comment.parentId) : null;
@@ -907,7 +907,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                                       )}
                                       {isAI && (
                                         <span className="px-2 py-0.5 rounded-full bg-[#D4AF37]/20 text-[#D4AF37] text-[9px] font-bold tracking-widest">
-                                          AI
+                                          ORION
                                         </span>
                                       )}
                                       <span>•</span>
