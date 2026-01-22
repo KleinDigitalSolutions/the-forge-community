@@ -1,15 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Rocket, 
   Users, 
   Layout, 
-  User as UserIcon, 
+  User as UserIcon,
   X,
   Zap,
-  Cpu
+  ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -25,138 +25,184 @@ interface CockpitControlProps {
 
 export default function CockpitControl({ userImage, userName, stats, onToggleView }: CockpitControlProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [orbitSize, setOrbitSize] = useState(720);
+  const [orbitRadius, setOrbitRadius] = useState(220);
 
-  // Menü-Konfiguration
+  const accent = '#D4AF37';
   const menuItems = [
-    { icon: Rocket, label: 'Ventures', action: () => onToggleView('ventures'), color: '#D4AF37', angle: 270 }, // Oben
-    { icon: Users, label: 'Squads', href: '/squads', color: '#38bdf8', angle: 330 },
-    { icon: Layout, label: 'Resources', href: '/resources', color: '#34d399', angle: 30 },
-    { icon: UserIcon, label: 'Profile', href: '/profile', color: '#a78bfa', angle: 90 }, // Rechts
-    { icon: Zap, label: 'Missions', action: () => onToggleView('missions'), color: '#f87171', angle: 210 }, // Links unten
+    { icon: Rocket, label: 'Ventures', action: () => onToggleView('ventures'), color: accent, angle: 270 },
+    { icon: Users, label: 'Squads', href: '/squads', color: accent, angle: 330 },
+    { icon: Layout, label: 'Academy', href: '/resources', color: accent, angle: 30 },
+    { icon: UserIcon, label: 'Profile', href: '/profile', color: accent, angle: 90 },
+    { icon: Zap, label: 'Missions', action: () => onToggleView('missions'), color: accent, angle: 210 },
   ];
 
-  const radius = 170; // Etwas größerer Radius für mehr Platz
+  useEffect(() => {
+    const update = () => {
+      const size = containerRef.current?.offsetWidth || 720;
+      setOrbitSize(size);
+      setOrbitRadius(Math.max(150, Math.min(240, Math.round(size * 0.32))));
+    };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+
+  const displayName = userName?.trim().split(' ')[0] || 'Operator';
+  const initials = userName
+    ? userName.split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase()
+    : 'OP';
 
   return (
-    // FIX: Removed pointer-events-none from container to prevent unexpected blocking behavior in some contexts.
-    // We rely on z-index stack.
-    <div className="relative flex items-center justify-center w-[600px] h-[600px]">
+    <div ref={containerRef} className="relative flex items-center justify-center w-[min(720px,90vw)] h-[min(720px,90vw)]">
       
-      {/* --- BACKGROUND HUD ELEMENTS (Decorative) --- */}
-      <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none select-none">
-         {/* Großer äußerer Ring */}
+      {/* --- BACKGROUND AMBIENCE (Deep Glow) --- */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+         <div className={`transition-all duration-1000 absolute w-[300px] h-[300px] bg-[#D4AF37]/6 blur-[100px] rounded-full ${isOpen ? 'scale-150 opacity-40' : 'scale-100 opacity-20'}`} />
+         
+         {/* Rotating Tech Rings (Subtle) */}
          <motion.div 
             animate={{ rotate: 360 }}
-            transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
-            className="w-[500px] h-[500px] rounded-full border border-white/10 border-dashed"
-         />
-         {/* Innerer Tech Ring */}
-         <motion.div 
-            animate={{ rotate: -360 }}
-            transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
-            className="absolute w-[400px] h-[400px] rounded-full border border-[#D4AF37]/20 opacity-50"
-            style={{ borderLeftColor: 'transparent', borderRightColor: 'transparent' }}
-         />
-         {/* Scanner Effekt */}
-         <motion.div 
-            animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0, 0.1] }}
-            transition={{ duration: 4, repeat: Infinity }}
-            className="absolute w-[300px] h-[300px] rounded-full bg-[#D4AF37]/5 blur-xl"
+            transition={{ duration: 100, repeat: Infinity, ease: "linear" }}
+            className="absolute w-[min(640px,80vw)] h-[min(640px,80vw)] rounded-full border border-white/5 opacity-30"
          />
       </div>
 
-      {/* --- CENTRAL INTERACTION POINT --- */}
+      {/* --- CONNECTOR LINES LAYER (Behind everything) --- */}
+      <svg
+        className="absolute inset-0 w-full h-full pointer-events-none overflow-visible z-10"
+        viewBox={`0 0 ${orbitSize} ${orbitSize}`}
+      >
+        <AnimatePresence>
+          {isOpen && menuItems.map((item, index) => {
+            const radian = (item.angle * Math.PI) / 180;
+            const cx = orbitSize / 2;
+            const cy = orbitSize / 2;
+            
+            // Start under the main button
+            const startX = cx; 
+            const startY = cy;
+            
+            // End under the satellite button
+            const endX = cx + Math.cos(radian) * orbitRadius;
+            const endY = cy + Math.sin(radian) * orbitRadius;
+
+            return (
+              <motion.g key={`line-${index}`}>
+                <motion.circle cx={endX} cy={endY} r="3" fill={item.color} opacity="0.25" />
+              </motion.g>
+            );
+          })}
+        </AnimatePresence>
+      </svg>
+
+      {/* --- CENTRAL CONTROL --- */}
       <div className="relative z-50">
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={(e) => {
-            e.stopPropagation(); // Prevent bubbling issues
-            setIsOpen(!isOpen);
-          }}
-          className="relative w-36 h-36 rounded-full flex items-center justify-center group outline-none cursor-pointer"
+          onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }}
+          className="relative w-32 h-32 flex items-center justify-center group outline-none cursor-pointer"
         >
-          {/* Glass Button Base */}
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-md rounded-full border border-white/20 shadow-[0_0_50px_rgba(212,175,55,0.15)] group-hover:shadow-[0_0_80px_rgba(212,175,55,0.4)] group-hover:border-[#D4AF37]/50 transition-all duration-500" />
-          
-          {/* Spinning Ring on Hover */}
-          <div className="absolute inset-[-6px] rounded-full border-2 border-transparent border-t-[#D4AF37] border-b-[#D4AF37] opacity-0 group-hover:opacity-100 animate-spin-slow transition-opacity duration-700 pointer-events-none" />
+          {/* Main Sphere */}
+          <div className="absolute inset-0 rounded-full bg-[#0b0c0f] border border-white/10 shadow-2xl overflow-hidden group-hover:border-[#D4AF37]/40 transition-colors duration-500">
+             {/* Shine Effect */}
+             <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent opacity-50" />
+             {/* Inner Rings */}
+             <div className="absolute inset-3 rounded-full border border-white/5 bg-gradient-to-br from-white/5 to-transparent" />
+             <div className={`absolute inset-0 bg-white/5 blur-xl transition-opacity duration-500 ${isOpen ? 'opacity-80' : 'opacity-30'}`} />
+          </div>
 
-          {/* Inner Content */}
-          <div className="relative flex flex-col items-center justify-center text-center z-10 pointer-events-none">
+          {/* Icon */}
+          <div className="relative z-10 flex flex-col items-center gap-2">
             {isOpen ? (
-               <X className="w-10 h-10 text-[#D4AF37]" />
+               <div className="flex flex-col items-center gap-2">
+                 <X className="w-8 h-8 text-[#D4AF37]" />
+                 <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/40">Close</span>
+               </div>
             ) : (
               <>
-                <Cpu className="w-8 h-8 text-[#D4AF37] mb-2 opacity-90" />
-                <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-white/90">Forge</span>
-                <span className="text-[8px] uppercase tracking-widest text-[#D4AF37] mt-1">System</span>
+                <div className="w-12 h-12 rounded-full border border-[#D4AF37]/30 flex items-center justify-center bg-[#D4AF37]/5 overflow-hidden">
+                  {userImage ? (
+                    <img src={userImage} alt={displayName} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-xs font-bold text-[#D4AF37]">{initials}</span>
+                  )}
+                </div>
+                <div className="text-[10px] font-mono text-white/70 tracking-widest uppercase">
+                  {displayName}
+                </div>
+                <div className="flex items-center gap-2 text-[8px] uppercase tracking-[0.25em] text-white/35">
+                  <span>{stats.ventures} Ventures</span>
+                  <span>•</span>
+                  <span>{stats.tasks} Tasks</span>
+                </div>
               </>
             )}
           </div>
+          
+          {/* Orbit Ring Animation */}
+          <div className="absolute inset-[-8px] rounded-full border border-white/5 border-t-[#D4AF37]/50 animate-spin-slow pointer-events-none" />
         </motion.button>
       </div>
 
-      {/* --- SATELLITES (MENU ITEMS) --- */}
-      {/* Container ist z-40 (unter Button z-50), aber pointer-events-auto für die Buttons */}
+      {/* --- SATELLITES --- */}
       <AnimatePresence>
         {isOpen && menuItems.map((item, index) => {
           const radian = (item.angle * Math.PI) / 180;
-          const x = Math.cos(radian) * radius;
-          const y = Math.sin(radian) * radius;
+          const x = Math.cos(radian) * orbitRadius;
+          const y = Math.sin(radian) * orbitRadius;
 
           return (
-            <motion.div
+            <div
               key={item.label}
-              initial={{ opacity: 0, x: 0, y: 0, scale: 0 }}
-              animate={{ opacity: 1, x, y, scale: 1 }}
-              exit={{ opacity: 0, x: 0, y: 0, scale: 0 }}
-              transition={{ delay: index * 0.04, type: "spring", stiffness: 250, damping: 20 }}
-              className="absolute z-50" 
+              className="absolute left-1/2 top-1/2 z-40 pointer-events-auto"
+              style={{ transform: `translate(-50%, -50%) translate(${x}px, ${y}px)` }}
             >
-              <div className="relative group">
-                {/* Connector Line Animation */}
-                <svg className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] pointer-events-none -z-10 overflow-visible">
-                   <motion.line 
-                      x1="200" y1="200" 
-                      x2={200 - (Math.cos(radian) * radius)} 
-                      y2={200 - (Math.sin(radian) * radius)} 
-                      stroke={item.color} 
-                      strokeWidth="1"
-                      initial={{ pathLength: 0, opacity: 0 }}
-                      animate={{ pathLength: 1, opacity: 0.2 }}
-                      transition={{ duration: 0.5, delay: 0.2 }}
-                   />
-                </svg>
-
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0 }}
+                transition={{ 
+                  type: "spring", 
+                  stiffness: 300, 
+                  damping: 25, 
+                  delay: index * 0.05 
+                }}
+              >
                 {item.href ? (
-                  <Link href={item.href} className="flex flex-col items-center gap-3 cursor-pointer">
-                    <div className="w-16 h-16 rounded-full bg-[#050505] border border-white/20 flex items-center justify-center hover:border-white/60 hover:bg-white/10 transition-all shadow-[0_0_30px_rgba(0,0,0,0.5)] group-hover:shadow-[0_0_30px_rgba(255,255,255,0.1)] group-hover:scale-110">
-                      <item.icon className="w-7 h-7 transition-colors" style={{ color: item.color }} />
-                    </div>
-                    <div className="absolute top-full mt-2 opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-y-0 -translate-y-2 pointer-events-none">
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-white bg-black/90 px-3 py-1.5 rounded border border-white/10 whitespace-nowrap shadow-xl">
-                        {item.label}
-                      </span>
-                    </div>
+                  <Link href={item.href} className="group block text-center">
+                    <SatelliteContent item={item} />
                   </Link>
                 ) : (
-                  <button onClick={() => { item.action?.(); setIsOpen(false); }} className="flex flex-col items-center gap-3 cursor-pointer">
-                    <div className="w-16 h-16 rounded-full bg-[#050505] border border-white/20 flex items-center justify-center hover:border-white/60 hover:bg-white/10 transition-all shadow-[0_0_30px_rgba(0,0,0,0.5)] group-hover:shadow-[0_0_30px_rgba(255,255,255,0.1)] group-hover:scale-110">
-                      <item.icon className="w-7 h-7 transition-colors" style={{ color: item.color }} />
-                    </div>
-                    <div className="absolute top-full mt-2 opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-y-0 -translate-y-2 pointer-events-none">
-                       <span className="text-[10px] font-bold uppercase tracking-widest text-white bg-black/90 px-3 py-1.5 rounded border border-white/10 whitespace-nowrap shadow-xl">
-                        {item.label}
-                      </span>
-                    </div>
+                  <button onClick={(e) => { e.stopPropagation(); item.action?.(); setIsOpen(false); }} className="group block text-center">
+                    <SatelliteContent item={item} />
                   </button>
                 )}
-              </div>
-            </motion.div>
+              </motion.div>
+            </div>
           );
         })}
       </AnimatePresence>
+    </div>
+  );
+}
+
+function SatelliteContent({ item }: { item: any }) {
+  return (
+    <div className="flex flex-col items-center gap-3">
+      {/* Icon Circle */}
+      <div 
+        className="w-16 h-16 rounded-2xl bg-[#0b0c0f] border border-white/10 flex items-center justify-center shadow-[0_0_24px_rgba(0,0,0,0.6)] transition-all duration-300 group-hover:scale-110 group-hover:border-[#D4AF37]/60 group-hover:shadow-[0_0_40px_rgba(212,175,55,0.25)]"
+      >
+        <item.icon className="w-6 h-6 text-white/70 transition-colors group-hover:text-white" />
+      </div>
+
+      <div className="mt-3 flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.25em] text-white/50">
+        <span>{item.label}</span>
+        <ChevronRight className="w-3 h-3 text-[#D4AF37]/80" />
+      </div>
     </div>
   );
 }
