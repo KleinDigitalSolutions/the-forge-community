@@ -32,7 +32,8 @@ export async function callAI(
       return { content: geminiResponse, provider: 'gemini' };
     }
   } catch (error) {
-    console.warn('Gemini failed, falling back to Groq:', error);
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn('Gemini failed, falling back to Groq:', message);
   }
 
   // Fallback to Groq
@@ -48,12 +49,29 @@ export async function callAI(
 /**
  * Gemini Flash 2.0 API Call
  */
+let resolvedGeminiModel: string | null = null;
+let resolvedGeminiApiVersion: string | null = null;
+const badGeminiModels = new Set<string>();
+
 async function callGemini(
   messages: AIMessage[],
   options: { temperature: number; maxTokens: number }
 ): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error('GEMINI_API_KEY not configured');
+
+  const modelCandidates = Array.from(new Set([
+    process.env.GEMINI_MODEL,
+    'gemini-1.5-flash',
+    'gemini-1.5-flash-latest',
+    'gemini-2.0-flash-exp',
+    'gemini-1.5-pro'
+  ].filter(Boolean))) as string[];
+
+  const apiVersionCandidates = Array.from(new Set([
+    process.env.GEMINI_API_VERSION || 'v1beta',
+    'v1'
+  ]));
 
   // Format messages for Gemini
   const systemMsg = messages.find(m => m.role === 'system')?.content || '';
@@ -72,30 +90,45 @@ async function callGemini(
     });
   }
 
-  const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash-latest';
-  const apiVersion = process.env.GEMINI_API_VERSION || 'v1beta';
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/${apiVersion}/models/${model}:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: geminiMessages,
-        generationConfig: {
-          temperature: options.temperature,
-          maxOutputTokens: options.maxTokens,
-        }
-      })
-    }
-  );
+  const versionsToTry = resolvedGeminiApiVersion ? [resolvedGeminiApiVersion] : apiVersionCandidates;
+  const modelsToTry = resolvedGeminiModel ? [resolvedGeminiModel] : modelCandidates;
 
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Gemini API error: ${error}`);
+  for (const apiVersion of versionsToTry) {
+    for (const model of modelsToTry) {
+      if (!model || badGeminiModels.has(model)) continue;
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/${apiVersion}/models/${model}:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: geminiMessages,
+            generationConfig: {
+              temperature: options.temperature,
+              maxOutputTokens: options.maxTokens,
+            }
+          })
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        if (response.status === 404) {
+          badGeminiModels.add(model);
+          continue;
+        }
+        throw new Error(`Gemini API error: ${errorText}`);
+      }
+
+      const data = await response.json();
+      resolvedGeminiModel = model;
+      resolvedGeminiApiVersion = apiVersion;
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    }
   }
 
-  const data = await response.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  throw new Error('Gemini API error: No supported model found');
 }
 
 /**
