@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { ensureProfileSlug } from '@/lib/profile';
+import { assignFounderNumberIfMissing } from '@/lib/founder-number';
 import { Prisma } from '@prisma/client';
 
 export async function GET() {
@@ -49,10 +50,17 @@ export async function GET() {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const profileSlug = await ensureProfileSlug(user);
+    const founderNumber = await assignFounderNumberIfMissing(user.id);
+    const profileSlug = await ensureProfileSlug({
+      id: user.id,
+      name: user.name,
+      founderNumber,
+      profileSlug: user.profileSlug,
+    });
 
     return NextResponse.json({
       ...user,
+      founderNumber,
       profileSlug,
       address_street: user.addressStreet,
       address_city: user.addressCity,
@@ -81,7 +89,8 @@ export async function GET() {
         }
       });
       if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
-      return NextResponse.json({ ...user, profileSlug: null });
+      const founderNumber = await assignFounderNumberIfMissing(user.id);
+      return NextResponse.json({ ...user, founderNumber, profileSlug: null });
     }
 
     // Fallback für DB-Connectivity: liefere Minimaldaten aus der Session

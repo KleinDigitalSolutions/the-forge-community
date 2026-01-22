@@ -2,6 +2,7 @@ import { put } from '@vercel/blob';
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
+import { assignFounderNumberIfMissing } from '@/lib/founder-number';
 
 export async function POST(request: Request): Promise<NextResponse> {
   const session = await auth();
@@ -35,6 +36,8 @@ export async function POST(request: Request): Promise<NextResponse> {
         select: { id: true }
       });
     }
+
+    await assignFounderNumberIfMissing(user.id);
 
     const safeFilename = filename.replace(/[^a-zA-Z0-9._-]/g, '-');
 

@@ -45,6 +45,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       id: comment.id,
+      authorId: comment.authorId,
       author: comment.authorName,
       content: comment.content,
       time: comment.createdAt.toISOString()

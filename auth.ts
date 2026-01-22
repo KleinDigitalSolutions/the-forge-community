@@ -4,6 +4,7 @@ import Resend from 'next-auth/providers/resend';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { prisma } from '@/lib/prisma';
 import { Resend as ResendClient } from 'resend';
+import { assignFounderNumberIfMissing } from '@/lib/founder-number';
 
 const resendClient = new ResendClient(process.env.AUTH_RESEND_KEY);
 const resendFrom =
@@ -53,6 +54,13 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
   callbacks: {
     // Open Access: No signIn checks required. Everyone can join.
     ...authConfig.callbacks,
+  },
+  events: {
+    async createUser({ user }) {
+      if (user?.id) {
+        await assignFounderNumberIfMissing(user.id);
+      }
+    },
   },
   session: {
     strategy: 'jwt',

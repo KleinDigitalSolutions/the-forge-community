@@ -1,5 +1,6 @@
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
+import { assignFounderNumberIfMissing } from '@/lib/founder-number';
 import ForumClient from './ForumClient';
 import type { ForumPost, UserProfile } from './ForumClient';
 
@@ -27,7 +28,10 @@ async function getInitialUser(email: string): Promise<UserProfile | null> {
     },
   });
 
-  return user || null;
+  if (!user) return null;
+
+  const founderNumber = await assignFounderNumberIfMissing(user.id);
+  return { ...user, founderNumber };
 }
 
 async function getInitialPosts(email: string | null): Promise<ForumPost[]> {
@@ -44,6 +48,8 @@ async function getInitialPosts(email: string | null): Promise<ForumPost[]> {
       comments: {
         orderBy: { createdAt: 'asc' },
         select: {
+          id: true,
+          authorId: true,
           authorName: true,
           content: true,
           createdAt: true,
@@ -73,6 +79,8 @@ async function getInitialPosts(email: string | null): Promise<ForumPost[]> {
     likes: post.likes,
     createdTime: post.createdAt.toISOString(),
     comments: post.comments.map(comment => ({
+      id: comment.id,
+      authorId: comment.authorId,
       author: comment.authorName,
       content: comment.content,
       time: comment.createdAt.toISOString(),

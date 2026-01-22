@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { ensureProfileSlug } from '@/lib/profile';
+import { assignFounderNumberIfMissing } from '@/lib/founder-number';
 import { syncUserAchievements } from '@/lib/achievements';
 
 export const dynamic = 'force-dynamic';
@@ -24,6 +25,8 @@ export async function GET() {
         comments: {
           orderBy: { createdAt: 'asc' },
           select: {
+            id: true,
+            authorId: true,
             authorName: true,
             content: true,
             createdAt: true
@@ -54,6 +57,8 @@ export async function GET() {
       likes: post.likes,
       createdTime: post.createdAt.toISOString(),
       comments: post.comments.map(comment => ({
+        id: comment.id,
+        authorId: comment.authorId,
         author: comment.authorName,
         content: comment.content,
         time: comment.createdAt.toISOString()
@@ -142,14 +147,20 @@ export async function POST(request: Request) {
       finalContent = await sanitizeToxicContent(content, moderationResult);
     }
 
-    await ensureProfileSlug(user);
+    const founderNumber = await assignFounderNumberIfMissing(user.id);
+    await ensureProfileSlug({
+      id: user.id,
+      name: user.name,
+      founderNumber,
+      profileSlug: user.profileSlug,
+    });
 
     // Erstelle den Post
     const response = await prisma.forumPost.create({
       data: {
         authorId: user.id,
         authorName: user.name || 'Anonymous Founder',
-        founderNumber: user.founderNumber || 0,
+        founderNumber,
         content: finalContent,
         category
       }

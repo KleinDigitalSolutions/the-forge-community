@@ -22,6 +22,8 @@ import { formatDistanceToNow } from 'date-fns';
 import { de } from 'date-fns/locale';
 
 interface Comment {
+  id: string;
+  authorId?: string | null;
   author: string;
   content: string;
   time: string;
@@ -74,6 +76,9 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
   const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
   const [commentSubmitting, setCommentSubmitting] = useState<string | null>(null);
   const [commentStatus, setCommentStatus] = useState<Record<string, string>>({});
+  const [commentEditingId, setCommentEditingId] = useState<string | null>(null);
+  const [commentEditDrafts, setCommentEditDrafts] = useState<Record<string, string>>({});
+  const [commentEditSubmitting, setCommentEditSubmitting] = useState<string | null>(null);
   const [editingPost, setEditingPost] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
   const [isPreview, setIsPreview] = useState(false);
@@ -254,6 +259,64 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
       setCommentStatus(prev => ({ ...prev, [postId]: 'Kommentar fehlgeschlagen. Bitte erneut.' }));
     } finally {
       setCommentSubmitting(null);
+    }
+  };
+
+  const startCommentEdit = (comment: Comment) => {
+    setCommentEditingId(comment.id);
+    setCommentEditDrafts(prev => ({ ...prev, [comment.id]: comment.content }));
+  };
+
+  const cancelCommentEdit = () => {
+    setCommentEditingId(null);
+  };
+
+  const handleCommentEdit = async (postId: string, commentId: string) => {
+    const draft = (commentEditDrafts[commentId] || '').trim();
+    if (!draft || commentEditSubmitting) return;
+    setCommentEditSubmitting(commentId);
+    try {
+      const response = await fetch('/api/forum/comment/edit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: commentId, content: draft }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error || 'Edit failed');
+      }
+      setPosts(prev => prev.map(post => post.id === postId ? {
+        ...post,
+        comments: (post.comments || []).map(comment =>
+          comment.id === commentId ? { ...comment, content: data.content } : comment
+        ),
+      } : post));
+      setCommentEditingId(null);
+    } catch (error) {
+      console.error('Comment edit error:', error);
+      setCommentStatus(prev => ({ ...prev, [postId]: 'Kommentar-Update fehlgeschlagen. Bitte erneut.' }));
+    } finally {
+      setCommentEditSubmitting(null);
+    }
+  };
+
+  const handleCommentDelete = async (postId: string, commentId: string) => {
+    const confirmed = window.confirm('Kommentar wirklich löschen?');
+    if (!confirmed) return;
+    try {
+      const response = await fetch('/api/forum/comment/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: commentId }),
+      });
+      if (!response.ok) throw new Error('Delete failed');
+      setPosts(prev => prev.map(post => post.id === postId ? {
+        ...post,
+        comments: (post.comments || []).filter(comment => comment.id !== commentId),
+      } : post));
+    } catch (error) {
+      console.error('Comment delete error:', error);
+      setCommentStatus(prev => ({ ...prev, [postId]: 'Kommentar konnte nicht gelöscht werden.' }));
     }
   };
 
@@ -583,6 +646,8 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                           ) : (
                             (post.comments || []).map((comment, idx) => {
                               const isAI = comment.author === '@forge-ai';
+                              const canManage = user && (user.role === 'ADMIN' || (user.id && comment.authorId === user.id));
+                              const isEditing = commentEditingId === comment.id;
                               return (
                                 <div
                                   key={`${post.id}-comment-${idx}`}
@@ -601,10 +666,53 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                                     )}
                                     <span>•</span>
                                     <span>{formatDistanceToNow(new Date(comment.time), { addSuffix: true, locale: de })}</span>
+                                    {canManage && (
+                                      <span className="ml-auto flex items-center gap-2">
+                                        <button
+                                          onClick={() => startCommentEdit(comment)}
+                                          className="p-1 text-white/30 hover:text-white transition-all"
+                                          aria-label="Kommentar bearbeiten"
+                                        >
+                                          <Edit2 className="w-3.5 h-3.5" />
+                                        </button>
+                                        <button
+                                          onClick={() => handleCommentDelete(post.id, comment.id)}
+                                          className="p-1 text-white/30 hover:text-white transition-all"
+                                          aria-label="Kommentar löschen"
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                      </span>
+                                    )}
                                   </div>
-                                  <div className="prose prose-invert prose-sm max-w-none text-white/80">
-                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{comment.content}</ReactMarkdown>
-                                  </div>
+                                  {isEditing ? (
+                                    <div className="space-y-3">
+                                      <textarea
+                                        value={commentEditDrafts[comment.id] || ''}
+                                        onChange={(e) => setCommentEditDrafts(prev => ({ ...prev, [comment.id]: e.target.value }))}
+                                        className="w-full min-h-[90px] bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/10 outline-none focus:border-[#D4AF37] transition-all"
+                                      />
+                                      <div className="flex justify-end gap-2">
+                                        <button
+                                          onClick={cancelCommentEdit}
+                                          className="px-4 py-2 text-[10px] uppercase tracking-widest text-white/40 hover:text-white transition-all"
+                                        >
+                                          Abbrechen
+                                        </button>
+                                        <button
+                                          onClick={() => handleCommentEdit(post.id, comment.id)}
+                                          disabled={commentEditSubmitting === comment.id || !(commentEditDrafts[comment.id] || '').trim()}
+                                          className="bg-[#D4AF37] text-black px-5 py-2 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] disabled:opacity-20 hover:brightness-110 transition-all"
+                                        >
+                                          {commentEditSubmitting === comment.id ? 'Speichert...' : 'Speichern'}
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="prose prose-invert prose-sm max-w-none text-white/80">
+                                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{comment.content}</ReactMarkdown>
+                                    </div>
+                                  )}
                                 </div>
                               );
                             })
