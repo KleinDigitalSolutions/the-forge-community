@@ -19,6 +19,17 @@ The Forge nutzt ein **Product-Led Growth** Modell für maximale Konvertierung vo
 
 ---
 
+## 🧾 Letzte 24h (Changelog)
+
+*   **Direct Messages (neu):** Eigener `/messages`‑Bereich mit Inbox‑Sidebar, Suche, Thread‑Ansicht und Composer.
+*   **DM‑Backend:** Neue Prisma‑Modelle `DirectThread`, `DirectParticipant`, `DirectMessage` + API‑Routen für Threads, Messages und User‑Search.
+*   **Forum‑Kommentare:** Replies mit Thread‑Struktur (`parentId`), Kommentar‑Likes + Voting, sowie Edit/Delete (Author/Admin).
+*   **Forum‑Performance:** Trend‑Cache via `SystemCache` (DB‑persistiert, 4h TTL) statt volatilem Memory‑Cache.
+*   **Founder‑Identität:** `founderNumber` wird automatisch vergeben (Signup, Post, Profil).
+*   **Navigation:** Messages in Cockpit‑Radialmenü und Sidebar verdrahtet.
+
+---
+
 ## 🤖 Context-Aware AI Sidebar
 ... (bestehender Teil) ...
 

@@ -61,6 +61,13 @@ function formatShortDate(value?: string | null) {
   return date.toLocaleDateString('de-DE', { day: '2-digit', month: 'short' });
 }
 
+function formatHeaderStamp(value?: string | null) {
+  if (!value) return '';
+  const date = new Date(value);
+  const day = date.toLocaleDateString('de-DE', { day: '2-digit', month: 'short' });
+  return `${day} · ${formatTime(value)}`;
+}
+
 function initialsFromName(name?: string | null) {
   if (!name) return 'OP';
   return name
@@ -86,6 +93,11 @@ export default function MessagesPage() {
   const [searchResults, setSearchResults] = useState<UserResult[]>([]);
   const [searching, setSearching] = useState(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  const activeThread = useMemo(
+    () => threads.find(thread => thread.id === activeThreadId) || null,
+    [threads, activeThreadId]
+  );
 
   const activePeer = useMemo(() => {
     if (!viewerId) return null;
@@ -229,49 +241,60 @@ export default function MessagesPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[320px,1fr]">
-            <div className="glass-card rounded-3xl border border-white/10 p-4 shadow-[0_0_40px_rgba(0,0,0,0.4)]">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
-                <input
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Founder suchen..."
-                  className="w-full rounded-2xl border border-white/10 bg-black/40 py-3 pl-11 pr-4 text-sm text-white outline-none transition focus:border-[var(--accent)]"
-                />
-                {searching && (
-                  <Loader2 className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-white/40" />
+          <div className="grid grid-cols-1 gap-6 lg:min-h-[calc(100vh-220px)] lg:grid-cols-[340px,1fr]">
+            <div className="glass-card flex min-h-[620px] flex-col overflow-hidden rounded-3xl border border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.4)]">
+              <div className="border-b border-white/10 bg-gradient-to-b from-white/5 to-transparent px-5 py-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-semibold text-white">Inbox</div>
+                  <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">
+                    {loadingThreads ? '--' : `${threads.length} Chats`}
+                  </div>
+                </div>
+                <div className="relative mt-4">
+                  <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
+                  <input
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
+                    placeholder="Founder suchen..."
+                    className="w-full rounded-2xl border border-white/10 bg-black/40 py-3 pl-11 pr-4 text-sm text-white outline-none transition focus:border-[var(--accent)]"
+                  />
+                  {searching && (
+                    <Loader2 className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-white/40" />
+                  )}
+                </div>
+
+                {searchResults.length > 0 && (
+                  <div className="mt-4">
+                    <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/20">Matches</div>
+                    <div className="mt-3 space-y-2 rounded-2xl border border-white/10 bg-black/60 p-2">
+                      {searchResults.map(result => (
+                        <button
+                          key={result.id}
+                          onClick={() => handleStartThread(result.id)}
+                          className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-white/80 transition hover:bg-white/10"
+                        >
+                          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5 text-xs font-bold text-[var(--accent)]">
+                            {result.image ? (
+                              <img src={result.image} alt={result.name || 'Founder'} className="h-full w-full object-cover" />
+                            ) : (
+                              initialsFromName(result.name)
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-semibold text-white">{result.name || 'Anonymous Founder'}</div>
+                            <div className="text-[10px] uppercase tracking-[0.2em] text-white/40">
+                              Founder #{String(result.founderNumber || 0).padStart(3, '0')}
+                            </div>
+                          </div>
+                          <UserPlus className="h-4 w-4 text-[var(--accent)]" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
 
-              {searchResults.length > 0 && (
-                <div className="mt-3 space-y-2 rounded-2xl border border-white/10 bg-black/60 p-2">
-                  {searchResults.map(result => (
-                    <button
-                      key={result.id}
-                      onClick={() => handleStartThread(result.id)}
-                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-white/80 transition hover:bg-white/10"
-                    >
-                      <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5 text-xs font-bold text-[var(--accent)]">
-                        {result.image ? (
-                          <img src={result.image} alt={result.name || 'Founder'} className="h-full w-full object-cover" />
-                        ) : (
-                          initialsFromName(result.name)
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-semibold text-white">{result.name || 'Anonymous Founder'}</div>
-                        <div className="text-[10px] uppercase tracking-[0.2em] text-white/40">
-                          Founder #{String(result.founderNumber || 0).padStart(3, '0')}
-                        </div>
-                      </div>
-                      <UserPlus className="h-4 w-4 text-[var(--accent)]" />
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              <div className="mt-6 space-y-3">
+              <div className="flex-1 space-y-3 overflow-y-auto px-4 pb-4 pt-4">
                 <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/20">Conversations</div>
                 {loadingThreads ? (
                   <div className="flex items-center gap-2 text-xs text-white/40">
@@ -310,7 +333,7 @@ export default function MessagesPage() {
                           <div className="flex-1">
                             <div className="flex items-center justify-between gap-2">
                               <div className="font-semibold text-white">{peer?.name || 'Anonymous Founder'}</div>
-                              <div className="text-[10px] uppercase tracking-[0.2em] text-white/40">
+                              <div className={`text-[10px] uppercase tracking-[0.2em] ${isActive ? 'text-[var(--accent)]/80' : 'text-white/40'}`}>
                                 {thread.lastMessageAt ? formatShortDate(thread.lastMessageAt) : ''}
                               </div>
                             </div>
@@ -326,21 +349,29 @@ export default function MessagesPage() {
               </div>
             </div>
 
-            <div className="glass-card flex min-h-[520px] flex-col rounded-3xl border border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.5)]">
-              <div className="border-b border-white/10 px-6 py-4">
+            <div className="glass-card flex min-h-[620px] flex-col rounded-3xl border border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.5)]">
+              <div className="border-b border-white/10 bg-gradient-to-b from-white/5 to-transparent px-6 py-4">
                 {activePeer ? (
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5 text-xs font-bold text-[var(--accent)]">
-                      {activePeer.image ? (
-                        <img src={activePeer.image} alt={activePeer.name || 'Founder'} className="h-full w-full object-cover" />
-                      ) : (
-                        initialsFromName(activePeer.name)
-                      )}
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5 text-xs font-bold text-[var(--accent)]">
+                        {activePeer.image ? (
+                          <img src={activePeer.image} alt={activePeer.name || 'Founder'} className="h-full w-full object-cover" />
+                        ) : (
+                          initialsFromName(activePeer.name)
+                        )}
+                      </div>
+                      <div>
+                        <div className="text-lg font-semibold text-white">{activePeer.name || 'Anonymous Founder'}</div>
+                        <div className="text-[10px] uppercase tracking-[0.3em] text-white/40">
+                          Founder #{String(activePeer.founderNumber || 0).padStart(3, '0')}
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-lg font-semibold text-white">{activePeer.name || 'Anonymous Founder'}</div>
-                      <div className="text-[10px] uppercase tracking-[0.3em] text-white/40">
-                        Founder #{String(activePeer.founderNumber || 0).padStart(3, '0')}
+                    <div className="text-right text-[10px] uppercase tracking-[0.2em] text-white/30">
+                      <div>Last Activity</div>
+                      <div className="mt-1 text-xs normal-case text-white/60">
+                        {activeThread?.lastMessageAt ? formatHeaderStamp(activeThread.lastMessageAt) : 'New channel'}
                       </div>
                     </div>
                   </div>
@@ -349,7 +380,7 @@ export default function MessagesPage() {
                 )}
               </div>
 
-              <div className="flex-1 overflow-y-auto px-6 py-6">
+              <div className="flex-1 overflow-y-auto bg-black/10 px-6 py-6">
                 {loadingMessages ? (
                   <div className="flex h-full items-center justify-center text-sm text-white/40">
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -366,7 +397,7 @@ export default function MessagesPage() {
                       const isSelf = message.senderId === viewerId;
                       return (
                         <div key={message.id} className={`flex ${isSelf ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`max-w-[75%] rounded-2xl px-4 py-3 text-sm ${isSelf ? 'bg-[var(--accent)] text-black' : 'bg-white/5 text-white'}`}>
+                          <div className={`max-w-[75%] rounded-2xl px-4 py-3 text-sm shadow-lg ${isSelf ? 'bg-[var(--accent)] text-black rounded-br-[6px] shadow-[0_12px_30px_rgba(212,175,55,0.18)]' : 'bg-white/5 text-white border border-white/10 rounded-bl-[6px]'}`}>
                             {!isSelf && (
                               <div className="text-[10px] uppercase tracking-[0.3em] text-white/40">
                                 {message.sender?.name || 'Founder'}
