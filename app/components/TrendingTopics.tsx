@@ -107,7 +107,7 @@ export function TrendingTopics() {
       <div className="text-center py-8">
         <p className="text-sm text-white/40">Trends konnten nicht geladen werden</p>
         <button
-          onClick={loadTrends}
+          onClick={() => loadTrends()}
           className="mt-4 px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white/5 hover:bg-white/10 rounded-lg text-white/70 hover:text-white transition-colors"
         >
           Erneut versuchen
