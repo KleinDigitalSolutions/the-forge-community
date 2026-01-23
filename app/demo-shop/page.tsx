@@ -10,6 +10,9 @@ import {
   Star, 
   Package, 
   Zap,
+  Sparkles,
+  Camera,
+  Upload,
   ShieldCheck,
   Globe,
   ArrowUpRight
@@ -200,6 +203,103 @@ export default function DemoShop() {
                      </div>
                   </div>
                ))}
+            </div>
+         </div>
+      </section>
+
+      {/* --- AI TRY-ON DEMO --- */}
+      <section className="py-28 px-6 relative overflow-hidden">
+         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(212,175,55,0.18),transparent_55%)] pointer-events-none" />
+         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center relative z-10">
+            <div>
+               <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[9px] font-black uppercase tracking-[0.3em] text-white/40 mb-6">
+                  <Sparkles className="w-3.5 h-3.5 text-[var(--accent)]" />
+                  AI Try-On
+               </div>
+               <h2 className="text-4xl md:text-6xl font-instrument-serif text-white mb-6 leading-tight">
+                  KI-Integration fuer Shops.<br/>
+                  <span className="text-[var(--accent)]">Upload, anziehen, vergleichen.</span>
+               </h2>
+               <p className="text-lg text-white/50 leading-relaxed max-w-xl mb-8">
+                  Ein Service, der Fotos nutzt und Produkte direkt integriert: Kleidung wird angezogen,
+                  Schmuck platziert, Felgen gematcht oder Moebel in den Raum gesetzt. Die Kundschaft sieht
+                  sofort, wie es wirkt und kann Varianten vergleichen.
+               </p>
+               <div className="flex flex-wrap gap-3 text-[9px] font-bold uppercase tracking-widest text-white/40">
+                  <span className="px-3 py-1 rounded-full border border-white/10 bg-white/[0.02]">
+                     Google Studio API
+                  </span>
+                  <span className="px-3 py-1 rounded-full border border-white/10 bg-white/[0.02]">
+                     Gemini (Nano Banana)
+                  </span>
+                  <span className="px-3 py-1 rounded-full border border-white/10 bg-white/[0.02]">
+                     Demo Konzept
+                  </span>
+               </div>
+            </div>
+
+            <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-6 md:p-8 relative overflow-hidden">
+               <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none" />
+               <div className="flex items-center justify-between mb-6">
+                  <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">
+                     KI Preview Studio
+                  </div>
+                  <div className="text-[9px] font-black uppercase tracking-widest text-[var(--accent)]">
+                     Demo
+                  </div>
+               </div>
+
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="rounded-2xl border border-white/10 bg-black/40 p-4 space-y-4">
+                     <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-white/40">
+                        <Camera className="w-4 h-4 text-[var(--accent)]" />
+                        Dein Foto
+                     </div>
+                     <div className="h-36 rounded-xl border border-dashed border-white/20 bg-black/30 flex flex-col items-center justify-center gap-2 text-[10px] text-white/40">
+                        <Upload className="w-5 h-5 text-white/30" />
+                        Foto aufnehmen oder hochladen
+                     </div>
+                     <div className="flex flex-wrap gap-2 text-[9px] font-bold uppercase tracking-widest text-white/40">
+                        {['Kleidung', 'Schmuck', 'Felgen', 'Moebel'].map((label) => (
+                           <span key={label} className="px-2.5 py-1 rounded-full border border-white/10 bg-white/[0.02]">
+                              {label}
+                           </span>
+                        ))}
+                     </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-[#0F1113] via-black to-[#0B0C0E] p-4 space-y-4">
+                     <div className="flex items-center justify-between text-[10px] uppercase tracking-widest text-white/40">
+                        <span>Live Preview</span>
+                        <span className="text-[var(--accent)]">Nano Banana</span>
+                     </div>
+                     <div className="relative h-36 rounded-xl border border-white/10 bg-[radial-gradient(circle_at_30%_20%,rgba(212,175,55,0.18),transparent_55%)] overflow-hidden">
+                        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />
+                        <div className="absolute bottom-3 left-3 right-3 rounded-lg bg-black/60 border border-white/10 px-3 py-2 text-[9px] uppercase tracking-widest text-white/50">
+                           Jacke sitzt · Licht & Schatten gematcht
+                        </div>
+                     </div>
+                     <div className="flex items-center gap-2 text-[9px] uppercase tracking-widest text-white/40">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
+                        Render in Sekunden
+                     </div>
+                  </div>
+               </div>
+
+               <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 text-[10px] text-white/60">
+                  <div className="flex items-center gap-2 rounded-xl border border-white/5 bg-white/[0.02] px-3 py-2">
+                     <Upload className="w-4 h-4 text-[var(--accent)]" />
+                     <span>Upload/Camera</span>
+                  </div>
+                  <div className="flex items-center gap-2 rounded-xl border border-white/5 bg-white/[0.02] px-3 py-2">
+                     <Zap className="w-4 h-4 text-[var(--accent)]" />
+                     <span>KI Masking</span>
+                  </div>
+                  <div className="flex items-center gap-2 rounded-xl border border-white/5 bg-white/[0.02] px-3 py-2">
+                     <Sparkles className="w-4 h-4 text-[var(--accent)]" />
+                     <span>Instant Preview</span>
+                  </div>
+               </div>
             </div>
          </div>
       </section>
