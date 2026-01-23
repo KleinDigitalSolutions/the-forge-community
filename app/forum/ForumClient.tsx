@@ -815,6 +815,110 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
     );
   };
 
+  const NavChip = ({ item, active, onClick }: any) => {
+    const Icon = item.icon;
+    return (
+      <button
+        onClick={() => onClick(item.id)}
+        className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap ${
+          active
+            ? 'border-[#D4AF37]/40 bg-[#D4AF37]/10 text-[#D4AF37]'
+            : 'border-white/10 bg-white/[0.02] text-white/50 hover:text-white hover:border-white/20'
+        }`}
+      >
+        <Icon className="w-3.5 h-3.5" />
+        {item.name}
+      </button>
+    );
+  };
+
+  const renderNotificationsPanel = () => (
+    <div className="bg-[#121212] border border-white/10 rounded-2xl p-6">
+      <div className="flex items-center justify-between mb-5">
+        <h4 className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em] flex items-center gap-2">
+          <Bell className="w-3.5 h-3.5 text-[#D4AF37]" /> Notifications
+        </h4>
+        {notificationsUnread > 0 && (
+          <button
+            onClick={async () => {
+              await markAllNotificationsRead();
+              setNotifications(prev => prev.map(item => ({ ...item, isRead: true })));
+              setNotificationsUnread(0);
+            }}
+            className="text-[9px] uppercase tracking-widest text-white/40 hover:text-white transition-all"
+          >
+            Alle gelesen
+          </button>
+        )}
+      </div>
+
+      {notificationsLoading ? (
+        <div className="py-8 text-center text-[10px] uppercase tracking-widest text-white/30">
+          Lädt ...
+        </div>
+      ) : notifications.length === 0 ? (
+        <div className="py-6 text-center text-[10px] uppercase tracking-widest text-white/30">
+          Noch keine Benachrichtigungen.
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {notifications.map(notification => {
+            const actor = notification.actor;
+            const actorLabel = actor?.name || 'System';
+            const handleClick = async () => {
+              if (!notification.isRead) {
+                setNotifications(prev =>
+                  prev.map(item =>
+                    item.id === notification.id ? { ...item, isRead: true } : item
+                  )
+                );
+                setNotificationsUnread(prev => Math.max(0, prev - 1));
+                await markNotificationsRead([notification.id]);
+              }
+              if (notification.href) {
+                window.location.href = notification.href;
+              }
+            };
+
+            return (
+              <button
+                key={notification.id}
+                onClick={handleClick}
+                className={`w-full text-left rounded-xl border px-3 py-3 transition-all ${ 
+                  notification.isRead
+                    ? 'border-white/10 bg-white/[0.02] text-white/60'
+                    : 'border-[#D4AF37]/30 bg-[#D4AF37]/10 text-white'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-black/40 border border-white/10 flex items-center justify-center text-[11px] font-bold text-[#D4AF37] overflow-hidden">
+                    {actor?.image ? (
+                      <img src={actor.image} alt={actorLabel} className="w-full h-full object-cover" />
+                    ) : (
+                      actorLabel.charAt(0)
+                    )}
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-[11px] font-bold">{notification.title}</span>
+                      <span className="text-[9px] text-white/30 uppercase tracking-widest">
+                        {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true, locale: de })}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-white/60">
+                      <span className="text-white/80 font-semibold">{actorLabel}</span>
+                      {notification.message ? ` · ${notification.message}` : ''}
+                    </div>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <AuthGuard>
       <PageShell>
@@ -855,25 +959,59 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
 
           {/* MAIN FEED */}
           <main className="space-y-4">
-            {/* Post Creation Trigger */}
-            <div className="bg-[#121212] border border-white/10 rounded-xl p-3 flex items-center gap-3 shadow-xl">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#D4AF37] to-amber-700 flex items-center justify-center text-black font-black text-sm">
-                {user?.name?.charAt(0)}
+            {/* Mobile Filters */}
+            <div className="lg:hidden space-y-3 bg-[#121212] border border-white/10 rounded-xl p-3">
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Feeds</p>
+                <button
+                  onClick={handleToggleNotifications}
+                  className="relative flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white/60"
+                >
+                  <Bell className="w-3.5 h-3.5" />
+                  Inbox
+                  {notificationsUnread > 0 && (
+                    <span className="absolute -right-2 -top-2 rounded-full bg-[#D4AF37] text-[9px] font-bold text-black px-1.5 py-0.5">
+                      {notificationsUnread}
+                    </span>
+                  )}
+                </button>
               </div>
-              <button 
-                onClick={startNewPost}
-                className="flex-1 bg-white/5 border border-white/10 hover:border-white/20 rounded-lg px-4 py-2.5 text-sm text-left text-white/40 transition-all"
-              >
-                Was brennt dir auf der Seele?
-              </button>
-              <div className="flex gap-1">
+              <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+                {FEEDS.map(f => <NavChip key={f.id} item={f} active={activeChannel === f.id} onClick={handleChannelClick} />)}
+              </div>
+              <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Topics</p>
+              <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+                {CHANNELS.map(c => <NavChip key={c.id} item={c} active={activeChannel === c.id} onClick={handleChannelClick} />)}
+              </div>
+            </div>
+
+            {notificationsOpen && (
+              <div className="xl:hidden">
+                {renderNotificationsPanel()}
+              </div>
+            )}
+
+            {/* Post Creation Trigger */}
+            <div className="bg-[#121212] border border-white/10 rounded-xl p-3 flex flex-col gap-3 shadow-xl sm:flex-row sm:items-center">
+              <div className="flex items-center gap-3 w-full">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#D4AF37] to-amber-700 flex items-center justify-center text-black font-black text-sm">
+                  {user?.name?.charAt(0)}
+                </div>
+                <button 
+                  onClick={startNewPost}
+                  className="flex-1 bg-white/5 border border-white/10 hover:border-white/20 rounded-lg px-4 py-2.5 text-sm text-left text-white/40 transition-all"
+                >
+                  Was brennt dir auf der Seele?
+                </button>
+              </div>
+              <div className="flex gap-1 justify-end sm:justify-start">
                 <button onClick={startNewPost} className="p-2 text-white/40 hover:text-white hover:bg-white/5 rounded-lg"><ImageIcon className="w-5 h-5" /></button>
                 <button onClick={startNewPost} className="p-2 text-white/40 hover:text-white hover:bg-white/5 rounded-lg"><Plus className="w-5 h-5" /></button>
               </div>
             </div>
 
             {/* Sort Bar */}
-            <div className="bg-[#121212] border border-white/10 rounded-xl p-2 flex items-center gap-2">
+            <div className="bg-[#121212] border border-white/10 rounded-xl p-2 flex items-center gap-2 overflow-x-auto scrollbar-hide">
               {['Hot', 'New', 'Top'].map(mode => (
                 <button
                   key={mode}
@@ -926,7 +1064,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
 
                       {/* Post Content */}
                       <div className="flex-1 p-4 min-w-0">
-                        <div className="flex items-center gap-2 text-[11px] text-white/40 mb-3">
+                        <div className="flex flex-wrap items-center gap-2 text-[11px] text-white/40 mb-3">
                           {profileHref ? (
                             <Link href={profileHref} className="flex items-center gap-2 hover:text-white transition-colors">
                               <div className="w-5 h-5 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[8px] text-[#D4AF37] font-bold overflow-hidden">
@@ -952,7 +1090,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                           )}
                           <span>•</span>
                           <span>{formatDistanceToNow(new Date(post.createdTime), { addSuffix: true, locale: de })}</span>
-                          <span className="ml-auto bg-white/5 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider">{post.category}</span>
+                          <span className="sm:ml-auto bg-white/5 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider">{post.category}</span>
                         </div>
 
                         <div className="prose prose-invert prose-sm max-w-none mb-4 group-hover:text-white transition-colors">
@@ -964,7 +1102,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                           </ReactMarkdown>
                         </div>
 
-                        <div className="flex items-center gap-4 pt-3 border-t border-white/5">
+                        <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-white/5">
                           <button
                             onClick={() => toggleComments(post.id)}
                             className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-all ${ 
@@ -1006,7 +1144,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                           {user && (user.role === 'ADMIN' || (user.id && post.authorId === user.id)) && (
                             <button
                               onClick={() => handleDelete(post.id)}
-                              className="ml-auto p-1.5 text-white/20 hover:text-white transition-all"
+                              className="sm:ml-auto p-1.5 text-white/20 hover:text-white transition-all"
                               aria-label="Beitrag loeschen"
                             >
                               <X className="w-4 h-4" />
@@ -1267,90 +1405,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
           {/* RIGHT SIDEBAR */}
           <aside className="hidden xl:block sticky top-8 h-fit space-y-6">
             {notificationsOpen && (
-              <div className="bg-[#121212] border border-white/10 rounded-2xl p-6">
-                <div className="flex items-center justify-between mb-5">
-                  <h4 className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em] flex items-center gap-2">
-                    <Bell className="w-3.5 h-3.5 text-[#D4AF37]" /> Notifications
-                  </h4>
-                  {notificationsUnread > 0 && (
-                    <button
-                      onClick={async () => {
-                        await markAllNotificationsRead();
-                        setNotifications(prev => prev.map(item => ({ ...item, isRead: true })));
-                        setNotificationsUnread(0);
-                      }}
-                      className="text-[9px] uppercase tracking-widest text-white/40 hover:text-white transition-all"
-                    >
-                      Alle gelesen
-                    </button>
-                  )}
-                </div>
-
-                {notificationsLoading ? (
-                  <div className="py-8 text-center text-[10px] uppercase tracking-widest text-white/30">
-                    Lädt ...
-                  </div>
-                ) : notifications.length === 0 ? (
-                  <div className="py-6 text-center text-[10px] uppercase tracking-widest text-white/30">
-                    Noch keine Benachrichtigungen.
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {notifications.map(notification => {
-                      const actor = notification.actor;
-                      const actorLabel = actor?.name || 'System';
-                      const handleClick = async () => {
-                        if (!notification.isRead) {
-                          setNotifications(prev =>
-                            prev.map(item =>
-                              item.id === notification.id ? { ...item, isRead: true } : item
-                            )
-                          );
-                          setNotificationsUnread(prev => Math.max(0, prev - 1));
-                          await markNotificationsRead([notification.id]);
-                        }
-                        if (notification.href) {
-                          window.location.href = notification.href;
-                        }
-                      };
-
-                      return (
-                        <button
-                          key={notification.id}
-                          onClick={handleClick}
-                          className={`w-full text-left rounded-xl border px-3 py-3 transition-all ${ 
-                            notification.isRead
-                              ? 'border-white/10 bg-white/[0.02] text-white/60'
-                              : 'border-[#D4AF37]/30 bg-[#D4AF37]/10 text-white'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-full bg-black/40 border border-white/10 flex items-center justify-center text-[11px] font-bold text-[#D4AF37] overflow-hidden">
-                              {actor?.image ? (
-                                <img src={actor.image} alt={actorLabel} className="w-full h-full object-cover" />
-                              ) : (
-                                actorLabel.charAt(0)
-                              )}
-                            </div>
-                            <div className="flex-1 space-y-1">
-                              <div className="flex items-center justify-between gap-3">
-                                <span className="text-[11px] font-bold">{notification.title}</span>
-                                <span className="text-[9px] text-white/30 uppercase tracking-widest">
-                                  {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true, locale: de })}
-                                </span>
-                              </div>
-                              <div className="text-[11px] text-white/60">
-                                <span className="text-white/80 font-semibold">{actorLabel}</span>
-                                {notification.message ? ` · ${notification.message}` : ''}
-                              </div>
-                            </div>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
+              renderNotificationsPanel()
             )}
 
             {/* User Profile Widget - PRO REDESIGN */}
