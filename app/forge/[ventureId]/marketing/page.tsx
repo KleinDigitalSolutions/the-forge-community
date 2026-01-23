@@ -74,10 +74,10 @@ export default function MarketingPage() {
     fetchData();
   }, [ventureId, campaignId]);
 
-  const handleGenerateCopy = async () => {
+  const handleGenerateCopy = async (): Promise<string> => {
     if (!topic) {
       alert('Bitte gib ein Thema an.');
-      return;
+      return '';
     }
 
     setIsGenerating(true);
@@ -96,12 +96,15 @@ export default function MarketingPage() {
       if (res.ok) {
         setGeneratedContent(data.content);
         if (campaignId) await saveToCampaign(data.content);
+        return data.content;
       } else {
         alert('Fehler: ' + data.error);
+        return '';
       }
     } catch (error) {
       console.error('Generation failed', error);
       alert('Ein Fehler ist aufgetreten.');
+      return '';
     } finally {
       setIsGenerating(false);
     }

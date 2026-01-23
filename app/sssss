@@ -1,7 +1,0 @@
-modal secret create TheForge \
-MODAL_API_KEY=dein_geheimer_key_hier \
-HF_TOKEN=dein_huggingface_token_hier \
-QWEN_IMAGE_MODEL_ID=Qwen/Qwen-Image-2512 \
-Z_IMAGE_MODEL_ID=Tongyi-MAI/Z-Image-Turbo \
-WAN_VIDEO_MODEL_ID=Wan-AI/Wan2.2-I2V-A14B \
-MOCHI_VIDEO_MODEL_ID=genmo/mochi-1-preview
