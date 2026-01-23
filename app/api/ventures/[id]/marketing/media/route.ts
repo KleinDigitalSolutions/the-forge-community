@@ -149,6 +149,7 @@ const MAX_PROMPT_CHARS = parseLimit(process.env.MARKETING_MEDIA_MAX_PROMPT_CHARS
 const IDEOGRAM_RENDERING_SPEEDS = new Set(['TURBO', 'DEFAULT', 'QUALITY']);
 const IDEOGRAM_API_URL =
   process.env.IDEOGRAM_API_URL || 'https://api.ideogram.ai/v1/ideogram-v3/generate';
+const IDEOGRAM_ENABLED = process.env.IDEOGRAM_ENABLED === 'true';
 
 const resolveDimensions = (aspectRatio: string) => {
   switch (aspectRatio) {
@@ -413,8 +414,13 @@ export async function POST(
     return NextResponse.json({ error: 'Replicate API Token fehlt' }, { status: 500 });
   }
 
-  if (modelConfig.provider === 'ideogram' && !process.env.IDEOGRAM_API_KEY) {
-    return NextResponse.json({ error: 'Ideogram API Key fehlt' }, { status: 500 });
+  if (modelConfig.provider === 'ideogram') {
+    if (!IDEOGRAM_ENABLED) {
+      return NextResponse.json({ error: 'Ideogram ist aktuell deaktiviert.' }, { status: 403 });
+    }
+    if (!process.env.IDEOGRAM_API_KEY) {
+      return NextResponse.json({ error: 'Ideogram API Key fehlt' }, { status: 500 });
+    }
   }
 
   const cost = Number.isFinite(COSTS[mode]) ? COSTS[mode] : 20;

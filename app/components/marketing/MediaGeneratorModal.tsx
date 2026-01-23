@@ -50,7 +50,11 @@ type ModelConfig = {
   supportsFps?: boolean;
   supportsRenderingSpeed?: boolean;
   supportsStylePreset?: boolean;
+  isEnabled?: boolean;
+  disabledReason?: string;
 };
+
+const IDEOGRAM_ENABLED = process.env.NEXT_PUBLIC_IDEOGRAM_ENABLED === 'true';
 
 const MODEL_CONFIGS: ModelConfig[] = [
   {
@@ -75,6 +79,8 @@ const MODEL_CONFIGS: ModelConfig[] = [
     modes: ['text-to-image'],
     supportsRenderingSpeed: true,
     supportsStylePreset: true,
+    isEnabled: IDEOGRAM_ENABLED,
+    disabledReason: 'Inaktiv · Top-up 20 EUR',
   },
   {
     id: 'wan-video/wan-2.1-1.3b',
@@ -132,6 +138,8 @@ interface MediaGeneratorModalProps {
 const getModelsForMode = (mode: MediaMode) =>
   MODEL_CONFIGS.filter((config) => config.modes.includes(mode));
 
+const isModelEnabled = (config: ModelConfig) => config.isEnabled !== false;
+
 const getDefaultMode = () => {
   const first = MEDIA_MODES.find((item) => getModelsForMode(item.id).length > 0);
   return (first?.id ?? 'text-to-image') as MediaMode;
@@ -175,7 +183,12 @@ export function MediaGeneratorModal({
   const [predictionStatus, setPredictionStatus] = useState<string | null>(null);
 
   const availableModels = useMemo(() => getModelsForMode(mode), [mode]);
-  const selectedModel = availableModels.find((item) => item.id === model) ?? availableModels[0];
+  const enabledModels = useMemo(
+    () => availableModels.filter((item) => isModelEnabled(item)),
+    [availableModels]
+  );
+  const selectedModel = availableModels.find((item) => item.id === model) ?? enabledModels[0];
+  const isSelectedModelEnabled = selectedModel ? isModelEnabled(selectedModel) : false;
   const isVideoMode = selectedModel?.outputType === 'video' || mode.includes('video');
   const requiresImage = Boolean(selectedModel?.supportsImageInput);
   const supportsNegativePrompt = Boolean(selectedModel?.supportsNegativePrompt);
@@ -195,14 +208,14 @@ export function MediaGeneratorModal({
   }, [isOpen, inline]);
 
   useEffect(() => {
-    if (!availableModels.length) {
+    if (!availableModels.length || !enabledModels.length) {
       setModel('');
       return;
     }
-    if (!availableModels.some((item) => item.id === model)) {
-      setModel(availableModels[0].id);
+    if (!availableModels.some((item) => item.id === model) || !isSelectedModelEnabled) {
+      setModel(enabledModels[0].id);
     }
-  }, [availableModels, model]);
+  }, [availableModels, enabledModels, isSelectedModelEnabled, model]);
 
   useEffect(() => {
     if (!requiresImage) {
@@ -326,6 +339,10 @@ export function MediaGeneratorModal({
     }
     if (!selectedModel) {
       setErrorMessage('Kein Modell verfügbar.');
+      return;
+    }
+    if (!isSelectedModelEnabled) {
+      setErrorMessage('Dieses Modell ist aktuell deaktiviert.');
       return;
     }
     if (requiresImage && !imageFile) {
@@ -525,8 +542,9 @@ export function MediaGeneratorModal({
                     <option value="">Kein Modell verfügbar</option>
                   )}
                   {availableModels.map((option) => (
-                    <option key={option.id} value={option.id}>
+                    <option key={option.id} value={option.id} disabled={!isModelEnabled(option)}>
                       {option.label}
+                      {!isModelEnabled(option) && option.disabledReason ? ` (${option.disabledReason})` : ''}
                     </option>
                   ))}
                 </select>
