@@ -40,20 +40,18 @@ const MEDIA_MODES = [
 ] as const;
 
 const IMAGE_MODELS = [
-  { id: 'z-image-turbo', label: 'Z-Image Turbo · Fast' },
-  { id: 'qwen-image-2512', label: 'Qwen-Image 2512 · Quality' },
+  { id: 'black-forest-labs/flux-schnell', label: 'Flux Schnell · Ultra Fast' },
 ];
 
 const VIDEO_MODELS = [
-  { id: 'wan-2.2', label: 'Wan 2.2 · Balanced' },
-  { id: 'mochi-1', label: 'Mochi 1 · Premium' },
+  { id: 'wan-video/wan-2.1-1.3b', label: 'Wan 2.1 · Video' },
 ];
 
 const MODE_DEFAULT_MODEL: Record<MediaMode, string> = {
-  'text-to-image': 'z-image-turbo',
-  'image-to-image': 'z-image-turbo',
-  'text-to-video': 'mochi-1',
-  'image-to-video': 'wan-2.2',
+  'text-to-image': 'black-forest-labs/flux-schnell',
+  'image-to-image': 'black-forest-labs/flux-schnell',
+  'text-to-video': 'wan-video/wan-2.1-1.3b',
+  'image-to-video': 'wan-video/wan-2.1-1.3b',
 };
 
 const ASPECT_RATIOS = [
@@ -334,91 +332,6 @@ export function MediaGeneratorModal({
                 </select>
               </div>
             </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase tracking-widest text-white/40">Varianten</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={4}
-                  value={variants}
-                  onChange={(event) => setVariants(Number(event.target.value))}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-[#D4AF37] outline-none"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase tracking-widest text-white/40">Steps</label>
-                <input
-                  type="number"
-                  min={10}
-                  max={60}
-                  value={steps}
-                  onChange={(event) => setSteps(Number(event.target.value))}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-[#D4AF37] outline-none"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase tracking-widest text-white/40">Guidance</label>
-                <input
-                  type="number"
-                  step={0.5}
-                  min={1}
-                  max={20}
-                  value={guidance}
-                  onChange={(event) => setGuidance(Number(event.target.value))}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-[#D4AF37] outline-none"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase tracking-widest text-white/40">Seed</label>
-                <input
-                  type="text"
-                  value={seed}
-                  onChange={(event) => setSeed(event.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-[#D4AF37] outline-none"
-                />
-              </div>
-            </div>
-
-            {showAdvanced && (
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-widest text-white/40">Image Strength</label>
-                  <input
-                    type="number"
-                    step={0.05}
-                    min={0.1}
-                    max={1}
-                    value={strength}
-                    onChange={(event) => setStrength(Number(event.target.value))}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-[#D4AF37] outline-none"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-widest text-white/40">FPS</label>
-                  <input
-                    type="number"
-                    min={12}
-                    max={30}
-                    value={fps}
-                    onChange={(event) => setFps(Number(event.target.value))}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-[#D4AF37] outline-none"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-widest text-white/40">Duration (sec)</label>
-                  <input
-                    type="number"
-                    min={2}
-                    max={12}
-                    value={duration}
-                    onChange={(event) => setDuration(Number(event.target.value))}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-[#D4AF37] outline-none"
-                  />
-                </div>
-              </div>
-            )}
           </div>
 
           {requiresImage && (
