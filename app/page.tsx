@@ -24,6 +24,8 @@ import ResponsiveHeroBanner from '@/app/components/ui/ResponsiveHeroBanner';
 import AnimatedCardStack from '@/app/components/ui/AnimatedCardStack';
 import ForgeOSShowcase from '@/app/components/landing/ForgeOSShowcase';
 import MissionLogCarousel from '@/app/components/landing/MissionLogCarousel';
+import { BorderBeam } from '@/components/ui/border-beam';
+import { Hero195 } from '@/components/ui/hero-195';
 
 // --------------------------------------------------------
 
@@ -234,6 +236,68 @@ export default function Home() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section id="transparency-preview" className="py-24 px-4 md:px-6 relative">
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-[1.1fr_0.9fr] gap-12 items-center">
+          <div className="space-y-6">
+            <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30">
+              Finanz-Protokoll
+            </div>
+            <h2 className="text-4xl md:text-5xl font-instrument-serif text-white leading-tight">
+              Transparenz, die man sieht.
+            </h2>
+            <p className="text-sm text-white/50 leading-relaxed max-w-lg">
+              Jeder Euro, jede Bewegung und jeder Status ist nachvollziehbar. Das Finanz-Dashboard
+              ist kein PDF, sondern ein live gepflegtes System mit Export-Logik.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="/transparency"
+                className="rounded-full border border-white/10 bg-white/5 px-6 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-white/70 hover:text-white transition-colors"
+              >
+                Zum Protokoll
+              </Link>
+              <Link
+                href="/media"
+                className="rounded-full border border-white/10 bg-transparent px-6 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-white/40 hover:text-white transition-colors"
+              >
+                Media Wall
+              </Link>
+            </div>
+          </div>
+
+          <Hero195 className="relative overflow-hidden border border-white/10 bg-[#0F1113]">
+            <BorderBeam size={240} duration={14} anchor={70} colorFrom="#D4AF37" colorTo="#8B5CF6" />
+            <div className="relative p-8">
+              <div className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em] mb-3">
+                Demo Snapshot
+              </div>
+              <h3 className="text-2xl font-instrument-serif text-white mb-2">Live Treasury Preview</h3>
+              <p className="text-sm text-white/50">
+                Beispielwerte zur Orientierung. Im System siehst du den echten Ledger in Echtzeit.
+              </p>
+              <div className="mt-6 grid grid-cols-2 gap-4">
+                {[
+                  { label: 'Einnahmen', value: '€48.000' },
+                  { label: 'Ausgaben', value: '€12.400' },
+                  { label: 'Verfügbar', value: '€35.600' },
+                  { label: 'Runway', value: '12 Monate' },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    className="rounded-xl border border-white/10 bg-white/5 px-4 py-3"
+                  >
+                    <div className="text-[8px] font-black text-white/30 uppercase tracking-[0.3em]">
+                      {item.label}
+                    </div>
+                    <div className="text-lg font-instrument-serif text-white">{item.value}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Hero195>
         </div>
       </section>
 

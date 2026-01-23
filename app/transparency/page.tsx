@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import PageShell from '@/app/components/PageShell';
 import AuthGuard from '@/app/components/AuthGuard';
+import { BorderBeam } from '@/components/ui/border-beam';
+import { Hero195 } from '@/components/ui/hero-195';
 import {
   TrendingUp,
   DollarSign,
@@ -155,6 +157,35 @@ export default function TransparencyPage() {
           <h1 className="text-5xl md:text-6xl font-instrument-serif text-white tracking-tight mb-4">Finanz-Protokoll</h1>
           <p className="text-white/40 uppercase tracking-[0.2em] text-xs font-bold">Jeder Euro wird öffentlich dokumentiert. Keine versteckten Kosten.</p>
         </header>
+
+        <Hero195 className="relative overflow-hidden border border-white/10 bg-[#0F1113] mb-16">
+          <BorderBeam size={260} duration={12} anchor={80} colorFrom="#D4AF37" colorTo="#FF6B35" />
+          <div className="relative p-8 md:p-10">
+            <div className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em] mb-3">Finanzen Live</div>
+            <h2 className="text-3xl md:text-4xl font-instrument-serif text-white mb-3">Treasury Snapshot</h2>
+            <p className="text-sm text-white/50 max-w-2xl">
+              Echtzeit-Ueberblick ueber Kapitalfluss, Verfuegbarkeit und Ausgaben. Jeder Move ist
+              nachvollziehbar und exportierbar.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-white/70">
+                Einnahmen €{totalIncome.toLocaleString()}
+              </div>
+              <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-white/70">
+                Ausgaben €{totalExpenses.toLocaleString()}
+              </div>
+              <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-white/70">
+                Verfuegbar €{available.toLocaleString()}
+              </div>
+              <button
+                onClick={handleExport}
+                className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white/50 hover:text-white transition-colors"
+              >
+                Export
+              </button>
+            </div>
+          </div>
+        </Hero195>
 
         <div className="grid md:grid-cols-4 gap-6 mb-16">
           <FinStatCard title="Einnahmen" value={totalIncome} icon={ArrowUpRight} color="text-green-500" />
