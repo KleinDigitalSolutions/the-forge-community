@@ -7,7 +7,7 @@ import {
   MessageSquare, Send, ArrowUp, ArrowDown, Users,
   Quote, Reply, MessageCircle, Edit2, Trash2, Image as ImageIcon, Eye, Code, X,
   Sparkles, Lightbulb, CheckCircle, Search, Target,
-  TrendingUp, Trophy, Home, Hash, Zap, Bell, Info, Filter, Plus, Heart, Smile, Bold, Italic, List, Link as LinkIcon, ChevronDown
+  TrendingUp, Trophy, Home, Hash, Zap, Bell, Info, Filter, Plus, Heart, Smile, Bold, Italic, List, Link as LinkIcon, ChevronDown, Share2
 } from 'lucide-react';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
@@ -169,7 +169,7 @@ const MarkdownComponents = {
 
     if (isParagraphImageOnly(node)) {
       return (
-        <figure className="my-4 rounded-xl overflow-hidden border border-white/10 bg-black/20">
+        <figure className="my-4 overflow-hidden border border-white/10 bg-black/20 rounded-none sm:rounded-xl">
           {children}
         </figure>
       );
@@ -255,12 +255,14 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
   const [aiResult, setAiResult] = useState<{postId: string; content: string; action: string} | null>(null);
   const [moderationWarning, setModerationWarning] = useState<{number: number; message: string; banned: boolean} | null>(null);
   const [statusMessage, setStatusMessage] = useState('');
+  const [toastMessage, setToastMessage] = useState('');
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [notifications, setNotifications] = useState<ForumNotification[]>([]);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
   const [notificationsUnread, setNotificationsUnread] = useState(0);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const editorRef = useRef<HTMLTextAreaElement>(null);
+  const toastTimeoutRef = useRef<number | null>(null);
   const loadMoreRef = useRef(null);
   const isInView = useInView(loadMoreRef);
 
@@ -455,6 +457,32 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
       textarea.focus();
       textarea.setSelectionRange(start + text.length, start + text.length);
     }, 0);
+  };
+
+  const pushToast = (message: string) => {
+    setToastMessage(message);
+    if (toastTimeoutRef.current) {
+      window.clearTimeout(toastTimeoutRef.current);
+    }
+    toastTimeoutRef.current = window.setTimeout(() => {
+      setToastMessage('');
+      toastTimeoutRef.current = null;
+    }, 2200);
+  };
+
+  const handleShare = async (postId: string) => {
+    const url = `${window.location.origin}/forum#${postId}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'Stake & Scale Forum', url });
+        pushToast('Geteilt.');
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      pushToast('Link kopiert.');
+    } catch (error) {
+      pushToast('Teilen fehlgeschlagen.');
+    }
   };
 
   const handleEmojiClick = (emojiData: EmojiClickData) => {
@@ -1107,6 +1135,12 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
               ))}
             </div>
 
+            {toastMessage && (
+              <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white/60">
+                {toastMessage}
+              </div>
+            )}
+
             {/* Post Creation Trigger */}
             <div className="bg-[#121212] border border-white/10 rounded-xl p-3 flex flex-col gap-3 shadow-xl sm:flex-row sm:items-center">
               <div className="flex items-center gap-3 w-full">
@@ -1158,9 +1192,9 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                     const profileHref = buildProfileHref(post);
 
                     return (
-                    <div key={post.id} id={post.id} className="bg-[#121212] border border-white/10 rounded-xl flex hover:border-white/20 transition-all group overflow-hidden">
+                    <div key={post.id} id={post.id} className="bg-transparent sm:bg-[#121212] border-b border-white/10 sm:border sm:rounded-xl flex flex-col sm:flex-row sm:hover:border-white/20 transition-all group overflow-hidden">
                       {/* Vote Sidebar */}
-                      <div className="w-12 bg-black/20 flex flex-col items-center py-4 gap-1 shrink-0">
+                      <div className="hidden sm:flex w-12 bg-black/20 flex-col items-center py-4 gap-1 shrink-0">
                         <button 
                           onClick={() => handleVote(post.id, 1)}
                           className={`p-1.5 rounded-md transition-all ${post.userVote === 1 ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-white/20 hover:text-white hover:bg-white/5'}`}
@@ -1218,7 +1252,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                           </ReactMarkdown>
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-white/5">
+                        <div className="hidden sm:flex flex-wrap items-center gap-3 pt-3 border-t border-white/5">
                           <button
                             onClick={() => toggleComments(post.id)}
                             className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-all ${ 
@@ -1261,6 +1295,82 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                             <button
                               onClick={() => handleDelete(post.id)}
                               className="sm:ml-auto p-1.5 text-white/20 hover:text-white transition-all"
+                              aria-label="Beitrag loeschen"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+
+                        <div className="sm:hidden mt-3 border-t border-white/5 pt-3 flex flex-wrap items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-white/60">
+                          <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2 py-1">
+                            <button 
+                              onClick={() => handleVote(post.id, 1)}
+                              className={`p-1 transition-all ${post.userVote === 1 ? 'text-[#D4AF37]' : 'text-white/40 hover:text-white'}`}
+                              aria-label="Upvote"
+                            >
+                              <ArrowUp className="w-4 h-4" />
+                            </button>
+                            <span className={`text-[11px] font-bold ${post.userVote === 1 ? 'text-[#D4AF37]' : post.userVote === -1 ? 'text-blue-400' : 'text-white/70'}`}>
+                              {post.likes}
+                            </span>
+                            <button 
+                              onClick={() => handleVote(post.id, -1)}
+                              className={`p-1 transition-all ${post.userVote === -1 ? 'text-blue-400' : 'text-white/40 hover:text-white'}`}
+                              aria-label="Downvote"
+                            >
+                              <ArrowDown className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <button
+                            onClick={() => toggleComments(post.id)}
+                            className={`flex items-center gap-2 ${expandedPosts[post.id] ? 'text-white' : 'text-white/40 hover:text-white'}`}
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                            {post.comments?.length || 0}
+                          </button>
+                          <button
+                            onClick={() => handleShare(post.id)}
+                            className="flex items-center gap-2 text-white/40 hover:text-white transition-all"
+                          >
+                            <Share2 className="w-4 h-4" />
+                            Teilen
+                          </button>
+                          <div className="relative">
+                            <button
+                              onClick={() => setAiMenuOpen(aiMenuOpen === post.id ? null : post.id)}
+                              className="flex items-center gap-2 text-white/40 hover:text-white transition-all"
+                            >
+                              <Sparkles className="w-4 h-4" />
+                              {aiLoading && aiMenuOpen === post.id ? 'Lädt...' : 'Orion'}
+                            </button>
+                            {aiMenuOpen === post.id && (
+                              <div className="absolute left-0 bottom-full mb-2 w-48 rounded-xl border border-white/10 bg-[#0d0d0d] shadow-2xl z-20">
+                                {AI_ACTIONS.map(action => (
+                                  <button
+                                    key={action.id}
+                                    onClick={() => handleAIAction(post, action.id)}
+                                    className="w-full text-left px-4 py-2 text-[11px] text-white/70 hover:bg-white/5 transition-colors"
+                                  >
+                                    {action.label}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          {user && user.id && post.authorId === user.id && (
+                            <button
+                              onClick={() => startEdit(post)}
+                              className="p-1.5 text-white/40 hover:text-white transition-all"
+                              aria-label="Beitrag bearbeiten"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                          )}
+                          {user && (user.role === 'ADMIN' || (user.id && post.authorId === user.id)) && (
+                            <button
+                              onClick={() => handleDelete(post.id)}
+                              className="p-1.5 text-white/40 hover:text-white transition-all"
                               aria-label="Beitrag loeschen"
                             >
                               <X className="w-4 h-4" />
