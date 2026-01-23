@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X } from 'lucide-react';
+import { Menu, Settings, X } from 'lucide-react';
 import { navigation } from './navigation';
 import { SignOutButton } from './SignOutButton';
 import { CreditsDisplay } from './CreditsDisplay';
@@ -111,6 +111,22 @@ export default function MobileNav() {
                 </Link>
               );
             })}
+
+            <div className="text-[9px] font-bold uppercase tracking-[0.3em] text-white/20 px-2 pt-6 pb-2">
+              Account
+            </div>
+            <Link
+              href="/profile"
+              onClick={() => setOpen(false)}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all duration-500 ${
+                pathname === '/profile'
+                  ? 'bg-white/5 text-[var(--accent)] border border-white/10'
+                  : 'text-white/40 hover:text-white hover:bg-white/[0.02]'
+              }`}
+            >
+              <Settings className="w-4 h-4" />
+              Founder Dossier
+            </Link>
           </nav>
 
           <div className="border-t border-white/10 bg-black/20 pb-6 pt-4">
