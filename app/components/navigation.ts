@@ -8,6 +8,7 @@ import {
   PieChart,
   BookOpen,
   Rocket,
+  Image as ImageIcon,
 } from 'lucide-react';
 
 export type NavItem = {
@@ -20,6 +21,7 @@ export type NavItem = {
 export const navigation: NavItem[] = [
   { name: 'Cockpit', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Ventures', href: '/ventures', icon: Rocket },
+  { name: 'Media', href: '/media', icon: ImageIcon },
   { name: 'Forum', href: '/forum', icon: MessageSquare },
   { name: 'Messages', href: '/messages', icon: MessageCircle },
   { name: 'Squad Markt', href: '/squads', icon: Users },

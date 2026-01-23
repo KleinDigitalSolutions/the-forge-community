@@ -2,11 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CheckSquare, LayoutDashboard, MessageCircle, MessageSquare } from 'lucide-react';
+import { CheckSquare, Image as ImageIcon, LayoutDashboard, MessageCircle, MessageSquare } from 'lucide-react';
 import { useUnreadMessages } from '@/app/hooks/useUnreadMessages';
 
 const tabs = [
   { href: '/dashboard', label: 'Cockpit', icon: LayoutDashboard },
+  { href: '/media', label: 'Media', icon: ImageIcon },
   { href: '/forum', label: 'Forum', icon: MessageSquare },
   { href: '/messages', label: 'Messages', icon: MessageCircle },
   { href: '/tasks', label: 'Tasks', icon: CheckSquare },
