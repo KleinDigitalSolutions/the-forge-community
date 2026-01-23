@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import base64
 import io
 import os
@@ -5,11 +7,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import modal
 import requests
-import torch
-from diffusers import AutoPipelineForImage2Image, AutoPipelineForText2Image, DiffusionPipeline
-from diffusers.utils import export_to_video
 from fastapi import Header, HTTPException
-from PIL import Image
 
 APP_NAME = "forge-media-studio"
 MODEL_CACHE = "/models"
@@ -89,7 +87,9 @@ def _resolve_dimensions(aspect_ratio: str, base: int) -> Tuple[int, int]:
     return (base, base)
 
 
-def _fetch_image(url: str) -> Image.Image:
+def _fetch_image(url: str):
+    from PIL import Image
+
     response = requests.get(url, timeout=60)
     if response.status_code != 200:
         raise HTTPException(status_code=400, detail="Failed to download reference image")
@@ -97,13 +97,15 @@ def _fetch_image(url: str) -> Image.Image:
     return image
 
 
-def _encode_image(image: Image.Image) -> str:
+def _encode_image(image: Any) -> str:
     buffer = io.BytesIO()
     image.save(buffer, format="PNG")
     return base64.b64encode(buffer.getvalue()).decode("utf-8")
 
 
-def _encode_video(frames: List[Image.Image], fps: int) -> str:
+def _encode_video(frames: List[Any], fps: int) -> str:
+    from diffusers.utils import export_to_video
+
     video_path = export_to_video(frames, fps=fps)
     with open(video_path, "rb") as handle:
         data = handle.read()
@@ -114,6 +116,9 @@ def _load_text_to_image(model_key: str):
     if model_key in IMAGE_PIPES:
         return IMAGE_PIPES[model_key]
     model_id = _resolve_model_id(model_key)
+    from diffusers import AutoPipelineForText2Image
+    import torch
+
     pipe = AutoPipelineForText2Image.from_pretrained(
         model_id,
         torch_dtype=torch.float16,
@@ -129,6 +134,9 @@ def _load_image_to_image(model_key: str):
     if model_key in IMAGE_PIPES:
         return IMAGE_PIPES[model_key]
     model_id = _resolve_model_id(model_key)
+    from diffusers import AutoPipelineForImage2Image
+    import torch
+
     pipe = AutoPipelineForImage2Image.from_pretrained(
         model_id,
         torch_dtype=torch.float16,
@@ -144,6 +152,9 @@ def _load_video_pipeline(model_key: str):
     if model_key in VIDEO_PIPES:
         return VIDEO_PIPES[model_key]
     model_id = _resolve_model_id(model_key)
+    from diffusers import DiffusionPipeline
+    import torch
+
     pipe = DiffusionPipeline.from_pretrained(
         model_id,
         torch_dtype=torch.float16,
@@ -156,6 +167,8 @@ def _load_video_pipeline(model_key: str):
 
 
 def _generate_images(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+    import torch
+
     mode = payload.get("mode", "text-to-image")
     model_key = payload.get("model", "qwen-image-2512")
     prompt = payload.get("prompt", "")
@@ -215,6 +228,8 @@ def _generate_images(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
 
 
 def _generate_videos(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+    import torch
+
     mode = payload.get("mode", "text-to-video")
     model_key = payload.get("model", "wan-2.2")
     prompt = payload.get("prompt", "")
@@ -282,13 +297,13 @@ def _generate_videos(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
 
 @app.function(
     image=image,
-    gpu=modal.gpu.A10G(),
+    gpu="A10G",
     timeout=600,
     volumes={MODEL_CACHE: volume},
     secrets=secrets,
-    keep_warm=0,
+    min_containers=0,
 )
-@modal.web_endpoint(method="POST")
+@modal.fastapi_endpoint(method="POST")
 def generate_image(payload: Dict[str, Any], authorization: Optional[str] = Header(None)):
     _require_token(authorization)
     if payload.get("model") not in IMAGE_MODEL_IDS:
@@ -299,13 +314,13 @@ def generate_image(payload: Dict[str, Any], authorization: Optional[str] = Heade
 
 @app.function(
     image=image,
-    gpu=modal.gpu.A100(),
+    gpu="A100-40GB",
     timeout=900,
     volumes={MODEL_CACHE: volume},
     secrets=secrets,
-    keep_warm=0,
+    min_containers=0,
 )
-@modal.web_endpoint(method="POST")
+@modal.fastapi_endpoint(method="POST")
 def generate_video(payload: Dict[str, Any], authorization: Optional[str] = Header(None)):
     _require_token(authorization)
     if payload.get("model") not in VIDEO_MODEL_IDS:
