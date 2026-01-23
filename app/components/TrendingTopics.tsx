@@ -93,25 +93,6 @@ export function TrendingTopics() {
     }
   }
 
-  function getHeatColor(heat: number) {
-    if (heat >= 80) return 'from-red-500 to-orange-500';
-    if (heat >= 60) return 'from-orange-500 to-yellow-500';
-    if (heat >= 40) return 'from-yellow-500 to-green-500';
-    return 'from-green-500 to-blue-500';
-  }
-
-  function getHeatIcon(heat: number) {
-    if (heat >= 80) return <Flame className="w-4 h-4 text-red-400" />;
-    if (heat >= 60) return <TrendingUp className="w-4 h-4 text-orange-400" />;
-    return <Activity className="w-4 h-4 text-yellow-400" />;
-  }
-
-  const Wrapper = ({ children }: { children: React.ReactNode }) => (
-    <div className="bg-[var(--surface)] rounded-xl p-5 border border-[var(--border)]">
-      {children}
-    </div>
-  );
-
   const LoadingView = (
     <Wrapper>
       <div className="flex items-center justify-center gap-3 py-8">
