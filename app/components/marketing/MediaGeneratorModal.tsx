@@ -40,8 +40,8 @@ const MEDIA_MODES = [
 ] as const;
 
 const IMAGE_MODELS = [
-  { id: 'qwen-image-2512', label: 'Qwen-Image 2512 · Quality' },
   { id: 'z-image-turbo', label: 'Z-Image Turbo · Fast' },
+  { id: 'qwen-image-2512', label: 'Qwen-Image 2512 · Quality' },
 ];
 
 const VIDEO_MODELS = [
@@ -50,8 +50,8 @@ const VIDEO_MODELS = [
 ];
 
 const MODE_DEFAULT_MODEL: Record<MediaMode, string> = {
-  'text-to-image': 'qwen-image-2512',
-  'image-to-image': 'qwen-image-2512',
+  'text-to-image': 'z-image-turbo',
+  'image-to-image': 'z-image-turbo',
   'text-to-video': 'mochi-1',
   'image-to-video': 'wan-2.2',
 };
@@ -95,7 +95,7 @@ export function MediaGeneratorModal({
   const [prompt, setPrompt] = useState('');
   const [negativePrompt, setNegativePrompt] = useState('');
   const [aspectRatio, setAspectRatio] = useState(ASPECT_RATIOS[0].id);
-  const [steps, setSteps] = useState(30);
+  const [steps, setSteps] = useState(20);
   const [guidance, setGuidance] = useState(7.5);
   const [seed, setSeed] = useState('');
   const [strength, setStrength] = useState(0.6);

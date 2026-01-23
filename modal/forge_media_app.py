@@ -31,7 +31,7 @@ DEFAULT_VIDEO_RES = 720
 ASPECT_RES = {
     "1:1": (1024, 1024),
     "4:5": (896, 1120),
-    "9:16": (768, 1365),
+    "9:16": (768, 1360),
     "16:9": (1280, 720),
     "3:2": (1152, 768),
 }
@@ -316,7 +316,7 @@ def _generate_videos(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
     timeout=600,
     volumes={MODEL_CACHE: volume},
     secrets=secrets,
-    min_containers=0,
+    min_containers=1,
 )
 @modal.fastapi_endpoint(method="POST")
 def generate_image(payload: Dict[str, Any], authorization: Optional[str] = Header(None)):

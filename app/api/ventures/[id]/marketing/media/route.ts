@@ -288,13 +288,14 @@ export async function POST(
       return NextResponse.json({ error: 'Referenzbild fehlt' }, { status: 400 });
     }
 
+    const defaultSteps = isVideoMode ? 20 : 20;
     const payload = {
       mode,
       model,
       prompt: useBrandContext ? `${prompt}${buildBrandContext(venture.brandDNA)}` : prompt,
       negativePrompt: negativePrompt || undefined,
       aspectRatio,
-      steps: clampNumber(normalizeNumber(formData.get('steps'), 30), 1, maxSteps),
+      steps: clampNumber(normalizeNumber(formData.get('steps'), defaultSteps), 1, maxSteps),
       guidance: normalizeNumber(formData.get('guidance'), 7.5),
       seed: formData.get('seed') ? String(formData.get('seed')) : undefined,
       strength: clampNumber(normalizeNumber(formData.get('strength'), 0.6), 0, 1),
