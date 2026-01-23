@@ -24,8 +24,8 @@ const COSTS: Record<string, number> = {
 
 // Replicate Models
 const MODELS = {
-  IMAGE: "black-forest-labs/flux-schnell", // Fast, high quality, cheap
-  VIDEO: "wan-video/wan-2.1-1.3b" // Efficient video generation
+  IMAGE: "black-forest-labs/flux-schnell" as `${string}/${string}`, 
+  VIDEO: "wan-video/wan-2.1-1.3b" as `${string}/${string}`
 };
 
 const parseLimit = (value: string | undefined, fallback: number) => {
