@@ -491,3 +491,37 @@ def get_last_frame(payload: Dict[str, Any], authorization: Optional[str] = Heade
             "data": base64.b64encode(img_data).decode("utf-8")
         }
     }
+
+@app.function(
+    image=image,
+    gpu="A10G",
+    timeout=3600, # Allow 1 hour for downloads
+    volumes={MODEL_CACHE: volume},
+    secrets=secrets,
+)
+def seed_models():
+    """
+    Run this manually once to download all models to the volume.
+    Command: modal run modal/forge_media_app.py::seed_models
+    """
+    print("🚀 Starting Model Download (Warmup)...")
+    
+    # 1. Download Image Models
+    for model_key in IMAGE_MODEL_IDS:
+        print(f"⬇️ Downloading Image Model: {model_key}...")
+        try:
+            _load_text_to_image(model_key)
+            print(f"✅ {model_key} ready.")
+        except Exception as e:
+            print(f"⚠️ Error downloading {model_key}: {e}")
+
+    # 2. Download Video Models
+    for model_key in VIDEO_MODEL_IDS:
+        print(f"⬇️ Downloading Video Model: {model_key}...")
+        try:
+            _load_video_pipeline(model_key)
+            print(f"✅ {model_key} ready.")
+        except Exception as e:
+            print(f"⚠️ Error downloading {model_key}: {e}")
+
+    print("🎉 All models cached! You can now use the frontend.")
