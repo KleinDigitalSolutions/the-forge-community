@@ -195,7 +195,7 @@ export default function Home() {
         badgeText="BATCH #001 — REKRUTIERUNG LÄUFT"
         title="Viele Founder. 1 Brand."
         titleLine2="Volle Transparenz."
-        description="STAKE & SCALE ersetzt den riskanten Solo-Weg durch ein hocheffizientes Kollektiv. Wir bündeln Kapital und Skills, während die Execution im Forge-Hub zentralisiert wird."
+        description="STAKE & SCALE vereint Community-Capital, KI-Studios und radikale Execution. Forge-Hub, Decision Hall, Forum und Direct Messages bündeln Ideen, Votes und Output in einem System."
         primaryButtonText="SEQUENZ STARTEN"
         primaryButtonHref="#apply"
         secondaryButtonText="PROTOKOLL ANSEHEN"
@@ -289,6 +289,92 @@ export default function Home() {
           {/* --- NEW: THE FOUNDER OS (Feature Stack) --- */}
           <div className="mt-40 border-t border-white/5 pt-20">
              <ForgeOSShowcase />
+          </div>
+        </div>
+      </section>
+
+      {/* System Status */}
+      <section id="status" className="py-24 px-4 md:px-6 relative border-y border-white/5 bg-black/30">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-12">
+            <div>
+              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mb-4">System Status</div>
+              <h2 className="text-4xl md:text-6xl font-instrument-serif text-white leading-tight">
+                Was live ist.<br />Was neu ist.<br />Was als Nächstes kommt.
+              </h2>
+            </div>
+            <p className="text-sm text-white/50 max-w-xl leading-relaxed">
+              Basierend auf dem aktuellen Build: Kern-Workflow ist live, die Community-Schicht
+              wurde in den letzten 24h stark erweitert, und die nächsten Studios stehen im Rollout.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-6">
+            <div className="glass-card border border-white/10 rounded-2xl p-6 space-y-5">
+              <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">Live Now</div>
+              <ul className="space-y-4 text-sm text-white/70">
+                <li className="flex items-start gap-3">
+                  <Check className="w-4 h-4 text-[var(--accent)] mt-0.5" />
+                  Founder Cockpit, Venture Wizard, Decision Hall + Roadmap Voting
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-4 h-4 text-[var(--accent)] mt-0.5" />
+                  Brand DNA Studio + Legal Studio (Verträge & Compliance)
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-4 h-4 text-[var(--accent)] mt-0.5" />
+                  Marketing Studio (AI Content) + Sourcing Studio (Core Workflows)
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-4 h-4 text-[var(--accent)] mt-0.5" />
+                  Forum, Profile, Notifications und Founder-Identität
+                </li>
+              </ul>
+            </div>
+
+            <div className="glass-card border border-white/10 rounded-2xl p-6 space-y-5">
+              <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">Aktuelle Updates</div>
+              <ul className="space-y-4 text-sm text-white/70">
+                <li className="flex items-start gap-3">
+                  <Zap className="w-4 h-4 text-[var(--accent)] mt-0.5" />
+                  Orion Forum AI mit Kontext-Injection + Insight-Labels
+                </li>
+                <li className="flex items-start gap-3">
+                  <Zap className="w-4 h-4 text-[var(--accent)] mt-0.5" />
+                  Threaded Comments, Likes/Votes, Edit/Delete & Uploads
+                </li>
+                <li className="flex items-start gap-3">
+                  <Zap className="w-4 h-4 text-[var(--accent)] mt-0.5" />
+                  Direct Messages mit Inbox, Thread-Ansicht und User-Search
+                </li>
+                <li className="flex items-start gap-3">
+                  <Zap className="w-4 h-4 text-[var(--accent)] mt-0.5" />
+                  Rate Limits, Validierung & robuster Notification-Flow
+                </li>
+              </ul>
+            </div>
+
+            <div className="glass-card border border-white/10 rounded-2xl p-6 space-y-5">
+              <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">Als Nächstes</div>
+              <ul className="space-y-4 text-sm text-white/70">
+                <li className="flex items-start gap-3">
+                  <Target className="w-4 h-4 text-[var(--accent)] mt-0.5" />
+                  Admin Studio: Budget, Team-Management, Permissions
+                </li>
+                <li className="flex items-start gap-3">
+                  <Target className="w-4 h-4 text-[var(--accent)] mt-0.5" />
+                  Marketing Studio 2.0: Kampagnen-Manager + Content Kalender
+                </li>
+                <li className="flex items-start gap-3">
+                  <Target className="w-4 h-4 text-[var(--accent)] mt-0.5" />
+                  Sourcing Studio 2.0: Supplier DB, Samples, Production Orders
+                </li>
+                <li className="flex items-start gap-3">
+                  <Target className="w-4 h-4 text-[var(--accent)] mt-0.5" />
+                  Analytics, Stripe Connect Payouts, Mobile & Public API
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
