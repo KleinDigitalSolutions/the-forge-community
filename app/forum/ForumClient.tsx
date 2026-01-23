@@ -120,6 +120,111 @@ function buildAuthorHref(authorId?: string | null, authorSlug?: string | null) {
   return null;
 }
 
+// Helper für Markdown Komponenten
+const getMeaningfulChildren = (node: any) => {
+  const children = Array.isArray(node?.children) ? node.children : [];
+  return children.filter((child: any) => {
+    if (child?.type !== 'text') return true;
+    return typeof child.value === 'string' && child.value.trim().length > 0;
+  });
+};
+
+const getSingleElementChild = (node: any) => {
+  const children = getMeaningfulChildren(node);
+  if (children.length !== 1) return null;
+  const child = children[0];
+  if (child?.type !== 'element') return null;
+  return child;
+};
+
+const getParagraphLinkUrl = (node: any) => {
+  const child = getSingleElementChild(node);
+  if (!child || child.tagName !== 'a') return null;
+  const href = typeof child.properties?.href === 'string' ? child.properties.href : null;
+  if (!href) return null;
+  const linkChildren = Array.isArray(child.children) ? child.children : [];
+  if (linkChildren.length !== 1) return null;
+  const textNode = linkChildren[0];
+  if (textNode?.type !== 'text') return null;
+  const label = typeof textNode.value === 'string' ? textNode.value.trim() : '';
+  if (!label || label !== href) return null;
+  return href;
+};
+
+const isParagraphImageOnly = (node: any) => {
+  const child = getSingleElementChild(node);
+  return Boolean(child && child.tagName === 'img');
+  };
+
+const MarkdownComponents = {
+  p: ({ node, children }: any) => {
+    const previewUrl = getParagraphLinkUrl(node);
+    if (previewUrl) {
+      return (
+        <div className="not-prose my-4">
+          <LinkPreview url={previewUrl} />
+        </div>
+      );
+    }
+
+    if (isParagraphImageOnly(node)) {
+      return (
+        <figure className="my-4 rounded-xl overflow-hidden border border-white/10 bg-black/20">
+          {children}
+        </figure>
+      );
+    }
+
+    return <p className="mb-4 last:mb-0 leading-relaxed">{children}</p>;
+  },
+  // Links inline lassen, Vorschau nur bei Link-Absatz
+  a: ({ href, children }: any) => (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-[#D4AF37] hover:underline hover:text-white transition-colors"
+    >
+      {children}
+    </a>
+  ),
+  // Bilder ohne Wrapper, damit Inline-Images valide bleiben
+  img: ({ src, alt }: any) => (
+    <img
+      src={src}
+      alt={alt || ''}
+      className="block w-full h-auto object-cover max-h-[600px]"
+      loading="lazy"
+    />
+  ),
+  // Blockquotes stylen
+  blockquote: ({ children }: any) => (
+    <blockquote className="border-l-4 border-[#D4AF37] pl-4 italic text-white/60 my-4 bg-white/5 py-2 pr-4 rounded-r-lg">
+      {children}
+    </blockquote>
+  ),
+  pre: ({ children }: any) => (
+    <pre className="bg-[#0d0d0d] border border-white/10 rounded-xl p-4 my-4 overflow-x-auto">
+      {children}
+    </pre>
+  ),
+  // Code Blöcke
+  code: ({ inline, children, ...props }: any) => {
+    if (inline) {
+      return (
+        <code className="bg-white/10 px-1.5 py-0.5 rounded text-sm text-[#D4AF37] font-mono" {...props}>
+          {children}
+        </code>
+      );
+    }
+    return (
+      <code className="text-sm font-mono text-white/80" {...props}>
+        {children}
+      </code>
+    );
+  }
+};
+
 export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
   // Infinite Scroll State
   const [posts, setPosts] = useState<ForumPost[]>(initialPosts);
@@ -180,111 +285,6 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
     { id: 'factCheck', label: 'Faktencheck' },
     { id: 'nextSteps', label: 'Nächste Schritte' },
   ];
-
-  // Helper für Markdown Komponenten
-  const getMeaningfulChildren = (node: any) => {
-    const children = Array.isArray(node?.children) ? node.children : [];
-    return children.filter((child: any) => {
-      if (child?.type !== 'text') return true;
-      return typeof child.value === 'string' && child.value.trim().length > 0;
-    });
-  };
-
-  const getSingleElementChild = (node: any) => {
-    const children = getMeaningfulChildren(node);
-    if (children.length !== 1) return null;
-    const child = children[0];
-    if (child?.type !== 'element') return null;
-    return child;
-  };
-
-  const getParagraphLinkUrl = (node: any) => {
-    const child = getSingleElementChild(node);
-    if (!child || child.tagName !== 'a') return null;
-    const href = typeof child.properties?.href === 'string' ? child.properties.href : null;
-    if (!href) return null;
-    const linkChildren = Array.isArray(child.children) ? child.children : [];
-    if (linkChildren.length !== 1) return null;
-    const textNode = linkChildren[0];
-    if (textNode?.type !== 'text') return null;
-    const label = typeof textNode.value === 'string' ? textNode.value.trim() : '';
-    if (!label || label !== href) return null;
-    return href;
-  };
-
-  const isParagraphImageOnly = (node: any) => {
-    const child = getSingleElementChild(node);
-    return Boolean(child && child.tagName === 'img');
-  };
-
-  const MarkdownComponents = {
-    p: ({ node, children }: any) => {
-      const previewUrl = getParagraphLinkUrl(node);
-      if (previewUrl) {
-        return (
-          <div className="not-prose my-4">
-            <LinkPreview url={previewUrl} />
-          </div>
-        );
-      }
-
-      if (isParagraphImageOnly(node)) {
-        return (
-          <figure className="my-4 rounded-xl overflow-hidden border border-white/10 bg-black/20">
-            {children}
-          </figure>
-        );
-      }
-
-      return <p className="mb-4 last:mb-0 leading-relaxed">{children}</p>;
-    },
-    // Links inline lassen, Vorschau nur bei Link-Absatz
-    a: ({ href, children }: any) => (
-      <a
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-[#D4AF37] hover:underline hover:text-white transition-colors"
-      >
-        {children}
-      </a>
-    ),
-    // Bilder ohne Wrapper, damit Inline-Images valide bleiben
-    img: ({ src, alt }: any) => (
-      <img
-        src={src}
-        alt={alt || ''}
-        className="block w-full h-auto object-cover max-h-[600px]"
-        loading="lazy"
-      />
-    ),
-    // Blockquotes stylen
-    blockquote: ({ children }: any) => (
-      <blockquote className="border-l-4 border-[#D4AF37] pl-4 italic text-white/60 my-4 bg-white/5 py-2 pr-4 rounded-r-lg">
-        {children}
-      </blockquote>
-    ),
-    pre: ({ children }: any) => (
-      <pre className="bg-[#0d0d0d] border border-white/10 rounded-xl p-4 my-4 overflow-x-auto">
-        {children}
-      </pre>
-    ),
-    // Code Blöcke
-    code: ({ inline, children, ...props }: any) => {
-      if (inline) {
-        return (
-          <code className="bg-white/10 px-1.5 py-0.5 rounded text-sm text-[#D4AF37] font-mono" {...props}>
-            {children}
-          </code>
-        );
-      }
-      return (
-        <code className="text-sm font-mono text-white/80" {...props}>
-          {children}
-        </code>
-      );
-    }
-  };
 
   const fetchUser = async () => {
     try {
