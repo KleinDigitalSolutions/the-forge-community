@@ -548,13 +548,13 @@ export async function GET(
           creditsRemaining: cachedJob.creditsRemaining ?? null
         });
       }
-      cachedJob = lockedJob;
-      if (cachedJob.assets) {
+      const job = lockedJob;
+      if (job.assets) {
         return NextResponse.json({
           status: prediction.status,
-          assets: cachedJob.assets,
+          assets: job.assets,
           provider: 'replicate',
-          creditsRemaining: cachedJob.creditsRemaining ?? null
+          creditsRemaining: job.creditsRemaining ?? null
         });
       }
 
@@ -569,8 +569,8 @@ export async function GET(
         return NextResponse.json({ status: 'failed', error: 'Kein Output von Replicate' });
       }
 
-      const isVideoMode = cachedJob.outputType === 'video';
-      const dimensions = getAspectDimensions(cachedJob.aspectRatio, isVideoMode);
+      const isVideoMode = job.outputType === 'video';
+      const dimensions = getAspectDimensions(job.aspectRatio, isVideoMode);
 
       const resolvedAssets = await Promise.all(
         outputUrls.map(async (url, index) => {
@@ -596,11 +596,11 @@ export async function GET(
               mimeType: info.contentType,
               size: buffer.length,
               source: 'GENERATED',
-              prompt: cachedJob.prompt,
-              model: cachedJob.model,
+              prompt: job.prompt,
+              model: job.model,
               width: dimensions.width,
               height: dimensions.height,
-              tags: [cachedJob.mode, 'replicate']
+              tags: [job.mode, 'replicate']
             }
           });
 
@@ -608,23 +608,23 @@ export async function GET(
         })
       );
 
-      if (cachedJob.reservationId) {
+      if (job.reservationId) {
         const settlement = await settleEnergy({
-          reservationId: cachedJob.reservationId,
-          finalCost: cachedJob.cost,
+          reservationId: job.reservationId,
+          finalCost: job.cost,
           provider: 'replicate',
-          model: cachedJob.model
+          model: job.model
         });
 
         if (settlement?.creditsRemaining !== undefined) {
-          cachedJob.creditsRemaining = settlement.creditsRemaining;
+          job.creditsRemaining = settlement.creditsRemaining;
         }
       }
 
       const updated = await updateJobCache(predictionId, {
         assets: resolvedAssets,
         settledAt: new Date().toISOString(),
-        creditsRemaining: cachedJob.creditsRemaining,
+        creditsRemaining: job.creditsRemaining,
         processingId: null,
         processingAt: null,
         processingBy: null,
@@ -634,7 +634,7 @@ export async function GET(
         status: prediction.status,
         assets: updated?.assets ?? resolvedAssets,
         provider: 'replicate',
-        creditsRemaining: updated?.creditsRemaining ?? cachedJob.creditsRemaining ?? null
+        creditsRemaining: updated?.creditsRemaining ?? job.creditsRemaining ?? null
       });
     }
 
