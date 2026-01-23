@@ -261,6 +261,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
   const [notificationsLoading, setNotificationsLoading] = useState(false);
   const [notificationsUnread, setNotificationsUnread] = useState(0);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [emojiPickerSize, setEmojiPickerSize] = useState({ width: 320, height: 400 });
   const editorRef = useRef<HTMLTextAreaElement>(null);
   const toastTimeoutRef = useRef<number | null>(null);
   const loadMoreRef = useRef(null);
@@ -308,6 +309,18 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
     }, 0);
     return () => clearTimeout(timer);
   }, [activeChannel, sortMode]);
+
+  useEffect(() => {
+    const updateEmojiPickerSize = () => {
+      if (typeof window === 'undefined') return;
+      const width = Math.max(260, Math.min(320, window.innerWidth - 32));
+      const height = Math.max(260, Math.min(400, window.innerHeight - 260));
+      setEmojiPickerSize({ width, height });
+    };
+    updateEmojiPickerSize();
+    window.addEventListener('resize', updateEmojiPickerSize);
+    return () => window.removeEventListener('resize', updateEmojiPickerSize);
+  }, []);
 
   // Load More on Scroll
   useEffect(() => {
@@ -1093,14 +1106,12 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                 <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Feeds</p>
                 <button
                   onClick={handleToggleNotifications}
-                  className="relative flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white/60"
+                  className="relative flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60"
+                  aria-label="Benachrichtigungen"
                 >
                   <Bell className="w-3.5 h-3.5" />
-                  Inbox
                   {notificationsUnread > 0 && (
-                    <span className="absolute -right-2 -top-2 rounded-full bg-[#D4AF37] text-[9px] font-bold text-black px-1.5 py-0.5">
-                      {notificationsUnread}
-                    </span>
+                    <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-[#D4AF37]" />
                   )}
                 </button>
               </div>
@@ -1147,16 +1158,30 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#D4AF37] to-amber-700 flex items-center justify-center text-black font-black text-sm">
                   {user?.name?.charAt(0)}
                 </div>
-                <button 
-                  onClick={startNewPost}
-                  className="flex-1 bg-white/5 border border-white/10 hover:border-white/20 rounded-lg px-4 py-2.5 text-sm text-left text-white/40 transition-all"
-                >
-                  Was brennt dir auf der Seele?
-                </button>
-              </div>
-              <div className="flex gap-1 justify-end sm:justify-start">
-                <button onClick={startNewPost} className="p-2 text-white/40 hover:text-white hover:bg-white/5 rounded-lg"><ImageIcon className="w-5 h-5" /></button>
-                <button onClick={startNewPost} className="p-2 text-white/40 hover:text-white hover:bg-white/5 rounded-lg"><Plus className="w-5 h-5" /></button>
+                <div className="relative flex-1">
+                  <button 
+                    onClick={startNewPost}
+                    className="w-full bg-white/5 border border-white/10 hover:border-white/20 rounded-lg px-4 pr-20 py-2.5 text-sm text-left text-white/40 transition-all"
+                  >
+                    Was brennt dir auf der Seele?
+                  </button>
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                    <button
+                      onClick={startNewPost}
+                      className="p-2 text-white/40 hover:text-white hover:bg-white/5 rounded-lg"
+                      aria-label="Bild hochladen"
+                    >
+                      <ImageIcon className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={startNewPost}
+                      className="p-2 text-white/40 hover:text-white hover:bg-white/5 rounded-lg"
+                      aria-label="Beitrag erstellen"
+                    >
+                      <Plus className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -1676,22 +1701,22 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                   {/* Category & Tools Bar */}
                   <div className="flex flex-wrap items-center gap-4">
                     {editingPost === 'NEW' && (
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-1">Channel wählen</label>
+                      <div className="space-y-2 w-full sm:w-auto">
+                        <label className="block text-[10px] font-black text-white/20 uppercase tracking-widest ml-1">Channel wählen</label>
                         <select
                           value={activeChannel === 'All' || activeChannel === 'Popular' ? 'General' : activeChannel}
                           onChange={e => setActiveChannel(e.target.value)}
-                          className="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-[#D4AF37] transition-all cursor-pointer"
+                          className="w-full sm:w-auto bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-[#D4AF37] transition-all cursor-pointer"
                         >
                           {CHANNELS.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </select>
                       </div>
                     )}
 
-                    <div className="flex-1" />
+                    <div className="hidden sm:block flex-1" />
 
                     {/* Editor Tools */}
-                    <div className="flex flex-wrap items-center gap-2 bg-white/5 p-1.5 sm:p-2 rounded-lg sm:rounded-xl border border-white/10">
+                    <div className="w-full sm:w-auto flex flex-wrap items-center gap-2 bg-white/5 p-1.5 sm:p-2 rounded-lg sm:rounded-xl border border-white/10">
                       <div className="flex items-center gap-1 sm:border-r border-white/10 sm:pr-2 sm:mr-2">
                         <button onClick={() => formatText('bold')} className="p-1.5 sm:p-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-all"><Bold className="w-4 h-4" /></button>
                         <button onClick={() => formatText('italic')} className="p-1.5 sm:p-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-all"><Italic className="w-4 h-4" /></button>
@@ -1708,13 +1733,16 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                             <Smile className="w-4 h-4" />
                           </button>
                           {showEmojiPicker && (
-                            <div className="absolute top-full right-0 mt-2 z-50 shadow-2xl rounded-2xl overflow-hidden border border-white/10">
+                            <div
+                              className="fixed sm:absolute left-1/2 sm:left-auto right-auto sm:right-0 top-[calc(env(safe-area-inset-top)+140px)] sm:top-full -translate-x-1/2 sm:translate-x-0 mt-2 z-50 shadow-2xl rounded-2xl overflow-hidden border border-white/10"
+                              style={{ width: emojiPickerSize.width }}
+                            >
                               <EmojiPicker 
                                 theme={Theme.DARK} 
                                 onEmojiClick={handleEmojiClick}
                                 emojiStyle={EmojiStyle.NATIVE}
-                                width={320}
-                                height={400}
+                                width={emojiPickerSize.width}
+                                height={emojiPickerSize.height}
                                 lazyLoadEmojis={true}
                                 searchPlaceHolder="Suche..."
                               />
@@ -1775,14 +1803,12 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                   </div>
                 </div>
 
-                <div className="p-6 sm:p-8 border-t border-white/5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white/[0.01]">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-2 h-2 rounded-full ${(editingPost === 'NEW' ? content : editContent).length > 0 ? 'bg-green-500 animate-pulse' : 'bg-white/10'}`} />
-                    <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">
-                      {statusMessage || ((editingPost === 'NEW' ? content : editContent).length > 0 ? `${(editingPost === 'NEW' ? content : editContent).length} Zeichen` : 'System bereit')}
-                    </span>
-                  </div>
-                  
+                <div className="p-6 sm:p-8 border-t border-white/5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end bg-white/[0.01]">
+                  {statusMessage && (
+                    <div className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">
+                      {statusMessage}
+                    </div>
+                  )}
                   <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
                     <button 
                       onClick={() => setEditingPost(null)}

@@ -47,12 +47,7 @@ export default function MobileNav() {
             {activeItem?.name || 'Dashboard'}
           </div>
         </div>
-        <Link
-          href="/forum"
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--accent)]"
-        >
-          Hub
-        </Link>
+        <div className="h-10 w-10" aria-hidden="true" />
       </div>
 
       <div
