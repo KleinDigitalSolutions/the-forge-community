@@ -18,15 +18,22 @@ async function getPreferenceMap(userIds: string[]) {
 }
 
 async function shouldNotifyUser(userId: string, key: NotificationPreferenceKey) {
-  const prefs = await prisma.notificationPreference.findUnique({
-    where: { userId },
-    select: {
-      forumComments: true,
-      forumReplies: true,
-      mentions: true,
-      system: true
-    }
-  });
+  const [prefs, user] = await Promise.all([
+    prisma.notificationPreference.findUnique({
+      where: { userId },
+      select: {
+        forumComments: true,
+        forumReplies: true,
+        mentions: true,
+        system: true
+      }
+    }),
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { accountStatus: true }
+    })
+  ]);
+  if (user?.accountStatus === 'DELETED') return false;
   if (!prefs) return true;
   return prefs[key];
 }
@@ -69,6 +76,7 @@ export async function processMentions({
   // We search for both to be safe
   const users = await prisma.user.findMany({
     where: {
+      accountStatus: 'ACTIVE',
       OR: [
         { name: { in: Array.from(mentionedNames), mode: 'insensitive' } },
         { profileSlug: { in: Array.from(mentionedNames), mode: 'insensitive' } }

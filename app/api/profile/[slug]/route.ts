@@ -22,6 +22,7 @@ export async function GET(
 
   const user = await prisma.user.findFirst({
     where: {
+      accountStatus: 'ACTIVE',
       OR: [{ profileSlug: slug }, { id: slug }],
     },
     select: {
@@ -62,6 +63,17 @@ export async function GET(
 
   const profileSlug = await ensureProfileSlug(user);
   const achievements = await getProfileAchievements(user.id);
+  const privacy = await prisma.privacyPreference.findUnique({
+    where: { userId: user.id },
+    select: { profileVisible: true, showFollowerCounts: true }
+  });
+
+  const profileVisible = privacy?.profileVisible ?? true;
+  const showFollowerCounts = privacy?.showFollowerCounts ?? true;
+
+  if (!profileVisible && viewer?.id !== user.id) {
+    return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
+  }
 
   const [forumPosts, forumLikes] = await prisma.$transaction([
     prisma.forumPost.count({ where: { authorId: user.id } }),
@@ -71,10 +83,18 @@ export async function GET(
     }),
   ]);
 
-  const [followersCount, followingCount] = await prisma.$transaction([
-    prisma.userFollow.count({ where: { followingId: user.id } }),
-    prisma.userFollow.count({ where: { followerId: user.id } }),
-  ]);
+  const shouldShowCounts = showFollowerCounts || viewer?.id === user.id;
+  let followersCount: number | null = null;
+  let followingCount: number | null = null;
+
+  if (shouldShowCounts) {
+    const counts = await prisma.$transaction([
+      prisma.userFollow.count({ where: { followingId: user.id } }),
+      prisma.userFollow.count({ where: { followerId: user.id } }),
+    ]);
+    followersCount = counts[0];
+    followingCount = counts[1];
+  }
 
   let isFollowing = false;
   if (viewer?.id && viewer.id !== user.id) {

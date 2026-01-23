@@ -83,6 +83,9 @@ export async function DELETE(request: Request) {
     prisma.notificationPreference.deleteMany({
       where: { userId: user.id }
     }),
+    prisma.privacyPreference.deleteMany({
+      where: { userId: user.id }
+    }),
     prisma.userFollow.deleteMany({
       where: {
         OR: [{ followerId: user.id }, { followingId: user.id }]

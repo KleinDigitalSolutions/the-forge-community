@@ -29,6 +29,7 @@ export async function GET(request: Request) {
   const results = await prisma.user.findMany({
     where: {
       id: { not: user.id },
+      accountStatus: 'ACTIVE',
       OR: [
         { name: { contains: query, mode: 'insensitive' } },
         { profileSlug: { contains: query, mode: 'insensitive' } },

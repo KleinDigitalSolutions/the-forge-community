@@ -104,8 +104,8 @@ export async function POST(request: Request) {
 
   const recipient = await prisma.user.findFirst({
     where: recipientId
-      ? { id: recipientId }
-      : { profileSlug: recipientSlug },
+      ? { id: recipientId, accountStatus: 'ACTIVE' }
+      : { profileSlug: recipientSlug, accountStatus: 'ACTIVE' },
     select: { id: true }
   });
 

@@ -22,8 +22,8 @@ type ProfileData = {
   name: string;
   profileSlug: string;
   viewerId?: string | null;
-  followersCount?: number;
-  followingCount?: number;
+  followersCount?: number | null;
+  followingCount?: number | null;
   isFollowing?: boolean;
   image?: string | null;
   role?: string;
@@ -74,7 +74,11 @@ export default function PublicProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [creatingThread, setCreatingThread] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
-  const [followState, setFollowState] = useState({ isFollowing: false, followersCount: 0, followingCount: 0 });
+  const [followState, setFollowState] = useState<{ isFollowing: boolean; followersCount: number | null; followingCount: number | null }>({
+    isFollowing: false,
+    followersCount: null,
+    followingCount: null
+  });
   const [followBusy, setFollowBusy] = useState(false);
   const [followError, setFollowError] = useState<string | null>(null);
 
@@ -108,8 +112,8 @@ export default function PublicProfilePage() {
     if (!profile) return;
     setFollowState({
       isFollowing: Boolean(profile.isFollowing),
-      followersCount: profile.followersCount || 0,
-      followingCount: profile.followingCount || 0,
+      followersCount: profile.followersCount ?? null,
+      followingCount: profile.followingCount ?? null,
     });
   }, [profile]);
 
@@ -153,11 +157,11 @@ export default function PublicProfilePage() {
         throw new Error(data.error || 'Follow fehlgeschlagen');
       }
       const payload = await response.json();
-      setFollowState({
+      setFollowState(prev => ({
         isFollowing: payload.isFollowing,
-        followersCount: payload.followersCount ?? followState.followersCount,
-        followingCount: payload.followingCount ?? followState.followingCount,
-      });
+        followersCount: prev.followersCount === null ? null : (payload.followersCount ?? prev.followersCount),
+        followingCount: prev.followingCount === null ? null : (payload.followingCount ?? prev.followingCount),
+      }));
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Follow fehlgeschlagen';
       setFollowError(message);
@@ -273,14 +277,18 @@ export default function PublicProfilePage() {
                   <div className="text-[10px] text-white/40 uppercase tracking-widest">Forum</div>
                   <div className="text-2xl font-bold text-white">{profile.stats.forumPosts}</div>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                  <div className="text-[10px] text-white/40 uppercase tracking-widest">Follower</div>
-                  <div className="text-2xl font-bold text-white">{followState.followersCount}</div>
-                </div>
-                <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                  <div className="text-[10px] text-white/40 uppercase tracking-widest">Following</div>
-                  <div className="text-2xl font-bold text-white">{followState.followingCount}</div>
-                </div>
+                {followState.followersCount !== null && (
+                  <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                    <div className="text-[10px] text-white/40 uppercase tracking-widest">Follower</div>
+                    <div className="text-2xl font-bold text-white">{followState.followersCount}</div>
+                  </div>
+                )}
+                {followState.followingCount !== null && (
+                  <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                    <div className="text-[10px] text-white/40 uppercase tracking-widest">Following</div>
+                    <div className="text-2xl font-bold text-white">{followState.followingCount}</div>
+                  </div>
+                )}
               </div>
             </div>
           </section>
