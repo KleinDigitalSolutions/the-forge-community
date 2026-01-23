@@ -18,12 +18,11 @@ HF_CACHE = "/models/hf"
 MODEL_ID_ENV = {
     "qwen-image-2512": "QWEN_IMAGE_MODEL_ID",
     "z-image-turbo": "Z_IMAGE_MODEL_ID",
-    "glm-image": "GLM_IMAGE_MODEL_ID",
     "wan-2.2": "WAN_VIDEO_MODEL_ID",
     "mochi-1": "MOCHI_VIDEO_MODEL_ID",
 }
 
-IMAGE_MODEL_IDS = ["qwen-image-2512", "z-image-turbo", "glm-image"]
+IMAGE_MODEL_IDS = ["qwen-image-2512", "z-image-turbo"]
 VIDEO_MODEL_IDS = ["wan-2.2", "mochi-1"]
 
 DEFAULT_IMAGE_RES = 1024

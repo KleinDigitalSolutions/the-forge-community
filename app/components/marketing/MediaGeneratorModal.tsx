@@ -42,7 +42,6 @@ const MEDIA_MODES = [
 const IMAGE_MODELS = [
   { id: 'qwen-image-2512', label: 'Qwen-Image 2512 · Quality' },
   { id: 'z-image-turbo', label: 'Z-Image Turbo · Fast' },
-  { id: 'glm-image', label: 'GLM-Image · Text-Heavy' },
 ];
 
 const VIDEO_MODELS = [

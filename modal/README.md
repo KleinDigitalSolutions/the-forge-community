@@ -16,7 +16,6 @@ Create a single Modal secret named `TheForge` that includes:
 - `MODAL_API_KEY` (shared with Next.js `MODAL_API_KEY`)
 - `QWEN_IMAGE_MODEL_ID` (e.g. `Qwen/Qwen-Image-2512`)
 - `Z_IMAGE_MODEL_ID` (e.g. `Tongyi-MAI/Z-Image-Turbo`)
-- `GLM_IMAGE_MODEL_ID` (optional)
 - `WAN_VIDEO_MODEL_ID` (e.g. `Wan-AI/Wan2.2-I2V-A14B`)
 - `MOCHI_VIDEO_MODEL_ID` (e.g. `genmo/mochi-1-preview`)
 
@@ -27,7 +26,6 @@ modal secret create TheForge \
   MODAL_API_KEY=... \
   QWEN_IMAGE_MODEL_ID=... \
   Z_IMAGE_MODEL_ID=... \
-  GLM_IMAGE_MODEL_ID=... \
   WAN_VIDEO_MODEL_ID=... \
   MOCHI_VIDEO_MODEL_ID=...
 ```

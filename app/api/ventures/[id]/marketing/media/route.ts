@@ -25,8 +25,8 @@ const MODE_ENDPOINTS: Record<string, string | undefined> = {
 };
 
 const MODE_MODEL_ALLOWLIST: Record<string, Set<string>> = {
-  'text-to-image': new Set(['qwen-image-2512', 'z-image-turbo', 'glm-image']),
-  'image-to-image': new Set(['qwen-image-2512', 'z-image-turbo', 'glm-image']),
+  'text-to-image': new Set(['qwen-image-2512', 'z-image-turbo']),
+  'image-to-image': new Set(['qwen-image-2512', 'z-image-turbo']),
   'text-to-video': new Set(['mochi-1']),
   'image-to-video': new Set(['wan-2.2', 'mochi-1']),
 };
