@@ -23,7 +23,6 @@ import {
 import ResponsiveHeroBanner from '@/app/components/ui/ResponsiveHeroBanner';
 import AnimatedCardStack from '@/app/components/ui/AnimatedCardStack';
 import ForgeOSShowcase from '@/app/components/landing/ForgeOSShowcase';
-import EquitySimulator from '@/app/components/landing/EquitySimulator';
 import MissionLogCarousel from '@/app/components/landing/MissionLogCarousel';
 
 // --------------------------------------------------------
@@ -379,44 +378,84 @@ export default function Home() {
         </div>
       </section>
 
-       {/* --- NEUE SECTION: VALIDATOR SIMULATOR --- */}
+       {/* --- SHOP STACK --- */}
        <section className="py-20 px-4 md:px-6 relative border-y border-white/5 bg-black/40">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
              <div>
                 <h2 className="text-4xl md:text-6xl font-instrument-serif text-white mb-6">
-                  Start Small.<br/><span className="text-[var(--accent)]">Scale Fast.</span>
+                  Forge Shop.<br/><span className="text-[var(--accent)]">Ready to Sell.</span>
                 </h2>
                 <p className="text-lg text-white/60 mb-8 leading-relaxed">
-                  Mit dem neuen <strong>12.5k Validator Batch</strong> senken wir die Eintrittsbarriere.
-                  Keine komplexe Tech-Plattform zu Beginn – voller Fokus auf Product-Market-Fit, 
-                  Sourcing und Hype-Generierung auf TikTok.
+                  Der Shop ist die Verkaufsebene für alle Founder-Brands. Ihr bekommt eine erprobte
+                  Storefront-Experience, die sich schnell branden lässt, plus einen klaren Launch-Flow
+                  aus Forge-Studios und Community-Execution.
                 </p>
                 <ul className="space-y-4 mb-8">
                   <li className="flex items-center gap-3 text-sm text-white/80">
                     <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_10px_rgba(212,175,55,0.8)]" />
-                    Perfekt für First-Time Founder
+                    Founder erhalten Zugriff auf den Shop-Stack
                   </li>
                   <li className="flex items-center gap-3 text-sm text-white/80">
                     <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_10px_rgba(212,175,55,0.8)]" />
-                    Fokus auf Cashflow & Brand-Building
+                    Conversion-orientiertes Layout + klare Produktstory
                   </li>
                   <li className="flex items-center gap-3 text-sm text-white/80">
                     <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_10px_rgba(212,175,55,0.8)]" />
-                    Spielgeld-Risiko bei Squad-Teilung
+                    Launch-Setup in Verbindung mit Sourcing, Marketing & Legal
                   </li>
                 </ul>
-                <button 
-                  onClick={() => document.getElementById('apply')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="text-xs font-bold uppercase tracking-widest text-[var(--accent)] hover:text-white transition-colors border-b border-[var(--accent)]/50 pb-1"
-                >
-                  Validator Batch Bewerben →
-                </button>
+                <div className="flex flex-wrap gap-4">
+                  <Link
+                    href="/demo-shop"
+                    className="text-xs font-bold uppercase tracking-widest text-[var(--accent)] hover:text-white transition-colors border-b border-[var(--accent)]/50 pb-1"
+                  >
+                    Shop Demo ansehen →
+                  </Link>
+                  <button
+                    onClick={() => document.getElementById('apply')?.scrollIntoView({ behavior: 'smooth' })}
+                    className="text-xs font-bold uppercase tracking-widest text-white/60 hover:text-white transition-colors"
+                  >
+                    Als Founder nutzen →
+                  </button>
+                </div>
              </div>
              
-             {/* Simulator Component Integration */}
+             {/* Shop Preview */}
              <div className="animate-fade-in-up delay-200">
-               <EquitySimulator />
+               <div className="glass-card border border-white/10 rounded-3xl p-6 md:p-8 relative overflow-hidden">
+                 <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
+                 <div className="flex items-center justify-between mb-6">
+                   <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">Storefront v1</div>
+                   <div className="text-[9px] font-bold uppercase tracking-widest text-[var(--accent)]">Live Demo</div>
+                 </div>
+                 <div className="grid grid-cols-2 gap-4">
+                   {[
+                     { name: 'Capsule Drop', price: '€89', tone: 'from-emerald-500/20 to-teal-500/10' },
+                     { name: 'Founder Kit', price: '€149', tone: 'from-purple-500/20 to-blue-500/10' },
+                   ].map((item) => (
+                     <div key={item.name} className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+                       <div className={`h-24 rounded-xl bg-gradient-to-br ${item.tone} mb-3`} />
+                       <div className="text-sm font-semibold text-white">{item.name}</div>
+                       <div className="text-[10px] text-white/40 uppercase tracking-widest">{item.price}</div>
+                     </div>
+                   ))}
+                 </div>
+                 <div className="mt-6 grid grid-cols-3 gap-3 text-[10px] text-white/60">
+                   <div className="flex items-center gap-2 rounded-xl border border-white/5 bg-white/[0.02] px-3 py-2">
+                     <Package className="w-4 h-4 text-[var(--accent)]" />
+                     <span>Collections</span>
+                   </div>
+                   <div className="flex items-center gap-2 rounded-xl border border-white/5 bg-white/[0.02] px-3 py-2">
+                     <TrendingUp className="w-4 h-4 text-[var(--accent)]" />
+                     <span>Conversion</span>
+                   </div>
+                   <div className="flex items-center gap-2 rounded-xl border border-white/5 bg-white/[0.02] px-3 py-2">
+                     <Truck className="w-4 h-4 text-[var(--accent)]" />
+                     <span>Fulfillment</span>
+                   </div>
+                 </div>
+               </div>
              </div>
           </div>
         </div>
