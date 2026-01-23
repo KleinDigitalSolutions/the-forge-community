@@ -6,14 +6,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface VoiceInputProps {
   onTranscript: (text: string) => void;
+  variant?: 'full' | 'icon';
 }
 
-export function VoiceInput({ onTranscript }: VoiceInputProps) {
+export function VoiceInput({ onTranscript, variant = 'full' }: VoiceInputProps) {
   const [isListening, setIsListening] = useState(false);
   const [isPolishing, setIsPolishing] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [supported, setSupported] = useState(true);
   const recognitionRef = useRef<any>(null);
+  const isIconOnly = variant === 'icon';
 
   useEffect(() => {
     // Check if browser supports Speech Recognition
@@ -127,28 +129,31 @@ export function VoiceInput({ onTranscript }: VoiceInputProps) {
         type="button"
         onClick={toggleListening}
         disabled={isPolishing}
-        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-widest transition-all ${
+        aria-label={isListening ? 'Diktieren stoppen' : 'Diktieren'}
+        title={isListening ? 'Diktieren stoppen' : 'Diktieren'}
+        className={`flex items-center gap-2 rounded-lg font-bold text-xs uppercase tracking-widest transition-all ${
           isListening
             ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse'
             : 'bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10'
-        } disabled:opacity-50`}
+        } ${isIconOnly ? 'p-2' : 'px-4 py-2'} disabled:opacity-50`}
       >
         {isPolishing ? (
           <>
             <Loader2 className="w-4 h-4 animate-spin" />
-            AI poliert...
+            {!isIconOnly && 'AI poliert...'}
           </>
         ) : isListening ? (
           <>
             <MicOff className="w-4 h-4" />
-            Stop
+            {!isIconOnly && 'Stop'}
           </>
         ) : (
           <>
             <Mic className="w-4 h-4" />
-            Diktieren
+            {!isIconOnly && 'Diktieren'}
           </>
         )}
+        {isIconOnly && <span className="sr-only">Diktieren</span>}
       </button>
 
       {/* Live Transcript Preview */}
@@ -158,7 +163,9 @@ export function VoiceInput({ onTranscript }: VoiceInputProps) {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute top-full left-0 mt-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20 min-w-[300px] max-w-[500px] z-50"
+            className={`absolute top-full left-0 mt-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20 z-50 ${
+              isIconOnly ? 'min-w-[240px] max-w-[calc(100vw-32px)]' : 'min-w-[300px] max-w-[500px]'
+            }`}
           >
             <div className="flex items-center gap-2 mb-2">
               <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>

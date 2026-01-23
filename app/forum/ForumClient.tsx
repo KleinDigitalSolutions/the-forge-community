@@ -1691,19 +1691,19 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                     <div className="flex-1" />
 
                     {/* Editor Tools */}
-                    <div className="flex flex-wrap items-center gap-2 bg-white/5 p-2 rounded-xl border border-white/10">
-                      <div className="flex items-center gap-1 border-r border-white/10 pr-2 mr-2">
-                        <button onClick={() => formatText('bold')} className="p-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-all"><Bold className="w-4 h-4" /></button>
-                        <button onClick={() => formatText('italic')} className="p-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-all"><Italic className="w-4 h-4" /></button>
-                        <button onClick={() => formatText('list')} className="p-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-all"><List className="w-4 h-4" /></button>
-                        <button onClick={() => formatText('link')} className="p-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-all"><LinkIcon className="w-4 h-4" /></button>
+                    <div className="flex flex-wrap items-center gap-2 bg-white/5 p-1.5 sm:p-2 rounded-lg sm:rounded-xl border border-white/10">
+                      <div className="flex items-center gap-1 sm:border-r border-white/10 sm:pr-2 sm:mr-2">
+                        <button onClick={() => formatText('bold')} className="p-1.5 sm:p-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-all"><Bold className="w-4 h-4" /></button>
+                        <button onClick={() => formatText('italic')} className="p-1.5 sm:p-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-all"><Italic className="w-4 h-4" /></button>
+                        <button onClick={() => formatText('list')} className="p-1.5 sm:p-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-all"><List className="w-4 h-4" /></button>
+                        <button onClick={() => formatText('link')} className="p-1.5 sm:p-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-all"><LinkIcon className="w-4 h-4" /></button>
                       </div>
                       
-                      <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex items-center gap-1.5">
                         <div className="relative">
                           <button 
                             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                            className={`p-2 hover:bg-white/10 rounded-lg transition-all ${showEmojiPicker ? 'text-[#D4AF37] bg-white/10' : 'text-white/60 hover:text-white'}`}
+                            className={`p-1.5 sm:p-2 hover:bg-white/10 rounded-lg transition-all ${showEmojiPicker ? 'text-[#D4AF37] bg-white/10' : 'text-white/60 hover:text-white'}`}
                           >
                             <Smile className="w-4 h-4" />
                           </button>
@@ -1724,7 +1724,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
 
                         <button 
                           onClick={() => fileInputRef.current?.click()}
-                          className="p-2.5 hover:bg-white/10 rounded-lg text-white/60 hover:text-[#D4AF37] transition-all title-tooltip" title="Bild hochladen"
+                          className="p-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-[#D4AF37] transition-all title-tooltip" title="Bild hochladen"
                         >
                           <ImageIcon className="w-4 h-4" />
                         </button>
@@ -1733,6 +1733,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                         <div className="hidden sm:block w-px h-4 bg-white/10 mx-1" />
                         
                         <VoiceInput
+                          variant="icon"
                           onTranscript={(text) => {
                             insertText(text);
                           }}
@@ -1743,20 +1744,20 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                       
                       <button 
                         onClick={() => setIsPreview(!isPreview)}
-                        className={`w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${ 
+                        className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${ 
                           isPreview ? 'bg-[#D4AF37] text-black' : 'text-white/40 hover:text-white hover:bg-white/5'
                         }`}
                       >
                         {isPreview ? <Eye className="w-3.5 h-3.5" /> : <Code className="w-3.5 h-3.5" />}
-                        {isPreview ? 'Editor' : 'Vorschau'}
+                        <span className="hidden sm:inline">{isPreview ? 'Editor' : 'Vorschau'}</span>
                       </button>
                     </div>
                   </div>
 
                   {/* Main Input Area */}
-                  <div className="relative min-h-[320px] sm:min-h-[350px]">
+                  <div className="relative min-h-[45vh] sm:min-h-[350px]">
                     {isPreview ? (
-                      <div className="prose prose-invert prose-lg max-w-none p-6 sm:p-8 bg-white/[0.02] border border-white/5 rounded-3xl min-h-[320px] sm:min-h-[350px]">
+                      <div className="prose prose-invert prose-lg max-w-none p-6 sm:p-8 bg-white/[0.02] border border-white/5 rounded-3xl min-h-[45vh] sm:min-h-[350px]">
                         <ReactMarkdown remarkPlugins={[remarkGfm]} components={MarkdownComponents}>
                           {(editingPost === 'NEW' ? content : editContent) || '*Schreibe etwas, um die Vorschau zu sehen...*'}
                         </ReactMarkdown>
@@ -1768,7 +1769,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                         value={editingPost === 'NEW' ? content : editContent}
                         onChange={e => editingPost === 'NEW' ? setContent(e.target.value) : setEditContent(e.target.value)}
                         placeholder="Was gibt es neues im Netzwerk? Teile deine Gedanken, Updates oder Fragen..."
-                        className="w-full min-h-[320px] sm:min-h-[350px] bg-transparent border-none outline-none text-lg sm:text-xl text-white placeholder:text-white/10 resize-none leading-relaxed"
+                        className="w-full min-h-[45vh] sm:min-h-[350px] bg-transparent border-none outline-none text-lg sm:text-xl text-white placeholder:text-white/10 resize-none leading-relaxed"
                       />
                     )}
                   </div>
