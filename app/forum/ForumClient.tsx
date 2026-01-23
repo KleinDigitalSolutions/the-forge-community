@@ -1645,15 +1645,15 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
           {editingPost && (
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4 backdrop-blur-xl"
+              className="fixed inset-0 bg-black/95 z-50 flex items-start sm:items-center justify-center p-2 sm:p-4 pt-[calc(env(safe-area-inset-top)+8px)] pb-[calc(env(safe-area-inset-bottom)+8px)] backdrop-blur-xl"
             >
               <motion.div 
                 initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }}
-                className="bg-[#121212] border border-white/10 rounded-[2.5rem] w-full max-w-3xl shadow-[0_0_100px_rgba(0,0,0,0.5)] flex flex-col max-h-[90vh] overflow-hidden relative"
+                className="bg-[#121212] border border-white/10 rounded-2xl sm:rounded-[2.5rem] w-full max-w-3xl shadow-[0_0_100px_rgba(0,0,0,0.5)] flex flex-col h-[calc(100dvh-16px)] sm:h-auto max-h-[calc(100dvh-16px)] sm:max-h-[90vh] overflow-hidden relative"
               >
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent opacity-50" />
                 
-                <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
+                <div className="p-6 sm:p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
                   <div>
                     <h2 className="text-2xl font-bold text-white mb-1">
                       {editingPost === 'NEW' ? 'Beitrag schmieden' : 'Beitrag bearbeiten'}
@@ -1672,7 +1672,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                   </div>
                 )}
 
-                <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-8 custom-scrollbar">
                   {/* Category & Tools Bar */}
                   <div className="flex flex-wrap items-center gap-4">
                     {editingPost === 'NEW' && (
@@ -1691,7 +1691,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                     <div className="flex-1" />
 
                     {/* Editor Tools */}
-                    <div className="flex items-center gap-2 bg-white/5 p-1.5 rounded-xl border border-white/10">
+                    <div className="flex flex-wrap items-center gap-2 bg-white/5 p-2 rounded-xl border border-white/10">
                       <div className="flex items-center gap-1 border-r border-white/10 pr-2 mr-2">
                         <button onClick={() => formatText('bold')} className="p-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-all"><Bold className="w-4 h-4" /></button>
                         <button onClick={() => formatText('italic')} className="p-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-all"><Italic className="w-4 h-4" /></button>
@@ -1699,49 +1699,51 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                         <button onClick={() => formatText('link')} className="p-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-all"><LinkIcon className="w-4 h-4" /></button>
                       </div>
                       
-                      <div className="relative">
-                        <button 
-                          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                          className={`p-2 hover:bg-white/10 rounded-lg transition-all ${showEmojiPicker ? 'text-[#D4AF37] bg-white/10' : 'text-white/60 hover:text-white'}`}
-                        >
-                          <Smile className="w-4 h-4" />
-                        </button>
-                        {showEmojiPicker && (
-                          <div className="absolute top-full right-0 mt-2 z-50 shadow-2xl rounded-2xl overflow-hidden border border-white/10">
-                            <EmojiPicker 
-                              theme={Theme.DARK} 
-                              onEmojiClick={handleEmojiClick}
-                              emojiStyle={EmojiStyle.NATIVE}
-                              width={320}
-                              height={400}
-                              lazyLoadEmojis={true}
-                              searchPlaceHolder="Suche..."
-                            />
-                          </div>
-                        )}
-                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <div className="relative">
+                          <button 
+                            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                            className={`p-2 hover:bg-white/10 rounded-lg transition-all ${showEmojiPicker ? 'text-[#D4AF37] bg-white/10' : 'text-white/60 hover:text-white'}`}
+                          >
+                            <Smile className="w-4 h-4" />
+                          </button>
+                          {showEmojiPicker && (
+                            <div className="absolute top-full right-0 mt-2 z-50 shadow-2xl rounded-2xl overflow-hidden border border-white/10">
+                              <EmojiPicker 
+                                theme={Theme.DARK} 
+                                onEmojiClick={handleEmojiClick}
+                                emojiStyle={EmojiStyle.NATIVE}
+                                width={320}
+                                height={400}
+                                lazyLoadEmojis={true}
+                                searchPlaceHolder="Suche..."
+                              />
+                            </div>
+                          )}
+                        </div>
 
-                      <button 
-                        onClick={() => fileInputRef.current?.click()}
-                        className="p-2.5 hover:bg-white/10 rounded-lg text-white/60 hover:text-[#D4AF37] transition-all title-tooltip" title="Bild hochladen"
-                      >
-                        <ImageIcon className="w-4 h-4" />
-                      </button>
-                      <input type="file" ref={fileInputRef} onChange={handleUpload} className="hidden" accept="image/*" />
-                      
-                      <div className="w-px h-4 bg-white/10 mx-1" />
-                      
-                      <VoiceInput
-                        onTranscript={(text) => {
-                          insertText(text);
-                        }}
-                      />
-                      
-                      <div className="w-px h-4 bg-white/10 mx-1" />
+                        <button 
+                          onClick={() => fileInputRef.current?.click()}
+                          className="p-2.5 hover:bg-white/10 rounded-lg text-white/60 hover:text-[#D4AF37] transition-all title-tooltip" title="Bild hochladen"
+                        >
+                          <ImageIcon className="w-4 h-4" />
+                        </button>
+                        <input type="file" ref={fileInputRef} onChange={handleUpload} className="hidden" accept="image/*" />
+                        
+                        <div className="hidden sm:block w-px h-4 bg-white/10 mx-1" />
+                        
+                        <VoiceInput
+                          onTranscript={(text) => {
+                            insertText(text);
+                          }}
+                        />
+                        
+                        <div className="hidden sm:block w-px h-4 bg-white/10 mx-1" />
+                      </div>
                       
                       <button 
                         onClick={() => setIsPreview(!isPreview)}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${ 
+                        className={`w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${ 
                           isPreview ? 'bg-[#D4AF37] text-black' : 'text-white/40 hover:text-white hover:bg-white/5'
                         }`}
                       >
@@ -1752,9 +1754,9 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                   </div>
 
                   {/* Main Input Area */}
-                  <div className="relative min-h-[350px]">
+                  <div className="relative min-h-[320px] sm:min-h-[350px]">
                     {isPreview ? (
-                      <div className="prose prose-invert prose-lg max-w-none p-8 bg-white/[0.02] border border-white/5 rounded-3xl min-h-[350px]">
+                      <div className="prose prose-invert prose-lg max-w-none p-6 sm:p-8 bg-white/[0.02] border border-white/5 rounded-3xl min-h-[320px] sm:min-h-[350px]">
                         <ReactMarkdown remarkPlugins={[remarkGfm]} components={MarkdownComponents}>
                           {(editingPost === 'NEW' ? content : editContent) || '*Schreibe etwas, um die Vorschau zu sehen...*'}
                         </ReactMarkdown>
@@ -1766,7 +1768,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                         value={editingPost === 'NEW' ? content : editContent}
                         onChange={e => editingPost === 'NEW' ? setContent(e.target.value) : setEditContent(e.target.value)}
                         placeholder="Was gibt es neues im Netzwerk? Teile deine Gedanken, Updates oder Fragen..."
-                        className="w-full min-h-[350px] bg-transparent border-none outline-none text-xl text-white placeholder:text-white/10 resize-none leading-relaxed"
+                        className="w-full min-h-[320px] sm:min-h-[350px] bg-transparent border-none outline-none text-lg sm:text-xl text-white placeholder:text-white/10 resize-none leading-relaxed"
                       />
                     )}
                   </div>
