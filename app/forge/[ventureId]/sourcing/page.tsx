@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { StudioShell } from '@/app/components/forge/StudioShell';
 import { 
   Factory, 
@@ -31,10 +31,12 @@ type TabType = 'suppliers' | 'samples' | 'orders' | 'overview';
 
 export default function SourcingPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const ventureId = params.ventureId as string;
+  const initialTab = searchParams.get('tab') as TabType;
   const { setContext } = useAIContext();
 
-  const [activeTab, setActiveTab] = useState<TabType>('suppliers');
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab || 'suppliers');
   const [loading, setLoading] = useState(true);
   const [suppliers, setSuppliers] = useState<any[]>([]);
   const [samples, setSamples] = useState<any[]>([]);
@@ -44,6 +46,13 @@ export default function SourcingPage() {
   const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
   const [isSampleModalOpen, setIsSampleModalOpen] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+
+  useEffect(() => {
+    const tab = searchParams.get('tab') as TabType;
+    if (tab && ['suppliers', 'samples', 'orders', 'overview'].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     setContext(`Sourcing Studio - ${activeTab}. Hilf bei Lieferantensuche, Samples und Bestellungen.`);

@@ -5,16 +5,16 @@ import { prisma } from '@/lib/prisma';
 import { RateLimiters } from '@/lib/rate-limit';
 import { put } from '@vercel/blob';
 
-export const maxDuration = 60;
+export const maxDuration = 300; // Increased to 300s for Vercel Pro to accommodate AI media generation cold starts
 
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 const COSTS: Record<string, number> = {
-  'text-to-image': Number(process.env.MARKETING_MEDIA_CREDITS_T2I || 15),
-  'image-to-image': Number(process.env.MARKETING_MEDIA_CREDITS_I2I || 20),
-  'text-to-video': Number(process.env.MARKETING_MEDIA_CREDITS_T2V || 60),
-  'image-to-video': Number(process.env.MARKETING_MEDIA_CREDITS_I2V || 70),
+  'text-to-image': Number(process.env.MARKETING_MEDIA_CREDITS_T2I || 5),  // Reduced from 15
+  'image-to-image': Number(process.env.MARKETING_MEDIA_CREDITS_I2I || 8), // Reduced from 20
+  'text-to-video': Number(process.env.MARKETING_MEDIA_CREDITS_T2V || 40), // Reduced from 60
+  'image-to-video': Number(process.env.MARKETING_MEDIA_CREDITS_I2V || 45), // Reduced from 70
 };
 
 const MODE_ENDPOINTS: Record<string, string | undefined> = {

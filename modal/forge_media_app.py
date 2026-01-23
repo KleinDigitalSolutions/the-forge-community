@@ -31,7 +31,7 @@ DEFAULT_VIDEO_RES = 720
 ASPECT_RES = {
     "1:1": (1024, 1024),
     "4:5": (896, 1120),
-    "9:16": (768, 1360),
+    "9:16": (720, 1280),
     "16:9": (1280, 720),
     "3:2": (1152, 768),
 }
@@ -55,8 +55,12 @@ image = (
         "imageio",
         "imageio-ffmpeg",
         "fastapi",
+        "numpy",
     )
-    .env({"HF_HOME": HF_CACHE})
+    .env({
+        "HF_HOME": HF_CACHE,
+        "PYTORCH_ALLOC_CONF": "expandable_segments:True"
+    })
 )
 
 secrets = [modal.Secret.from_name("TheForge")]
@@ -134,12 +138,25 @@ def _load_text_to_image(model_key: str):
     from diffusers import AutoPipelineForText2Image
     import torch
 
+    # Clear cache before loading new model
+    torch.cuda.empty_cache()
+
     pipe = AutoPipelineForText2Image.from_pretrained(
         model_id,
-        torch_dtype=torch.float16,
+        dtype=torch.float16,
         cache_dir=HF_CACHE,
     )
-    pipe = pipe.to("cuda")
+    # Use sequential CPU offload for maximum VRAM savings on A10G
+    pipe.enable_sequential_cpu_offload()
+    
+    # Enable VAE slicing/tiling for lower memory usage during decoding
+    if hasattr(pipe, "vae"):
+        try:
+            pipe.enable_vae_slicing()
+            pipe.enable_vae_tiling()
+        except Exception:
+            pass # Not all VAEs support this
+
     pipe.enable_attention_slicing()
     IMAGE_PIPES[model_key] = pipe
     return pipe
@@ -152,12 +169,22 @@ def _load_image_to_image(model_key: str):
     from diffusers import AutoPipelineForImage2Image
     import torch
 
+    torch.cuda.empty_cache()
+
     pipe = AutoPipelineForImage2Image.from_pretrained(
         model_id,
-        torch_dtype=torch.float16,
+        dtype=torch.float16,
         cache_dir=HF_CACHE,
     )
-    pipe = pipe.to("cuda")
+    pipe.enable_sequential_cpu_offload()
+    
+    if hasattr(pipe, "vae"):
+        try:
+            pipe.enable_vae_slicing()
+            pipe.enable_vae_tiling()
+        except Exception:
+            pass
+
     pipe.enable_attention_slicing()
     IMAGE_PIPES[model_key] = pipe
     return pipe
@@ -170,12 +197,16 @@ def _load_video_pipeline(model_key: str):
     from diffusers import DiffusionPipeline
     import torch
 
+    torch.cuda.empty_cache()
+
     pipe = DiffusionPipeline.from_pretrained(
         model_id,
-        torch_dtype=torch.float16,
+        dtype=torch.float16,
         cache_dir=HF_CACHE,
     )
-    pipe = pipe.to("cuda")
+    # Keep video on full GPU if using A100, or use cpu offload if needed
+    # For now, sticking to enable_model_cpu_offload is safer for mixed usage
+    pipe.enable_model_cpu_offload()
     pipe.enable_attention_slicing()
     VIDEO_PIPES[model_key] = pipe
     return pipe
@@ -183,6 +214,7 @@ def _load_video_pipeline(model_key: str):
 
 def _generate_images(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
     import torch
+    import numpy as np
 
     mode = payload.get("mode", "text-to-image")
     model_key = payload.get("model", "qwen-image-2512")
@@ -197,6 +229,14 @@ def _generate_images(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
 
     width, height = _resolve_dimensions(aspect_ratio, DEFAULT_IMAGE_RES)
 
+    # Specific model optimizations
+    is_turbo = "turbo" in model_key.lower() or "schnell" in model_key.lower()
+    
+    # Turbo models usually don't need high guidance and steps
+    if is_turbo:
+        guidance = 0.0 if "schnell" in model_key.lower() else min(guidance, 2.0)
+        steps = min(steps, 8)
+
     generator = None
     if seed:
         generator = torch.Generator(device="cuda").manual_seed(int(seed))
@@ -207,33 +247,50 @@ def _generate_images(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
             raise HTTPException(status_code=400, detail="Missing imageUrl")
         init_image = _fetch_image(init_url)
         pipe = _load_image_to_image(model_key)
-        result = pipe(
-            prompt,
-            image=init_image,
-            strength=strength,
-            num_inference_steps=steps,
-            guidance_scale=guidance,
-            num_images_per_prompt=variants,
-            negative_prompt=negative_prompt or None,
-            generator=generator,
-        )
+        
+        # Call with dynamic params
+        params = {
+            "prompt": prompt,
+            "image": init_image,
+            "strength": strength,
+            "num_inference_steps": steps,
+            "num_images_per_prompt": variants,
+            "negative_prompt": negative_prompt or None,
+            "generator": generator,
+        }
+        if not is_turbo:
+            params["guidance_scale"] = guidance
+            
+        result = pipe(**params)
         images = result.images
     else:
         pipe = _load_text_to_image(model_key)
-        result = pipe(
-            prompt,
-            num_inference_steps=steps,
-            guidance_scale=guidance,
-            num_images_per_prompt=variants,
-            negative_prompt=negative_prompt or None,
-            width=width,
-            height=height,
-            generator=generator,
-        )
+        
+        params = {
+            "prompt": prompt,
+            "num_inference_steps": steps,
+            "num_images_per_prompt": variants,
+            "negative_prompt": negative_prompt or None,
+            "width": width,
+            "height": height,
+            "generator": generator,
+        }
+        if not is_turbo:
+            params["guidance_scale"] = guidance
+
+        result = pipe(**params)
         images = result.images
 
     assets = []
     for image in images:
+        # Check for NaNs/Black images
+        img_array = np.array(image)
+        if np.isnan(img_array).any() or img_array.mean() < 0.01:
+            # Fallback or error if first image is bad
+            if not assets:
+                print("⚠️ NaN or Black image detected!")
+                # Optional: trigger a second attempt if this is the first image
+        
         assets.append({
             "type": "image",
             "contentType": "image/png",
@@ -312,11 +369,11 @@ def _generate_videos(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
 
 @app.function(
     image=image,
-    gpu="A100-80GB",
+    gpu="A10G", # Significantly cheaper than A100 (approx. 1/3 cost)
     timeout=600,
     volumes={MODEL_CACHE: volume},
     secrets=secrets,
-    min_containers=1,
+    min_containers=0, # Avoid keeping idle containers to save costs
 )
 @modal.fastapi_endpoint(method="POST")
 def generate_image(payload: Dict[str, Any], authorization: Optional[str] = Header(None)):
@@ -329,11 +386,11 @@ def generate_image(payload: Dict[str, Any], authorization: Optional[str] = Heade
 
 @app.function(
     image=image,
-    gpu="H100",
+    gpu="A100", # Downgrade from H100 to A100 to save costs (~50% cheaper)
     timeout=900,
     volumes={MODEL_CACHE: volume},
     secrets=secrets,
-    min_containers=1,
+    min_containers=0,
 )
 @modal.fastapi_endpoint(method="POST")
 def generate_video(payload: Dict[str, Any], authorization: Optional[str] = Header(None)):

@@ -42,22 +42,22 @@ const FORGE_MENU = [
     section: 'LEGAL',
     items: [
       { icon: Scale, label: 'Documents', href: '/forge/[id]/legal' },
-      { icon: FileText, label: 'Contracts', href: '/forge/[id]/legal/contracts' },
+      // { icon: FileText, label: 'Contracts', href: '/forge/[id]/legal/contracts' },
     ]
   },
   {
     section: 'MARKETING',
     items: [
       { icon: Megaphone, label: 'Campaigns', href: '/forge/[id]/marketing' },
-      { icon: BarChart3, label: 'Analytics', href: '/forge/[id]/analytics' },
+      // { icon: BarChart3, label: 'Analytics', href: '/forge/[id]/analytics' },
     ]
   },
   {
     section: 'SOURCING',
     items: [
       { icon: Factory, label: 'Suppliers', href: '/forge/[id]/sourcing' },
-      { icon: Box, label: 'Samples', href: '/forge/[id]/samples' },
-      { icon: TrendingUp, label: 'Orders', href: '/forge/[id]/orders' },
+      { icon: Box, label: 'Samples', href: '/forge/[id]/sourcing?tab=samples' },
+      { icon: TrendingUp, label: 'Orders', href: '/forge/[id]/sourcing?tab=orders' },
     ]
   },
   {
@@ -65,7 +65,7 @@ const FORGE_MENU = [
     items: [
       { icon: Gavel, label: 'Abstimmungen', href: '/forge/[id]/decisions' },
       { icon: Wallet, label: 'Budget', href: '/forge/[id]/admin' },
-      { icon: Users, label: 'Team', href: '/forge/[id]/team' },
+      // { icon: Users, label: 'Team', href: '/forge/[id]/team' },
       { icon: Settings, label: 'Settings', href: '/forge/[id]/settings' },
     ]
   }
