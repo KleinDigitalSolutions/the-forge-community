@@ -53,8 +53,7 @@ const itemVariants = {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.5,
-      ease: [0.16, 1, 0.3, 1]
+      duration: 0.5
     }
   }
 };
@@ -173,7 +172,7 @@ export default function ResourcesPage() {
         {loading ? (
           <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-80 bg-white/5 rounded-[2rem] animate-pulse border border-white/5" />
+              <div key={i} className="h-80 bg-white/5 rounded-4xl animate-pulse border border-white/5" />
             ))}
           </div>
         ) : filteredCourses.length === 0 ? (
@@ -215,9 +214,9 @@ export default function ResourcesPage() {
                   >
                     <Link
                       href={`/resources/${course.slug}`}
-                      className="block h-full glass-card rounded-[2rem] border border-white/10 overflow-hidden hover:border-[#D4AF37]/30 transition-all duration-500 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)]"
+                      className="block h-full glass-card rounded-4xl border border-white/10 overflow-hidden hover:border-[#D4AF37]/30 transition-all duration-500 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)]"
                     >
-                      <div className={cn("relative h-44 bg-gradient-to-br overflow-hidden", style.gradient)}>
+                      <div className={cn("relative h-44 bg-linear-to-br overflow-hidden", style.gradient)}>
                         {/* Abstract pattern overlay */}
                         <div className="absolute inset-0 opacity-20 bg-grid-small" />
                         <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_top_right,_rgba(212,175,55,0.2),_transparent_70%)]" />

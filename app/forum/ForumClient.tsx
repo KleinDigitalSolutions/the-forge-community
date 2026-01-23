@@ -193,7 +193,7 @@ const MarkdownComponents = {
     <img
       src={src}
       alt={alt || ''}
-      className="block w-full h-auto object-cover max-h-[600px]"
+      className="block w-full h-auto object-cover max-h-150"
       loading="lazy"
     />
   ),
@@ -910,7 +910,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
         className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap ${
           active
             ? 'border-[#D4AF37]/40 bg-[#D4AF37]/10 text-[#D4AF37]'
-            : 'border-white/10 bg-white/[0.02] text-white/50 hover:text-white hover:border-white/20'
+            : 'border-white/10 bg-white/2 text-white/50 hover:text-white hover:border-white/20'
         }`}
       >
         <Icon className="w-3.5 h-3.5" />
@@ -973,7 +973,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                 onClick={handleClick}
                 className={`w-full text-left rounded-xl border px-3 py-3 transition-all ${ 
                   notification.isRead
-                    ? 'border-white/10 bg-white/[0.02] text-white/60'
+                    ? 'border-white/10 bg-white/2 text-white/60'
                     : 'border-[#D4AF37]/30 bg-[#D4AF37]/10 text-white'
                 }`}
               >
@@ -1017,7 +1017,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
 
     return (
       <div className="bg-[#121212] border border-white/10 rounded-3xl overflow-hidden shadow-2xl group">
-        <div className="h-20 bg-gradient-to-br from-[#D4AF37] via-amber-600 to-black relative overflow-hidden">
+        <div className="h-20 bg-linear-to-br from-[#D4AF37] via-amber-600 to-black relative overflow-hidden">
           <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
         </div>
         <div className="px-6 pb-6 -mt-10 relative z-10">
@@ -1201,7 +1201,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
             {/* Post Creation Trigger */}
             <div className="bg-[#121212] border border-white/10 rounded-xl p-3 flex flex-col gap-3 shadow-xl sm:flex-row sm:items-center">
               <div className="flex items-center gap-3 w-full">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#D4AF37] to-amber-700 flex items-center justify-center text-black font-black text-sm overflow-hidden">
+                <div className="w-10 h-10 rounded-full bg-linear-to-br from-[#D4AF37] to-amber-700 flex items-center justify-center text-black font-black text-sm overflow-hidden">
                   {user?.image ? (
                     <img src={user.image} alt={user?.name || 'Profilbild'} className="w-full h-full object-cover" />
                   ) : (
@@ -1570,7 +1570,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                                               spellCheck
                                               autoCorrect="on"
                                               autoCapitalize="sentences"
-                                              className="w-full min-h-[90px] bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/10 outline-none focus:border-[#D4AF37] transition-all"
+                                              className="w-full min-h-[90px] bg-white/3 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/10 outline-none focus:border-[#D4AF37] transition-all"
                                             />
                                             <div className="flex justify-end gap-2">
                                               <button
@@ -1654,7 +1654,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                                 </div>
                               )}
                               {replyTargets[post.id] && (
-                                <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.02] px-3 py-2 text-[10px] uppercase tracking-widest text-white/50">
+                                <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/2 px-3 py-2 text-[10px] uppercase tracking-widest text-white/50">
                                   <span>Antwort an @{replyTargets[post.id]?.author}</span>
                                   <button
                                     onClick={() => setReplyTargets(prev => ({ ...prev, [post.id]: null }))}
@@ -1672,7 +1672,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                                 spellCheck
                                 autoCorrect="on"
                                 autoCapitalize="sentences"
-                                className="w-full min-h-[90px] bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/10 outline-none focus:border-[#D4AF37] transition-all"
+                                className="w-full min-h-[90px] bg-white/3 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/10 outline-none focus:border-[#D4AF37] transition-all"
                               />
                               <div className="flex justify-end">
                                 <button
@@ -1734,9 +1734,9 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                 initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }}
                 className="bg-[#121212] border border-white/10 rounded-2xl sm:rounded-[2.5rem] w-full max-w-3xl shadow-[0_0_100px_rgba(0,0,0,0.5)] flex flex-col h-[calc(100dvh-16px)] sm:h-auto max-h-[calc(100dvh-16px)] sm:max-h-[90vh] overflow-hidden relative"
               >
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent opacity-50" />
+                <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-[#D4AF37] to-transparent opacity-50" />
                 
-                <div className="p-6 sm:p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
+                <div className="p-6 sm:p-8 border-b border-white/5 flex justify-between items-center bg-white/1">
                   <div>
                     <h2 className="text-2xl font-bold text-white mb-1">
                       {editingPost === 'NEW' ? 'Beitrag schmieden' : 'Beitrag bearbeiten'}
@@ -1843,7 +1843,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                   {/* Main Input Area */}
                   <div className="relative min-h-[45vh] sm:min-h-[350px]">
                     {isPreview ? (
-                      <div className="prose prose-invert prose-lg max-w-none p-6 sm:p-8 bg-white/[0.02] border border-white/5 rounded-3xl min-h-[45vh] sm:min-h-[350px]">
+                      <div className="prose prose-invert prose-lg max-w-none p-6 sm:p-8 bg-white/2 border border-white/5 rounded-3xl min-h-[45vh] sm:min-h-[350px]">
                         <ReactMarkdown remarkPlugins={[remarkGfm]} components={MarkdownComponents}>
                           {(editingPost === 'NEW' ? content : editContent) || '*Schreibe etwas, um die Vorschau zu sehen...*'}
                         </ReactMarkdown>
@@ -1865,7 +1865,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                   </div>
                 </div>
 
-                <div className="p-6 sm:p-8 border-t border-white/5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end bg-white/[0.01]">
+                <div className="p-6 sm:p-8 border-t border-white/5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end bg-white/1">
                   {statusMessage && (
                     <div className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">
                       {statusMessage}

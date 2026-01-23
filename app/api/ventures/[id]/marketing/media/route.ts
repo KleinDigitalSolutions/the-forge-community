@@ -65,6 +65,13 @@ const extractAssets = (data: any, mode: string) => {
         if (typeof item === 'string') return { url: item, type: isVideo ? 'video' : 'image' };
         if (item?.url) return { url: item.url, type: item.type || (isVideo ? 'video' : 'image') };
         if (item?.outputUrl) return { url: item.outputUrl, type: item.type || (isVideo ? 'video' : 'image') };
+        if (item?.data) {
+          return {
+            data: item.data,
+            contentType: item.contentType,
+            type: item.type || (isVideo ? 'video' : 'image')
+          };
+        }
         return null;
       })
       .filter(Boolean);
@@ -213,6 +220,23 @@ export async function POST(
       return NextResponse.json({ error: 'Keine Assets vom Provider erhalten' }, { status: 502 });
     }
 
+    const resolvedAssets = await Promise.all(
+      assets.map(async (asset: any, index: number) => {
+        if (asset.url) return asset;
+        if (!asset.data) return asset;
+
+        const contentType = asset.contentType || (asset.type === 'video' ? 'video/mp4' : 'image/png');
+        const extension = contentType.includes('mp4') ? 'mp4' : 'png';
+        const buffer = Buffer.from(asset.data, 'base64');
+        const filename = `marketing/${user.id}/${Date.now()}-${mode}-${index + 1}.${extension}`;
+        const blob = await put(filename, buffer, {
+          access: 'public',
+          contentType,
+        });
+        return { url: blob.url, type: asset.type };
+      })
+    );
+
     const updated = await prisma.user.update({
       where: { id: user.id },
       data: { credits: { decrement: cost } },
@@ -220,7 +244,7 @@ export async function POST(
     });
 
     return NextResponse.json({
-      assets,
+      assets: resolvedAssets,
       provider: 'modal',
       model,
       creditsUsed: cost,

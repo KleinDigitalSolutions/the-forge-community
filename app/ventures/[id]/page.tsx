@@ -141,7 +141,7 @@ export default function VentureDetailPage() {
             <div className="flex items-center gap-4">
               <Link
                 href={`/forge/${ventureId}`}
-                className="flex items-center gap-2 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-black px-6 py-3 rounded-xl font-bold text-sm hover:brightness-110 transition-all"
+                className="flex items-center gap-2 bg-linear-to-r from-[#D4AF37] to-[#FFD700] text-black px-6 py-3 rounded-xl font-bold text-sm hover:brightness-110 transition-all"
               >
                 <Zap className="w-4 h-4" />
                 Open Forge
@@ -168,7 +168,7 @@ export default function VentureDetailPage() {
             </div>
             <div className="h-3 bg-white/5 rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-[#D4AF37] to-[#FF5500] rounded-full transition-all duration-500"
+                className="h-full bg-linear-to-r from-[#D4AF37] to-[#FF5500] rounded-full transition-all duration-500"
                 style={{ width: `${(venture.currentStep / 6) * 100}%` }}
               />
             </div>
@@ -184,7 +184,7 @@ export default function VentureDetailPage() {
                     ? 'bg-green-500/10 border-green-500/20'
                     : step.status === 'IN_PROGRESS'
                     ? 'bg-[#D4AF37]/10 border-[#D4AF37]/20'
-                    : 'bg-white/[0.02] border-white/5'
+                    : 'bg-white/2 border-white/5'
                 }`}
               >
                 <div className="text-[10px] font-bold text-white/40 mb-1">Step {step.stepNumber}</div>

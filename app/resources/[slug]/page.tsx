@@ -164,7 +164,7 @@ export default function TrainingDetailPage() {
         </div>
         
         {/* Background Accent */}
-        <div className="absolute top-0 right-0 w-[40%] h-full bg-gradient-to-l from-[#D4AF37]/10 to-transparent pointer-events-none" />
+        <div className="absolute top-0 right-0 w-[40%] h-full bg-linear-to-l from-[#D4AF37]/10 to-transparent pointer-events-none" />
       </motion.section>
 
       {/* Course Content Grid */}
@@ -173,7 +173,7 @@ export default function TrainingDetailPage() {
         {/* Sticky Sidebar Navigation */}
         <aside className="hidden lg:block">
           <div className="sticky top-24 space-y-8">
-            <div className="rounded-[2rem] border border-white/10 bg-white/5 p-6 backdrop-blur-md">
+            <div className="rounded-4xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-[10px] font-black uppercase tracking-widest text-white/30">Kurs-Struktur</h3>
                 <span className="text-[10px] font-black text-[#D4AF37]">{course.modules.length} Sektionen</span>
@@ -209,7 +209,7 @@ export default function TrainingDetailPage() {
               </div>
             </div>
 
-            <div className="rounded-[2rem] border border-[#D4AF37]/10 bg-[#D4AF37]/5 p-6">
+            <div className="rounded-4xl border border-[#D4AF37]/10 bg-[#D4AF37]/5 p-6">
               <h4 className="text-xs font-black text-[#D4AF37] uppercase tracking-widest mb-3">Community Help</h4>
               <p className="text-xs text-[#D4AF37]/60 leading-relaxed mb-4">
                 Hast du Fragen zu diesem Modul? Tausch dich im Squad-Channel aus.
@@ -241,7 +241,7 @@ export default function TrainingDetailPage() {
                   <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div>
                       <div className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#D4AF37] mb-4">
-                        <span className="w-8 h-[1px] bg-[#D4AF37]/30" />
+                        <span className="w-8 h-px bg-[#D4AF37]/30" />
                         Modul {module.order.toString().padStart(2, '0')}
                       </div>
                       <h2 className="text-3xl md:text-4xl font-instrument-serif text-white tracking-tight">
@@ -278,14 +278,14 @@ export default function TrainingDetailPage() {
                 </div>
                 
                 {/* Visual module divider */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-white/[0.02] to-transparent pointer-events-none" />
+                <div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-bl from-white/2 to-transparent pointer-events-none" />
               </div>
             </motion.section>
           ))}
 
           {/* Course Footer */}
           <footer className="pt-12 pb-20 text-center">
-             <div className="w-16 h-[1px] bg-white/10 mx-auto mb-8" />
+             <div className="w-16 h-px bg-white/10 mx-auto mb-8" />
              <h3 className="text-2xl font-instrument-serif text-white mb-4">Du hast dieses Training abgeschlossen.</h3>
              <p className="text-white/40 text-sm mb-8">Bereit für den nächsten Schritt?</p>
              <Link 

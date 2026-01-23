@@ -187,7 +187,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] selection:bg-[#D4AF37] selection:text-black overflow-x-hidden">
+    <div className="min-h-screen bg-(--background) text-(--foreground) selection:bg-[#D4AF37] selection:text-black overflow-x-hidden">
       
       {/* Integrated Hero & Header */}
       <ResponsiveHeroBanner 
@@ -220,15 +220,15 @@ export default function Home() {
               { label: 'Risiko-Faktor', value: '-96%', sub: 'Durch Kapital-Split' },
               { label: 'Community Owned', value: '100%', sub: 'Keine VCs. Echte Werte.' },
             ].map((stat, i) => (
-              <div key={i} className="glass-card backdrop-blur-2xl p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-white/10 flex flex-col items-center justify-center hover:border-[var(--accent)]/50 transition-all duration-700 group overflow-hidden relative shadow-2xl">
-                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div key={i} className="glass-card backdrop-blur-2xl p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-white/10 flex flex-col items-center justify-center hover:border-(--accent)/50 transition-all duration-700 group overflow-hidden relative shadow-2xl">
+                <div className="absolute inset-0 bg-linear-to-b from-white/3 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="text-2xl sm:text-4xl md:text-5xl font-instrument-serif text-white mb-2 sm:mb-3 relative z-10 text-center">
                   {stat.value}
                 </div>
-                <div className="text-[7px] sm:text-[9px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[var(--accent)] mb-1 relative z-10 text-center">
+                <div className="text-[7px] sm:text-[9px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-(--accent) mb-1 relative z-10 text-center">
                   {stat.label}
                 </div>
-                <div className="text-[7px] sm:text-[8px] font-bold text-white/30 uppercase tracking-[0.1em] sm:tracking-[0.2em] relative z-10 text-center">
+                <div className="text-[7px] sm:text-[8px] font-bold text-white/30 uppercase tracking-widest sm:tracking-[0.2em] relative z-10 text-center">
                   {stat.sub}
                 </div>
               </div>
@@ -244,7 +244,7 @@ export default function Home() {
             <div>
               <h2 className="text-5xl md:text-7xl font-instrument-serif text-white mb-8 leading-tight animate-fade-slide-in-1">
                 Institutional Grade.<br/>
-                <span className="text-[var(--accent)]">Community Powered.</span>
+                <span className="text-(--accent)">Community Powered.</span>
               </h2>
               <p className="text-lg text-white/50 leading-relaxed animate-fade-slide-in-2">
                 Wir ersetzen den veralteten VC-Ansatz durch Schwarmintelligenz.
@@ -271,13 +271,13 @@ export default function Home() {
                 }
               ].map((feature, i) => (
                 <div key={i} className="flex flex-col sm:flex-row gap-4 sm:gap-6 group">
-                  <div className="flex-shrink-0">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:border-[var(--accent)] group-hover:bg-[var(--accent)]/10 transition-all duration-500">
-                      <feature.icon className="w-4 h-4 sm:w-5 sm:h-5 text-white/60 group-hover:text-[var(--accent)] transition-colors" />
+                  <div className="shrink-0">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:border-(--accent) group-hover:bg-(--accent)/10 transition-all duration-500">
+                      <feature.icon className="w-4 h-4 sm:w-5 sm:h-5 text-white/60 group-hover:text-(--accent) transition-colors" />
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-xl sm:text-2xl font-instrument-serif text-white mb-1 sm:mb-2 group-hover:text-[var(--accent)] transition-colors">{feature.title}</h3>
+                    <h3 className="text-xl sm:text-2xl font-instrument-serif text-white mb-1 sm:mb-2 group-hover:text-(--accent) transition-colors">{feature.title}</h3>
                     <p className="text-white/50 text-xs sm:text-sm leading-relaxed max-w-md">{feature.desc}</p>
                   </div>
                 </div>
@@ -313,19 +313,19 @@ export default function Home() {
               <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">Live Now</div>
               <ul className="space-y-4 text-sm text-white/70">
                 <li className="flex items-start gap-3">
-                  <Check className="w-4 h-4 text-[var(--accent)] mt-0.5" />
+                  <Check className="w-4 h-4 text-(--accent) mt-0.5" />
                   Founder Cockpit, Venture Wizard, Decision Hall + Roadmap Voting
                 </li>
                 <li className="flex items-start gap-3">
-                  <Check className="w-4 h-4 text-[var(--accent)] mt-0.5" />
+                  <Check className="w-4 h-4 text-(--accent) mt-0.5" />
                   Brand DNA Studio + Legal Studio (Verträge & Compliance)
                 </li>
                 <li className="flex items-start gap-3">
-                  <Check className="w-4 h-4 text-[var(--accent)] mt-0.5" />
+                  <Check className="w-4 h-4 text-(--accent) mt-0.5" />
                   Marketing Studio (AI Content) + Sourcing Studio (Core Workflows)
                 </li>
                 <li className="flex items-start gap-3">
-                  <Check className="w-4 h-4 text-[var(--accent)] mt-0.5" />
+                  <Check className="w-4 h-4 text-(--accent) mt-0.5" />
                   Forum, Profile, Notifications und Founder-Identität
                 </li>
               </ul>
@@ -335,19 +335,19 @@ export default function Home() {
               <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">Aktuelle Updates</div>
               <ul className="space-y-4 text-sm text-white/70">
                 <li className="flex items-start gap-3">
-                  <Zap className="w-4 h-4 text-[var(--accent)] mt-0.5" />
+                  <Zap className="w-4 h-4 text-(--accent) mt-0.5" />
                   Orion Forum AI mit Kontext-Injection + Insight-Labels
                 </li>
                 <li className="flex items-start gap-3">
-                  <Zap className="w-4 h-4 text-[var(--accent)] mt-0.5" />
+                  <Zap className="w-4 h-4 text-(--accent) mt-0.5" />
                   Threaded Comments, Likes/Votes, Edit/Delete & Uploads
                 </li>
                 <li className="flex items-start gap-3">
-                  <Zap className="w-4 h-4 text-[var(--accent)] mt-0.5" />
+                  <Zap className="w-4 h-4 text-(--accent) mt-0.5" />
                   Direct Messages mit Inbox, Thread-Ansicht und User-Search
                 </li>
                 <li className="flex items-start gap-3">
-                  <Zap className="w-4 h-4 text-[var(--accent)] mt-0.5" />
+                  <Zap className="w-4 h-4 text-(--accent) mt-0.5" />
                   Rate Limits, Validierung & robuster Notification-Flow
                 </li>
               </ul>
@@ -357,19 +357,19 @@ export default function Home() {
               <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">Als Nächstes</div>
               <ul className="space-y-4 text-sm text-white/70">
                 <li className="flex items-start gap-3">
-                  <Target className="w-4 h-4 text-[var(--accent)] mt-0.5" />
+                  <Target className="w-4 h-4 text-(--accent) mt-0.5" />
                   Admin Studio: Budget, Team-Management, Permissions
                 </li>
                 <li className="flex items-start gap-3">
-                  <Target className="w-4 h-4 text-[var(--accent)] mt-0.5" />
+                  <Target className="w-4 h-4 text-(--accent) mt-0.5" />
                   Marketing Studio 2.0: Kampagnen-Manager + Content Kalender
                 </li>
                 <li className="flex items-start gap-3">
-                  <Target className="w-4 h-4 text-[var(--accent)] mt-0.5" />
+                  <Target className="w-4 h-4 text-(--accent) mt-0.5" />
                   Sourcing Studio 2.0: Supplier DB, Samples, Production Orders
                 </li>
                 <li className="flex items-start gap-3">
-                  <Target className="w-4 h-4 text-[var(--accent)] mt-0.5" />
+                  <Target className="w-4 h-4 text-(--accent) mt-0.5" />
                   Analytics, Stripe Connect Payouts, Mobile & Public API
                 </li>
               </ul>
@@ -384,7 +384,7 @@ export default function Home() {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
              <div>
                 <h2 className="text-4xl md:text-6xl font-instrument-serif text-white mb-6">
-                  Forge Shop.<br/><span className="text-[var(--accent)]">Ready to Sell.</span>
+                  Forge Shop.<br/><span className="text-(--accent)">Ready to Sell.</span>
                 </h2>
                 <p className="text-lg text-white/60 mb-8 leading-relaxed">
                   Der Shop ist die Verkaufsebene für alle Founder-Brands. Ihr bekommt eine erprobte
@@ -393,22 +393,22 @@ export default function Home() {
                 </p>
                 <ul className="space-y-4 mb-8">
                   <li className="flex items-center gap-3 text-sm text-white/80">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_10px_rgba(212,175,55,0.8)]" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-(--accent) shadow-[0_0_10px_rgba(212,175,55,0.8)]" />
                     Founder erhalten Zugriff auf den Shop-Stack
                   </li>
                   <li className="flex items-center gap-3 text-sm text-white/80">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_10px_rgba(212,175,55,0.8)]" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-(--accent) shadow-[0_0_10px_rgba(212,175,55,0.8)]" />
                     Conversion-orientiertes Layout + klare Produktstory
                   </li>
                   <li className="flex items-center gap-3 text-sm text-white/80">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_10px_rgba(212,175,55,0.8)]" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-(--accent) shadow-[0_0_10px_rgba(212,175,55,0.8)]" />
                     Launch-Setup in Verbindung mit Sourcing, Marketing & Legal
                   </li>
                 </ul>
                 <div className="flex flex-wrap gap-4">
                   <Link
                     href="/demo-shop"
-                    className="text-xs font-bold uppercase tracking-widest text-[var(--accent)] hover:text-white transition-colors border-b border-[var(--accent)]/50 pb-1"
+                    className="text-xs font-bold uppercase tracking-widest text-(--accent) hover:text-white transition-colors border-b border-(--accent)/50 pb-1"
                   >
                     Shop Demo ansehen →
                   </Link>
@@ -424,34 +424,34 @@ export default function Home() {
              {/* Shop Preview */}
              <div className="animate-fade-in-up delay-200">
                <div className="glass-card border border-white/10 rounded-3xl p-6 md:p-8 relative overflow-hidden">
-                 <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
+                 <div className="absolute inset-0 bg-linear-to-br from-white/2 to-transparent pointer-events-none" />
                  <div className="flex items-center justify-between mb-6">
                    <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">Storefront v1</div>
-                   <div className="text-[9px] font-bold uppercase tracking-widest text-[var(--accent)]">Live Demo</div>
+                   <div className="text-[9px] font-bold uppercase tracking-widest text-(--accent)">Live Demo</div>
                  </div>
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                    {[
                      { name: 'Capsule Drop', price: '€89', tone: 'from-emerald-500/20 to-teal-500/10' },
                      { name: 'Founder Kit', price: '€149', tone: 'from-purple-500/20 to-blue-500/10' },
                    ].map((item) => (
-                     <div key={item.name} className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
-                       <div className={`h-24 rounded-xl bg-gradient-to-br ${item.tone} mb-3`} />
+                     <div key={item.name} className="rounded-2xl border border-white/10 bg-white/2 p-4">
+                       <div className={`h-24 rounded-xl bg-linear-to-br ${item.tone} mb-3`} />
                        <div className="text-sm font-semibold text-white">{item.name}</div>
                        <div className="text-[10px] text-white/40 uppercase tracking-widest">{item.price}</div>
                      </div>
                    ))}
                  </div>
                  <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 text-[10px] text-white/60">
-                   <div className="flex items-center gap-2 rounded-xl border border-white/5 bg-white/[0.02] px-3 py-2">
-                     <Package className="w-4 h-4 text-[var(--accent)]" />
+                   <div className="flex items-center gap-2 rounded-xl border border-white/5 bg-white/2 px-3 py-2">
+                     <Package className="w-4 h-4 text-(--accent)" />
                      <span>Collections</span>
                    </div>
-                   <div className="flex items-center gap-2 rounded-xl border border-white/5 bg-white/[0.02] px-3 py-2">
-                     <TrendingUp className="w-4 h-4 text-[var(--accent)]" />
+                   <div className="flex items-center gap-2 rounded-xl border border-white/5 bg-white/2 px-3 py-2">
+                     <TrendingUp className="w-4 h-4 text-(--accent)" />
                      <span>Conversion</span>
                    </div>
-                   <div className="flex items-center gap-2 rounded-xl border border-white/5 bg-white/[0.02] px-3 py-2">
-                     <Truck className="w-4 h-4 text-[var(--accent)]" />
+                   <div className="flex items-center gap-2 rounded-xl border border-white/5 bg-white/2 px-3 py-2">
+                     <Truck className="w-4 h-4 text-(--accent)" />
                      <span>Fulfillment</span>
                    </div>
                  </div>
@@ -468,7 +468,7 @@ export default function Home() {
 
       {/* Philosophy Interlude - Animated Stack */}
       <section id="principles" className="py-40 px-4 md:px-6 relative overflow-hidden border-b border-white/5">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[var(--accent)]/5 rounded-full blur-[150px] pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-(--accent)/5 rounded-full blur-[150px] pointer-events-none" />
         
         <div className="max-w-7xl mx-auto flex flex-col items-center relative z-10">
           <div className="text-center mb-20">
@@ -484,7 +484,7 @@ export default function Home() {
 
       {/* Pricing / Join */}
       <section id="pricing" className="py-40 px-4 md:px-6 relative overflow-hidden">
-         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[var(--accent)]/5 rounded-full blur-[150px] pointer-events-none" />
+         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-(--accent)/5 rounded-full blur-[150px] pointer-events-none" />
          <div className="max-w-7xl mx-auto relative z-10">
             <div className="text-center mb-32">
                <h2 className="text-5xl md:text-7xl font-instrument-serif text-white mb-6">Mitgliedschaften</h2>
@@ -505,11 +505,11 @@ export default function Home() {
             <p className="text-white/40 uppercase tracking-[0.3em] text-[10px] font-bold">Zugang zur Schmiede anfordern.</p>
           </div>
 
-          <div className="bg-[#0F1113] border border-white/10 rounded-3xl shadow-2xl overflow-hidden relative group transition-all duration-700 hover:border-[var(--accent)]/30">
-             <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
+          <div className="bg-[#0F1113] border border-white/10 rounded-3xl shadow-2xl overflow-hidden relative group transition-all duration-700 hover:border-(--accent)/30">
+             <div className="absolute inset-0 bg-linear-to-br from-white/2 to-transparent pointer-events-none" />
              
              {/* Terminal Header */}
-             <div className="h-12 bg-white/[0.03] border-b border-white/10 flex items-center px-6 gap-2">
+             <div className="h-12 bg-white/3 border-b border-white/10 flex items-center px-6 gap-2">
                 <div className="w-3 h-3 rounded-full bg-[#FF5F56] opacity-80" />
                 <div className="w-3 h-3 rounded-full bg-[#FFBD2E] opacity-80" />
                 <div className="w-3 h-3 rounded-full bg-[#27C93F] opacity-80" />
@@ -524,14 +524,14 @@ export default function Home() {
                             <Check className="w-8 h-8" />
                          </div>
                          <h3 className="text-xl font-bold mb-2">Request Transmitted</h3>
-                         <p className="text-sm text-[var(--muted-foreground)]">Check your inbox for the encrypted key.</p>
+                         <p className="text-sm text-(--muted-foreground)">Check your inbox for the encrypted key.</p>
                       </div>
                    ) : (
                       <>
                         {/* Step Indicator */}
                         <div className="flex gap-2 mb-10">
                            {[1, 2, 3].map(s => (
-                              <div key={s} className={`h-1 flex-1 rounded-full transition-all duration-500 ${currentStep >= s ? 'bg-[var(--accent)]' : 'bg-white/5'}`} />
+                              <div key={s} className={`h-1 flex-1 rounded-full transition-all duration-500 ${currentStep >= s ? 'bg-(--accent)' : 'bg-white/5'}`} />
                            ))}
                         </div>
 
@@ -549,7 +549,7 @@ export default function Home() {
                                     </div>
                                     <div className="flex items-center gap-3 sm:gap-4 mb-2">
                                        <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-[#D4AF37]" />
-                                       <div className="font-instrument-serif text-xl sm:text-3xl text-white group-hover:text-[var(--accent)] transition-colors">Free Trial</div>
+                                       <div className="font-instrument-serif text-xl sm:text-3xl text-white group-hover:text-(--accent) transition-colors">Free Trial</div>
                                     </div>
                                     <div className="text-xs sm:text-sm text-white/60 leading-relaxed max-w-md">
                                        Geh direkt rein. Erhalte <strong>50 AI-Credits</strong> gratis und erkunde alle Forge-Studios unentgeltlich.
@@ -560,17 +560,17 @@ export default function Home() {
                                     <button
                                        type="button"
                                        onClick={() => handleSelectRole('investor')}
-                                       className="p-5 sm:p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-[var(--accent)]/50 hover:bg-[var(--accent)]/5 transition-all text-left group"
+                                       className="p-5 sm:p-8 rounded-2xl border border-white/5 bg-white/2 hover:border-(--accent)/50 hover:bg-(--accent)/5 transition-all text-left group"
                                     >
-                                       <div className="font-instrument-serif text-lg sm:text-2xl text-white mb-1 sm:mb-2 group-hover:text-[var(--accent)] transition-colors">Kapital-Partner</div>
+                                       <div className="font-instrument-serif text-lg sm:text-2xl text-white mb-1 sm:mb-2 group-hover:text-(--accent) transition-colors">Kapital-Partner</div>
                                        <div className="text-[10px] sm:text-xs text-white/40 leading-relaxed">Passive Beteiligung. Bewerbung für Batches.</div>
                                     </button>
                                     <button
                                        type="button"
                                        onClick={() => handleSelectRole('builder')}
-                                       className="p-5 sm:p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-[var(--accent)]/50 hover:bg-[var(--accent)]/5 transition-all text-left group"
+                                       className="p-5 sm:p-8 rounded-2xl border border-white/5 bg-white/2 hover:border-(--accent)/50 hover:bg-(--accent)/5 transition-all text-left group"
                                     >
-                                       <div className="font-instrument-serif text-lg sm:text-2xl text-white mb-1 sm:mb-2 group-hover:text-[var(--accent)] transition-colors">Builder</div>
+                                       <div className="font-instrument-serif text-lg sm:text-2xl text-white mb-1 sm:mb-2 group-hover:text-(--accent) transition-colors">Builder</div>
                                        <div className="text-[10px] sm:text-xs text-white/40 leading-relaxed">Aktive Beteiligung. Sweat Equity & Skills.</div>
                                     </button>
                                  </div>
@@ -586,21 +586,21 @@ export default function Home() {
                                     type="text"
                                     value={formData.name}
                                     onChange={handleFormChange('name')}
-                                    className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-white/20"
+                                    className="w-full bg-white/2 border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-(--accent) focus:ring-0 outline-none transition-all placeholder:text-white/20"
                                     placeholder="Vollständiger Name"
                                  />
                                  <input
                                     type="email"
                                     value={formData.email}
                                     onChange={handleFormChange('email')}
-                                    className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-white/20"
+                                    className="w-full bg-white/2 border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-(--accent) focus:ring-0 outline-none transition-all placeholder:text-white/20"
                                     placeholder="E-Mail Adresse"
                                  />
                                  {role === 'investor' && (
                                      <select
                                        value={formData.capital}
                                        onChange={handleFormChange('capital')}
-                                       className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all [&>option]:bg-black"
+                                       className="w-full bg-white/2 border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-(--accent) focus:ring-0 outline-none transition-all [&>option]:bg-black"
                                      >
                                         <option value="">Kapitalziel wählen...</option>
                                         <option value="12.5k">✨ 12.5k (Validator Batch)</option> {/* NEU HINZUGEFÜGT */}
@@ -614,14 +614,14 @@ export default function Home() {
                                        type="text"
                                        value={formData.skill}
                                        onChange={handleFormChange('skill')}
-                                       className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-white/20"
+                                       className="w-full bg-white/2 border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-(--accent) focus:ring-0 outline-none transition-all placeholder:text-white/20"
                                        placeholder="Kern-Skill (z.B. Next.js, Marketing)"
                                     />
                                  )}
                               </div>
                               <div className="flex justify-between pt-4">
                                  <button type="button" onClick={handlePrevStep} className="text-[10px] font-bold text-white/40 hover:text-white uppercase tracking-widest">ZURÜCK</button>
-                                 <button type="button" onClick={handleNextStep} disabled={!formData.name || !formData.email} className="text-[10px] font-bold text-[var(--accent)] hover:opacity-80 disabled:opacity-30 uppercase tracking-widest">WEITER</button>
+                                 <button type="button" onClick={handleNextStep} disabled={!formData.name || !formData.email} className="text-[10px] font-bold text-(--accent) hover:opacity-80 disabled:opacity-30 uppercase tracking-widest">WEITER</button>
                               </div>
                            </div>
                         )}
@@ -633,14 +633,14 @@ export default function Home() {
                                  value={formData.why}
                                  onChange={handleFormChange('why')}
                                  rows={4}
-                                 className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-white/20 resize-none"
+                                 className="w-full bg-white/2 border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-(--accent) focus:ring-0 outline-none transition-all placeholder:text-white/20 resize-none"
                                  placeholder="Erzähl uns, warum du hierher gehörst."
                               />
                                <input
                                     type="text"
                                     value={formData.instagram}
                                     onChange={handleFormChange('instagram')}
-                                    className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-white/20"
+                                    className="w-full bg-white/2 border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-(--accent) focus:ring-0 outline-none transition-all placeholder:text-white/20"
                                     placeholder="LinkedIn / Social URL"
                                  />
                               
@@ -658,7 +658,7 @@ export default function Home() {
                                  <button 
                                     type="submit" 
                                     disabled={formStatus === 'loading' || !turnstileToken}
-                                    className="px-8 py-3 bg-[var(--accent)] text-[var(--accent-foreground)] rounded-xl text-[10px] font-bold hover:brightness-110 transition-all disabled:opacity-30 uppercase tracking-[0.2em]"
+                                    className="px-8 py-3 bg-(--accent) text-(--accent-foreground) rounded-xl text-[10px] font-bold hover:brightness-110 transition-all disabled:opacity-30 uppercase tracking-[0.2em]"
                                  >
                                     {formStatus === 'loading' ? 'ÜBERTRAGE...' : 'BEWERBUNG ABSCHICKEN'}
                                  </button>
@@ -675,14 +675,14 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="py-8 border-t border-white/5 relative overflow-hidden bg-[#08090A]">
-         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-[var(--accent)]/20 to-transparent" />
+         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-linear-to-r from-transparent via-(--accent)/20 to-transparent" />
          
          <div className="max-w-7xl mx-auto px-6 relative z-10">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-6">
                {/* Brand Column */}
                <div className="space-y-8">
                   <Link href="/" className="flex flex-col group">
-                    <span className="font-caveat text-3xl tracking-normal text-white group-hover:text-[var(--accent)] transition-colors lowercase">stake & scale</span>
+                    <span className="font-caveat text-3xl tracking-normal text-white group-hover:text-(--accent) transition-colors lowercase">stake & scale</span>
                   </Link>
                   <p className="text-sm text-white/40 leading-relaxed">
                     Das erste Community Venture Studio. Wo Brands gemeinsam geschmiedet werden. 
@@ -698,10 +698,10 @@ export default function Home() {
                <div>
                   <h4 className="text-xs font-black uppercase tracking-[0.3em] text-white/20 mb-8">Rechtliches</h4>
                   <ul className="space-y-4">
-                     <li><Link href="/legal/impressum" className="text-sm text-white/50 hover:text-[var(--accent)] transition-colors">Impressum</Link></li>
-                     <li><Link href="/legal/datenschutz" className="text-sm text-white/50 hover:text-[var(--accent)] transition-colors">Datenschutz</Link></li>
-                     <li><Link href="/legal/agb" className="text-sm text-white/50 hover:text-[var(--accent)] transition-colors">AGB</Link></li>
-                     <li><Link href="/legal/vertrag" className="text-sm text-white/50 hover:text-[var(--accent)] transition-colors">Founder-Vertrag</Link></li>
+                     <li><Link href="/legal/impressum" className="text-sm text-white/50 hover:text-(--accent) transition-colors">Impressum</Link></li>
+                     <li><Link href="/legal/datenschutz" className="text-sm text-white/50 hover:text-(--accent) transition-colors">Datenschutz</Link></li>
+                     <li><Link href="/legal/agb" className="text-sm text-white/50 hover:text-(--accent) transition-colors">AGB</Link></li>
+                     <li><Link href="/legal/vertrag" className="text-sm text-white/50 hover:text-(--accent) transition-colors">Founder-Vertrag</Link></li>
                   </ul>
                </div>
 
@@ -709,10 +709,10 @@ export default function Home() {
                <div>
                   <h4 className="text-xs font-black uppercase tracking-[0.3em] text-white/20 mb-8">Navigation</h4>
                   <ul className="space-y-4">
-                     <li><Link href="/dashboard" className="text-sm text-white/50 hover:text-[var(--accent)] transition-colors">Founder Dashboard</Link></li>
-                     <li><Link href="/transparency" className="text-sm text-white/50 hover:text-[var(--accent)] transition-colors">Finanz-Protokoll</Link></li>
-                     <li><Link href="/forum" className="text-sm text-white/50 hover:text-[var(--accent)] transition-colors">Community Forum</Link></li>
-                     <li><Link href="/squads" className="text-sm text-white/50 hover:text-[var(--accent)] transition-colors">Squad Markt</Link></li>
+                     <li><Link href="/dashboard" className="text-sm text-white/50 hover:text-(--accent) transition-colors">Founder Dashboard</Link></li>
+                     <li><Link href="/transparency" className="text-sm text-white/50 hover:text-(--accent) transition-colors">Finanz-Protokoll</Link></li>
+                     <li><Link href="/forum" className="text-sm text-white/50 hover:text-(--accent) transition-colors">Community Forum</Link></li>
+                     <li><Link href="/squads" className="text-sm text-white/50 hover:text-(--accent) transition-colors">Squad Markt</Link></li>
                   </ul>
                </div>
 
@@ -720,9 +720,9 @@ export default function Home() {
                <div>
                   <h4 className="text-xs font-black uppercase tracking-[0.3em] text-white/20 mb-8">Kommando-Zentrale</h4>
                   <ul className="space-y-4">
-                     <li><a href="mailto:info@stakeandscale.de" className="text-sm text-white/50 hover:text-[var(--accent)] transition-colors">info@stakeandscale.de</a></li>
+                     <li><a href="mailto:info@stakeandscale.de" className="text-sm text-white/50 hover:text-(--accent) transition-colors">info@stakeandscale.de</a></li>
                      <li className="pt-4">
-                        <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+                        <div className="p-4 rounded-2xl bg-white/2 border border-white/5">
                            <p className="text-[10px] text-white/30 uppercase tracking-widest leading-relaxed">
                               Anfragen werden innerhalb von 24 Stunden durch die KI oder Operatoren bearbeitet.
                            </p>
@@ -747,9 +747,9 @@ export default function Home() {
       {/* Modern Chat Widget - Mobile Optimized */}
       <button
         onClick={isChatOpen ? handleCloseChat : handleOpenChat}
-        className={`fixed bottom-4 right-4 md:bottom-8 md:right-8 z-50 p-4 md:p-5 rounded-2xl bg-white/[0.03] border border-white/10 shadow-2xl hover:border-[var(--accent)]/50 transition-all duration-500 backdrop-blur-xl group ${isChatOpen ? 'rotate-90 opacity-0 pointer-events-none' : 'opacity-100'}`}
+        className={`fixed bottom-4 right-4 md:bottom-8 md:right-8 z-50 p-4 md:p-5 rounded-2xl bg-white/3 border border-white/10 shadow-2xl hover:border-(--accent)/50 transition-all duration-500 backdrop-blur-xl group ${isChatOpen ? 'rotate-90 opacity-0 pointer-events-none' : 'opacity-100'}`}
       >
-         <MessageSquare className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:text-[var(--accent)] transition-colors" />
+         <MessageSquare className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:text-(--accent) transition-colors" />
       </button>
 
       {/* Chat Window - Mobile Full Screen */}
@@ -766,7 +766,7 @@ export default function Home() {
          <div className="h-[calc(100vh-200px)] md:h-[400px] overflow-y-auto p-4 md:p-6 space-y-4 md:space-y-6 scrollbar-hide">
              {chatMessages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                   <div className={`max-w-[90%] md:max-w-[85%] text-xs p-3 md:p-4 rounded-xl md:rounded-2xl leading-relaxed ${msg.role === 'user' ? 'bg-[var(--accent)] text-[var(--accent-foreground)] font-bold' : 'bg-white/[0.03] border border-white/5 text-white/80'}`}>
+                   <div className={`max-w-[90%] md:max-w-[85%] text-xs p-3 md:p-4 rounded-xl md:rounded-2xl leading-relaxed ${msg.role === 'user' ? 'bg-(--accent) text-(--accent-foreground) font-bold' : 'bg-white/3 border border-white/5 text-white/80'}`}>
                       {msg.content}
                    </div>
                 </div>
@@ -774,14 +774,14 @@ export default function Home() {
              {chatStatus === 'loading' && <div className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-white/30 animate-pulse">Orion verarbeitet...</div>}
              <div ref={chatEndRef} />
          </div>
-         <form onSubmit={handleChatSubmit} className="p-3 md:p-4 border-t border-white/10 flex gap-2 md:gap-3 bg-white/[0.01]">
+         <form onSubmit={handleChatSubmit} className="p-3 md:p-4 border-t border-white/10 flex gap-2 md:gap-3 bg-white/1">
             <input
-               className="flex-1 bg-white/[0.03] border border-white/10 rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-xs focus:border-[var(--accent)] outline-none text-white transition-all placeholder:text-white/20"
+               className="flex-1 bg-white/3 border border-white/10 rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-xs focus:border-(--accent) outline-none text-white transition-all placeholder:text-white/20"
                placeholder="Nachricht eingeben..."
                value={chatInput}
                onChange={(e) => setChatInput(e.target.value)}
             />
-            <button type="submit" className="p-2.5 md:p-3 rounded-xl bg-[var(--accent)] text-[var(--accent-foreground)] hover:brightness-110 transition-all flex-shrink-0">
+            <button type="submit" className="p-2.5 md:p-3 rounded-xl bg-(--accent) text-(--accent-foreground) hover:brightness-110 transition-all shrink-0">
               <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
             </button>
          </form>
