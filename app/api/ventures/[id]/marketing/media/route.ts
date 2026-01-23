@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { consumeHourlyQuota, InsufficientEnergyError, reserveEnergy, refundEnergy, settleEnergy } from '@/lib/energy';
+import { consumeDailyQuota, consumeHourlyQuota, InsufficientEnergyError, reserveEnergy, refundEnergy, settleEnergy } from '@/lib/energy';
 import { prisma } from '@/lib/prisma';
 import { RateLimiters } from '@/lib/rate-limit';
 import { put } from '@vercel/blob';
@@ -41,10 +41,27 @@ const HOURLY_LIMITS = {
   video: parseLimit(process.env.MARKETING_MEDIA_VIDEO_HOURLY_LIMIT, 6),
 };
 
+const DAILY_LIMITS = {
+  image: parseLimit(process.env.MARKETING_MEDIA_IMAGE_DAILY_LIMIT, 150),
+  video: parseLimit(process.env.MARKETING_MEDIA_VIDEO_DAILY_LIMIT, 20),
+};
+
+const MAX_PROMPT_CHARS = parseLimit(process.env.MARKETING_MEDIA_MAX_PROMPT_CHARS, 1200);
+const MAX_VARIANTS = parseLimit(process.env.MARKETING_MEDIA_MAX_VARIANTS, 4);
+const MAX_STEPS_IMAGE = parseLimit(process.env.MARKETING_MEDIA_MAX_STEPS_IMAGE, 40);
+const MAX_STEPS_VIDEO = parseLimit(process.env.MARKETING_MEDIA_MAX_STEPS_VIDEO, 20);
+const MAX_DURATION = parseLimit(process.env.MARKETING_MEDIA_MAX_DURATION, 6);
+const MAX_FPS = parseLimit(process.env.MARKETING_MEDIA_MAX_FPS, 24);
+
 const normalizeNumber = (value: FormDataEntryValue | null, fallback: number) => {
   if (value === null) return fallback;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const clampNumber = (value: number, min: number, max: number) => {
+  if (!Number.isFinite(value)) return min;
+  return Math.min(max, Math.max(min, value));
 };
 
 const buildBrandContext = (brandDNA: any) => {
@@ -106,7 +123,7 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const rateLimitResponse = await RateLimiters.heavy(request);
+  const rateLimitResponse = await RateLimiters.media(request);
   if (rateLimitResponse) return rateLimitResponse;
 
   const session = await auth();
@@ -126,6 +143,10 @@ export async function POST(
 
   if (!mode || !prompt) {
     return NextResponse.json({ error: 'Fehlende Parameter' }, { status: 400 });
+  }
+
+  if (prompt.length > MAX_PROMPT_CHARS || negativePrompt.length > MAX_PROMPT_CHARS) {
+    return NextResponse.json({ error: 'Prompt ist zu lang.' }, { status: 400 });
   }
 
   const allowedModels = MODE_MODEL_ALLOWLIST[mode];
@@ -150,19 +171,7 @@ export async function POST(
   }
 
   const venture = await prisma.venture.findFirst({
-    where: {
-      id,
-      OR: [
-        { ownerId: user.id },
-        {
-          squad: {
-            members: {
-              some: { userId: user.id, leftAt: null }
-            }
-          }
-        }
-      ]
-    },
+    where: { id, ownerId: user.id },
     include: { brandDNA: true }
   });
 
@@ -174,6 +183,7 @@ export async function POST(
   const imageUrlField = formData.get('imageUrl');
   const rawImageUrl = typeof imageUrlField === 'string' ? imageUrlField.trim() : '';
   const isVideoMode = mode.includes('video');
+  const maxSteps = isVideoMode ? MAX_STEPS_VIDEO : MAX_STEPS_IMAGE;
 
   if (imageFile instanceof File) {
     if (!ALLOWED_MIME_TYPES.has(imageFile.type)) {
@@ -234,6 +244,32 @@ export async function POST(
       }
     }
 
+    const dailyLimit = isVideoMode ? DAILY_LIMITS.video : DAILY_LIMITS.image;
+    if (dailyLimit > 0) {
+      const quota = await consumeDailyQuota({
+        userId: user.id,
+        feature: isVideoMode ? 'marketing.media.video.daily' : 'marketing.media.image.daily',
+        limit: dailyLimit
+      });
+      if (!quota.allowed) {
+        await refundEnergy(reservationId, 'rate-limit-daily');
+        const retryAfter = Math.max(1, Math.ceil((quota.resetAt.getTime() - Date.now()) / 1000));
+        return NextResponse.json({
+          error: 'Tageslimit erreicht. Bitte später erneut versuchen.',
+          code: 'RATE_LIMIT',
+          limit: quota.limit,
+          remaining: quota.remaining,
+          resetAt: quota.resetAt.toISOString(),
+          retryAfter
+        }, {
+          status: 429,
+          headers: {
+            'Retry-After': retryAfter.toString(),
+          }
+        });
+      }
+    }
+
     let imageUrl: string | null = null;
     if (imageFile instanceof File) {
       const buffer = Buffer.from(await imageFile.arrayBuffer());
@@ -258,13 +294,13 @@ export async function POST(
       prompt: useBrandContext ? `${prompt}${buildBrandContext(venture.brandDNA)}` : prompt,
       negativePrompt: negativePrompt || undefined,
       aspectRatio,
-      steps: normalizeNumber(formData.get('steps'), 30),
+      steps: clampNumber(normalizeNumber(formData.get('steps'), 30), 1, maxSteps),
       guidance: normalizeNumber(formData.get('guidance'), 7.5),
       seed: formData.get('seed') ? String(formData.get('seed')) : undefined,
-      strength: normalizeNumber(formData.get('strength'), 0.6),
-      duration: normalizeNumber(formData.get('duration'), 4),
-      fps: normalizeNumber(formData.get('fps'), 24),
-      variants: normalizeNumber(formData.get('variants'), 1),
+      strength: clampNumber(normalizeNumber(formData.get('strength'), 0.6), 0, 1),
+      duration: clampNumber(normalizeNumber(formData.get('duration'), 4), 1, MAX_DURATION),
+      fps: clampNumber(normalizeNumber(formData.get('fps'), 24), 1, MAX_FPS),
+      variants: clampNumber(normalizeNumber(formData.get('variants'), 1), 1, MAX_VARIANTS),
       imageUrl,
       ventureId: id,
       userId: user.id,

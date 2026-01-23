@@ -1,8 +1,11 @@
 # Forge Media Modal Deployment
 
-This app deploys two Modal endpoints for the Marketing Studio:
+This app deploys Modal endpoints for the Marketing Studio:
 - `generate_image` (A10G): text-to-image + image-to-image
 - `generate_video` (A100/H100): text-to-video + image-to-video
+- `stitch_videos` (CPU): concat multiple video clips
+- `get_last_frame` (CPU): extract last frame for chaining
+- `prefetch_models` (CPU): download model weights into the volume
 
 The endpoints return base64 assets so the Next.js API can upload results to Vercel Blob.
 
@@ -34,9 +37,11 @@ modal secret create TheForge \
 modal deploy modal/forge_media_app.py
 ```
 
-Modal will print two public URLs:
+Modal will print public URLs for each endpoint:
 - `.../generate_image`
 - `.../generate_video`
+- `.../stitch_videos`
+- `.../prefetch_models`
 
 ## 3) Wire env vars in Next.js
 Set these in `.env.local` / production env:
@@ -47,6 +52,8 @@ MODAL_MEDIA_TEXT_TO_IMAGE_URL=https://.../generate_image
 MODAL_MEDIA_IMAGE_TO_IMAGE_URL=https://.../generate_image
 MODAL_MEDIA_TEXT_TO_VIDEO_URL=https://.../generate_video
 MODAL_MEDIA_IMAGE_TO_VIDEO_URL=https://.../generate_video
+MODAL_STITCH_URL=https://.../stitch_videos
+MODAL_PREFETCH_URL=https://.../prefetch_models
 ```
 
 Optional credit tuning:

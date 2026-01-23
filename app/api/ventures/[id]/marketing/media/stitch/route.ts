@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
-import { reserveEnergy, settleEnergy, refundEnergy, InsufficientEnergyError } from '@/lib/energy';
+import { consumeDailyQuota, consumeHourlyQuota, reserveEnergy, settleEnergy, refundEnergy, InsufficientEnergyError } from '@/lib/energy';
 import { put } from '@vercel/blob';
 
-// Default Modal URL pattern if not in ENV
-const MODAL_STITCH_URL = process.env.MODAL_STITCH_URL || 'https://bucci369--forge-media-studio-stitch-videos.modal.run';
+const MODAL_STITCH_URL = process.env.MODAL_STITCH_URL;
+
+const parseLimit = (value: string | undefined, fallback: number) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? Math.max(0, Math.floor(parsed)) : fallback;
+};
+
+const STITCH_HOURLY_LIMIT = parseLimit(process.env.MARKETING_MEDIA_STITCH_HOURLY_LIMIT, 2);
+const STITCH_DAILY_LIMIT = parseLimit(process.env.MARKETING_MEDIA_STITCH_DAILY_LIMIT, 5);
+const STITCH_MAX_ASSETS = parseLimit(process.env.MARKETING_MEDIA_STITCH_MAX_ASSETS, 4);
+const STITCH_MAX_TOTAL_MB = parseLimit(process.env.MARKETING_MEDIA_STITCH_MAX_TOTAL_MB, 200);
+const STITCH_MAX_ASSET_MB = parseLimit(process.env.MARKETING_MEDIA_STITCH_MAX_ASSET_MB, 100);
 
 export const maxDuration = 60; // Stitching might take time
 
@@ -23,6 +33,14 @@ export async function POST(
 
   if (!assetIds || !Array.isArray(assetIds) || assetIds.length < 2) {
     return NextResponse.json({ error: 'At least 2 videos required' }, { status: 400 });
+  }
+
+  if (!MODAL_STITCH_URL) {
+    return NextResponse.json({ error: 'Modal Stitch Endpoint nicht konfiguriert' }, { status: 500 });
+  }
+
+  if (assetIds.length > STITCH_MAX_ASSETS) {
+    return NextResponse.json({ error: `Maximal ${STITCH_MAX_ASSETS} Clips erlaubt.` }, { status: 400 });
   }
 
   // 1. Resolve User & Venture
@@ -51,9 +69,60 @@ export async function POST(
       userId: user.id,
       amount: COST,
       feature: 'marketing.media.stitch',
+      requestId: req.headers.get('x-request-id') || crypto.randomUUID(),
       metadata: { ventureId: id, assetCount: assetIds.length }
     });
     reservationId = reservation.reservationId;
+
+    if (STITCH_HOURLY_LIMIT > 0) {
+      const quota = await consumeHourlyQuota({
+        userId: user.id,
+        feature: 'marketing.media.stitch',
+        limit: STITCH_HOURLY_LIMIT
+      });
+      if (!quota.allowed) {
+        await refundEnergy(reservationId, 'rate-limit');
+        const retryAfter = Math.max(1, Math.ceil((quota.resetAt.getTime() - Date.now()) / 1000));
+        return NextResponse.json({
+          error: 'Stundenlimit erreicht. Bitte später erneut versuchen.',
+          code: 'RATE_LIMIT',
+          limit: quota.limit,
+          remaining: quota.remaining,
+          resetAt: quota.resetAt.toISOString(),
+          retryAfter
+        }, {
+          status: 429,
+          headers: {
+            'Retry-After': retryAfter.toString(),
+          }
+        });
+      }
+    }
+
+    if (STITCH_DAILY_LIMIT > 0) {
+      const quota = await consumeDailyQuota({
+        userId: user.id,
+        feature: 'marketing.media.stitch.daily',
+        limit: STITCH_DAILY_LIMIT
+      });
+      if (!quota.allowed) {
+        await refundEnergy(reservationId, 'rate-limit-daily');
+        const retryAfter = Math.max(1, Math.ceil((quota.resetAt.getTime() - Date.now()) / 1000));
+        return NextResponse.json({
+          error: 'Tageslimit erreicht. Bitte später erneut versuchen.',
+          code: 'RATE_LIMIT',
+          limit: quota.limit,
+          remaining: quota.remaining,
+          resetAt: quota.resetAt.toISOString(),
+          retryAfter
+        }, {
+          status: 429,
+          headers: {
+            'Retry-After': retryAfter.toString(),
+          }
+        });
+      }
+    }
 
     // 3. Fetch Assets
     const assets = await prisma.mediaAsset.findMany({
@@ -74,6 +143,24 @@ export async function POST(
       throw new Error('Could not find enough valid video assets');
     }
 
+    const maxAssetBytes = STITCH_MAX_ASSET_MB * 1024 * 1024;
+    const maxTotalBytes = STITCH_MAX_TOTAL_MB * 1024 * 1024;
+    let totalBytes = 0;
+
+    for (const asset of sortedAssets) {
+      if (!asset) continue;
+      if (asset.size && asset.size > maxAssetBytes) {
+        await refundEnergy(reservationId, 'asset-too-large');
+        return NextResponse.json({ error: 'Clip ist zu groß.' }, { status: 413 });
+      }
+      if (asset.size) totalBytes += asset.size;
+    }
+
+    if (totalBytes > 0 && totalBytes > maxTotalBytes) {
+      await refundEnergy(reservationId, 'total-too-large');
+      return NextResponse.json({ error: 'Gesamtgröße der Clips ist zu groß.' }, { status: 413 });
+    }
+
     // 4. Download & Encode
     const videoBuffers = await Promise.all(sortedAssets.map(async (asset) => {
       if (!asset) return '';
@@ -83,12 +170,16 @@ export async function POST(
     }));
 
     // 5. Call Modal
+    const modalHeaders: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+    if (process.env.MODAL_API_KEY) {
+      modalHeaders.Authorization = `Bearer ${process.env.MODAL_API_KEY}`;
+    }
+
     const modalRes = await fetch(MODAL_STITCH_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.MODAL_API_KEY}`
-      },
+      headers: modalHeaders,
       body: JSON.stringify({ videos: videoBuffers })
     });
 

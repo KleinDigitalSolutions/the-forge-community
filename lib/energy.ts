@@ -74,17 +74,18 @@ const mergeMetadata = (base: Record<string, any> | null | undefined, next?: Reco
   return { ...(base ?? {}), ...next };
 };
 
-export async function consumeHourlyQuota(options: {
+type QuotaInput = {
   userId: string;
   feature: string;
   limit: number;
   windowMs?: number;
-}): Promise<QuotaResult> {
-  const windowMs = options.windowMs ?? 60 * 60 * 1000;
+};
+
+const consumeQuotaWindow = async (options: QuotaInput & { windowMs: number }): Promise<QuotaResult> => {
   const limit = Math.max(0, Math.floor(options.limit));
   const now = Date.now();
-  const windowStart = new Date(Math.floor(now / windowMs) * windowMs);
-  const resetAt = new Date(windowStart.getTime() + windowMs);
+  const windowStart = new Date(Math.floor(now / options.windowMs) * options.windowMs);
+  const resetAt = new Date(windowStart.getTime() + options.windowMs);
 
   if (limit <= 0) {
     return { allowed: true, remaining: Number.MAX_SAFE_INTEGER, limit: 0, resetAt };
@@ -109,6 +110,16 @@ export async function consumeHourlyQuota(options: {
   const remaining = Math.max(0, limit - currentCount);
 
   return { allowed: true, remaining, limit, resetAt };
+};
+
+export async function consumeHourlyQuota(options: QuotaInput): Promise<QuotaResult> {
+  const windowMs = options.windowMs ?? 60 * 60 * 1000;
+  return consumeQuotaWindow({ ...options, windowMs });
+}
+
+export async function consumeDailyQuota(options: QuotaInput): Promise<QuotaResult> {
+  const windowMs = options.windowMs ?? 24 * 60 * 60 * 1000;
+  return consumeQuotaWindow({ ...options, windowMs });
 }
 
 export async function reserveEnergy(input: EnergyReserveInput): Promise<EnergyReserveResult> {

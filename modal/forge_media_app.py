@@ -50,6 +50,7 @@ image = (
         "transformers",
         "accelerate",
         "safetensors",
+        "huggingface_hub",
         "pillow",
         "requests",
         "imageio",
@@ -80,9 +81,6 @@ def _resolve_model_id(model_key: str) -> str:
     env_key = MODEL_ID_ENV.get(model_key)
     model_id = os.environ.get(env_key, "") if env_key else ""
     if not model_id:
-        # Fallback mostly for local testing or defaults
-        if model_key == "qwen-image-2512": return "Qwen/Qwen-VL-Chat" # Placeholder
-        if model_key == "wan-2.2": return "Wan-AI/Wan2.1-T2V-1.3B"
         raise HTTPException(status_code=400, detail=f"Model not configured: {model_key}")
     return model_id
 
@@ -116,6 +114,18 @@ def _encode_video(frames: List[Any], fps: int) -> str:
     with open(video_path, "rb") as handle:
         data = handle.read()
     return base64.b64encode(data).decode("utf-8")
+
+
+def _prefetch_model(model_key: str) -> str:
+    from huggingface_hub import snapshot_download
+
+    model_id = _resolve_model_id(model_key)
+    snapshot_download(
+        repo_id=model_id,
+        cache_dir=HF_CACHE,
+        local_files_only=False,
+    )
+    return model_id
 
 
 def _load_text_to_image(model_key: str):
@@ -335,6 +345,27 @@ def generate_video(payload: Dict[str, Any], authorization: Optional[str] = Heade
     return {"assets": assets}
 
 
+@app.function(
+    image=image,
+    cpu=2.0,
+    timeout=1800,
+    volumes={MODEL_CACHE: volume},
+    secrets=secrets,
+    min_containers=0,
+)
+@modal.fastapi_endpoint(method="POST")
+def prefetch_models(payload: Dict[str, Any], authorization: Optional[str] = Header(None)):
+    _require_token(authorization)
+    requested = payload.get("models") if isinstance(payload, dict) else None
+    model_keys = requested if isinstance(requested, list) else IMAGE_MODEL_IDS + VIDEO_MODEL_IDS
+    prefetched = []
+    for model_key in model_keys:
+        if model_key not in MODEL_ID_ENV:
+            continue
+        prefetched.append(_prefetch_model(model_key))
+    return {"prefetched": prefetched}
+
+
 # ------------------------------------------------------------------
 # STUDIO TOOLS: STITCHING, CROPPING, EDITING
 # ------------------------------------------------------------------
@@ -384,8 +415,20 @@ def stitch_videos(payload: Dict[str, Any], authorization: Optional[str] = Header
         try:
             subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         except subprocess.CalledProcessError as e:
-            print(f"FFmpeg error: {e.stderr.decode()}")
-            raise HTTPException(status_code=500, detail="Stitching failed")
+            print(f"FFmpeg copy error: {e.stderr.decode()}")
+            # Fallback: re-encode for mismatched codecs/resolutions
+            cmd_fallback = [
+                "ffmpeg", "-f", "concat", "-safe", "0", "-i", list_path,
+                "-c:v", "libx264", "-preset", "fast", "-crf", "20",
+                "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "128k",
+                "-movflags", "+faststart",
+                output_path
+            ]
+            try:
+                subprocess.run(cmd_fallback, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            except subprocess.CalledProcessError as fallback_error:
+                print(f"FFmpeg re-encode error: {fallback_error.stderr.decode()}")
+                raise HTTPException(status_code=500, detail="Stitching failed")
 
         with open(output_path, "rb") as f:
             out_data = f.read()

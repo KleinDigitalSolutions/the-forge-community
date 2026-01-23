@@ -163,6 +163,12 @@ export const RateLimiters = {
     message: 'Rate limit exceeded for this operation. Try again in an hour.'
   }),
 
+  media: createRateLimiter({
+    maxRequests: 60,
+    windowMs: 60 * 60 * 1000,
+    message: 'Zu viele Media-Requests. Bitte warte kurz.'
+  }),
+
   forumPost: createRateLimiter({
     maxRequests: 6,
     windowMs: 60 * 1000,
