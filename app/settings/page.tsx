@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import PageShell from '@/app/components/PageShell';
 import AuthGuard from '@/app/components/AuthGuard';
-import { Shield, Bell, MessageSquare, Trash2, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Shield, Bell, MessageSquare, Trash2, CheckCircle, AlertTriangle, Eye } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 
 const DEFAULT_PREFS = {
@@ -13,7 +13,13 @@ const DEFAULT_PREFS = {
   system: true
 };
 
+const DEFAULT_PRIVACY = {
+  profileVisible: true,
+  showFollowerCounts: true
+};
+
 type NotificationPrefs = typeof DEFAULT_PREFS;
+type PrivacyPrefs = typeof DEFAULT_PRIVACY;
 
 function ToggleRow({
   label,
@@ -56,6 +62,7 @@ export default function SettingsPage() {
   const [saveMessage, setSaveMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [prefs, setPrefs] = useState<NotificationPrefs>(DEFAULT_PREFS);
+  const [privacy, setPrivacy] = useState<PrivacyPrefs>(DEFAULT_PRIVACY);
 
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState('');
@@ -78,6 +85,12 @@ export default function SettingsPage() {
             system: !!payload.notifications.system
           });
         }
+        if (mounted && payload?.privacy) {
+          setPrivacy({
+            profileVisible: !!payload.privacy.profileVisible,
+            showFollowerCounts: !!payload.privacy.showFollowerCounts
+          });
+        }
       } catch (error) {
         console.error(error);
       } finally {
@@ -98,7 +111,7 @@ export default function SettingsPage() {
       const res = await fetch('/api/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notifications: prefs })
+        body: JSON.stringify({ notifications: prefs, privacy })
       });
       if (!res.ok) {
         throw new Error('Speichern fehlgeschlagen');
@@ -213,6 +226,27 @@ export default function SettingsPage() {
                   </div>
                 )}
               </div>
+            </div>
+          </section>
+
+          <section className="glass-card rounded-3xl border border-white/10 overflow-hidden">
+            <div className="p-6 border-b border-white/5 flex items-center gap-3">
+              <Eye className="w-4 h-4 text-[var(--accent)]" />
+              <div className="text-xs font-bold uppercase tracking-[0.3em] text-white/40">Privacy</div>
+            </div>
+            <div className="p-6 space-y-5">
+              <ToggleRow
+                label="Profil sichtbar"
+                description="Dein Profil ist im Founder-Netzwerk auffindbar."
+                checked={privacy.profileVisible}
+                onToggle={() => setPrivacy(prev => ({ ...prev, profileVisible: !prev.profileVisible }))}
+              />
+              <ToggleRow
+                label="Follower-Zahlen anzeigen"
+                description="Zeigt Follower- und Following-Counts im Profil."
+                checked={privacy.showFollowerCounts}
+                onToggle={() => setPrivacy(prev => ({ ...prev, showFollowerCounts: !prev.showFollowerCounts }))}
+              />
             </div>
           </section>
 

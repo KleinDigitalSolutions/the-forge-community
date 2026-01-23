@@ -9,6 +9,11 @@ const DEFAULT_PREFS = {
   system: true
 };
 
+const DEFAULT_PRIVACY = {
+  profileVisible: true,
+  showFollowerCounts: true
+};
+
 export async function GET() {
   const session = await auth();
 
@@ -25,9 +30,14 @@ export async function GET() {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
   }
 
-  const prefs = await prisma.notificationPreference.findUnique({
-    where: { userId: user.id }
-  });
+  const [prefs, privacy] = await Promise.all([
+    prisma.notificationPreference.findUnique({
+      where: { userId: user.id }
+    }),
+    prisma.privacyPreference.findUnique({
+      where: { userId: user.id }
+    })
+  ]);
 
   return NextResponse.json({
     notifications: prefs
@@ -37,7 +47,13 @@ export async function GET() {
           mentions: prefs.mentions,
           system: prefs.system
         }
-      : DEFAULT_PREFS
+      : DEFAULT_PREFS,
+    privacy: privacy
+      ? {
+          profileVisible: privacy.profileVisible,
+          showFollowerCounts: privacy.showFollowerCounts
+        }
+      : DEFAULT_PRIVACY
   });
 }
 
@@ -59,6 +75,7 @@ export async function POST(request: Request) {
 
   const body = await request.json().catch(() => ({}));
   const notifications = body?.notifications || {};
+  const privacy = body?.privacy || {};
 
   const nextPrefs = {
     forumComments: typeof notifications.forumComments === 'boolean' ? notifications.forumComments : DEFAULT_PREFS.forumComments,
@@ -67,14 +84,29 @@ export async function POST(request: Request) {
     system: typeof notifications.system === 'boolean' ? notifications.system : DEFAULT_PREFS.system
   };
 
-  const updated = await prisma.notificationPreference.upsert({
-    where: { userId: user.id },
-    update: nextPrefs,
-    create: {
-      userId: user.id,
-      ...nextPrefs
-    }
-  });
+  const nextPrivacy = {
+    profileVisible: typeof privacy.profileVisible === 'boolean' ? privacy.profileVisible : DEFAULT_PRIVACY.profileVisible,
+    showFollowerCounts: typeof privacy.showFollowerCounts === 'boolean' ? privacy.showFollowerCounts : DEFAULT_PRIVACY.showFollowerCounts
+  };
+
+  const [updated, updatedPrivacy] = await Promise.all([
+    prisma.notificationPreference.upsert({
+      where: { userId: user.id },
+      update: nextPrefs,
+      create: {
+        userId: user.id,
+        ...nextPrefs
+      }
+    }),
+    prisma.privacyPreference.upsert({
+      where: { userId: user.id },
+      update: nextPrivacy,
+      create: {
+        userId: user.id,
+        ...nextPrivacy
+      }
+    })
+  ]);
 
   return NextResponse.json({
     notifications: {
@@ -82,6 +114,10 @@ export async function POST(request: Request) {
       forumReplies: updated.forumReplies,
       mentions: updated.mentions,
       system: updated.system
+    },
+    privacy: {
+      profileVisible: updatedPrivacy.profileVisible,
+      showFollowerCounts: updatedPrivacy.showFollowerCounts
     }
   });
 }

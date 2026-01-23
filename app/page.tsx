@@ -429,7 +429,7 @@ export default function Home() {
                    <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">Storefront v1</div>
                    <div className="text-[9px] font-bold uppercase tracking-widest text-[var(--accent)]">Live Demo</div>
                  </div>
-                 <div className="grid grid-cols-2 gap-4">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                    {[
                      { name: 'Capsule Drop', price: '€89', tone: 'from-emerald-500/20 to-teal-500/10' },
                      { name: 'Founder Kit', price: '€149', tone: 'from-purple-500/20 to-blue-500/10' },
@@ -441,7 +441,7 @@ export default function Home() {
                      </div>
                    ))}
                  </div>
-                 <div className="mt-6 grid grid-cols-3 gap-3 text-[10px] text-white/60">
+                 <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 text-[10px] text-white/60">
                    <div className="flex items-center gap-2 rounded-xl border border-white/5 bg-white/[0.02] px-3 py-2">
                      <Package className="w-4 h-4 text-[var(--accent)]" />
                      <span>Collections</span>

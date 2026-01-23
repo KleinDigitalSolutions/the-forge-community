@@ -165,7 +165,7 @@ function LoginForm() {
         <div className="mt-10 text-center relative z-10 border-t border-white/5 pt-8">
           <p className="text-xs text-white/30 uppercase tracking-widest font-bold">
             Noch kein Founder?{' '}
-            <Link href="/#apply" className="text-[#D4AF37] hover:underline ml-2">
+            <Link href="/#apply" className="text-[#D4AF37] hover:underline ml-2 whitespace-nowrap">
               Jetzt bewerben
             </Link>
           </p>

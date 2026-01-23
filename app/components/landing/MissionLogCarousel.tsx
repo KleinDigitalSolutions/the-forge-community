@@ -138,7 +138,7 @@ export default function MissionLogCarousel() {
               transition={{ duration: 0.5, ease: "circOut" }}
               className="text-center lg:text-left"
             >
-              <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/80 border ${activeProject.border} text-[10px] font-black ${activeProject.color} uppercase tracking-[0.4em] mb-10 shadow-2xl w-fit mx-auto lg:mx-0`}>
+              <div className={`inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full bg-black/80 border ${activeProject.border} text-[9px] sm:text-[10px] font-black ${activeProject.color} uppercase tracking-[0.2em] sm:tracking-[0.4em] mb-10 shadow-2xl w-fit mx-auto lg:mx-0`}>
                 <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: activeProject.accent }} />
                 Operational Mission Log
               </div>
@@ -154,9 +154,9 @@ export default function MissionLogCarousel() {
                 {activeProject.description}
               </p>
               
-              <div className="grid grid-cols-2 gap-6 max-w-md mx-auto lg:mx-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-md mx-auto lg:mx-0">
                 {activeProject.metrics.map((metric, i) => (
-                  <div key={i} className="p-8 rounded-3xl border border-white/10 bg-black/60 backdrop-blur-md hover:border-white/20 transition-all text-left shadow-2xl">
+                  <div key={i} className="p-6 sm:p-8 rounded-3xl border border-white/10 bg-black/60 backdrop-blur-md hover:border-white/20 transition-all text-left shadow-2xl">
                     <div className={`text-4xl font-instrument-serif text-white mb-1`}>
                       {metric.value}
                     </div>
