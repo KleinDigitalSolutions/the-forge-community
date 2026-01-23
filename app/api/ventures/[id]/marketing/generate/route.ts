@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { callAI } from '@/lib/ai';
+import { calculateTokenCredits, estimateTokens, InsufficientEnergyError, reserveEnergy, refundEnergy, settleEnergy } from '@/lib/energy';
 
 export async function POST(
   req: NextRequest,
@@ -22,24 +23,19 @@ export async function POST(
       return NextResponse.json({ error: 'Fehlende Parameter' }, { status: 400 });
     }
 
-    // Get user with credits
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      select: { id: true, credits: true }
+      select: { id: true }
     });
 
     if (!user) {
       return NextResponse.json({ error: 'Benutzer nicht gefunden' }, { status: 404 });
     }
 
-    // CREDIT CHECK
-    const COST = 10;
-    if (user.credits < COST) {
-      return NextResponse.json({ 
-        error: 'Nicht genug Energy (Credits). Bitte lade dein Konto auf.',
-        code: 'INSUFFICIENT_CREDITS' 
-      }, { status: 402 });
-    }
+    const parsePositiveInt = (value: string | undefined, fallback: number) => {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
+    };
 
     // Verify access to venture and get BrandDNA
     const venture = await prisma.venture.findFirst({
@@ -98,36 +94,109 @@ export async function POST(
     Zusätzliche Anweisungen: ${additionalInstructions || 'Keine'}
     `;
 
-    const aiResponse = await callAI([
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: userPrompt }
-    ]);
+    const maxTokens = parsePositiveInt(process.env.AI_MARKETING_MAX_TOKENS, 900);
+    const creditsPer1k = parsePositiveInt(
+      process.env.AI_MARKETING_CREDITS_PER_1K_TOKENS || process.env.AI_CREDITS_PER_1K_TOKENS,
+      2
+    );
+    const estimatedTokens = estimateTokens(`${systemPrompt}\n\n${userPrompt}`) + maxTokens;
+    const estimatedCredits = calculateTokenCredits(estimatedTokens, creditsPer1k);
+
+    let reservationId: string | null = null;
+    let reservedCredits = estimatedCredits;
+    try {
+      const reservation = await reserveEnergy({
+        userId: user.id,
+        amount: estimatedCredits,
+        feature: 'marketing.assistant',
+        requestId: req.headers.get('x-request-id') || crypto.randomUUID(),
+        metadata: {
+          ventureId: id,
+          contentType,
+          topic,
+          promptTokensEstimate: estimatedTokens,
+          maxTokens
+        }
+      });
+      reservationId = reservation.reservationId;
+      reservedCredits = reservation.reservedCredits;
+    } catch (error) {
+      if (error instanceof InsufficientEnergyError) {
+        return NextResponse.json({
+          error: error.message,
+          code: 'INSUFFICIENT_CREDITS',
+          requiredCredits: error.requiredCredits,
+          creditsAvailable: error.creditsAvailable
+        }, { status: 402 });
+      }
+      throw error;
+    }
+
+    let aiResponse;
+    try {
+      aiResponse = await callAI([
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ], { maxTokens });
+    } catch (error) {
+      if (reservationId) {
+        await refundEnergy(reservationId, 'ai-failed');
+      }
+      throw error;
+    }
 
     if (aiResponse.error) {
+      if (reservationId) {
+        await refundEnergy(reservationId, 'ai-error');
+      }
        throw new Error(aiResponse.error);
     }
 
     // Save to database & Deduct Credits
-    await prisma.$transaction([
-      prisma.marketingContent.create({
-        data: {
-          ventureId: id,
-          contentType,
-          prompt: userPrompt,
-          generatedContent: aiResponse.content,
-          createdById: user.id
-        }
-      }),
-      prisma.user.update({
-        where: { id: user.id },
-        data: { credits: { decrement: COST } }
-      })
-    ]);
+    try {
+      await prisma.$transaction([
+        prisma.marketingContent.create({
+          data: {
+            ventureId: id,
+            contentType,
+            prompt: userPrompt,
+            generatedContent: aiResponse.content,
+            createdById: user.id
+          }
+        })
+      ]);
+    } catch (error) {
+      if (reservationId) {
+        await refundEnergy(reservationId, 'marketing-save-failed');
+      }
+      throw error;
+    }
+
+    const promptTokens = aiResponse.usage?.promptTokens ?? estimateTokens(`${systemPrompt}\n\n${userPrompt}`);
+    const completionTokens = aiResponse.usage?.completionTokens ?? estimateTokens(aiResponse.content);
+    const totalTokens = aiResponse.usage?.totalTokens ?? (promptTokens + completionTokens);
+    const finalCredits = calculateTokenCredits(totalTokens, creditsPer1k);
+    const settled = reservationId
+      ? await settleEnergy({
+          reservationId,
+          finalCost: finalCredits,
+          provider: aiResponse.provider,
+          model: aiResponse.model,
+          usage: { promptTokens, completionTokens, totalTokens },
+          metadata: {
+            reservedCredits,
+            ventureId: id,
+            contentType,
+            topic,
+          }
+        })
+      : null;
 
     return NextResponse.json({ 
       content: aiResponse.content,
       provider: aiResponse.provider,
-      creditsRemaining: user.credits - COST
+      creditsUsed: finalCredits,
+      creditsRemaining: settled?.creditsRemaining ?? null
     });
 
   } catch (error) {

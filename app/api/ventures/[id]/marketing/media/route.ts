@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
+import { InsufficientEnergyError, reserveEnergy, refundEnergy, settleEnergy } from '@/lib/energy';
 import { prisma } from '@/lib/prisma';
 import { RateLimiters } from '@/lib/rate-limit';
 import { put } from '@vercel/blob';
@@ -131,18 +132,11 @@ export async function POST(
 
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
-    select: { id: true, credits: true }
+    select: { id: true }
   });
 
   if (!user) {
     return NextResponse.json({ error: 'Benutzer nicht gefunden' }, { status: 404 });
-  }
-
-  if (user.credits < cost) {
-    return NextResponse.json({
-      error: 'Nicht genug Energy (Credits). Bitte lade dein Konto auf.',
-      code: 'INSUFFICIENT_CREDITS'
-    }, { status: 402 });
   }
 
   const venture = await prisma.venture.findFirst({
@@ -166,51 +160,72 @@ export async function POST(
     return NextResponse.json({ error: 'Venture nicht gefunden oder Zugriff verweigert' }, { status: 404 });
   }
 
-  const imageFile = formData.get('image');
-  const imageUrlField = formData.get('imageUrl');
-  let imageUrl: string | null = null;
-  if (imageFile instanceof File) {
-    if (!ALLOWED_MIME_TYPES.has(imageFile.type)) {
-      return NextResponse.json({ error: 'Ungültiger Bildtyp' }, { status: 415 });
-    }
-    if (imageFile.size > MAX_UPLOAD_BYTES) {
-      return NextResponse.json({ error: 'Datei zu groß (max. 10 MB)' }, { status: 413 });
-    }
-
-    const buffer = Buffer.from(await imageFile.arrayBuffer());
-    const safeName = `${Date.now()}-${imageFile.name.replace(/\s+/g, '-')}`;
-    const blob = await put(`marketing/${user.id}/${safeName}`, buffer, {
-      access: 'public',
-      contentType: imageFile.type
-    });
-    imageUrl = blob.url;
-  }
-  if (!imageUrl && typeof imageUrlField === 'string' && imageUrlField.trim()) {
-    imageUrl = imageUrlField.trim();
-  }
-  if (mode.includes('image-to') && !imageUrl) {
-    return NextResponse.json({ error: 'Referenzbild fehlt' }, { status: 400 });
-  }
-
-  const payload = {
-    mode,
-    model,
-    prompt: useBrandContext ? `${prompt}${buildBrandContext(venture.brandDNA)}` : prompt,
-    negativePrompt: negativePrompt || undefined,
-    aspectRatio,
-    steps: normalizeNumber(formData.get('steps'), 30),
-    guidance: normalizeNumber(formData.get('guidance'), 7.5),
-    seed: formData.get('seed') ? String(formData.get('seed')) : undefined,
-    strength: normalizeNumber(formData.get('strength'), 0.6),
-    duration: normalizeNumber(formData.get('duration'), 4),
-    fps: normalizeNumber(formData.get('fps'), 24),
-    variants: normalizeNumber(formData.get('variants'), 1),
-    imageUrl,
-    ventureId: id,
-    userId: user.id,
-  };
-
+  let reservationId: string | null = null;
+  let reservedCredits = cost;
   try {
+    const reservation = await reserveEnergy({
+      userId: user.id,
+      amount: cost,
+      feature: 'marketing.media',
+      requestId: request.headers.get('x-request-id') || crypto.randomUUID(),
+      metadata: {
+        ventureId: id,
+        mode,
+        model,
+        aspectRatio,
+        cost,
+      }
+    });
+    reservationId = reservation.reservationId;
+    reservedCredits = reservation.reservedCredits;
+
+    const imageFile = formData.get('image');
+    const imageUrlField = formData.get('imageUrl');
+    let imageUrl: string | null = null;
+    if (imageFile instanceof File) {
+      if (!ALLOWED_MIME_TYPES.has(imageFile.type)) {
+        await refundEnergy(reservationId, 'invalid-image-type');
+        return NextResponse.json({ error: 'Ungültiger Bildtyp' }, { status: 415 });
+      }
+      if (imageFile.size > MAX_UPLOAD_BYTES) {
+        await refundEnergy(reservationId, 'image-too-large');
+        return NextResponse.json({ error: 'Datei zu groß (max. 10 MB)' }, { status: 413 });
+      }
+
+      const buffer = Buffer.from(await imageFile.arrayBuffer());
+      const safeName = `${Date.now()}-${imageFile.name.replace(/\\s+/g, '-')}`;
+      const blob = await put(`marketing/${user.id}/${safeName}`, buffer, {
+        access: 'public',
+        contentType: imageFile.type
+      });
+      imageUrl = blob.url;
+    }
+    if (!imageUrl && typeof imageUrlField === 'string' && imageUrlField.trim()) {
+      imageUrl = imageUrlField.trim();
+    }
+    if (mode.includes('image-to') && !imageUrl) {
+      await refundEnergy(reservationId, 'missing-image');
+      return NextResponse.json({ error: 'Referenzbild fehlt' }, { status: 400 });
+    }
+
+    const payload = {
+      mode,
+      model,
+      prompt: useBrandContext ? `${prompt}${buildBrandContext(venture.brandDNA)}` : prompt,
+      negativePrompt: negativePrompt || undefined,
+      aspectRatio,
+      steps: normalizeNumber(formData.get('steps'), 30),
+      guidance: normalizeNumber(formData.get('guidance'), 7.5),
+      seed: formData.get('seed') ? String(formData.get('seed')) : undefined,
+      strength: normalizeNumber(formData.get('strength'), 0.6),
+      duration: normalizeNumber(formData.get('duration'), 4),
+      fps: normalizeNumber(formData.get('fps'), 24),
+      variants: normalizeNumber(formData.get('variants'), 1),
+      imageUrl,
+      ventureId: id,
+      userId: user.id,
+    };
+
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
@@ -222,6 +237,7 @@ export async function POST(
 
     if (!response.ok) {
       const errorText = await response.text();
+      await refundEnergy(reservationId, 'provider-error');
       return NextResponse.json({ error: errorText || 'Media Provider Fehler' }, { status: 502 });
     }
 
@@ -229,6 +245,7 @@ export async function POST(
     const assets = extractAssets(data, mode);
 
     if (!assets.length) {
+      await refundEnergy(reservationId, 'no-assets');
       return NextResponse.json({ error: 'Keine Assets vom Provider erhalten' }, { status: 502 });
     }
 
@@ -249,10 +266,16 @@ export async function POST(
       })
     );
 
-    const updated = await prisma.user.update({
-      where: { id: user.id },
-      data: { credits: { decrement: cost } },
-      select: { credits: true }
+    const settled = await settleEnergy({
+      reservationId,
+      finalCost: cost,
+      provider: 'modal',
+      model,
+      metadata: {
+        reservedCredits,
+        mode,
+        model,
+      }
     });
 
     return NextResponse.json({
@@ -260,9 +283,20 @@ export async function POST(
       provider: 'modal',
       model,
       creditsUsed: cost,
-      creditsRemaining: updated.credits
+      creditsRemaining: settled.creditsRemaining
     });
   } catch (error) {
+    if (error instanceof InsufficientEnergyError) {
+      return NextResponse.json({
+        error: error.message,
+        code: 'INSUFFICIENT_CREDITS',
+        requiredCredits: error.requiredCredits,
+        creditsAvailable: error.creditsAvailable
+      }, { status: 402 });
+    }
+    if (reservationId) {
+      await refundEnergy(reservationId, 'server-error');
+    }
     console.error('Media generation failed:', error);
     return NextResponse.json({ error: 'Interner Serverfehler' }, { status: 500 });
   }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { callAI } from '@/lib/ai';
 import { getForgePromptContext } from '@/lib/forge-knowledge';
+import { calculateTokenCredits, estimateTokens, InsufficientEnergyError, reserveEnergy, refundEnergy, settleEnergy } from '@/lib/energy';
 import { prisma } from '@/lib/prisma';
 import { RateLimiters } from '@/lib/rate-limit';
 import { braveSearch } from '@/lib/research';
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      select: { id: true, name: true, role: true, credits: true },
+      select: { id: true, name: true, role: true },
     });
     if (!user) {
       return NextResponse.json({ error: 'Benutzer nicht gefunden' }, { status: 404 });
@@ -49,7 +50,6 @@ export async function POST(req: NextRequest) {
       const parsed = Number(value);
       return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
     };
-    const estimateTokens = (text: string) => Math.max(1, Math.ceil(text.trim().length / 4));
 
     let ventureContext = '';
     if (user?.id && ventureId) {
@@ -242,49 +242,84 @@ ${formattedSources}
     `;
 
     const maxTokens = wantsResearch ? 900 : 1000;
-    let maxCostEstimate = 0;
     const creditsPer1k = parsePositiveInt(process.env.AI_CREDITS_PER_1K_TOKENS, 1);
     const researchBaseCredits = parsePositiveInt(process.env.AI_RESEARCH_BASE_CREDITS, 5);
-    if (wantsResearch) {
-      const promptText = `${systemPrompt}\n\n${userMessage}`;
-      const estimatedTokens = estimateTokens(promptText) + maxTokens;
-      const tokenCredits = Math.max(1, Math.ceil((estimatedTokens / 1000) * creditsPer1k));
-      maxCostEstimate = researchBaseCredits + tokenCredits;
-      if ((user.credits || 0) < maxCostEstimate) {
+    const baseCredits = wantsResearch ? researchBaseCredits : 0;
+    const promptText = `${systemPrompt}\n\n${userMessage}`;
+    const estimatedTokens = estimateTokens(promptText) + maxTokens;
+    const estimatedTokenCredits = calculateTokenCredits(estimatedTokens, creditsPer1k);
+    const estimatedTotalCredits = baseCredits + estimatedTokenCredits;
+
+    let reservationId: string | null = null;
+    let reservedCredits = estimatedTotalCredits;
+    const requestId = req.headers.get('x-request-id') || crypto.randomUUID();
+    try {
+      const reservation = await reserveEnergy({
+        userId: user.id,
+        amount: estimatedTotalCredits,
+        feature: wantsResearch ? 'chat.research' : 'chat.assistant',
+        requestId,
+        metadata: {
+          promptTokensEstimate: estimatedTokens,
+          maxTokens,
+          research: wantsResearch,
+        }
+      });
+      reservationId = reservation.reservationId;
+      reservedCredits = reservation.reservedCredits;
+    } catch (error) {
+      if (error instanceof InsufficientEnergyError) {
         return NextResponse.json({
-          error: 'Nicht genug Energy (Credits). Bitte lade dein Konto auf.',
+          error: error.message,
           code: 'INSUFFICIENT_CREDITS',
-          requiredCredits: maxCostEstimate,
-          creditsAvailable: user.credits || 0
+          requiredCredits: error.requiredCredits,
+          creditsAvailable: error.creditsAvailable
         }, { status: 402 });
       }
+      throw error;
     }
 
-    const response = await callAI([
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: userMessage }
-    ], { maxTokens });
+    let response;
+    try {
+      response = await callAI([
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userMessage }
+      ], { maxTokens });
+    } catch (error) {
+      if (reservationId) {
+        await refundEnergy(reservationId, 'ai-failed');
+      }
+      throw error;
+    }
 
     if (response.error) {
+      if (reservationId) {
+        await refundEnergy(reservationId, 'ai-error');
+      }
        throw new Error(response.error);
     }
 
-    let creditsRemaining: number | undefined;
-    let creditsUsed: number | undefined;
-    if (wantsResearch) {
-      const promptText = `${systemPrompt}\n\n${userMessage}\n\n${response.content}`;
-      const actualTokens = estimateTokens(promptText);
-      const tokenCredits = Math.max(1, Math.ceil((actualTokens / 1000) * creditsPer1k));
-      const totalCredits = researchBaseCredits + tokenCredits;
-      creditsUsed = totalCredits;
+    const promptTokens = response.usage?.promptTokens ?? estimateTokens(promptText);
+    const completionTokens = response.usage?.completionTokens ?? estimateTokens(response.content);
+    const totalTokens = response.usage?.totalTokens ?? (promptTokens + completionTokens);
+    const tokenCredits = calculateTokenCredits(totalTokens, creditsPer1k);
+    const totalCredits = baseCredits + tokenCredits;
 
-      const updated = await prisma.user.update({
-        where: { id: user.id },
-        data: { credits: { decrement: totalCredits } },
-        select: { credits: true },
-      });
-      creditsRemaining = updated.credits;
-    }
+    const settled = reservationId
+      ? await settleEnergy({
+          reservationId,
+          finalCost: totalCredits,
+          provider: response.provider,
+          model: response.model,
+          usage: { promptTokens, completionTokens, totalTokens },
+          metadata: {
+            reservedCredits,
+            research: wantsResearch,
+          }
+        })
+      : null;
+    const creditsRemaining = settled?.creditsRemaining;
+    const creditsUsed = totalCredits;
 
     return NextResponse.json({
       response: response.content,

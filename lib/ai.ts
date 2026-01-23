@@ -10,6 +10,12 @@ export interface AIMessage {
 export interface AIResponse {
   content: string;
   provider: 'gemini' | 'groq';
+  model?: string;
+  usage?: {
+    promptTokens?: number;
+    completionTokens?: number;
+    totalTokens?: number;
+  };
   error?: string;
 }
 
@@ -26,6 +32,16 @@ Antworte immer auf Deutsch, kurz und handlungsorientiert.
 /**
  * Call Gemini Flash 2.0 with Groq as fallback
  */
+interface AIProviderResult {
+  content: string;
+  model?: string;
+  usage?: {
+    promptTokens?: number;
+    completionTokens?: number;
+    totalTokens?: number;
+  };
+}
+
 export async function callAI(
   messages: AIMessage[],
   options: {
@@ -38,8 +54,8 @@ export async function callAI(
   // Try Gemini Flash first
   try {
     const geminiResponse = await callGemini(messages, { temperature, maxTokens });
-    if (geminiResponse) {
-      return { content: geminiResponse, provider: 'gemini' };
+    if (geminiResponse?.content) {
+      return { ...geminiResponse, provider: 'gemini' };
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -49,7 +65,7 @@ export async function callAI(
   // Fallback to Groq
   try {
     const groqResponse = await callGroq(messages, { temperature, maxTokens });
-    return { content: groqResponse, provider: 'groq' };
+    return { ...groqResponse, provider: 'groq' };
   } catch (error) {
     console.error('Both AI providers failed:', error);
     throw new Error('AI service unavailable');
@@ -66,7 +82,7 @@ const badGeminiModels = new Set<string>();
 async function callGemini(
   messages: AIMessage[],
   options: { temperature: number; maxTokens: number }
-): Promise<string> {
+): Promise<AIProviderResult> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error('GEMINI_API_KEY not configured');
 
@@ -137,7 +153,15 @@ async function callGemini(
       const data = await response.json();
       resolvedGeminiModel = model;
       resolvedGeminiApiVersion = apiVersion;
-      return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      return {
+        content: data.candidates?.[0]?.content?.parts?.[0]?.text || '',
+        model,
+        usage: data.usageMetadata ? {
+          promptTokens: data.usageMetadata.promptTokenCount,
+          completionTokens: data.usageMetadata.candidatesTokenCount,
+          totalTokens: data.usageMetadata.totalTokenCount,
+        } : undefined,
+      };
     }
   }
 
@@ -150,7 +174,7 @@ async function callGemini(
 async function callGroq(
   messages: AIMessage[],
   options: { temperature: number; maxTokens: number }
-): Promise<string> {
+): Promise<AIProviderResult> {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error('GROQ_API_KEY not configured');
 
@@ -174,7 +198,15 @@ async function callGroq(
   }
 
   const data = await response.json();
-  return data.choices?.[0]?.message?.content || '';
+  return {
+    content: data.choices?.[0]?.message?.content || '',
+    model: data.model,
+    usage: data.usage ? {
+      promptTokens: data.usage.prompt_tokens,
+      completionTokens: data.usage.completion_tokens,
+      totalTokens: data.usage.total_tokens,
+    } : undefined,
+  };
 }
 
 /**

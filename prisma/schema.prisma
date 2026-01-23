@@ -18,6 +18,19 @@ enum AccountStatus {
   DELETED
 }
 
+enum EnergyTransactionType {
+  GRANT
+  SPEND
+  REFUND
+  ADJUSTMENT
+}
+
+enum EnergyTransactionStatus {
+  RESERVED
+  SETTLED
+  REFUNDED
+}
+
 enum VentureType {
   ECOMMERCE
   SAAS
@@ -180,6 +193,7 @@ model User {
   
   // AI Credits System (Freemium)
   credits          Int      @default(50)
+  energyTransactions EnergyTransaction[]
 
   // Stripe Subscription (69€/mo Platform Fee)
   stripeCustomerId      String?  @unique
@@ -206,6 +220,32 @@ model UserFollow {
   @@unique([followerId, followingId])
   @@index([followerId])
   @@index([followingId])
+}
+
+model EnergyTransaction {
+  id          String                  @id @default(cuid())
+  userId      String
+  user        User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  delta       Int
+  balanceAfter Int
+  type        EnergyTransactionType
+  status      EnergyTransactionStatus @default(SETTLED)
+  feature     String?
+  provider    String?
+  model       String?
+  requestId   String?                 @unique
+  promptTokens Int?
+  completionTokens Int?
+  totalTokens Int?
+  metadata    Json?
+  relatedTransactionId String?
+  relatedTransaction   EnergyTransaction? @relation("EnergyTransactionRelation", fields: [relatedTransactionId], references: [id], onDelete: SetNull)
+  refunds     EnergyTransaction[]     @relation("EnergyTransactionRelation")
+  createdAt   DateTime                @default(now())
+
+  @@index([userId, createdAt])
+  @@index([feature])
+  @@index([status])
 }
 
 model Notification {
