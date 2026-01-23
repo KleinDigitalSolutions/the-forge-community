@@ -54,6 +54,33 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
   callbacks: {
     // Open Access: No signIn checks required. Everyone can join.
     ...authConfig.callbacks,
+    async signIn({ user }) {
+      if (!user?.email) return false;
+      const account = await prisma.user.findUnique({
+        where: { email: user.email },
+        select: { accountStatus: true }
+      });
+      if (account?.accountStatus === 'DELETED') return false;
+      return true;
+    },
+    async jwt({ token }) {
+      if (!token.sub) return token;
+      const account = await prisma.user.findUnique({
+        where: { id: token.sub },
+        select: { accountStatus: true }
+      });
+      token.accountStatus = account?.accountStatus ?? 'ACTIVE';
+      return token;
+    },
+    async session({ session, token }) {
+      if (token.sub && session.user) {
+        session.user.id = token.sub;
+      }
+      if (session.user) {
+        session.user.accountStatus = (token as { accountStatus?: string }).accountStatus ?? 'ACTIVE';
+      }
+      return session;
+    }
   },
   events: {
     async createUser({ user }) {

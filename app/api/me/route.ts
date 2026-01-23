@@ -22,6 +22,7 @@ export async function GET() {
         email: true,
         image: true,
         role: true,
+        accountStatus: true,
         credits: true,
         onboardingComplete: true,
         founderNumber: true,
@@ -62,6 +63,7 @@ export async function GET() {
       ...user,
       founderNumber,
       profileSlug,
+      accountStatus: user.accountStatus,
       address_street: user.addressStreet,
       address_city: user.addressCity,
       address_zip: user.addressZip,
@@ -79,6 +81,7 @@ export async function GET() {
           email: true,
           image: true,
           role: true,
+          accountStatus: true,
           credits: true,
           onboardingComplete: true,
           founderNumber: true,
@@ -95,14 +98,15 @@ export async function GET() {
 
     // Fallback für DB-Connectivity: liefere Minimaldaten aus der Session
     console.error('GET /api/me failed:', error);
-    return NextResponse.json({
-      id: session.user.email,
-      name: session.user.name,
-      profileSlug: null,
-      email: session.user.email,
-      image: session.user.image || null,
-      role: 'USER',
-      credits: 0,
+      return NextResponse.json({
+        id: session.user.email,
+        name: session.user.name,
+        profileSlug: null,
+        email: session.user.email,
+        image: session.user.image || null,
+        role: 'USER',
+        accountStatus: 'ACTIVE',
+        credits: 0,
       onboardingComplete: false,
       founderNumber: 0,
       karmaScore: 0,

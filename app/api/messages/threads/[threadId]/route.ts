@@ -129,12 +129,12 @@ export async function POST(
 
   const { threadId } = await params;
   const body = await request.json();
-  const content = typeof body?.content === 'string' ? body.content.trim() : '';
+  const trimmedContent = typeof body?.content === 'string' ? body.content.trim() : '';
 
-  if (!content) {
+  if (!trimmedContent) {
     return NextResponse.json({ error: 'Message content required' }, { status: 400 });
   }
-  if (content.length > 2000) {
+  if (trimmedContent.length > 2000) {
     return NextResponse.json({ error: 'Message too long' }, { status: 400 });
   }
 
@@ -161,11 +161,56 @@ export async function POST(
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
+  const { moderateContent, issueWarning, canUserPost, sanitizeToxicContent } = await import('@/lib/moderation');
+  const messageCheck = await canUserPost(user.id);
+  if (!messageCheck.allowed) {
+    return NextResponse.json({
+      error: 'Messaging restricted',
+      reason: messageCheck.reason
+    }, { status: 403 });
+  }
+
+  const moderationResult = await moderateContent(trimmedContent);
+  let finalContent = trimmedContent;
+
+  if (moderationResult.isToxic && moderationResult.confidence > 0.6) {
+    const warningResult = await issueWarning(user.id, trimmedContent, moderationResult);
+
+    if (warningResult.shouldBan) {
+      return NextResponse.json({
+        error: 'Content violates community guidelines',
+        warning: {
+          number: warningResult.warningNumber,
+          message: warningResult.message,
+          banned: warningResult.shouldBan
+        }
+      }, { status: 400 });
+    }
+
+    const canSanitize =
+      moderationResult.confidence >= 0.7 &&
+      moderationResult.severity === 'MEDIUM' &&
+      ['HARASSMENT', 'HATE_SPEECH'].includes(moderationResult.category || '');
+
+    if (!canSanitize) {
+      return NextResponse.json({
+        error: 'Content violates community guidelines',
+        warning: {
+          number: warningResult.warningNumber,
+          message: warningResult.message,
+          banned: warningResult.shouldBan
+        }
+      }, { status: 400 });
+    }
+
+    finalContent = await sanitizeToxicContent(trimmedContent, moderationResult);
+  }
+
   const message = await prisma.directMessage.create({
     data: {
       threadId,
       senderId: user.id,
-      content
+      content: finalContent
     },
     include: {
       sender: {

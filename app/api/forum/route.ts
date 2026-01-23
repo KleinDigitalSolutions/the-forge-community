@@ -276,7 +276,7 @@ export async function POST(request: Request) {
             data: {
               postId: response.id,
               authorName: '@orion',
-              content: `**@orion antwortet:**\n\n${aiResponse.content}\n\n_Powered by ${aiResponse.provider === 'gemini' ? 'Gemini Flash' : 'Groq'}_`
+              content: `**@orion antwortet:**\n\n${aiResponse.content}`
             }
           });
         }

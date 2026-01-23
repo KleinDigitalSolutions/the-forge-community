@@ -1,5 +1,36 @@
 import { prisma } from '@/lib/prisma';
 
+type NotificationPreferenceKey = 'forumComments' | 'forumReplies' | 'mentions' | 'system';
+
+const preferenceByType: Record<'FORUM_COMMENT' | 'FORUM_REPLY' | 'SYSTEM', NotificationPreferenceKey> = {
+  FORUM_COMMENT: 'forumComments',
+  FORUM_REPLY: 'forumReplies',
+  SYSTEM: 'system'
+};
+
+async function getPreferenceMap(userIds: string[]) {
+  if (userIds.length === 0) return new Map<string, { mentions: boolean }>();
+  const prefs = await prisma.notificationPreference.findMany({
+    where: { userId: { in: userIds } },
+    select: { userId: true, mentions: true }
+  });
+  return new Map(prefs.map(pref => [pref.userId, { mentions: pref.mentions }]));
+}
+
+async function shouldNotifyUser(userId: string, key: NotificationPreferenceKey) {
+  const prefs = await prisma.notificationPreference.findUnique({
+    where: { userId },
+    select: {
+      forumComments: true,
+      forumReplies: true,
+      mentions: true,
+      system: true
+    }
+  });
+  if (!prefs) return true;
+  return prefs[key];
+}
+
 /**
  * Creates notifications for mentioned users in a text.
  * @param text The content to scan for mentions (e.g. "@username")
@@ -51,9 +82,13 @@ export async function processMentions({
 
   if (users.length === 0) return;
 
+  const preferenceMap = await getPreferenceMap(users.map(user => user.id));
+  const allowedUsers = users.filter(user => preferenceMap.get(user.id)?.mentions ?? true);
+  if (allowedUsers.length === 0) return;
+
   // Create notifications in batch
   await prisma.notification.createMany({
-    data: users.map(user => ({
+    data: allowedUsers.map(user => ({
       userId: user.id,
       actorId: actorId,
       type: resourceType,
@@ -64,7 +99,7 @@ export async function processMentions({
     }))
   });
 
-  console.log(`[Notifications] Sent ${users.length} mentions for resource ${resourceId}`);
+  console.log(`[Notifications] Sent ${allowedUsers.length} mentions for resource ${resourceId}`);
 }
 
 /**
@@ -86,6 +121,10 @@ export async function sendNotification({
   link: string;
 }) {
   if (recipientId === actorId) return; // Don't notify yourself
+
+  const preferenceKey = preferenceByType[type];
+  const allowed = await shouldNotifyUser(recipientId, preferenceKey);
+  if (!allowed) return;
 
   await prisma.notification.create({
     data: {

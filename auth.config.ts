@@ -9,6 +9,7 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
+      const isDeleted = auth?.user && (auth.user as { accountStatus?: string }).accountStatus === 'DELETED';
       const isPublicRoute = 
         nextUrl.pathname === '/' || 
         nextUrl.pathname.startsWith('/login') ||
@@ -24,6 +25,10 @@ export const authConfig = {
         return true;
       }
       
+      if (isDeleted) {
+        return false;
+      }
+
       // Protect all other routes
       return isLoggedIn;
     },

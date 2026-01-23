@@ -594,9 +594,10 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
         setCommentStatus(prev => ({ ...prev, [postId]: data?.error || 'Kommentar fehlgeschlagen. Bitte erneut.' }));
         return;
       }
+      const aiComments = data?.aiComment ? [data.aiComment] : [];
       setPosts(prev => prev.map(post => post.id === postId ? {
         ...post,
-        comments: [...(post.comments || []), data],
+        comments: [...(post.comments || []), data, ...aiComments],
       } : post));
       setCommentStatus(prev => ({ ...prev, [postId]: '' }));
       setCommentDrafts(prev => ({ ...prev, [postId]: '' }));

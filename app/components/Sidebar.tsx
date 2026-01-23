@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Settings } from 'lucide-react';
+import { Settings, Sliders } from 'lucide-react';
 import { SignOutButton } from './SignOutButton';
 import { CreditsDisplay } from './CreditsDisplay';
 import { useUnreadMessages } from '@/app/hooks/useUnreadMessages';
@@ -57,6 +57,17 @@ export default function Sidebar() {
         <div className="text-[9px] font-bold text-white/20 uppercase tracking-[0.3em] px-4 mb-4 mt-10">
           Account
         </div>
+        <Link
+          href="/settings"
+          className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all duration-500 group ${
+            pathname === '/settings'
+              ? 'bg-white/5 text-[var(--accent)] border border-white/10'
+              : 'text-white/40 hover:text-white hover:bg-white/[0.02]'
+          }`}
+        >
+          <Sliders className="w-4 h-4 transition-transform duration-500 group-hover:rotate-12" />
+          Account
+        </Link>
         <Link
           href="/profile"
           className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all duration-500 group ${

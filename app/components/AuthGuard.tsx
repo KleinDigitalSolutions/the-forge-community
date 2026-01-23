@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -21,7 +21,13 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       // Check profile completeness
       fetch('/api/me')
         .then(res => res.json())
-        .then(data => setProfileComplete(data.isProfileComplete))
+        .then(data => {
+          if (data?.accountStatus === 'DELETED') {
+            signOut({ callbackUrl: '/login?deleted=1' });
+            return;
+          }
+          setProfileComplete(data.isProfileComplete);
+        })
         .catch(() => setProfileComplete(true)); // Fallback to safe state
     }
   }, [status, router, pathname]);

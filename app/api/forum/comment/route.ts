@@ -125,7 +125,19 @@ export async function POST(request: Request) {
 
     // --- Orion AI Logic (remains same) ---
     const mentionRegex = /(?:@orion|atorion)\b\s*([^\n]*)/i;
-    // ... rest of AI logic
+    let aiComment: {
+      id: string;
+      authorId?: string | null;
+      parentId?: string | null;
+      author: string;
+      authorImage?: string | null;
+      authorSlug?: string | null;
+      founderNumber?: number;
+      content: string;
+      likes: number;
+      userVote: number;
+      time: string;
+    } | null = null;
 
     const mentionMatch = trimmedContent.match(mentionRegex);
     if (mentionMatch) {
@@ -146,14 +158,28 @@ export async function POST(request: Request) {
         );
 
         if (aiResponse.content) {
-          await prisma.forumComment.create({
+          const aiReply = await prisma.forumComment.create({
             data: {
               postId,
               parentId: comment.id,
               authorName: '@orion',
-              content: `**@orion antwortet:**\n\n${aiResponse.content}\n\n_Powered by ${aiResponse.provider === 'gemini' ? 'Gemini Flash' : 'Groq'}_`
+              content: `**@orion antwortet:**\n\n${aiResponse.content}`
             }
           });
+
+          aiComment = {
+            id: aiReply.id,
+            authorId: aiReply.authorId,
+            parentId: aiReply.parentId,
+            author: aiReply.authorName,
+            authorImage: null,
+            authorSlug: null,
+            founderNumber: 0,
+            content: aiReply.content,
+            likes: aiReply.likes,
+            userVote: 0,
+            time: aiReply.createdAt.toISOString()
+          };
         }
       } catch (aiError) {
         console.error('Orion comment reply failed:', aiError);
@@ -171,7 +197,8 @@ export async function POST(request: Request) {
       content: comment.content,
       likes: comment.likes,
       userVote: 0,
-      time: comment.createdAt.toISOString()
+      time: comment.createdAt.toISOString(),
+      aiComment
     });
   } catch (error) {
     console.error('Error adding comment:', error);

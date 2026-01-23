@@ -92,6 +92,7 @@ export default function MessagesClient() {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [composer, setComposer] = useState('');
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState('');
   const [search, setSearch] = useState('');
   const [searchResults, setSearchResults] = useState<UserResult[]>([]);
   const [searching, setSearching] = useState(false);
@@ -222,6 +223,7 @@ export default function MessagesClient() {
     if (!activeThreadId || !composer.trim()) return;
 
     setSending(true);
+    setSendError('');
     try {
       const response = await fetch(`/api/messages/threads/${activeThreadId}`, {
         method: 'POST',
@@ -229,13 +231,17 @@ export default function MessagesClient() {
         body: JSON.stringify({ content: composer.trim() })
       });
 
-      if (!response.ok) throw new Error('Failed to send message');
       const payload = await response.json();
+      if (!response.ok) {
+        setSendError(payload?.warning?.message || payload?.reason || payload?.error || 'Nachricht konnte nicht gesendet werden.');
+        return;
+      }
       setMessages(prev => [...prev, payload]);
       setComposer('');
       await loadThreads(false);
     } catch (error) {
       console.error(error);
+      setSendError('Nachricht konnte nicht gesendet werden.');
     } finally {
       setSending(false);
     }
@@ -446,6 +452,11 @@ export default function MessagesClient() {
               </div>
 
               <div className="border-t border-white/10 px-6 py-4">
+                {sendError && (
+                  <div className="mb-3 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-red-200">
+                    {sendError}
+                  </div>
+                )}
                 <div className="flex items-end gap-3">
                   <textarea
                     value={composer}
