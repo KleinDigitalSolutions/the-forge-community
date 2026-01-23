@@ -9,12 +9,31 @@ import { RateLimiters } from '@/lib/rate-limit';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export async function GET() {
+export async function GET(request: Request) {
   const session = await auth();
-  
+  const { searchParams } = new URL(request.url);
+  const cursor = searchParams.get('cursor');
+  const limit = Math.min(Number(searchParams.get('limit')) || 10, 50);
+  const category = searchParams.get('category');
+  const sort = searchParams.get('sort') || 'new'; // 'new', 'top', 'hot'
+
   try {
+    const where: any = {};
+    if (category && category !== 'All' && category !== 'Popular') {
+      where.category = category;
+    }
+
+    let orderBy: any = { createdAt: 'desc' };
+    if (sort === 'top') {
+      orderBy = { likes: 'desc' };
+    }
+
     const posts = await prisma.forumPost.findMany({
-      orderBy: { createdAt: 'desc' },
+      take: limit + 1, // Fetch one more to know if there is a next page
+      cursor: cursor ? { id: cursor } : undefined,
+      skip: cursor ? 1 : 0,
+      where,
+      orderBy,
       include: {
         author: {
           select: {
@@ -49,6 +68,12 @@ export async function GET() {
       }
     });
 
+    let nextCursor: string | undefined = undefined;
+    if (posts.length > limit) {
+      const nextItem = posts.pop(); 
+      nextCursor = posts[posts.length - 1].id;
+    }
+
     // If user is logged in, attach their existing votes
     let userVotes: Map<string, number> = new Map();
     let commentVotes: Map<string, number> = new Map();
@@ -56,8 +81,14 @@ export async function GET() {
       const user = await prisma.user.findUnique({
         where: { email: session.user.email },
         select: {
-          forumVotes: { select: { postId: true, voteType: true } },
-          forumCommentVotes: { select: { commentId: true, voteType: true } }
+          forumVotes: { 
+            where: { postId: { in: posts.map(p => p.id) } },
+            select: { postId: true, voteType: true } 
+          },
+          forumCommentVotes: { 
+            where: { commentId: { in: posts.flatMap(p => p.comments.map(c => c.id)) } },
+            select: { commentId: true, voteType: true } 
+          }
         }
       });
       userVotes = new Map((user?.forumVotes || []).map(vote => [vote.postId, vote.voteType]));
@@ -93,7 +124,10 @@ export async function GET() {
     });
     });
 
-    return NextResponse.json(postsWithVotes);
+    return NextResponse.json({
+      items: postsWithVotes,
+      nextCursor
+    });
   } catch (error) {
     console.error('Error fetching forum posts:', error);
     return NextResponse.json(
@@ -206,6 +240,22 @@ export async function POST(request: Request) {
         category: category.trim()
       }
     });
+
+    // --- NEW: Handle Mentions ---
+    try {
+      const { processMentions } = await import('@/lib/notifications');
+      await processMentions({
+        text: finalContent,
+        actorId: user.id,
+        resourceId: response.id,
+        resourceType: 'FORUM_COMMENT', // Mapping to existing enum
+        link: `/forum#${response.id}`,
+        title: `${user.name} hat dich in einem Beitrag erwähnt`
+      });
+    } catch (e) {
+      console.error('Failed to process mentions', e);
+    }
+    // ----------------------------
     
     // Check for @orion mention
     const mentionRegex = /(?:@orion|atorion)\b\s*([^\n]*)/i;

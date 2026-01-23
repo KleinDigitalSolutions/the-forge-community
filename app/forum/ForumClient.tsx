@@ -9,7 +9,7 @@ import {
   Sparkles, Lightbulb, CheckCircle, Search, Target,
   TrendingUp, Trophy, Home, Hash, Zap, Bell, Info, Filter, Plus, Heart, Smile, Bold, Italic, List, Link as LinkIcon
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Link from 'next/link';
@@ -21,6 +21,7 @@ import { TrendingTopics } from '@/app/components/TrendingTopics';
 import { formatDistanceToNow } from 'date-fns';
 import { de } from 'date-fns/locale';
 import EmojiPicker, { Theme, EmojiClickData } from 'emoji-picker-react';
+import { PostSkeleton } from '@/app/components/PostSkeleton';
 
 export interface Comment {
   id: string;
@@ -118,8 +119,13 @@ function buildAuthorHref(authorId?: string | null, authorSlug?: string | null) {
 }
 
 export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
+  // Infinite Scroll State
   const [posts, setPosts] = useState<ForumPost[]>(initialPosts);
-  const [loading, setLoading] = useState(initialPosts.length === 0);
+  const [isLoadingInitial, setIsLoadingInitial] = useState(initialPosts.length === 0);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+
   const [user, setUser] = useState<UserProfile | null>(initialUser);
   const [content, setContent] = useState('');
   const [activeChannel, setActiveChannel] = useState('All');
@@ -148,6 +154,8 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
   const [notificationsUnread, setNotificationsUnread] = useState(0);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const editorRef = useRef<HTMLTextAreaElement>(null);
+  const loadMoreRef = useRef(null);
+  const isInView = useInView(loadMoreRef);
 
   const FEEDS = [
     { id: 'All', name: 'Home Feed', icon: Home },
@@ -171,6 +179,69 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
     { id: 'nextSteps', label: 'Nächste Schritte' },
   ];
 
+  // Helper für Markdown Komponenten
+  const MarkdownComponents = {
+    // Custom Link Renderer
+    a: ({ href, children }: any) => {
+      const isRawUrl = typeof children === 'string' && children.trim() === href;
+      const isYoutube = href && (href.includes('youtube.com/watch') || href.includes('youtu.be/'));
+      const isLoom = href && href.includes('loom.com/share');
+
+      if (isRawUrl || isYoutube || isLoom) {
+        return (
+          <div className="not-prose my-4">
+            <LinkPreview url={href} />
+          </div>
+        );
+      }
+
+      return (
+        <a 
+          href={href} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="text-[#D4AF37] hover:underline hover:text-white transition-colors"
+        >
+          {children}
+        </a>
+      );
+    },
+    // Bilder responsive machen
+    img: ({ src, alt }: any) => (
+      <div className="relative w-full rounded-xl overflow-hidden my-4 border border-white/10 bg-black/20">
+        <img 
+          src={src} 
+          alt={alt} 
+          className="w-full h-auto object-cover max-h-[600px]"
+          loading="lazy"
+        />
+      </div>
+    ),
+    // Blockquotes stylen
+    blockquote: ({ children }: any) => (
+      <blockquote className="border-l-4 border-[#D4AF37] pl-4 italic text-white/60 my-4 bg-white/5 py-2 pr-4 rounded-r-lg">
+        {children}
+      </blockquote>
+    ),
+    // Code Blöcke
+    code: ({ node, inline, className, children, ...props }: any) => {
+      if (inline) {
+        return (
+          <code className="bg-white/10 px-1.5 py-0.5 rounded text-sm text-[#D4AF37] font-mono" {...props}>
+            {children}
+          </code>
+        );
+      }
+      return (
+        <div className="bg-[#0d0d0d] border border-white/10 rounded-xl p-4 my-4 overflow-x-auto">
+          <code className="text-sm font-mono text-white/80" {...props}>
+            {children}
+          </code>
+        </div>
+      );
+    }
+  };
+
   const fetchUser = async () => {
     try {
       const res = await fetch('/api/me');
@@ -178,22 +249,80 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
     } catch (e) { console.error(e); }
   };
 
-  const fetchPosts = async (options: { silent?: boolean } = {}) => {
-    const silent = options.silent === true;
+  // Reset Feed when Channel/Sort changes
+  useEffect(() => {
+    setPosts([]);
+    setNextCursor(null);
+    setHasMore(true);
+    setIsLoadingInitial(true);
+    
+    // Kleines Timeout damit State sicher resettet ist bevor fetch läuft
+    const timer = setTimeout(() => {
+      fetchPosts({ reset: true });
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [activeChannel, sortMode]);
+
+  // Load More on Scroll
+  useEffect(() => {
+    if (isInView && hasMore && !isLoadingMore && !isLoadingInitial && posts.length > 0) {
+      fetchPosts({ reset: false });
+    }
+  }, [isInView, hasMore, isLoadingMore, isLoadingInitial, posts.length]);
+
+  const fetchPosts = async (options: { reset?: boolean, silent?: boolean } = {}) => {
+    const { reset = false, silent = false } = options;
+    
+    if (!reset && (isLoadingMore || !hasMore)) return;
+
+    if (reset) setIsLoadingInitial(true);
+    else if (!silent) setIsLoadingMore(true);
+
     try {
-      if (!silent) setLoading(true);
-      const response = await fetch('/api/forum');
-      if (response.ok) setPosts(await response.json());
-    } catch (error) { console.error(error); }
-    finally {
-      if (!silent) setLoading(false);
+      const params = new URLSearchParams();
+      // Wenn wir resetten, nutzen wir keinen Cursor. Wenn wir nachladen, nutzen wir den gespeicherten nextCursor.
+      // WICHTIG: nextCursor darf nicht null sein, wenn reset=false ist, außer beim allerersten load (was durch isLoadingInitial abgefangen wird)
+      if (!reset && nextCursor) params.set('cursor', nextCursor);
+      
+      params.set('limit', '10');
+      params.set('category', activeChannel);
+      params.set('sort', sortMode.toLowerCase());
+
+      const response = await fetch(`/api/forum?${params.toString()}`);
+      if (!response.ok) throw new Error('Failed to fetch');
+      
+      const data = await response.json();
+      // Prüfen ob die API die neue Struktur { items, nextCursor } zurückgibt
+      // Fallback falls API noch alte Struktur liefert (array)
+      const newPosts = Array.isArray(data) ? data : (data.items || []);
+      const newCursor = Array.isArray(data) ? null : data.nextCursor;
+
+      if (reset) {
+        setPosts(newPosts);
+      } else {
+        setPosts(prev => {
+          const existingIds = new Set(prev.map(p => p.id));
+          const uniqueNewPosts = newPosts.filter((p: ForumPost) => !existingIds.has(p.id));
+          return [...prev, ...uniqueNewPosts];
+        });
+      }
+
+      setNextCursor(newCursor);
+      // Wenn Array leer oder kein Cursor, dann sind wir am Ende
+      setHasMore(newPosts.length > 0 && !!newCursor);
+
+    } catch (error) { 
+      console.error(error); 
+    } finally {
+      if (reset) setIsLoadingInitial(false);
+      else setIsLoadingMore(false);
     }
   };
 
   useEffect(() => {
     if (!initialUser) fetchUser();
-    if (initialPosts.length === 0) fetchPosts();
-  }, [initialPosts.length, initialUser]);
+    // fetchPosts wird initial durch den useEffect([activeChannel, sortMode]) getriggert, da diese default gesetzt sind
+  }, [initialUser]);
 
   useEffect(() => {
     if (user && notifications.length === 0) {
@@ -252,37 +381,18 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
     return CHANNELS.some(c => c.id === activeChannel) ? activeChannel : 'General';
   };
 
+  // Client-side Sortieren ist hinfällig da API das macht, aber wir behalten es für Optimistic Updates
   const sortPosts = (list: ForumPost[], mode: string) => {
-    const now = Date.now();
-    const hotScore = (post: ForumPost) => {
-      const created = new Date(post.createdTime || Date.now()).getTime();
-      const ageHours = Math.max(1, (now - created) / 3_600_000);
-      const engagement = (post.likes || 0) + (post.comments?.length || 0) + 1;
-      return engagement / Math.pow(ageHours + 2, 1.3);
-    };
-
+    // Einfache Logik für sofortiges Feedback nach Votes/Kommentaren
     const clone = [...list];
-    switch (mode) {
-      case 'New':
-        return clone.sort((a, b) => new Date(b.createdTime).getTime() - new Date(a.createdTime).getTime());
-      case 'Top':
-        return clone.sort((a, b) => (b.likes || 0) - (a.likes || 0));
-      case 'Hot':
-      default:
-        return clone.sort((a, b) => hotScore(b) - hotScore(a));
-    }
+    if (mode === 'Top') return clone.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+    if (mode === 'New') return clone.sort((a, b) => new Date(b.createdTime).getTime() - new Date(a.createdTime).getTime());
+    return clone; 
   };
-
-  const filteredPosts = (activeChannel === 'All' || activeChannel === 'Popular')
-    ? posts
-    : posts.filter(p => p.category === activeChannel);
-
-  const postsToRender = sortPosts(filteredPosts, activeChannel === 'Popular' ? 'Top' : sortMode);
 
   const insertText = (text: string) => {
     const textarea = editorRef.current;
     if (!textarea) {
-      // Fallback
       if (editingPost === 'NEW') setContent(prev => prev + text);
       else setEditContent(prev => prev + text);
       return;
@@ -297,7 +407,6 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
     if (editingPost === 'NEW') setContent(newText);
     else setEditContent(newText);
 
-    // Focus zurück und Cursor positionieren
     setTimeout(() => {
       textarea.focus();
       textarea.setSelectionRange(start + text.length, start + text.length);
@@ -613,7 +722,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
         }
         setContent('');
         setEditingPost(null);
-        fetchPosts({ silent: true });
+        fetchPosts({ reset: true }); // Reload to show new post
       }
     } catch (error) {
       console.error(error);
@@ -650,7 +759,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
     return (
       <button
         onClick={() => onClick(item.id)}
-        className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all ${
+        className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all ${ 
           active 
             ? 'bg-white/10 text-white font-bold' 
             : 'text-white/50 hover:text-white hover:bg-white/5'
@@ -682,7 +791,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
             <div className="pt-6 border-t border-white/5">
                <button
                  onClick={handleToggleNotifications}
-                 className={`w-full flex items-center gap-3 px-3 py-2 transition-all text-xs ${
+                 className={`w-full flex items-center gap-3 px-3 py-2 transition-all text-xs ${ 
                    notificationsOpen ? 'text-white' : 'text-white/40 hover:text-white'
                  }`}
                >
@@ -725,7 +834,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                 <button
                   key={mode}
                   onClick={() => setSortMode(mode)}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
+                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${ 
                     sortMode === mode ? 'bg-white/10 text-white shadow-lg' : 'text-white/40 hover:text-white hover:bg-white/5'
                   }`}
                 >
@@ -739,345 +848,375 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
 
             {/* Posts */}
             <div className="space-y-3">
-              {loading ? (
-                <div className="py-20 text-center space-y-4">
-                  <div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin mx-auto" />
-                  <p className="text-white/20 text-[10px] font-bold uppercase tracking-widest">Loading Intelligence...</p>
-                </div>
-              ) : postsToRender.map(post => {
-                const profileHref = buildProfileHref(post);
+              {isLoadingInitial ? (
+                <>
+                  <PostSkeleton />
+                  <PostSkeleton />
+                  <PostSkeleton />
+                </>
+              ) : (
+                <>
+                  {posts.map(post => {
+                    const profileHref = buildProfileHref(post);
 
-                return (
-                <div key={post.id} id={post.id} className="bg-[#121212] border border-white/10 rounded-xl flex hover:border-white/20 transition-all group overflow-hidden">
-                  {/* Vote Sidebar */}
-                  <div className="w-12 bg-black/20 flex flex-col items-center py-4 gap-1 shrink-0">
-                    <button 
-                      onClick={() => handleVote(post.id, 1)}
-                      className={`p-1.5 rounded-md transition-all ${post.userVote === 1 ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-white/20 hover:text-white hover:bg-white/5'}`}
-                    >
-                      <ArrowUp className="w-5 h-5" />
-                    </button>
-                    <span className={`text-xs font-bold ${post.userVote === 1 ? 'text-[#D4AF37]' : post.userVote === -1 ? 'text-blue-400' : 'text-white/60'}`}>
-                      {post.likes}
-                    </span>
-                    <button 
-                      onClick={() => handleVote(post.id, -1)}
-                      className={`p-1.5 rounded-md transition-all ${post.userVote === -1 ? 'text-blue-400 bg-blue-400/10' : 'text-white/20 hover:text-white hover:bg-white/5'}`}
-                    >
-                      <ArrowDown className="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  {/* Post Content */}
-                  <div className="flex-1 p-4 min-w-0">
-                    <div className="flex items-center gap-2 text-[11px] text-white/40 mb-3">
-                      {profileHref ? (
-                        <Link href={profileHref} className="flex items-center gap-2 hover:text-white transition-colors">
-                          <div className="w-5 h-5 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[8px] text-[#D4AF37] font-bold overflow-hidden">
-                            {post.authorImage ? (
-                              <img src={post.authorImage} alt={post.author} className="w-full h-full object-cover" />
-                            ) : (
-                              post.author.charAt(0)
-                            )}
-                          </div>
-                          <span className="font-bold text-white/80">u/{post.author.replace(/\s/g, '').toLowerCase()}</span>
-                        </Link>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <div className="w-5 h-5 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[8px] text-[#D4AF37] font-bold overflow-hidden">
-                            {post.authorImage ? (
-                              <img src={post.authorImage} alt={post.author} className="w-full h-full object-cover" />
-                            ) : (
-                              post.author.charAt(0)
-                            )}
-                          </div>
-                          <span className="font-bold text-white/80">u/{post.author.replace(/\s/g, '').toLowerCase()}</span>
-                        </div>
-                      )}
-                      <span>•</span>
-                      <span>{formatDistanceToNow(new Date(post.createdTime), { addSuffix: true, locale: de })}</span>
-                      <span className="ml-auto bg-white/5 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider">{post.category}</span>
-                    </div>
-
-                    <div className="prose prose-invert prose-sm max-w-none mb-4 group-hover:text-white transition-colors">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
-                    </div>
-
-                    <div className="flex items-center gap-4 pt-3 border-t border-white/5">
-                      <button
-                        onClick={() => toggleComments(post.id)}
-                        className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-all ${
-                          expandedPosts[post.id] ? 'text-white' : 'text-white/40 hover:text-white'
-                        }`}
-                      >
-                        <MessageSquare className="w-3.5 h-3.5" /> {post.comments?.length || 0} Comments
-                      </button>
-                      <div className="relative">
-                        <button
-                          onClick={() => setAiMenuOpen(aiMenuOpen === post.id ? null : post.id)}
-                          className="flex items-center gap-2 text-[10px] font-bold text-white/40 hover:text-white uppercase tracking-widest transition-all"
+                    return (
+                    <div key={post.id} id={post.id} className="bg-[#121212] border border-white/10 rounded-xl flex hover:border-white/20 transition-all group overflow-hidden">
+                      {/* Vote Sidebar */}
+                      <div className="w-12 bg-black/20 flex flex-col items-center py-4 gap-1 shrink-0">
+                        <button 
+                          onClick={() => handleVote(post.id, 1)}
+                          className={`p-1.5 rounded-md transition-all ${post.userVote === 1 ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-white/20 hover:text-white hover:bg-white/5'}`}
                         >
-                          <Sparkles className="w-3.5 h-3.5" /> {aiLoading && aiMenuOpen === post.id ? 'Lädt...' : 'Orion Insight'}
+                          <ArrowUp className="w-5 h-5" />
                         </button>
-                        {aiMenuOpen === post.id && (
-                          <div className="absolute left-0 bottom-full mb-2 w-48 rounded-xl border border-white/10 bg-[#0d0d0d] shadow-2xl z-20">
-                            {AI_ACTIONS.map(action => (
-                              <button
-                                key={action.id}
-                                onClick={() => handleAIAction(post, action.id)}
-                                className="w-full text-left px-4 py-2 text-[11px] text-white/70 hover:bg-white/5 transition-colors"
-                              >
-                                {action.label}
-                              </button>
-                            ))}
+                        <span className={`text-xs font-bold ${post.userVote === 1 ? 'text-[#D4AF37]' : post.userVote === -1 ? 'text-blue-400' : 'text-white/60'}`}>
+                          {post.likes}
+                        </span>
+                        <button 
+                          onClick={() => handleVote(post.id, -1)}
+                          className={`p-1.5 rounded-md transition-all ${post.userVote === -1 ? 'text-blue-400 bg-blue-400/10' : 'text-white/20 hover:text-white hover:bg-white/5'}`}
+                        >
+                          <ArrowDown className="w-5 h-5" />
+                        </button>
+                      </div>
+
+                      {/* Post Content */}
+                      <div className="flex-1 p-4 min-w-0">
+                        <div className="flex items-center gap-2 text-[11px] text-white/40 mb-3">
+                          {profileHref ? (
+                            <Link href={profileHref} className="flex items-center gap-2 hover:text-white transition-colors">
+                              <div className="w-5 h-5 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[8px] text-[#D4AF37] font-bold overflow-hidden">
+                                {post.authorImage ? (
+                                  <img src={post.authorImage} alt={post.author} className="w-full h-full object-cover" />
+                                ) : (
+                                  post.author.charAt(0)
+                                )}
+                              </div>
+                              <span className="font-bold text-white/80">u/{post.author.replace(/\s/g, '').toLowerCase()}</span>
+                            </Link>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <div className="w-5 h-5 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[8px] text-[#D4AF37] font-bold overflow-hidden">
+                                {post.authorImage ? (
+                                  <img src={post.authorImage} alt={post.author} className="w-full h-full object-cover" />
+                                ) : (
+                                  post.author.charAt(0)
+                                )}
+                              </div>
+                              <span className="font-bold text-white/80">u/{post.author.replace(/\s/g, '').toLowerCase()}</span>
+                            </div>
+                          )}
+                          <span>•</span>
+                          <span>{formatDistanceToNow(new Date(post.createdTime), { addSuffix: true, locale: de })}</span>
+                          <span className="ml-auto bg-white/5 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider">{post.category}</span>
+                        </div>
+
+                        <div className="prose prose-invert prose-sm max-w-none mb-4 group-hover:text-white transition-colors">
+                          <ReactMarkdown 
+                            remarkPlugins={[remarkGfm]}
+                            components={MarkdownComponents}
+                          >
+                            {post.content}
+                          </ReactMarkdown>
+                        </div>
+
+                        <div className="flex items-center gap-4 pt-3 border-t border-white/5">
+                          <button
+                            onClick={() => toggleComments(post.id)}
+                            className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-all ${ 
+                              expandedPosts[post.id] ? 'text-white' : 'text-white/40 hover:text-white'
+                            }`}
+                          >
+                            <MessageSquare className="w-3.5 h-3.5" /> {post.comments?.length || 0} Comments
+                          </button>
+                          <div className="relative">
+                            <button
+                              onClick={() => setAiMenuOpen(aiMenuOpen === post.id ? null : post.id)}
+                              className="flex items-center gap-2 text-[10px] font-bold text-white/40 hover:text-white uppercase tracking-widest transition-all"
+                            >
+                              <Sparkles className="w-3.5 h-3.5" /> {aiLoading && aiMenuOpen === post.id ? 'Lädt...' : 'Orion Insight'}
+                            </button>
+                            {aiMenuOpen === post.id && (
+                              <div className="absolute left-0 bottom-full mb-2 w-48 rounded-xl border border-white/10 bg-[#0d0d0d] shadow-2xl z-20">
+                                {AI_ACTIONS.map(action => (
+                                  <button
+                                    key={action.id}
+                                    onClick={() => handleAIAction(post, action.id)}
+                                    className="w-full text-left px-4 py-2 text-[11px] text-white/70 hover:bg-white/5 transition-colors"
+                                  >
+                                    {action.label}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          {user && user.id && post.authorId === user.id && (
+                            <button
+                              onClick={() => startEdit(post)}
+                              className="p-1.5 text-white/20 hover:text-white transition-all"
+                              aria-label="Beitrag bearbeiten"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                          )}
+                          {user && (user.role === 'ADMIN' || (user.id && post.authorId === user.id)) && (
+                            <button
+                              onClick={() => handleDelete(post.id)}
+                              className="ml-auto p-1.5 text-white/20 hover:text-white transition-all"
+                              aria-label="Beitrag loeschen"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+
+                        {(() => {
+                          const liveInsight = aiResult?.postId === post.id
+                            ? {
+                                label: AI_ACTIONS.find(a => a.id === aiResult.action)?.label || 'Orion Insight',
+                                content: aiResult.content
+                              }
+                            : null;
+                          const persistedInsight = liveInsight ? null : extractAiInsight(post.comments);
+                          const insight = liveInsight || persistedInsight;
+
+                          if (!insight) return null;
+
+                          return (
+                            <div className="mt-3 p-4 rounded-xl bg-white/5 border border-white/10 text-sm text-white/80">
+                              <div className="text-[10px] uppercase tracking-widest text-white/40 mb-1">
+                                Orion · {insight.label}
+                              </div>
+                              <div className="prose prose-invert prose-sm max-w-none 
+                                prose-headings:text-white prose-headings:font-bold prose-headings:text-sm prose-headings:mb-2 prose-headings:mt-4
+                                prose-p:text-white/80 prose-p:my-2
+                                prose-strong:text-[#D4AF37] prose-strong:font-bold
+                                prose-ul:list-disc prose-ul:pl-4 prose-ul:my-2
+                                prose-ol:list-decimal prose-ol:pl-4 prose-ol:my-2
+                                prose-li:text-white/70 prose-li:my-1
+                                prose-a:text-[#D4AF37] prose-a:underline hover:prose-a:text-white transition-colors
+                              ">
+                                <ReactMarkdown 
+                                  remarkPlugins={[remarkGfm]}
+                                  components={MarkdownComponents}
+                                >
+                                  {insight.content}
+                                </ReactMarkdown>
+                              </div>
+                            </div>
+                          );
+                        })()}
+
+                        {expandedPosts[post.id] && (
+                          <div className="mt-4 rounded-xl border border-white/10 bg-black/20 p-4 space-y-4">
+                            <div className="space-y-3">
+                              {(post.comments || []).length === 0 ? (
+                                <p className="text-xs text-white/30 uppercase tracking-widest font-bold">Noch keine Kommentare.</p>
+                              ) : (() => {
+                                const { roots, nodes } = buildCommentTree(post.comments || []);
+                                const renderCommentNode = (comment: CommentNode, depth: number) => {
+                                  const isAI = AI_AUTHORS.has(comment.author);
+                                  const canManage = user && (user.role === 'ADMIN' || (user.id && comment.authorId === user.id));
+                                  const isEditing = commentEditingId === comment.id;
+                                  const parent = comment.parentId ? nodes.get(comment.parentId) : null;
+                                  const commentProfileHref = buildAuthorHref(
+                                    comment.authorId,
+                                    comment.authorSlug
+                                  );
+
+                                  return (
+                                    <div key={comment.id} className={`relative ${depth > 0 ? 'pl-6' : ''}`}>
+                                      {depth > 0 && (
+                                        <>
+                                          <span className="absolute left-2 top-0 bottom-0 w-px bg-white/10" />
+                                          <span className="absolute left-1.5 top-5 w-2 h-2 rounded-full bg-white/20" />
+                                        </>
+                                      )}
+                                      <div
+                                        className={`rounded-xl border px-4 py-3 ${ 
+                                          isAI
+                                            ? 'bg-[#D4AF37]/10 border-[#D4AF37]/30'
+                                            : 'bg-white/5 border-white/10'
+                                        }`}
+                                      >
+                                        <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-white/40 mb-2">
+                                          {commentProfileHref ? (
+                                            <Link href={commentProfileHref} className="flex items-center gap-2 hover:text-white transition-colors">
+                                              <div className="w-5 h-5 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[8px] text-[#D4AF37] font-bold overflow-hidden">
+                                                {comment.authorImage ? (
+                                                  <img src={comment.authorImage} alt={comment.author} className="w-full h-full object-cover" />
+                                                ) : (
+                                                  comment.author.charAt(0)
+                                                )}
+                                              </div>
+                                              <span className="font-bold text-white/70">{comment.author}</span>
+                                            </Link>
+                                          ) : (
+                                            <div className="flex items-center gap-2">
+                                              <div className="w-5 h-5 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[8px] text-[#D4AF37] font-bold overflow-hidden">
+                                                {comment.authorImage ? (
+                                                  <img src={comment.authorImage} alt={comment.author} className="w-full h-full object-cover" />
+                                                ) : (
+                                                  comment.author.charAt(0)
+                                                )}
+                                              </div>
+                                              <span className="font-bold text-white/70">{comment.author}</span>
+                                            </div>
+                                          )}
+                                          {isAI && (
+                                            <span className="px-2 py-0.5 rounded-full bg-[#D4AF37]/20 text-[#D4AF37] text-[9px] font-bold tracking-widest">
+                                              ORION
+                                            </span>
+                                          )}
+                                          <span>•</span>
+                                          <span>{formatDistanceToNow(new Date(comment.time), { addSuffix: true, locale: de })}</span>
+                                        </div>
+
+                                        {parent && (
+                                          <div className="text-[10px] uppercase tracking-widest text-white/30 mb-2">
+                                            Antwort auf <span className="text-white/60">@{parent.author}</span>
+                                          </div>
+                                        )}
+
+                                        {isEditing ? (
+                                          <div className="space-y-3">
+                                            <textarea
+                                              value={commentEditDrafts[comment.id] || ''}
+                                              onChange={(e) => setCommentEditDrafts(prev => ({ ...prev, [comment.id]: e.target.value }))}
+                                              className="w-full min-h-[90px] bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/10 outline-none focus:border-[#D4AF37] transition-all"
+                                            />
+                                            <div className="flex justify-end gap-2">
+                                              <button
+                                                onClick={cancelCommentEdit}
+                                                className="px-4 py-2 text-[10px] uppercase tracking-widest text-white/40 hover:text-white transition-all"
+                                              >
+                                                Abbrechen
+                                              </button>
+                                              <button
+                                                onClick={() => handleCommentEdit(post.id, comment.id)}
+                                                disabled={commentEditSubmitting === comment.id || !(commentEditDrafts[comment.id] || '').trim()}
+                                                className="bg-[#D4AF37] text-black px-5 py-2 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] disabled:opacity-20 hover:brightness-110 transition-all"
+                                              >
+                                                {commentEditSubmitting === comment.id ? 'Speichert...' : 'Speichern'}
+                                              </button>
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          <div className="prose prose-invert prose-sm max-w-none text-white/80">
+                                            <ReactMarkdown 
+                                              remarkPlugins={[remarkGfm]}
+                                              components={MarkdownComponents}
+                                            >{comment.content}</ReactMarkdown>
+                                          </div>
+                                        )}
+
+                                        {!isEditing && (
+                                          <div className="mt-3 flex flex-wrap items-center gap-3 text-[10px] uppercase tracking-widest text-white/40">
+                                            <button
+                                              onClick={() => handleCommentVote(post.id, comment.id, 1)}
+                                              className={`flex items-center gap-1.5 transition-all ${ 
+                                                (comment.userVote || 0) === 1 ? 'text-[#D4AF37]' : 'text-white/40 hover:text-white'
+                                              }`}
+                                            >
+                                              <Heart className={`w-3.5 h-3.5 ${(comment.userVote || 0) === 1 ? 'fill-[#D4AF37]' : ''}`} />
+                                              <span>{comment.likes || 0}</span>
+                                            </button>
+                                            <button
+                                              onClick={() => setReplyTargets(prev => ({ ...prev, [post.id]: comment }))}
+                                              className="flex items-center gap-1.5 text-white/40 hover:text-white transition-all"
+                                            >
+                                              <Reply className="w-3.5 h-3.5" /> Antworten
+                                            </button>
+                                            {canManage && (
+                                              <>
+                                                <button
+                                                  onClick={() => startCommentEdit(comment)}
+                                                  className="flex items-center gap-1.5 text-white/40 hover:text-white transition-all"
+                                                >
+                                                  <Edit2 className="w-3.5 h-3.5" /> Bearbeiten
+                                                </button>
+                                                <button
+                                                  onClick={() => handleCommentDelete(post.id, comment.id)}
+                                                  className="flex items-center gap-1.5 text-white/40 hover:text-white transition-all"
+                                                >
+                                                  <Trash2 className="w-3.5 h-3.5" /> Löschen
+                                                </button>
+                                              </>
+                                            )}
+                                          </div>
+                                        )}
+                                      </div>
+
+                                      {comment.children.length > 0 && (
+                                        <div className="mt-3 space-y-3">
+                                          {comment.children.map(child => renderCommentNode(child, depth + 1))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                };
+
+                                return roots.map(comment => renderCommentNode(comment, 0));
+                              })()}
+                            </div>
+
+                            <div className="pt-3 border-t border-white/10 space-y-3">
+                              {commentStatus[post.id] && (
+                                <div className="text-[10px] uppercase tracking-widest text-red-300 bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2">
+                                  {commentStatus[post.id]}
+                                </div>
+                              )}
+                              {replyTargets[post.id] && (
+                                <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.02] px-3 py-2 text-[10px] uppercase tracking-widest text-white/50">
+                                  <span>Antwort an @{replyTargets[post.id]?.author}</span>
+                                  <button
+                                    onClick={() => setReplyTargets(prev => ({ ...prev, [post.id]: null }))}
+                                    className="text-white/40 hover:text-white transition-all"
+                                  >
+                                    Abbrechen
+                                  </button>
+                                </div>
+                              )}
+                              <textarea
+                                value={commentDrafts[post.id] || ''}
+                                onChange={(e) => setCommentDrafts(prev => ({ ...prev, [post.id]: e.target.value }))}
+                                placeholder={replyTargets[post.id] ? 'Antwort schreiben...' : 'Antworte oder ergänze den Thread...'}
+                                className="w-full min-h-[90px] bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/10 outline-none focus:border-[#D4AF37] transition-all"
+                              />
+                              <div className="flex justify-end">
+                                <button
+                                  onClick={() => handleCommentSubmit(post.id)}
+                                  disabled={commentSubmitting === post.id || !(commentDrafts[post.id] || '').trim()}
+                                  className="bg-[#D4AF37] text-black px-6 py-2 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] disabled:opacity-20 hover:brightness-110 transition-all"
+                                >
+                                  {commentSubmitting === post.id ? 'Sendet...' : 'Kommentar senden'}
+                                </button>
+                              </div>
+                            </div>
+
+                            <RelatedPosts postId={post.id} content={post.content} category={post.category} />
                           </div>
                         )}
                       </div>
-                      {user && user.id && post.authorId === user.id && (
-                        <button
-                          onClick={() => startEdit(post)}
-                          className="p-1.5 text-white/20 hover:text-white transition-all"
-                          aria-label="Beitrag bearbeiten"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                      )}
-                      {user && (user.role === 'ADMIN' || (user.id && post.authorId === user.id)) && (
-                        <button
-                          onClick={() => handleDelete(post.id)}
-                          className="ml-auto p-1.5 text-white/20 hover:text-white transition-all"
-                          aria-label="Beitrag loeschen"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      )}
                     </div>
-
-                    {(() => {
-                      const liveInsight = aiResult?.postId === post.id
-                        ? {
-                            label: AI_ACTIONS.find(a => a.id === aiResult.action)?.label || 'Orion Insight',
-                            content: aiResult.content
-                          }
-                        : null;
-                      const persistedInsight = liveInsight ? null : extractAiInsight(post.comments);
-                      const insight = liveInsight || persistedInsight;
-
-                      if (!insight) return null;
-
-                      return (
-                        <div className="mt-3 p-4 rounded-xl bg-white/5 border border-white/10 text-sm text-white/80">
-                          <div className="text-[10px] uppercase tracking-widest text-white/40 mb-1">
-                            Orion · {insight.label}
-                          </div>
-                          <div className="prose prose-invert prose-sm max-w-none 
-                            prose-headings:text-white prose-headings:font-bold prose-headings:text-sm prose-headings:mb-2 prose-headings:mt-4
-                            prose-p:text-white/80 prose-p:my-2
-                            prose-strong:text-[#D4AF37] prose-strong:font-bold
-                            prose-ul:list-disc prose-ul:pl-4 prose-ul:my-2
-                            prose-ol:list-decimal prose-ol:pl-4 prose-ol:my-2
-                            prose-li:text-white/70 prose-li:my-1
-                            prose-a:text-[#D4AF37] prose-a:underline hover:prose-a:text-white transition-colors
-                          ">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                              {insight.content}
-                            </ReactMarkdown>
-                          </div>
-                        </div>
-                      );
-                    })()}
-
-                    {expandedPosts[post.id] && (
-                      <div className="mt-4 rounded-xl border border-white/10 bg-black/20 p-4 space-y-4">
-                        <div className="space-y-3">
-                          {(post.comments || []).length === 0 ? (
-                            <p className="text-xs text-white/30 uppercase tracking-widest font-bold">Noch keine Kommentare.</p>
-                          ) : (() => {
-                            const { roots, nodes } = buildCommentTree(post.comments || []);
-                            const renderCommentNode = (comment: CommentNode, depth: number) => {
-                              const isAI = AI_AUTHORS.has(comment.author);
-                              const canManage = user && (user.role === 'ADMIN' || (user.id && comment.authorId === user.id));
-                              const isEditing = commentEditingId === comment.id;
-                              const parent = comment.parentId ? nodes.get(comment.parentId) : null;
-                              const commentProfileHref = buildAuthorHref(
-                                comment.authorId,
-                                comment.authorSlug
-                              );
-
-                              return (
-                                <div key={comment.id} className={`relative ${depth > 0 ? 'pl-6' : ''}`}>
-                                  {depth > 0 && (
-                                    <>
-                                      <span className="absolute left-2 top-0 bottom-0 w-px bg-white/10" />
-                                      <span className="absolute left-1.5 top-5 w-2 h-2 rounded-full bg-white/20" />
-                                    </>
-                                  )}
-                                  <div
-                                    className={`rounded-xl border px-4 py-3 ${
-                                      isAI
-                                        ? 'bg-[#D4AF37]/10 border-[#D4AF37]/30'
-                                        : 'bg-white/5 border-white/10'
-                                    }`}
-                                  >
-                                    <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-white/40 mb-2">
-                                      {commentProfileHref ? (
-                                        <Link href={commentProfileHref} className="flex items-center gap-2 hover:text-white transition-colors">
-                                          <div className="w-5 h-5 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[8px] text-[#D4AF37] font-bold overflow-hidden">
-                                            {comment.authorImage ? (
-                                              <img src={comment.authorImage} alt={comment.author} className="w-full h-full object-cover" />
-                                            ) : (
-                                              comment.author.charAt(0)
-                                            )}
-                                          </div>
-                                          <span className="font-bold text-white/70">{comment.author}</span>
-                                        </Link>
-                                      ) : (
-                                        <div className="flex items-center gap-2">
-                                          <div className="w-5 h-5 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[8px] text-[#D4AF37] font-bold overflow-hidden">
-                                            {comment.authorImage ? (
-                                              <img src={comment.authorImage} alt={comment.author} className="w-full h-full object-cover" />
-                                            ) : (
-                                              comment.author.charAt(0)
-                                            )}
-                                          </div>
-                                          <span className="font-bold text-white/70">{comment.author}</span>
-                                        </div>
-                                      )}
-                                      {isAI && (
-                                        <span className="px-2 py-0.5 rounded-full bg-[#D4AF37]/20 text-[#D4AF37] text-[9px] font-bold tracking-widest">
-                                          ORION
-                                        </span>
-                                      )}
-                                      <span>•</span>
-                                      <span>{formatDistanceToNow(new Date(comment.time), { addSuffix: true, locale: de })}</span>
-                                    </div>
-
-                                    {parent && (
-                                      <div className="text-[10px] uppercase tracking-widest text-white/30 mb-2">
-                                        Antwort auf <span className="text-white/60">@{parent.author}</span>
-                                      </div>
-                                    )}
-
-                                    {isEditing ? (
-                                      <div className="space-y-3">
-                                        <textarea
-                                          value={commentEditDrafts[comment.id] || ''}
-                                          onChange={(e) => setCommentEditDrafts(prev => ({ ...prev, [comment.id]: e.target.value }))}
-                                          className="w-full min-h-[90px] bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/10 outline-none focus:border-[#D4AF37] transition-all"
-                                        />
-                                        <div className="flex justify-end gap-2">
-                                          <button
-                                            onClick={cancelCommentEdit}
-                                            className="px-4 py-2 text-[10px] uppercase tracking-widest text-white/40 hover:text-white transition-all"
-                                          >
-                                            Abbrechen
-                                          </button>
-                                          <button
-                                            onClick={() => handleCommentEdit(post.id, comment.id)}
-                                            disabled={commentEditSubmitting === comment.id || !(commentEditDrafts[comment.id] || '').trim()}
-                                            className="bg-[#D4AF37] text-black px-5 py-2 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] disabled:opacity-20 hover:brightness-110 transition-all"
-                                          >
-                                            {commentEditSubmitting === comment.id ? 'Speichert...' : 'Speichern'}
-                                          </button>
-                                        </div>
-                                      </div>
-                                    ) : (
-                                      <div className="prose prose-invert prose-sm max-w-none text-white/80">
-                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{comment.content}</ReactMarkdown>
-                                      </div>
-                                    )}
-
-                                    {!isEditing && (
-                                      <div className="mt-3 flex flex-wrap items-center gap-3 text-[10px] uppercase tracking-widest text-white/40">
-                                        <button
-                                          onClick={() => handleCommentVote(post.id, comment.id, 1)}
-                                          className={`flex items-center gap-1.5 transition-all ${
-                                            (comment.userVote || 0) === 1 ? 'text-[#D4AF37]' : 'text-white/40 hover:text-white'
-                                          }`}
-                                        >
-                                          <Heart className={`w-3.5 h-3.5 ${(comment.userVote || 0) === 1 ? 'fill-[#D4AF37]' : ''}`} />
-                                          <span>{comment.likes || 0}</span>
-                                        </button>
-                                        <button
-                                          onClick={() => setReplyTargets(prev => ({ ...prev, [post.id]: comment }))}
-                                          className="flex items-center gap-1.5 text-white/40 hover:text-white transition-all"
-                                        >
-                                          <Reply className="w-3.5 h-3.5" /> Antworten
-                                        </button>
-                                        {canManage && (
-                                          <>
-                                            <button
-                                              onClick={() => startCommentEdit(comment)}
-                                              className="flex items-center gap-1.5 text-white/40 hover:text-white transition-all"
-                                            >
-                                              <Edit2 className="w-3.5 h-3.5" /> Bearbeiten
-                                            </button>
-                                            <button
-                                              onClick={() => handleCommentDelete(post.id, comment.id)}
-                                              className="flex items-center gap-1.5 text-white/40 hover:text-white transition-all"
-                                            >
-                                              <Trash2 className="w-3.5 h-3.5" /> Löschen
-                                            </button>
-                                          </>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
-
-                                  {comment.children.length > 0 && (
-                                    <div className="mt-3 space-y-3">
-                                      {comment.children.map(child => renderCommentNode(child, depth + 1))}
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            };
-
-                            return roots.map(comment => renderCommentNode(comment, 0));
-                          })()}
-                        </div>
-
-                        <div className="pt-3 border-t border-white/10 space-y-3">
-                          {commentStatus[post.id] && (
-                            <div className="text-[10px] uppercase tracking-widest text-red-300 bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2">
-                              {commentStatus[post.id]}
-                            </div>
-                          )}
-                          {replyTargets[post.id] && (
-                            <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.02] px-3 py-2 text-[10px] uppercase tracking-widest text-white/50">
-                              <span>Antwort an @{replyTargets[post.id]?.author}</span>
-                              <button
-                                onClick={() => setReplyTargets(prev => ({ ...prev, [post.id]: null }))}
-                                className="text-white/40 hover:text-white transition-all"
-                              >
-                                Abbrechen
-                              </button>
-                            </div>
-                          )}
-                          <textarea
-                            value={commentDrafts[post.id] || ''}
-                            onChange={(e) => setCommentDrafts(prev => ({ ...prev, [post.id]: e.target.value }))}
-                            placeholder={replyTargets[post.id] ? 'Antwort schreiben...' : 'Antworte oder ergänze den Thread...'}
-                            className="w-full min-h-[90px] bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/10 outline-none focus:border-[#D4AF37] transition-all"
-                          />
-                          <div className="flex justify-end">
-                            <button
-                              onClick={() => handleCommentSubmit(post.id)}
-                              disabled={commentSubmitting === post.id || !(commentDrafts[post.id] || '').trim()}
-                              className="bg-[#D4AF37] text-black px-6 py-2 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] disabled:opacity-20 hover:brightness-110 transition-all"
-                            >
-                              {commentSubmitting === post.id ? 'Sendet...' : 'Kommentar senden'}
-                            </button>
-                          </div>
-                        </div>
-
-                        <RelatedPosts postId={post.id} content={post.content} category={post.category} />
-                      </div>
-                    )}
-                  </div>
+                  );
+                })}
+                
+                {/* Infinite Scroll Trigger & Load More */}
+                <div ref={loadMoreRef} className="py-8 text-center min-h-[100px] flex flex-col items-center justify-center">
+                  {isLoadingMore && (
+                    <div className="w-full max-w-2xl">
+                      <PostSkeleton />
+                    </div>
+                  )}
+                  {!hasMore && posts.length > 0 && (
+                    <p className="text-[10px] text-white/20 uppercase tracking-widest font-bold mt-4">
+                      Das war's für den Moment.
+                    </p>
+                  )}
                 </div>
-              );
-            })}
+              </>
+              )}
             </div>
           </main>
 
@@ -1135,7 +1274,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                         <button
                           key={notification.id}
                           onClick={handleClick}
-                          className={`w-full text-left rounded-xl border px-3 py-3 transition-all ${
+                          className={`w-full text-left rounded-xl border px-3 py-3 transition-all ${ 
                             notification.isRead
                               ? 'border-white/10 bg-white/[0.02] text-white/60'
                               : 'border-[#D4AF37]/30 bg-[#D4AF37]/10 text-white'
@@ -1335,7 +1474,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
 
                       <button 
                         onClick={() => fileInputRef.current?.click()}
-                        className="p-2.5 hover:bg-white/10 rounded-lg text-white/60 hover:text-[#D4AF37] transition-all" title="Bild hochladen"
+                        className="p-2.5 hover:bg-white/10 rounded-lg text-white/60 hover:text-[#D4AF37] transition-all title-tooltip" title="Bild hochladen"
                       >
                         <ImageIcon className="w-4 h-4" />
                       </button>
@@ -1353,7 +1492,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                       
                       <button 
                         onClick={() => setIsPreview(!isPreview)}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${ 
                           isPreview ? 'bg-[#D4AF37] text-black' : 'text-white/40 hover:text-white hover:bg-white/5'
                         }`}
                       >
@@ -1367,7 +1506,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                   <div className="relative min-h-[350px]">
                     {isPreview ? (
                       <div className="prose prose-invert prose-lg max-w-none p-8 bg-white/[0.02] border border-white/5 rounded-3xl min-h-[350px]">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        <ReactMarkdown remarkPlugins={[remarkGfm]} components={MarkdownComponents}>
                           {(editingPost === 'NEW' ? content : editContent) || '*Schreibe etwas, um die Vorschau zu sehen...*'}
                         </ReactMarkdown>
                       </div>
