@@ -313,7 +313,7 @@ def _generate_videos(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
 
 @app.function(
     image=image,
-    gpu="A10G",
+    gpu="A100-80GB",
     timeout=600,
     volumes={MODEL_CACHE: volume},
     secrets=secrets,
@@ -330,11 +330,11 @@ def generate_image(payload: Dict[str, Any], authorization: Optional[str] = Heade
 
 @app.function(
     image=image,
-    gpu="A100-40GB",
+    gpu="H100",
     timeout=900,
     volumes={MODEL_CACHE: volume},
     secrets=secrets,
-    min_containers=0,
+    min_containers=1,
 )
 @modal.fastapi_endpoint(method="POST")
 def generate_video(payload: Dict[str, Any], authorization: Optional[str] = Header(None)):
@@ -494,7 +494,7 @@ def get_last_frame(payload: Dict[str, Any], authorization: Optional[str] = Heade
 
 @app.function(
     image=image,
-    gpu="A10G",
+    cpu=2.0,
     timeout=3600, 
     volumes={MODEL_CACHE: volume},
     secrets=secrets,
@@ -504,25 +504,13 @@ def seed_models():
     Run this manually once to download all models to the volume.
     Command: modal run modal/forge_media_app.py::seed_models
     """
-    import gc
-    import torch
-
     print("🚀 Starting Model Download (Warmup)...")
     
     # 1. Download Image Models
     for model_key in IMAGE_MODEL_IDS:
         print(f"⬇️ Downloading Image Model: {model_key}...")
         try:
-            # Load and immediately delete to just trigger download
-            pipe = _load_text_to_image(model_key)
-            del pipe
-            
-            # Clear VRAM
-            if model_key in IMAGE_PIPES:
-                del IMAGE_PIPES[model_key]
-            gc.collect()
-            torch.cuda.empty_cache()
-            
+            _prefetch_model(model_key)
             print(f"✅ {model_key} ready.")
         except Exception as e:
             print(f"⚠️ Error downloading {model_key}: {e}")
@@ -531,15 +519,7 @@ def seed_models():
     for model_key in VIDEO_MODEL_IDS:
         print(f"⬇️ Downloading Video Model: {model_key}...")
         try:
-            pipe = _load_video_pipeline(model_key)
-            del pipe
-            
-            # Clear VRAM
-            if model_key in VIDEO_PIPES:
-                del VIDEO_PIPES[model_key]
-            gc.collect()
-            torch.cuda.empty_cache()
-            
+            _prefetch_model(model_key)
             print(f"✅ {model_key} ready.")
         except Exception as e:
             print(f"⚠️ Error downloading {model_key}: {e}")
