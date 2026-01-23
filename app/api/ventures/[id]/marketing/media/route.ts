@@ -23,12 +23,17 @@ const COSTS: Record<string, number> = {
 
 type MediaMode = 'text-to-image' | 'text-to-video' | 'image-to-video';
 
+type Provider = 'replicate' | 'ideogram';
+
 type ModelConfig = {
   id: string;
   label: string;
   modes: MediaMode[];
   outputType: 'image' | 'video';
+  provider: Provider;
   supportsImageInput?: boolean;
+  supportsRenderingSpeed?: boolean;
+  supportsStylePreset?: boolean;
 };
 
 type ReplicateInputOptions = {
@@ -76,18 +81,30 @@ const MODEL_CONFIGS: Record<string, ModelConfig> = {
     label: 'Z-Image Turbo',
     modes: ['text-to-image'],
     outputType: 'image',
+    provider: 'replicate',
   },
   'black-forest-labs/flux-schnell': {
     id: 'black-forest-labs/flux-schnell',
     label: 'Flux Schnell',
     modes: ['text-to-image'],
     outputType: 'image',
+    provider: 'replicate',
+  },
+  'ideogram-v3': {
+    id: 'ideogram-v3',
+    label: 'Ideogram 3.0',
+    modes: ['text-to-image'],
+    outputType: 'image',
+    provider: 'ideogram',
+    supportsRenderingSpeed: true,
+    supportsStylePreset: true,
   },
   'wan-video/wan-2.1-1.3b': {
     id: 'wan-video/wan-2.1-1.3b',
     label: 'Wan 2.1',
     modes: ['text-to-video'],
     outputType: 'video',
+    provider: 'replicate',
   },
   'kwaivgi/kling-v2.5-turbo-pro': {
     id: 'kwaivgi/kling-v2.5-turbo-pro',
@@ -95,6 +112,7 @@ const MODEL_CONFIGS: Record<string, ModelConfig> = {
     modes: ['image-to-video'],
     outputType: 'video',
     supportsImageInput: true,
+    provider: 'replicate',
   },
 };
 
@@ -128,6 +146,9 @@ const HOURLY_LIMITS = {
 };
 
 const MAX_PROMPT_CHARS = parseLimit(process.env.MARKETING_MEDIA_MAX_PROMPT_CHARS, 1200);
+const IDEOGRAM_RENDERING_SPEEDS = new Set(['TURBO', 'DEFAULT', 'QUALITY']);
+const IDEOGRAM_API_URL =
+  process.env.IDEOGRAM_API_URL || 'https://api.ideogram.ai/v1/ideogram-v3/generate';
 
 const resolveDimensions = (aspectRatio: string) => {
   switch (aspectRatio) {
@@ -142,6 +163,11 @@ const resolveDimensions = (aspectRatio: string) => {
     default:
       return { width: 1024, height: 1024 };
   }
+};
+
+const normalizeIdeogramRenderingSpeed = (value: string) => {
+  const normalized = value.trim().toUpperCase();
+  return IDEOGRAM_RENDERING_SPEEDS.has(normalized) ? normalized : null;
 };
 
 const getAspectDimensions = (aspectRatio: string, isVideo: boolean) => {
@@ -240,6 +266,18 @@ const extractOutputUrls = async (output: unknown) => {
   }
   const single = await normalizeOutputUrl(output);
   return single ? [single] : [];
+};
+
+const normalizePredictionError = (value: unknown) => {
+  if (!value) return null;
+  if (typeof value === 'string') return value;
+  if (value instanceof Error) return value.message;
+  try {
+    const serialized = JSON.stringify(value);
+    return serialized === '{}' ? null : serialized;
+  } catch {
+    return null;
+  }
 };
 
 const getContentInfo = (contentType: string | null, fallbackType: 'image' | 'video') => {
@@ -353,6 +391,8 @@ export async function POST(
   const aspectRatio = String(formData.get('aspectRatio') || '1:1');
   const useBrandContext = formData.get('useBrandContext') === 'true';
   const negativePrompt = String(formData.get('negativePrompt') || '').trim();
+  const renderingSpeed = String(formData.get('renderingSpeed') || '').trim();
+  const stylePreset = String(formData.get('stylePreset') || '').trim();
 
   if (!modeValue || !prompt || !isValidMode(modeValue)) {
     return NextResponse.json({ error: 'Fehlende Parameter' }, { status: 400 });
@@ -364,13 +404,17 @@ export async function POST(
     return NextResponse.json({ error: 'Prompt ist zu lang.' }, { status: 400 });
   }
 
-  if (!process.env.REPLICATE_API_TOKEN) {
-    return NextResponse.json({ error: 'Replicate API Token fehlt' }, { status: 500 });
-  }
-
   const modelConfig = resolveAllowedModel(mode, model || null);
   if (!modelConfig) {
     return NextResponse.json({ error: 'Modell nicht verfügbar für diesen Modus.' }, { status: 400 });
+  }
+
+  if (modelConfig.provider === 'replicate' && !process.env.REPLICATE_API_TOKEN) {
+    return NextResponse.json({ error: 'Replicate API Token fehlt' }, { status: 500 });
+  }
+
+  if (modelConfig.provider === 'ideogram' && !process.env.IDEOGRAM_API_KEY) {
+    return NextResponse.json({ error: 'Ideogram API Key fehlt' }, { status: 500 });
   }
 
   const cost = Number.isFinite(COSTS[mode]) ? COSTS[mode] : 20;
@@ -451,6 +495,97 @@ export async function POST(
     const finalPrompt = useBrandContext ? `${prompt}${buildBrandContext(venture.brandDNA)}` : prompt;
     const dimensions = resolveDimensions(aspectRatio);
 
+    if (modelConfig.provider === 'ideogram') {
+      const payload: Record<string, unknown> = {
+        prompt: finalPrompt,
+      };
+
+      const normalizedSpeed = normalizeIdeogramRenderingSpeed(renderingSpeed || 'TURBO');
+      if (modelConfig.supportsRenderingSpeed && normalizedSpeed) {
+        payload.rendering_speed = normalizedSpeed;
+      }
+      if (modelConfig.supportsStylePreset && stylePreset) {
+        payload.style_preset = stylePreset;
+      }
+
+      const ideogramRes = await fetch(IDEOGRAM_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Api-Key': process.env.IDEOGRAM_API_KEY || '',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const ideogramData = await ideogramRes.json().catch(() => ({}));
+      if (!ideogramRes.ok) {
+        const errorMessage =
+          ideogramData?.error || ideogramData?.message || 'Ideogram request failed';
+        throw new Error(errorMessage);
+      }
+
+      const outputUrls = Array.isArray(ideogramData?.data)
+        ? ideogramData.data.map((item: any) => item?.url).filter(Boolean)
+        : [];
+
+      if (!outputUrls.length) {
+        throw new Error('Kein Output von Ideogram');
+      }
+
+      const resolvedAssets = await Promise.all(
+        outputUrls.map(async (url: string, index: number) => {
+          const res = await fetch(url);
+          if (!res.ok) throw new Error('Output konnte nicht geladen werden');
+          const blobData = await res.blob();
+          const buffer = Buffer.from(await blobData.arrayBuffer());
+          const info = getContentInfo(res.headers.get('content-type'), 'image');
+
+          const filename = `marketing/${user.id}/${Date.now()}-${index}.${info.ext}`;
+          const blob = await put(filename, buffer, {
+            access: 'public',
+            contentType: info.contentType,
+          });
+
+          await prisma.mediaAsset.create({
+            data: {
+              ventureId: id,
+              ownerId: user.id,
+              type: 'IMAGE',
+              url: blob.url,
+              filename,
+              mimeType: info.contentType,
+              size: buffer.length,
+              source: 'GENERATED',
+              prompt,
+              model: modelConfig.id,
+              width: dimensions.width,
+              height: dimensions.height,
+              tags: [mode, 'ideogram']
+            }
+          });
+
+          return { url: blob.url, type: 'image' as const };
+        })
+      );
+
+      const settlement = reservationId
+        ? await settleEnergy({
+            reservationId,
+            finalCost: cost,
+            provider: 'ideogram',
+            model: modelConfig.id
+          })
+        : null;
+
+      return NextResponse.json({
+        status: 'succeeded',
+        assets: resolvedAssets,
+        provider: 'ideogram',
+        creditsUsed: cost,
+        creditsRemaining: settlement?.creditsRemaining ?? null
+      });
+    }
+
     const replicateInput = buildReplicateInput(modelConfig.id, {
       prompt: finalPrompt,
       negativePrompt: negativePrompt || undefined,
@@ -500,7 +635,7 @@ export async function POST(
     if (error instanceof InsufficientEnergyError) {
       return NextResponse.json({ error: error.message }, { status: 402 });
     }
-    console.error('Replicate Generation Error:', error);
+    console.error('Media Generation Error:', error);
     return NextResponse.json({ error: error.message || 'Generation failed' }, { status: 500 });
   }
 }
@@ -647,11 +782,12 @@ export async function GET(
   }
 
   if (prediction.status === 'failed' || prediction.status === 'canceled') {
+    const normalizedError = normalizePredictionError(prediction.error);
     if (!cachedJob.refundedAt && cachedJob.reservationId) {
       await refundEnergy(cachedJob.reservationId, 'generation-failed');
       await updateJobCache(predictionId, {
         refundedAt: new Date().toISOString(),
-        error: prediction.error || 'Generation failed',
+        error: normalizedError || 'Generation failed',
         processingId: null,
         processingAt: null,
         processingBy: null,
@@ -659,7 +795,7 @@ export async function GET(
     }
     return NextResponse.json({
       status: prediction.status,
-      error: prediction.error || cachedJob.error || 'Generation failed'
+      error: normalizedError || cachedJob.error || 'Generation failed'
     });
   }
 

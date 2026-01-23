@@ -48,6 +48,8 @@ type ModelConfig = {
   supportsSeed?: boolean;
   supportsDuration?: boolean;
   supportsFps?: boolean;
+  supportsRenderingSpeed?: boolean;
+  supportsStylePreset?: boolean;
 };
 
 const MODEL_CONFIGS: ModelConfig[] = [
@@ -65,6 +67,14 @@ const MODEL_CONFIGS: ModelConfig[] = [
     outputType: 'image',
     modes: ['text-to-image'],
     supportsNegativePrompt: true,
+  },
+  {
+    id: 'ideogram-v3',
+    label: 'Ideogram 3.0 · Photorealistic',
+    outputType: 'image',
+    modes: ['text-to-image'],
+    supportsRenderingSpeed: true,
+    supportsStylePreset: true,
   },
   {
     id: 'wan-video/wan-2.1-1.3b',
@@ -90,6 +100,18 @@ const ASPECT_RATIOS = [
   { id: '9:16', label: '9:16 Story' },
   { id: '16:9', label: '16:9 Wide' },
   { id: '3:2', label: '3:2 Classic' },
+];
+
+const IDEOGRAM_RENDERING_SPEEDS = [
+  { id: 'TURBO', label: 'Turbo (Fast)' },
+  { id: 'DEFAULT', label: 'Default' },
+  { id: 'QUALITY', label: 'Quality' },
+];
+
+const IDEOGRAM_STYLE_PRESET_SUGGESTIONS = [
+  '90s_Nostalgia',
+  'Japandi_Fusion',
+  'Mixed_Media',
 ];
 
 type MediaAsset = {
@@ -136,6 +158,8 @@ export function MediaGeneratorModal({
   const [seed, setSeed] = useState('');
   const [duration, setDuration] = useState(4);
   const [fps, setFps] = useState(24);
+  const [renderingSpeed, setRenderingSpeed] = useState(IDEOGRAM_RENDERING_SPEEDS[0].id);
+  const [stylePreset, setStylePreset] = useState('');
   const [useBrandContext, setUseBrandContext] = useState(Boolean(brandDNA));
   const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -160,6 +184,8 @@ export function MediaGeneratorModal({
   const supportsSeed = Boolean(selectedModel?.supportsSeed);
   const supportsDuration = Boolean(selectedModel?.supportsDuration);
   const supportsFps = Boolean(selectedModel?.supportsFps);
+  const supportsRenderingSpeed = Boolean(selectedModel?.supportsRenderingSpeed);
+  const supportsStylePreset = Boolean(selectedModel?.supportsStylePreset);
 
   useEffect(() => {
     if (!isOpen && !inline) return;
@@ -219,6 +245,18 @@ export function MediaGeneratorModal({
       setFps(24);
     }
   }, [supportsFps]);
+
+  useEffect(() => {
+    if (!supportsRenderingSpeed) {
+      setRenderingSpeed(IDEOGRAM_RENDERING_SPEEDS[0].id);
+    }
+  }, [supportsRenderingSpeed]);
+
+  useEffect(() => {
+    if (!supportsStylePreset) {
+      setStylePreset('');
+    }
+  }, [supportsStylePreset]);
 
   useEffect(() => {
     if (!imageFile) {
@@ -315,6 +353,12 @@ export function MediaGeneratorModal({
       if (supportsFps) {
         formData.append('fps', String(fps));
       }
+      if (supportsRenderingSpeed) {
+        formData.append('renderingSpeed', renderingSpeed);
+      }
+      if (supportsStylePreset && stylePreset.trim()) {
+        formData.append('stylePreset', stylePreset.trim());
+      }
       if (useBrandContext && brandDNA) formData.append('useBrandContext', 'true');
       if (campaignId) formData.append('campaignId', campaignId);
 
@@ -335,6 +379,7 @@ export function MediaGeneratorModal({
       }
 
       setCreditsUsed(data.creditsUsed ?? null);
+      setCreditsRemaining(data.creditsRemaining ?? null);
       setPredictionStatus(data.status || 'starting');
       setSuccessMessage('Generierung gestartet...');
 
@@ -342,6 +387,8 @@ export function MediaGeneratorModal({
         await pollPrediction(data.predictionId);
       } else if (data.assets) {
         setAssets(data.assets || []);
+        setPredictionStatus('succeeded');
+        setSuccessMessage('Generierung abgeschlossen.');
         if (onAssetCreated && data.assets) {
           data.assets.forEach((asset: any) => onAssetCreated(asset));
         }
@@ -358,7 +405,13 @@ export function MediaGeneratorModal({
   };
 
   const hasAdvancedFields =
-    supportsSteps || supportsGuidance || supportsDuration || supportsSeed || supportsFps;
+    supportsSteps ||
+    supportsGuidance ||
+    supportsDuration ||
+    supportsSeed ||
+    supportsFps ||
+    supportsRenderingSpeed ||
+    supportsStylePreset;
 
   const Content = (
     <div className={`flex flex-col h-full ${inline ? '' : 'max-h-[90vh] overflow-hidden'}`}>
@@ -558,6 +611,39 @@ export function MediaGeneratorModal({
                       onChange={(event) => setFps(Number(event.target.value))}
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-[#D4AF37] outline-none"
                     />
+                  </div>
+                )}
+                {supportsRenderingSpeed && (
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-widest text-white/40">Rendering Speed</label>
+                    <select
+                      value={renderingSpeed}
+                      onChange={(event) => setRenderingSpeed(event.target.value)}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-[#D4AF37] outline-none"
+                    >
+                      {IDEOGRAM_RENDERING_SPEEDS.map((option) => (
+                        <option key={option.id} value={option.id}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                {supportsStylePreset && (
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-widest text-white/40">Style Preset</label>
+                    <input
+                      list="ideogram-style-presets"
+                      value={stylePreset}
+                      onChange={(event) => setStylePreset(event.target.value)}
+                      placeholder="Optional: Mixed_Media"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-[#D4AF37] outline-none"
+                    />
+                    <datalist id="ideogram-style-presets">
+                      {IDEOGRAM_STYLE_PRESET_SUGGESTIONS.map((preset) => (
+                        <option key={preset} value={preset} />
+                      ))}
+                    </datalist>
                   </div>
                 )}
               </div>
