@@ -73,19 +73,23 @@ type MediaAsset = {
 };
 
 interface MediaGeneratorModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
   ventureId: string;
   campaignId?: string | null;
   brandDNA?: BrandDNA | null;
+  inline?: boolean;
+  onAssetCreated?: (asset: any) => void;
 }
 
 export function MediaGeneratorModal({
-  isOpen,
+  isOpen = true,
   onClose,
   ventureId,
   campaignId,
   brandDNA,
+  inline = false,
+  onAssetCreated
 }: MediaGeneratorModalProps) {
   const [mode, setMode] = useState<MediaMode>('text-to-image');
   const [model, setModel] = useState(IMAGE_MODELS[0].id);
@@ -116,10 +120,10 @@ export function MediaGeneratorModal({
   const requiresImage = mode.includes('image-to');
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen && !inline) return;
     setErrorMessage('');
     setSuccessMessage('');
-  }, [isOpen]);
+  }, [isOpen, inline]);
 
   useEffect(() => {
     setModel(MODE_DEFAULT_MODEL[mode]);
@@ -142,7 +146,7 @@ export function MediaGeneratorModal({
     return 'z.B. Studio Shot, natürliche Hauttöne, hochwertige Materialien, cleanes Layout';
   }, [mode]);
 
-  if (!isOpen) return null;
+  if (!isOpen && !inline) return null;
 
   const handleGenerate = async () => {
     setErrorMessage('');
@@ -187,6 +191,11 @@ export function MediaGeneratorModal({
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
+        if (res.status === 429 && data?.retryAfter) {
+          const minutes = Math.max(1, Math.ceil(Number(data.retryAfter) / 60));
+          setErrorMessage(`Stundenlimit erreicht. Bitte in ca. ${minutes} Minuten erneut versuchen.`);
+          return;
+        }
         setErrorMessage(data?.error || 'Generierung fehlgeschlagen.');
         return;
       }
@@ -195,6 +204,12 @@ export function MediaGeneratorModal({
       setCreditsRemaining(data.creditsRemaining ?? null);
       setCreditsUsed(data.creditsUsed ?? null);
       setSuccessMessage('Generierung abgeschlossen.');
+      
+      // Notify parent about new assets
+      if (onAssetCreated && data.assets) {
+        data.assets.forEach((asset: any) => onAssetCreated(asset));
+      }
+
     } catch (error) {
       console.error('Media generation failed', error);
       setErrorMessage('Serverfehler. Bitte erneut versuchen.');
@@ -203,9 +218,9 @@ export function MediaGeneratorModal({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="glass-card w-full max-w-5xl rounded-2xl border border-white/10 flex flex-col max-h-[90vh] overflow-hidden">
+  const Content = (
+    <div className={`flex flex-col h-full ${inline ? '' : 'max-h-[90vh] overflow-hidden'}`}>
+      {!inline && (
         <div className="p-6 border-b border-white/10 flex justify-between items-center bg-black/40 backdrop-blur-md">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-[#D4AF37]/10 rounded-xl flex items-center justify-center">
@@ -222,300 +237,312 @@ export function MediaGeneratorModal({
             <X className="w-6 h-6" />
           </button>
         </div>
+      )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-6 p-6 overflow-y-auto">
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {MEDIA_MODES.map((item) => (
+      <div className={`grid grid-cols-1 ${inline ? 'lg:grid-cols-2' : 'lg:grid-cols-[1.1fr_1fr]'} gap-6 p-6 overflow-y-auto`}>
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {MEDIA_MODES.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setMode(item.id)}
+                className={`rounded-xl border px-4 py-3 text-left transition-all ${
+                  mode === item.id
+                    ? 'bg-[#D4AF37]/10 border-[#D4AF37] text-white'
+                    : 'bg-white/5 border-white/10 text-white/50 hover:text-white'
+                }`}
+              >
+                <div className="flex items-center gap-2 text-sm font-bold">
+                  {item.id.includes('video') ? <Video className="w-4 h-4" /> : <ImageIcon className="w-4 h-4" />}
+                  {item.label}
+                </div>
+                <p className="text-[10px] text-white/50 mt-1">{item.description}</p>
+              </button>
+            ))}
+          </div>
+
+          <div className="glass-card rounded-xl border border-white/10 p-5 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-white/40">Prompt</h3>
+              {brandDNA && (
                 <button
-                  key={item.id}
-                  onClick={() => setMode(item.id)}
-                  className={`rounded-xl border px-4 py-3 text-left transition-all ${
-                    mode === item.id
-                      ? 'bg-[#D4AF37]/10 border-[#D4AF37] text-white'
-                      : 'bg-white/5 border-white/10 text-white/50 hover:text-white'
+                  onClick={() => setUseBrandContext((prev) => !prev)}
+                  className={`text-[10px] uppercase tracking-widest px-3 py-1 rounded-full border transition-all ${
+                    useBrandContext
+                      ? 'border-[#D4AF37]/40 bg-[#D4AF37]/10 text-[#D4AF37]'
+                      : 'border-white/10 text-white/40'
                   }`}
                 >
-                  <div className="flex items-center gap-2 text-sm font-bold">
-                    {item.id.includes('video') ? <Video className="w-4 h-4" /> : <ImageIcon className="w-4 h-4" />}
-                    {item.label}
-                  </div>
-                  <p className="text-[10px] text-white/50 mt-1">{item.description}</p>
+                  Brand DNA {useBrandContext ? 'aktiv' : 'aus'}
                 </button>
-              ))}
-            </div>
-
-            <div className="glass-card rounded-xl border border-white/10 p-5 space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <h3 className="text-sm font-bold uppercase tracking-widest text-white/40">Prompt</h3>
-                {brandDNA && (
-                  <button
-                    onClick={() => setUseBrandContext((prev) => !prev)}
-                    className={`text-[10px] uppercase tracking-widest px-3 py-1 rounded-full border transition-all ${
-                      useBrandContext
-                        ? 'border-[#D4AF37]/40 bg-[#D4AF37]/10 text-[#D4AF37]'
-                        : 'border-white/10 text-white/40'
-                    }`}
-                  >
-                    Brand DNA {useBrandContext ? 'aktiv' : 'aus'}
-                  </button>
-                )}
-              </div>
-              <textarea
-                rows={4}
-                value={prompt}
-                onChange={(event) => setPrompt(event.target.value)}
-                placeholder={promptPlaceholder}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-[#D4AF37] outline-none resize-none"
-              />
-              <textarea
-                rows={2}
-                value={negativePrompt}
-                onChange={(event) => setNegativePrompt(event.target.value)}
-                placeholder="Optional: Negative Prompt (z.B. blurry, low quality, artifacts)"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white/80 text-xs focus:border-[#D4AF37] outline-none resize-none"
-              />
-            </div>
-
-            <div className="glass-card rounded-xl border border-white/10 p-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold uppercase tracking-widest text-white/40">Model & Output</h3>
-                <button
-                  onClick={() => setShowAdvanced((prev) => !prev)}
-                  className="text-[10px] uppercase tracking-widest text-white/50 hover:text-white flex items-center gap-2"
-                >
-                  <Sliders className="w-3.5 h-3.5" />
-                  {showAdvanced ? 'Basic' : 'Advanced'}
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-widest text-white/40">Model</label>
-                  <select
-                    value={model}
-                    onChange={(event) => setModel(event.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-[#D4AF37] outline-none"
-                  >
-                    {(isVideoMode ? VIDEO_MODELS : IMAGE_MODELS).map((option) => (
-                      <option key={option.id} value={option.id}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-widest text-white/40">Aspect Ratio</label>
-                  <select
-                    value={aspectRatio}
-                    onChange={(event) => setAspectRatio(event.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-[#D4AF37] outline-none"
-                  >
-                    {ASPECT_RATIOS.map((option) => (
-                      <option key={option.id} value={option.id}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-widest text-white/40">Varianten</label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={4}
-                    value={variants}
-                    onChange={(event) => setVariants(Number(event.target.value))}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-[#D4AF37] outline-none"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-widest text-white/40">Steps</label>
-                  <input
-                    type="number"
-                    min={10}
-                    max={60}
-                    value={steps}
-                    onChange={(event) => setSteps(Number(event.target.value))}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-[#D4AF37] outline-none"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-widest text-white/40">Guidance</label>
-                  <input
-                    type="number"
-                    step={0.5}
-                    min={1}
-                    max={20}
-                    value={guidance}
-                    onChange={(event) => setGuidance(Number(event.target.value))}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-[#D4AF37] outline-none"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-widest text-white/40">Seed</label>
-                  <input
-                    type="text"
-                    value={seed}
-                    onChange={(event) => setSeed(event.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-[#D4AF37] outline-none"
-                  />
-                </div>
-              </div>
-
-              {showAdvanced && (
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-[10px] uppercase tracking-widest text-white/40">Image Strength</label>
-                    <input
-                      type="number"
-                      step={0.05}
-                      min={0.1}
-                      max={1}
-                      value={strength}
-                      onChange={(event) => setStrength(Number(event.target.value))}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-[#D4AF37] outline-none"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] uppercase tracking-widest text-white/40">FPS</label>
-                    <input
-                      type="number"
-                      min={12}
-                      max={30}
-                      value={fps}
-                      onChange={(event) => setFps(Number(event.target.value))}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-[#D4AF37] outline-none"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] uppercase tracking-widest text-white/40">Duration (sec)</label>
-                    <input
-                      type="number"
-                      min={2}
-                      max={12}
-                      value={duration}
-                      onChange={(event) => setDuration(Number(event.target.value))}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-[#D4AF37] outline-none"
-                    />
-                  </div>
-                </div>
               )}
             </div>
+            <textarea
+              rows={4}
+              value={prompt}
+              onChange={(event) => setPrompt(event.target.value)}
+              placeholder={promptPlaceholder}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-[#D4AF37] outline-none resize-none"
+            />
+            <textarea
+              rows={2}
+              value={negativePrompt}
+              onChange={(event) => setNegativePrompt(event.target.value)}
+              placeholder="Optional: Negative Prompt (z.B. blurry, low quality, artifacts)"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white/80 text-xs focus:border-[#D4AF37] outline-none resize-none"
+            />
+          </div>
 
-            {requiresImage && (
-              <div className="glass-card rounded-xl border border-white/10 p-5 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold uppercase tracking-widest text-white/40">Referenzbild</h3>
-                  {imageFile && (
-                    <button
-                      onClick={() => setImageFile(null)}
-                      className="text-[10px] uppercase tracking-widest text-white/50 hover:text-white"
-                    >
-                      Entfernen
-                    </button>
-                  )}
-                </div>
-                <label className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-white/20 bg-black/40 px-6 py-8 text-white/50 text-xs cursor-pointer">
-                  <Upload className="w-5 h-5" />
-                  <span>Bild hochladen (JPG/PNG/WebP)</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(event) => {
-                      const file = event.target.files?.[0] || null;
-                      setImageFile(file);
-                    }}
-                  />
-                </label>
-                {imagePreview && (
-                  <div className="rounded-xl overflow-hidden border border-white/10">
-                    <img src={imagePreview} alt="Referenz" className="w-full h-auto" />
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div className="flex items-center justify-between gap-3">
-              <div className="text-[10px] uppercase tracking-widest text-white/40 flex items-center gap-2">
-                <Zap className="w-3.5 h-3.5 text-[#D4AF37]" />
-                {creditsUsed ? `Energy: ${creditsUsed} verbraucht` : 'Energy Usage'}
-                {creditsRemaining !== null && (
-                  <span className="text-white/70">· {creditsRemaining} übrig</span>
-                )}
-              </div>
+          <div className="glass-card rounded-xl border border-white/10 p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-white/40">Model & Output</h3>
               <button
-                onClick={handleGenerate}
-                disabled={isGenerating}
-                className="px-6 py-3 rounded-xl bg-[#D4AF37] text-black font-bold text-sm hover:opacity-90 transition-all disabled:opacity-50 flex items-center gap-2"
+                onClick={() => setShowAdvanced((prev) => !prev)}
+                className="text-[10px] uppercase tracking-widest text-white/50 hover:text-white flex items-center gap-2"
               >
-                {isGenerating ? (
-                  <>
-                    <Wand2 className="w-4 h-4 animate-spin" />
-                    Generiere...
-                  </>
-                ) : (
-                  <>
-                    <Wand2 className="w-4 h-4" />
-                    Medien generieren
-                  </>
-                )}
+                <Sliders className="w-3.5 h-3.5" />
+                {showAdvanced ? 'Basic' : 'Advanced'}
               </button>
             </div>
 
-            {(errorMessage || successMessage) && (
-              <div
-                className={`rounded-xl border px-4 py-3 text-xs font-bold uppercase tracking-widest flex items-center gap-2 ${
-                  errorMessage
-                    ? 'border-red-500/30 bg-red-500/10 text-red-300'
-                    : 'border-green-500/30 bg-green-500/10 text-green-300'
-                }`}
-              >
-                {errorMessage ? <AlertTriangle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
-                <span>{errorMessage || successMessage}</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase tracking-widest text-white/40">Model</label>
+                <select
+                  value={model}
+                  onChange={(event) => setModel(event.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-[#D4AF37] outline-none"
+                >
+                  {(isVideoMode ? VIDEO_MODELS : IMAGE_MODELS).map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase tracking-widest text-white/40">Aspect Ratio</label>
+                <select
+                  value={aspectRatio}
+                  onChange={(event) => setAspectRatio(event.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-[#D4AF37] outline-none"
+                >
+                  {ASPECT_RATIOS.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase tracking-widest text-white/40">Varianten</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={4}
+                  value={variants}
+                  onChange={(event) => setVariants(Number(event.target.value))}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-[#D4AF37] outline-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase tracking-widest text-white/40">Steps</label>
+                <input
+                  type="number"
+                  min={10}
+                  max={60}
+                  value={steps}
+                  onChange={(event) => setSteps(Number(event.target.value))}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-[#D4AF37] outline-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase tracking-widest text-white/40">Guidance</label>
+                <input
+                  type="number"
+                  step={0.5}
+                  min={1}
+                  max={20}
+                  value={guidance}
+                  onChange={(event) => setGuidance(Number(event.target.value))}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-[#D4AF37] outline-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase tracking-widest text-white/40">Seed</label>
+                <input
+                  type="text"
+                  value={seed}
+                  onChange={(event) => setSeed(event.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-[#D4AF37] outline-none"
+                />
+              </div>
+            </div>
+
+            {showAdvanced && (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-widest text-white/40">Image Strength</label>
+                  <input
+                    type="number"
+                    step={0.05}
+                    min={0.1}
+                    max={1}
+                    value={strength}
+                    onChange={(event) => setStrength(Number(event.target.value))}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-[#D4AF37] outline-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-widest text-white/40">FPS</label>
+                  <input
+                    type="number"
+                    min={12}
+                    max={30}
+                    value={fps}
+                    onChange={(event) => setFps(Number(event.target.value))}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-[#D4AF37] outline-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-widest text-white/40">Duration (sec)</label>
+                  <input
+                    type="number"
+                    min={2}
+                    max={12}
+                    value={duration}
+                    onChange={(event) => setDuration(Number(event.target.value))}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-[#D4AF37] outline-none"
+                  />
+                </div>
               </div>
             )}
           </div>
 
-          <div className="space-y-4">
-            <div className="glass-card rounded-xl border border-white/10 p-5">
-              <h3 className="text-sm font-bold uppercase tracking-widest text-white/40 mb-4">Outputs</h3>
-              {assets.length === 0 ? (
-                <div className="rounded-xl border border-white/10 bg-white/[0.02] p-8 text-center text-white/40 text-sm">
-                  Keine Ergebnisse. Starte eine Generierung, um Visuals zu sehen.
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {assets.map((asset, index) => (
-                    <div key={`${asset.url}-${index}`} className="rounded-xl border border-white/10 bg-black/40 overflow-hidden">
-                      {asset.type === 'video' ? (
-                        <video src={asset.url} controls className="w-full h-auto" />
-                      ) : (
-                        <img src={asset.url} alt="Generated" className="w-full h-auto" />
-                      )}
-                      <div className="flex items-center justify-between px-3 py-2 text-[10px] uppercase tracking-widest text-white/40 border-t border-white/10">
-                        <span>{asset.type === 'video' ? 'Video' : 'Image'} #{index + 1}</span>
-                        <a
-                          href={asset.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="flex items-center gap-1 text-white/60 hover:text-white"
-                        >
-                          <Download className="w-3 h-3" />
-                          Download
-                        </a>
-                      </div>
-                    </div>
-                  ))}
+          {requiresImage && (
+            <div className="glass-card rounded-xl border border-white/10 p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold uppercase tracking-widest text-white/40">Referenzbild</h3>
+                {imageFile && (
+                  <button
+                    onClick={() => setImageFile(null)}
+                    className="text-[10px] uppercase tracking-widest text-white/50 hover:text-white"
+                  >
+                    Entfernen
+                  </button>
+                )}
+              </div>
+              <label className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-white/20 bg-black/40 px-6 py-8 text-white/50 text-xs cursor-pointer hover:bg-white/5 transition-colors">
+                <Upload className="w-5 h-5" />
+                <span>Bild hochladen (JPG/PNG/WebP)</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0] || null;
+                    setImageFile(file);
+                  }}
+                />
+              </label>
+              {imagePreview && (
+                <div className="rounded-xl overflow-hidden border border-white/10">
+                  <img src={imagePreview} alt="Referenz" className="w-full h-auto" />
                 </div>
               )}
             </div>
+          )}
+
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-[10px] uppercase tracking-widest text-white/40 flex items-center gap-2">
+              <Zap className="w-3.5 h-3.5 text-[#D4AF37]" />
+              {creditsUsed ? `Energy: ${creditsUsed} verbraucht` : 'Energy Usage'}
+              {creditsRemaining !== null && (
+                <span className="text-white/70">· {creditsRemaining} übrig</span>
+              )}
+            </div>
+            <button
+              onClick={handleGenerate}
+              disabled={isGenerating}
+              className="px-6 py-3 rounded-xl bg-[#D4AF37] text-black font-bold text-sm hover:opacity-90 transition-all disabled:opacity-50 flex items-center gap-2"
+            >
+              {isGenerating ? (
+                <>
+                  <Wand2 className="w-4 h-4 animate-spin" />
+                  Generiere...
+                </>
+              ) : (
+                <>
+                  <Wand2 className="w-4 h-4" />
+                  Medien generieren
+                </>
+              )}
+            </button>
+          </div>
+
+          {(errorMessage || successMessage) && (
+            <div
+              className={`rounded-xl border px-4 py-3 text-xs font-bold uppercase tracking-widest flex items-center gap-2 ${
+                errorMessage
+                  ? 'border-red-500/30 bg-red-500/10 text-red-300'
+                  : 'border-green-500/30 bg-green-500/10 text-green-300'
+              }`}
+            >
+              {errorMessage ? <AlertTriangle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
+              <span>{errorMessage || successMessage}</span>
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <div className="glass-card rounded-xl border border-white/10 p-5">
+            <h3 className="text-sm font-bold uppercase tracking-widest text-white/40 mb-4">Outputs</h3>
+            {assets.length === 0 ? (
+              <div className="rounded-xl border border-white/10 bg-white/[0.02] p-8 text-center text-white/40 text-sm">
+                Keine Ergebnisse. Starte eine Generierung, um Visuals zu sehen.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {assets.map((asset, index) => (
+                  <div key={`${asset.url}-${index}`} className="rounded-xl border border-white/10 bg-black/40 overflow-hidden">
+                    {asset.type === 'video' ? (
+                      <video src={asset.url} controls className="w-full h-auto" />
+                    ) : (
+                      <img src={asset.url} alt="Generated" className="w-full h-auto" />
+                    )}
+                    <div className="flex items-center justify-between px-3 py-2 text-[10px] uppercase tracking-widest text-white/40 border-t border-white/10">
+                      <span>{asset.type === 'video' ? 'Video' : 'Image'} #{index + 1}</span>
+                      <a
+                        href={asset.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-1 text-white/60 hover:text-white"
+                      >
+                        <Download className="w-3 h-3" />
+                        Download
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
+      </div>
+    </div>
+  );
+
+  if (inline) {
+    return <div className="w-full h-full">{Content}</div>;
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+      <div className="glass-card w-full max-w-5xl rounded-2xl border border-white/10 flex flex-col max-h-[90vh] overflow-hidden">
+        {Content}
       </div>
     </div>
   );

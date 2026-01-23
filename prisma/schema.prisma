@@ -173,6 +173,7 @@ model User {
   moderationWarnings ModerationWarning[]
   legalDocuments LegalDocument[]
   marketingContents MarketingContent[]
+  mediaAssets       MediaAsset[]
   createdSamples    Sample[]
   createdOrders     ProductionOrder[]
   createdCampaigns  MarketingCampaign[]
@@ -194,6 +195,7 @@ model User {
   // AI Credits System (Freemium)
   credits          Int      @default(50)
   energyTransactions EnergyTransaction[]
+  rateLimitBuckets  RateLimitBucket[]
 
   // Stripe Subscription (69€/mo Platform Fee)
   stripeCustomerId      String?  @unique
@@ -246,6 +248,20 @@ model EnergyTransaction {
   @@index([userId, createdAt])
   @@index([feature])
   @@index([status])
+}
+
+model RateLimitBucket {
+  userId      String
+  feature     String
+  windowStart DateTime
+  count       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, feature, windowStart])
+  @@index([feature, windowStart])
 }
 
 model Notification {
@@ -708,6 +724,7 @@ model Venture {
   brandDNA        BrandDNA?
   legalDocuments  LegalDocument[]
   marketingContents MarketingContent[]
+  mediaAssets     MediaAsset[]
   suppliers       Supplier[]
   samples         Sample[]
   productionOrders ProductionOrder[]
@@ -1371,4 +1388,64 @@ enum PaymentStatus {
   DEPOSIT_PAID   // Partial payment
   FULLY_PAID     // Paid in full
   REFUNDED       // Money returned
+}
+
+// ============================================
+// MEDIA STUDIO - Asset Management
+// ============================================
+
+model MediaAsset {
+  id          String   @id @default(cuid())
+  ventureId   String
+  venture     Venture  @relation(fields: [ventureId], references: [id], onDelete: Cascade)
+  ownerId     String
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  type        MediaType
+  url         String
+  thumbnailUrl String?
+  filename    String?
+  mimeType    String?
+  size        Int?     // bytes
+
+  // Metadata
+  width       Int?
+  height      Int?
+  duration    Float?   // seconds (video only)
+  
+  // Lineage / Editing
+  source      MediaSource @default(GENERATED)
+  parentId    String?
+  parent      MediaAsset? @relation("AssetHistory", fields: [parentId], references: [id], onDelete: SetNull)
+  children    MediaAsset[] @relation("AssetHistory")
+
+  // AI Generation Meta (for reproduction)
+  prompt      String?   @db.Text
+  model       String?
+  seed        String?
+
+  // Usage Context
+  tags        String[]
+  isFavorite  Boolean   @default(false)
+  isArchived  Boolean   @default(false)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([ventureId])
+  @@index([type])
+  @@index([source])
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  AUDIO
+}
+
+enum MediaSource {
+  GENERATED
+  UPLOADED
+  EDITED
+  EXTERNAL
 }

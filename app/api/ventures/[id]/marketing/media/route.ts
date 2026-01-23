@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { InsufficientEnergyError, reserveEnergy, refundEnergy, settleEnergy } from '@/lib/energy';
+import { consumeHourlyQuota, InsufficientEnergyError, reserveEnergy, refundEnergy, settleEnergy } from '@/lib/energy';
 import { prisma } from '@/lib/prisma';
 import { RateLimiters } from '@/lib/rate-limit';
 import { put } from '@vercel/blob';
@@ -29,6 +29,16 @@ const MODE_MODEL_ALLOWLIST: Record<string, Set<string>> = {
   'image-to-image': new Set(['qwen-image-2512', 'z-image-turbo', 'glm-image']),
   'text-to-video': new Set(['mochi-1']),
   'image-to-video': new Set(['wan-2.2', 'mochi-1']),
+};
+
+const parseLimit = (value: string | undefined, fallback: number) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? Math.max(0, Math.floor(parsed)) : fallback;
+};
+
+const HOURLY_LIMITS = {
+  image: parseLimit(process.env.MARKETING_MEDIA_IMAGE_HOURLY_LIMIT, 30),
+  video: parseLimit(process.env.MARKETING_MEDIA_VIDEO_HOURLY_LIMIT, 6),
 };
 
 const normalizeNumber = (value: FormDataEntryValue | null, fallback: number) => {
@@ -160,14 +170,33 @@ export async function POST(
     return NextResponse.json({ error: 'Venture nicht gefunden oder Zugriff verweigert' }, { status: 404 });
   }
 
+  const imageFile = formData.get('image');
+  const imageUrlField = formData.get('imageUrl');
+  const rawImageUrl = typeof imageUrlField === 'string' ? imageUrlField.trim() : '';
+  const isVideoMode = mode.includes('video');
+
+  if (imageFile instanceof File) {
+    if (!ALLOWED_MIME_TYPES.has(imageFile.type)) {
+      return NextResponse.json({ error: 'Ungültiger Bildtyp' }, { status: 415 });
+    }
+    if (imageFile.size > MAX_UPLOAD_BYTES) {
+      return NextResponse.json({ error: 'Datei zu groß (max. 10 MB)' }, { status: 413 });
+    }
+  }
+
+  if (mode.includes('image-to') && !(imageFile instanceof File) && !rawImageUrl) {
+    return NextResponse.json({ error: 'Referenzbild fehlt' }, { status: 400 });
+  }
+
   let reservationId: string | null = null;
   let reservedCredits = cost;
+  const requestId = request.headers.get('x-request-id') || crypto.randomUUID();
   try {
     const reservation = await reserveEnergy({
       userId: user.id,
       amount: cost,
       feature: 'marketing.media',
-      requestId: request.headers.get('x-request-id') || crypto.randomUUID(),
+      requestId,
       metadata: {
         ventureId: id,
         mode,
@@ -179,19 +208,34 @@ export async function POST(
     reservationId = reservation.reservationId;
     reservedCredits = reservation.reservedCredits;
 
-    const imageFile = formData.get('image');
-    const imageUrlField = formData.get('imageUrl');
+    const hourlyLimit = isVideoMode ? HOURLY_LIMITS.video : HOURLY_LIMITS.image;
+    if (hourlyLimit > 0) {
+      const quota = await consumeHourlyQuota({
+        userId: user.id,
+        feature: isVideoMode ? 'marketing.media.video' : 'marketing.media.image',
+        limit: hourlyLimit
+      });
+      if (!quota.allowed) {
+        await refundEnergy(reservationId, 'rate-limit');
+        const retryAfter = Math.max(1, Math.ceil((quota.resetAt.getTime() - Date.now()) / 1000));
+        return NextResponse.json({
+          error: 'Stundenlimit erreicht. Bitte später erneut versuchen.',
+          code: 'RATE_LIMIT',
+          limit: quota.limit,
+          remaining: quota.remaining,
+          resetAt: quota.resetAt.toISOString(),
+          retryAfter
+        }, {
+          status: 429,
+          headers: {
+            'Retry-After': retryAfter.toString(),
+          }
+        });
+      }
+    }
+
     let imageUrl: string | null = null;
     if (imageFile instanceof File) {
-      if (!ALLOWED_MIME_TYPES.has(imageFile.type)) {
-        await refundEnergy(reservationId, 'invalid-image-type');
-        return NextResponse.json({ error: 'Ungültiger Bildtyp' }, { status: 415 });
-      }
-      if (imageFile.size > MAX_UPLOAD_BYTES) {
-        await refundEnergy(reservationId, 'image-too-large');
-        return NextResponse.json({ error: 'Datei zu groß (max. 10 MB)' }, { status: 413 });
-      }
-
       const buffer = Buffer.from(await imageFile.arrayBuffer());
       const safeName = `${Date.now()}-${imageFile.name.replace(/\\s+/g, '-')}`;
       const blob = await put(`marketing/${user.id}/${safeName}`, buffer, {
@@ -200,8 +244,8 @@ export async function POST(
       });
       imageUrl = blob.url;
     }
-    if (!imageUrl && typeof imageUrlField === 'string' && imageUrlField.trim()) {
-      imageUrl = imageUrlField.trim();
+    if (!imageUrl && rawImageUrl) {
+      imageUrl = rawImageUrl;
     }
     if (mode.includes('image-to') && !imageUrl) {
       await refundEnergy(reservationId, 'missing-image');
@@ -262,6 +306,27 @@ export async function POST(
           access: 'public',
           contentType,
         });
+
+        // SAVE TO DB (Persistent Library)
+        await prisma.mediaAsset.create({
+          data: {
+            ventureId: id,
+            ownerId: user.id,
+            type: asset.type === 'video' ? 'VIDEO' : 'IMAGE',
+            url: blob.url,
+            filename,
+            mimeType: contentType,
+            size: buffer.length,
+            source: 'GENERATED',
+            prompt: prompt,
+            model: model,
+            // Metadata defaults (can be enriched later via analysis)
+            width: aspectRatio === '16:9' ? 1280 : 1024, 
+            height: aspectRatio === '16:9' ? 720 : 1024,
+            tags: mode ? [mode] : []
+          }
+        });
+
         return { url: blob.url, type: asset.type };
       })
     );

@@ -24,6 +24,13 @@ export type EnergyReserveResult = {
   reused?: boolean;
 };
 
+export type QuotaResult = {
+  allowed: boolean;
+  remaining: number;
+  limit: number;
+  resetAt: Date;
+};
+
 export type EnergySettleInput = {
   reservationId: string;
   finalCost?: number;
@@ -66,6 +73,43 @@ const mergeMetadata = (base: Record<string, any> | null | undefined, next?: Reco
   if (!next) return base ?? undefined;
   return { ...(base ?? {}), ...next };
 };
+
+export async function consumeHourlyQuota(options: {
+  userId: string;
+  feature: string;
+  limit: number;
+  windowMs?: number;
+}): Promise<QuotaResult> {
+  const windowMs = options.windowMs ?? 60 * 60 * 1000;
+  const limit = Math.max(0, Math.floor(options.limit));
+  const now = Date.now();
+  const windowStart = new Date(Math.floor(now / windowMs) * windowMs);
+  const resetAt = new Date(windowStart.getTime() + windowMs);
+
+  if (limit <= 0) {
+    return { allowed: true, remaining: Number.MAX_SAFE_INTEGER, limit: 0, resetAt };
+  }
+
+  const rows = await prisma.$queryRaw<{ count: number }[]>`
+    INSERT INTO "RateLimitBucket" ("userId", "feature", "windowStart", "count", "createdAt", "updatedAt")
+    VALUES (${options.userId}, ${options.feature}, ${windowStart}, 1, NOW(), NOW())
+    ON CONFLICT ("userId", "feature", "windowStart")
+    DO UPDATE SET
+      "count" = "RateLimitBucket"."count" + 1,
+      "updatedAt" = NOW()
+    WHERE "RateLimitBucket"."count" < ${limit}
+    RETURNING "count";
+  `;
+
+  if (rows.length === 0) {
+    return { allowed: false, remaining: 0, limit, resetAt };
+  }
+
+  const currentCount = rows[0].count;
+  const remaining = Math.max(0, limit - currentCount);
+
+  return { allowed: true, remaining, limit, resetAt };
+}
 
 export async function reserveEnergy(input: EnergyReserveInput): Promise<EnergyReserveResult> {
   const amount = normalizeAmount(input.amount);

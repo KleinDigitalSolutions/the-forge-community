@@ -3,6 +3,8 @@ from __future__ import annotations
 import base64
 import io
 import os
+import tempfile
+import subprocess
 from typing import Any, Dict, List, Optional, Tuple
 
 import modal
@@ -41,6 +43,7 @@ volume = modal.Volume.from_name("forge-media-models", create_if_missing=True)
 
 image = (
     modal.Image.debian_slim()
+    .apt_install("ffmpeg")  # Install system ffmpeg for advanced processing
     .pip_install(
         "torch",
         "diffusers",
@@ -77,6 +80,9 @@ def _resolve_model_id(model_key: str) -> str:
     env_key = MODEL_ID_ENV.get(model_key)
     model_id = os.environ.get(env_key, "") if env_key else ""
     if not model_id:
+        # Fallback mostly for local testing or defaults
+        if model_key == "qwen-image-2512": return "Qwen/Qwen-VL-Chat" # Placeholder
+        if model_key == "wan-2.2": return "Wan-AI/Wan2.1-T2V-1.3B"
         raise HTTPException(status_code=400, detail=f"Model not configured: {model_key}")
     return model_id
 
@@ -327,3 +333,118 @@ def generate_video(payload: Dict[str, Any], authorization: Optional[str] = Heade
         raise HTTPException(status_code=400, detail="Unsupported video model")
     assets = _generate_videos(payload)
     return {"assets": assets}
+
+
+# ------------------------------------------------------------------
+# STUDIO TOOLS: STITCHING, CROPPING, EDITING
+# ------------------------------------------------------------------
+
+@app.function(
+    image=image,
+    cpu=4.0,  # CPU is enough for ffmpeg
+    memory=2048,
+    timeout=300,
+    secrets=secrets
+)
+@modal.fastapi_endpoint(method="POST")
+def stitch_videos(payload: Dict[str, Any], authorization: Optional[str] = Header(None)):
+    """
+    Concatenates multiple video clips into one.
+    Payload: { "videos": ["base64_string_1", "base64_string_2"] }
+    """
+    _require_token(authorization)
+    videos = payload.get("videos", [])
+    if not videos or len(videos) < 2:
+        raise HTTPException(status_code=400, detail="At least 2 videos required for stitching")
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        input_files = []
+        for idx, vid_b64 in enumerate(videos):
+            vid_path = os.path.join(temp_dir, f"clip_{idx}.mp4")
+            with open(vid_path, "wb") as f:
+                f.write(base64.b64decode(vid_b64))
+            input_files.append(vid_path)
+
+        # Create ffmpeg concat list
+        list_path = os.path.join(temp_dir, "input.txt")
+        with open(list_path, "w") as f:
+            for path in input_files:
+                f.write(f"file '{path}'\n")
+
+        output_path = os.path.join(temp_dir, "output.mp4")
+        
+        # Run ffmpeg concat
+        # -safe 0: allow reading absolute paths
+        # -c copy: NO RE-ENCODING (super fast, no quality loss)
+        cmd = [
+            "ffmpeg", "-f", "concat", "-safe", "0", "-i", list_path,
+            "-c", "copy", output_path
+        ]
+        
+        try:
+            subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        except subprocess.CalledProcessError as e:
+            print(f"FFmpeg error: {e.stderr.decode()}")
+            raise HTTPException(status_code=500, detail="Stitching failed")
+
+        with open(output_path, "rb") as f:
+            out_data = f.read()
+
+    return {
+        "asset": {
+            "type": "video",
+            "contentType": "video/mp4",
+            "data": base64.b64encode(out_data).decode("utf-8")
+        }
+    }
+
+
+@app.function(
+    image=image,
+    cpu=2.0,
+    timeout=60,
+    secrets=secrets
+)
+@modal.fastapi_endpoint(method="POST")
+def get_last_frame(payload: Dict[str, Any], authorization: Optional[str] = Header(None)):
+    """
+    Extracts the last frame of a video to use as input for the next generation.
+    Payload: { "video": "base64_string" }
+    """
+    _require_token(authorization)
+    video_b64 = payload.get("video")
+    if not video_b64:
+        raise HTTPException(status_code=400, detail="Missing video data")
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        vid_path = os.path.join(temp_dir, "input.mp4")
+        with open(vid_path, "wb") as f:
+            f.write(base64.b64decode(video_b64))
+
+        out_path = os.path.join(temp_dir, "frame.png")
+        
+        # Get last frame (-sseof -1 means last second, update 1 frame)
+        # Note: accurate seeking might be slow, but safe for small clips
+        cmd = [
+            "ffmpeg", "-sseof", "-1", "-i", vid_path,
+            "-update", "1", "-q:v", "1", out_path
+        ]
+        
+        try:
+            subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        except subprocess.CalledProcessError as e:
+            # Fallback: extract frame 0 if video is broken/too short
+            print(f"FFmpeg error: {e.stderr.decode()}, trying fallback")
+            cmd_fallback = ["ffmpeg", "-i", vid_path, "-vframes", "1", out_path]
+            subprocess.run(cmd_fallback, check=True)
+
+        with open(out_path, "rb") as f:
+            img_data = f.read()
+
+    return {
+        "asset": {
+            "type": "image",
+            "contentType": "image/png",
+            "data": base64.b64encode(img_data).decode("utf-8")
+        }
+    }

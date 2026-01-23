@@ -1,0 +1,110 @@
+'use client';
+
+import { useState } from 'react';
+import type { MediaAsset } from '@prisma/client';
+import { Play, Image as ImageIcon, CheckCircle2, Trash2, Download } from 'lucide-react';
+
+interface MediaAssetGridProps {
+  assets: MediaAsset[];
+  onSelect?: (asset: MediaAsset) => void;
+  selectedIds?: string[];
+  onDelete?: (id: string) => void;
+  className?: string;
+}
+
+export function MediaAssetGrid({ 
+  assets, 
+  onSelect, 
+  selectedIds = [], 
+  onDelete,
+  className = '' 
+}: MediaAssetGridProps) {
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+
+  if (assets.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 text-white/30 border border-white/5 rounded-xl bg-white/[0.02]">
+        <ImageIcon className="w-8 h-8 mb-3 opacity-50" />
+        <p className="text-sm font-medium">Keine Medien gefunden.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 ${className}`}>
+      {assets.map((asset) => {
+        const isSelected = selectedIds.includes(asset.id);
+        const isVideo = asset.type === 'VIDEO';
+
+        return (
+          <div
+            key={asset.id}
+            className={`group relative aspect-square rounded-xl overflow-hidden border transition-all cursor-pointer ${
+              isSelected 
+                ? 'border-[#D4AF37] ring-1 ring-[#D4AF37]' 
+                : 'border-white/10 hover:border-white/30'
+            }`}
+            onMouseEnter={() => setHoveredId(asset.id)}
+            onMouseLeave={() => setHoveredId(null)}
+            onClick={() => onSelect?.(asset)}
+          >
+            {/* Thumbnail / Content */}
+            {isVideo ? (
+              <video 
+                src={asset.url} 
+                className="w-full h-full object-cover"
+                muted
+                onMouseOver={(e) => e.currentTarget.play().catch(() => {})}
+                onMouseOut={(e) => {
+                  e.currentTarget.pause();
+                  e.currentTarget.currentTime = 0;
+                }}
+              />
+            ) : (
+              <img src={asset.url} alt="Asset" className="w-full h-full object-cover" />
+            )}
+
+            {/* Type Indicator */}
+            <div className="absolute top-2 left-2 px-2 py-1 rounded-md bg-black/60 backdrop-blur-md text-[10px] font-bold text-white uppercase tracking-wider flex items-center gap-1">
+              {isVideo ? <Play className="w-3 h-3" /> : <ImageIcon className="w-3 h-3" />}
+              {asset.source === 'EDITED' && <span className="text-[#D4AF37] ml-1">Edited</span>}
+            </div>
+
+            {/* Selection Check */}
+            {isSelected && (
+              <div className="absolute top-2 right-2 w-6 h-6 bg-[#D4AF37] rounded-full flex items-center justify-center text-black">
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
+            )}
+
+            {/* Hover Actions */}
+            <div className={`absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/90 to-transparent transition-opacity flex justify-between items-end ${
+              hoveredId === asset.id ? 'opacity-100' : 'opacity-0'
+            }`}>
+              <a 
+                href={asset.url} 
+                download 
+                onClick={(e) => e.stopPropagation()}
+                className="p-2 hover:bg-white/10 rounded-lg text-white/70 hover:text-white transition-colors"
+              >
+                <Download className="w-4 h-4" />
+              </a>
+              
+              {onDelete && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if(confirm('Wirklich löschen?')) onDelete(asset.id);
+                  }}
+                  className="p-2 hover:bg-red-500/20 rounded-lg text-white/70 hover:text-red-400 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
