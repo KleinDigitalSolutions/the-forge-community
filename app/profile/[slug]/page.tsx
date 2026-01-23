@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import PageShell from '@/app/components/PageShell';
 import AuthGuard from '@/app/components/AuthGuard';
 import Link from 'next/link';
-import { Award, MessageCircle, MessageSquare, Rocket, Loader2 } from 'lucide-react';
+import { Award, MessageCircle, MessageSquare, Rocket, Loader2, UserPlus, UserCheck } from 'lucide-react';
 
 type Achievement = {
   key: string;
@@ -22,6 +22,9 @@ type ProfileData = {
   name: string;
   profileSlug: string;
   viewerId?: string | null;
+  followersCount?: number;
+  followingCount?: number;
+  isFollowing?: boolean;
   image?: string | null;
   role?: string;
   founderNumber?: number;
@@ -71,6 +74,9 @@ export default function PublicProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [creatingThread, setCreatingThread] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [followState, setFollowState] = useState({ isFollowing: false, followersCount: 0, followingCount: 0 });
+  const [followBusy, setFollowBusy] = useState(false);
+  const [followError, setFollowError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!slug) return;
@@ -96,6 +102,16 @@ export default function PublicProfilePage() {
 
   const earnedBadges = profile?.achievements?.filter((badge) => badge.earnedAt) || [];
   const canMessage = Boolean(profile?.viewerId && profile.viewerId !== profile.id);
+  const canFollow = Boolean(profile?.viewerId && profile.viewerId !== profile.id);
+
+  useEffect(() => {
+    if (!profile) return;
+    setFollowState({
+      isFollowing: Boolean(profile.isFollowing),
+      followersCount: profile.followersCount || 0,
+      followingCount: profile.followingCount || 0,
+    });
+  }, [profile]);
 
   const handleStartThread = async () => {
     if (!profile) return;
@@ -118,6 +134,35 @@ export default function PublicProfilePage() {
       setActionError(message);
     } finally {
       setCreatingThread(false);
+    }
+  };
+
+  const handleToggleFollow = async () => {
+    if (!profile) return;
+    setFollowError(null);
+    setFollowBusy(true);
+    try {
+      const method = followState.isFollowing ? 'DELETE' : 'POST';
+      const response = await fetch('/api/follow', {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetId: profile.id })
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || 'Follow fehlgeschlagen');
+      }
+      const payload = await response.json();
+      setFollowState({
+        isFollowing: payload.isFollowing,
+        followersCount: payload.followersCount ?? followState.followersCount,
+        followingCount: payload.followingCount ?? followState.followingCount,
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Follow fehlgeschlagen';
+      setFollowError(message);
+    } finally {
+      setFollowBusy(false);
     }
   };
 
@@ -177,20 +222,45 @@ export default function PublicProfilePage() {
               </div>
             </div>
             <div className="flex flex-col gap-4 w-full md:w-auto md:items-end">
-              {canMessage && (
+              {(canFollow || canMessage) && (
                 <div className="flex flex-col items-start md:items-end gap-2 w-full">
-                  <button
-                    onClick={handleStartThread}
-                    disabled={creatingThread}
-                    className="w-full md:w-auto inline-flex items-center justify-center gap-2 rounded-full border border-[#D4AF37]/40 bg-[#D4AF37]/10 px-5 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#D4AF37] transition hover:bg-[#D4AF37]/20 disabled:opacity-60"
-                  >
-                    {creatingThread ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <MessageCircle className="h-4 w-4" />
+                  <div className="flex flex-wrap gap-2 w-full md:w-auto">
+                    {canFollow && (
+                      <button
+                        onClick={handleToggleFollow}
+                        disabled={followBusy}
+                        className={`w-full md:w-auto inline-flex items-center justify-center gap-2 rounded-full border px-5 py-2 text-[10px] font-bold uppercase tracking-[0.2em] transition disabled:opacity-60 ${
+                          followState.isFollowing
+                          ? 'border-white/20 bg-white/10 text-white/80 hover:bg-white/20'
+                            : 'border-[#D4AF37]/40 bg-[#D4AF37]/10 text-[#D4AF37] hover:bg-[#D4AF37]/20'
+                        }`}
+                      >
+                        {followBusy ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : followState.isFollowing ? (
+                          <UserCheck className="h-4 w-4" />
+                        ) : (
+                          <UserPlus className="h-4 w-4" />
+                        )}
+                        {followState.isFollowing ? 'Gefolgt' : 'Folgen'}
+                      </button>
                     )}
-                    Nachricht senden
-                  </button>
+                    {canMessage && (
+                      <button
+                        onClick={handleStartThread}
+                        disabled={creatingThread}
+                        className="w-full md:w-auto inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white/80 transition hover:bg-white/10 disabled:opacity-60"
+                      >
+                        {creatingThread ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <MessageCircle className="h-4 w-4" />
+                        )}
+                        Nachricht
+                      </button>
+                    )}
+                  </div>
+                  {followError && <span className="text-[10px] text-red-400">{followError}</span>}
                   {actionError && <span className="text-[10px] text-red-400">{actionError}</span>}
                 </div>
               )}
@@ -202,6 +272,14 @@ export default function PublicProfilePage() {
                 <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
                   <div className="text-[10px] text-white/40 uppercase tracking-widest">Forum</div>
                   <div className="text-2xl font-bold text-white">{profile.stats.forumPosts}</div>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                  <div className="text-[10px] text-white/40 uppercase tracking-widest">Follower</div>
+                  <div className="text-2xl font-bold text-white">{followState.followersCount}</div>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                  <div className="text-[10px] text-white/40 uppercase tracking-widest">Following</div>
+                  <div className="text-2xl font-bold text-white">{followState.followingCount}</div>
                 </div>
               </div>
             </div>

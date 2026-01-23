@@ -142,6 +142,8 @@ model User {
   forumPosts    ForumPost[]
   forumComments ForumComment[]
   forumCommentVotes ForumCommentVote[]
+  followers     UserFollow[] @relation("UserFollowers")
+  following     UserFollow[] @relation("UserFollowing")
   directParticipants DirectParticipant[]
   directMessages DirectMessage[]
   notifications Notification[] @relation("NotificationRecipient")
@@ -180,6 +182,19 @@ model User {
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+}
+
+model UserFollow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  follower    User     @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
 }
 
 model Notification {

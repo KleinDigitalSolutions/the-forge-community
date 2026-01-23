@@ -72,11 +72,6 @@ export async function POST(request: Request) {
       profileSlug: user.profileSlug,
     });
 
-// ... existing imports
-import { processMentions, sendNotification } from '@/lib/notifications';
-
-// ... (GET logic stays same until after comment creation)
-
     const comment = await prisma.forumComment.create({
       data: {
         postId,
@@ -88,40 +83,45 @@ import { processMentions, sendNotification } from '@/lib/notifications';
     });
 
     const actorName = user.name || 'Ein Founder';
+    try {
+      const { processMentions, sendNotification } = await import('@/lib/notifications');
 
-    // 1. Notify Parent Comment Author (if reply)
-    if (parentId && parentAuthorId && parentAuthorId !== user.id) {
-      await sendNotification({
-        recipientId: parentAuthorId,
+      // 1. Notify Parent Comment Author (if reply)
+      if (parentId && parentAuthorId && parentAuthorId !== user.id) {
+        await sendNotification({
+          recipientId: parentAuthorId,
+          actorId: user.id,
+          type: 'FORUM_REPLY',
+          title: 'Antwort auf deinen Kommentar',
+          message: `${actorName} hat auf deinen Kommentar geantwortet.`,
+          link: `/forum#${postId}`
+        });
+      }
+
+      // 2. Notify Post Author (if not already notified as parent)
+      if (post.authorId && post.authorId !== user.id && post.authorId !== parentAuthorId) {
+        await sendNotification({
+          recipientId: post.authorId,
+          actorId: user.id,
+          type: 'FORUM_COMMENT',
+          title: 'Neuer Kommentar',
+          message: `${actorName} hat deinen Beitrag kommentiert.`,
+          link: `/forum#${postId}`
+        });
+      }
+
+      // 3. Process @Mentions in the comment text
+      await processMentions({
+        text: trimmedContent,
         actorId: user.id,
-        type: 'FORUM_REPLY',
-        title: 'Antwort auf deinen Kommentar',
-        message: `${actorName} hat auf deinen Kommentar geantwortet.`,
-        link: `/forum#${postId}`
+        resourceId: comment.id,
+        resourceType: 'FORUM_COMMENT',
+        link: `/forum#${postId}`,
+        title: `${actorName} hat dich in einem Kommentar erwähnt`
       });
+    } catch (notificationError) {
+      console.error('Notification creation failed:', notificationError);
     }
-
-    // 2. Notify Post Author (if not already notified as parent)
-    if (post.authorId && post.authorId !== user.id && post.authorId !== parentAuthorId) {
-      await sendNotification({
-        recipientId: post.authorId,
-        actorId: user.id,
-        type: 'FORUM_COMMENT',
-        title: 'Neuer Kommentar',
-        message: `${actorName} hat deinen Beitrag kommentiert.`,
-        link: `/forum#${postId}`
-      });
-    }
-
-    // 3. Process @Mentions in the comment text
-    await processMentions({
-      text: trimmedContent,
-      actorId: user.id,
-      resourceId: comment.id,
-      resourceType: 'FORUM_COMMENT',
-      link: `/forum#${postId}`,
-      title: `${actorName} hat dich in einem Kommentar erwähnt`
-    });
 
     // --- Orion AI Logic (remains same) ---
     const mentionRegex = /(?:@orion|atorion)\b\s*([^\n]*)/i;
@@ -157,10 +157,6 @@ import { processMentions, sendNotification } from '@/lib/notifications';
         }
       } catch (aiError) {
         console.error('Orion comment reply failed:', aiError);
-      }
-    }
-      } catch (notificationError) {
-        console.error('Notification creation failed:', notificationError);
       }
     }
 

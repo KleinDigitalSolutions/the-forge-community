@@ -23,6 +23,8 @@ async function getInitialUser(email: string): Promise<UserProfile | null> {
         select: {
           ventures: true,
           squadMemberships: true,
+          followers: true,
+          following: true,
         },
       },
     },

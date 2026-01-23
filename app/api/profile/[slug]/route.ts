@@ -71,10 +71,32 @@ export async function GET(
     }),
   ]);
 
+  const [followersCount, followingCount] = await prisma.$transaction([
+    prisma.userFollow.count({ where: { followingId: user.id } }),
+    prisma.userFollow.count({ where: { followerId: user.id } }),
+  ]);
+
+  let isFollowing = false;
+  if (viewer?.id && viewer.id !== user.id) {
+    const followRecord = await prisma.userFollow.findUnique({
+      where: {
+        followerId_followingId: {
+          followerId: viewer.id,
+          followingId: user.id,
+        },
+      },
+      select: { id: true },
+    });
+    isFollowing = Boolean(followRecord);
+  }
+
   return NextResponse.json({
     ...user,
     profileSlug,
     viewerId: viewer?.id ?? null,
+    followersCount,
+    followingCount,
+    isFollowing,
     achievements,
     stats: {
       ventures: user._count.ventures,

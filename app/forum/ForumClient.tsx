@@ -81,6 +81,8 @@ export interface UserProfile {
   _count?: {
     ventures: number;
     squadMemberships: number;
+    followers?: number;
+    following?: number;
   };
 }
 
@@ -1356,6 +1358,14 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                   <div className="bg-white/5 rounded-2xl p-3 border border-white/5 hover:bg-white/10 transition-colors">
                     <p className="text-[9px] font-bold text-white/20 uppercase tracking-wider mb-1">Credits</p>
                     <p className="text-lg font-bold text-blue-400">{(user as any)?.credits || 0}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-2xl p-3 border border-white/5 hover:bg-white/10 transition-colors">
+                    <p className="text-[9px] font-bold text-white/20 uppercase tracking-wider mb-1">Follower</p>
+                    <p className="text-lg font-bold text-white">{(user as any)?._count?.followers || 0}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-2xl p-3 border border-white/5 hover:bg-white/10 transition-colors">
+                    <p className="text-[9px] font-bold text-white/20 uppercase tracking-wider mb-1">Following</p>
+                    <p className="text-lg font-bold text-white">{(user as any)?._count?.following || 0}</p>
                   </div>
                 </div>
 
