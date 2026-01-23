@@ -276,7 +276,7 @@ export default function MediaFeedClient({ initialItems, initialCursor }: MediaFe
           {loading ? (
             <div className="flex items-center justify-center rounded-3xl border border-white/10 bg-white/[0.03] p-12 text-sm text-white/40">
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              Media Feed lädt...
+              Media Feed laedt...
             </div>
           ) : items.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-3xl border border-white/10 bg-white/[0.02] p-12 text-sm text-white/40">
@@ -399,7 +399,7 @@ export default function MediaFeedClient({ initialItems, initialCursor }: MediaFe
                 {loadingMore ? (
                   <span className="flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Lädt...
+                    Laedt...
                   </span>
                 ) : (
                   'Mehr laden'
