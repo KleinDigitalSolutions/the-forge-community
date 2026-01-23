@@ -217,12 +217,12 @@ export default function DemoShop() {
                   AI Try-On
                </div>
                <h2 className="text-4xl md:text-6xl font-instrument-serif text-white mb-6 leading-tight">
-                  KI-Integration fuer Shops.<br/>
+                  KI-Integration für Shops.<br/>
                   <span className="text-[var(--accent)]">Upload, anziehen, vergleichen.</span>
                </h2>
                <p className="text-lg text-white/50 leading-relaxed max-w-xl mb-8">
                   Ein Service, der Fotos nutzt und Produkte direkt integriert: Kleidung wird angezogen,
-                  Schmuck platziert, Felgen gematcht oder Moebel in den Raum gesetzt. Die Kundschaft sieht
+                  Schmuck platziert, Felgen gematcht oder Möbel in den Raum gesetzt. Die Kundschaft sieht
                   sofort, wie es wirkt und kann Varianten vergleichen.
                </p>
                <div className="flex flex-wrap gap-3 text-[9px] font-bold uppercase tracking-widest text-white/40">
@@ -260,7 +260,7 @@ export default function DemoShop() {
                         Foto aufnehmen oder hochladen
                      </div>
                      <div className="flex flex-wrap gap-2 text-[9px] font-bold uppercase tracking-widest text-white/40">
-                        {['Kleidung', 'Schmuck', 'Felgen', 'Moebel'].map((label) => (
+                        {['Kleidung', 'Schmuck', 'Felgen', 'Möbel'].map((label) => (
                            <span key={label} className="px-2.5 py-1 rounded-full border border-white/10 bg-white/[0.02]">
                               {label}
                            </span>
