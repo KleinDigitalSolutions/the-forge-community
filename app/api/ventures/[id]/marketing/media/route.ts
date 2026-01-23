@@ -64,6 +64,9 @@ type ReplicateJobCache = {
   error?: string;
   settledAt?: string;
   refundedAt?: string;
+  processingId?: string | null;
+  processingAt?: string | null;
+  processingBy?: string | null;
   createdAt: string;
 };
 
@@ -104,6 +107,7 @@ const DEFAULT_MODEL_BY_MODE: Record<MediaMode, string> = {
 };
 
 const JOB_TTL_MS = 1000 * 60 * 60 * 6;
+const PROCESSING_LOCK_TTL_MS = 1000 * 60 * 10;
 
 const parseOptionalNumber = (value: FormDataEntryValue | null) => {
   if (typeof value !== 'string') return undefined;
@@ -291,6 +295,30 @@ const updateJobCache = async (predictionId: string, updates: Partial<ReplicateJo
   const next = { ...existing, ...updates } as ReplicateJobCache;
   await writeJobCache(predictionId, next);
   return next;
+};
+
+const isFreshLock = (lockId?: string | null, lockAt?: string | null) => {
+  if (!lockId || !lockAt) return false;
+  const lockTime = Date.parse(lockAt);
+  if (Number.isNaN(lockTime)) return false;
+  return Date.now() - lockTime < PROCESSING_LOCK_TTL_MS;
+};
+
+const acquireProcessingLock = async (predictionId: string, holder: string) => {
+  const current = await readJobCache(predictionId);
+  if (!current) return null;
+  if (isFreshLock(current.processingId, current.processingAt)) return null;
+
+  const lockId = crypto.randomUUID();
+  await updateJobCache(predictionId, {
+    processingId: lockId,
+    processingAt: new Date().toISOString(),
+    processingBy: holder,
+  });
+
+  const confirmed = await readJobCache(predictionId);
+  if (!confirmed || confirmed.processingId !== lockId) return null;
+  return confirmed;
 };
 
 const resolveAllowedModel = (mode: MediaMode, requestedModel: string | null) => {
@@ -502,7 +530,7 @@ export async function GET(
     return NextResponse.json({ error: 'Benutzer nicht gefunden' }, { status: 404 });
   }
 
-  const cachedJob = await readJobCache(predictionId);
+  let cachedJob = await readJobCache(predictionId);
   if (!cachedJob || cachedJob.userId !== user.id || cachedJob.ventureId !== id) {
     return NextResponse.json({ error: 'Prediction nicht gefunden.' }, { status: 404 });
   }
@@ -511,9 +539,33 @@ export async function GET(
 
   if (prediction.status === 'succeeded') {
     if (!cachedJob.assets) {
+      const lockedJob = await acquireProcessingLock(predictionId, 'poll');
+      if (!lockedJob) {
+        return NextResponse.json({
+          status: 'processing',
+          assets: cachedJob.assets ?? null,
+          provider: 'replicate',
+          creditsRemaining: cachedJob.creditsRemaining ?? null
+        });
+      }
+      cachedJob = lockedJob;
+      if (cachedJob.assets) {
+        return NextResponse.json({
+          status: prediction.status,
+          assets: cachedJob.assets,
+          provider: 'replicate',
+          creditsRemaining: cachedJob.creditsRemaining ?? null
+        });
+      }
+
       const outputUrls = await extractOutputUrls(prediction.output);
       if (!outputUrls.length) {
-        await updateJobCache(predictionId, { error: 'Kein Output von Replicate' });
+        await updateJobCache(predictionId, {
+          error: 'Kein Output von Replicate',
+          processingId: null,
+          processingAt: null,
+          processingBy: null,
+        });
         return NextResponse.json({ status: 'failed', error: 'Kein Output von Replicate' });
       }
 
@@ -573,6 +625,9 @@ export async function GET(
         assets: resolvedAssets,
         settledAt: new Date().toISOString(),
         creditsRemaining: cachedJob.creditsRemaining,
+        processingId: null,
+        processingAt: null,
+        processingBy: null,
       });
 
       return NextResponse.json({
@@ -596,7 +651,10 @@ export async function GET(
       await refundEnergy(cachedJob.reservationId, 'generation-failed');
       await updateJobCache(predictionId, {
         refundedAt: new Date().toISOString(),
-        error: prediction.error || 'Generation failed'
+        error: prediction.error || 'Generation failed',
+        processingId: null,
+        processingAt: null,
+        processingBy: null,
       });
     }
     return NextResponse.json({

@@ -8,6 +8,8 @@ import { settleEnergy, refundEnergy } from '@/lib/energy';
 export const dynamic = 'force-dynamic';
 
 const JOB_TTL_MS = 1000 * 60 * 60 * 6;
+const PROCESSING_LOCK_TTL_MS = 1000 * 60 * 10;
+const WEBHOOK_TOLERANCE_SECONDS = 60 * 5;
 const jobKeyForPrediction = (predictionId: string) => `replicate:media:${predictionId}`;
 
 const readJobCache = async (predictionId: string) => {
@@ -40,6 +42,11 @@ const updateJobCache = async (predictionId: string, updates: any) => {
 const normalizeOutputUrl = async (item: unknown) => {
   if (!item) return null;
   if (typeof item === 'string') return item;
+  if (typeof item === 'object') {
+    const record = item as { url?: string | (() => Promise<string> | string) };
+    if (typeof record.url === 'string') return record.url;
+    if (typeof record.url === 'function') return await record.url();
+  }
   return null;
 };
 
@@ -82,12 +89,54 @@ const getAspectDimensions = (aspectRatio: string, isVideo: boolean) => {
   }
 };
 
+const isFreshLock = (lockId?: string | null, lockAt?: string | null) => {
+  if (!lockId || !lockAt) return false;
+  const lockTime = Date.parse(lockAt);
+  if (Number.isNaN(lockTime)) return false;
+  return Date.now() - lockTime < PROCESSING_LOCK_TTL_MS;
+};
+
+const acquireProcessingLock = async (predictionId: string, holder: string) => {
+  const current = await readJobCache(predictionId);
+  if (!current) return null;
+  if (isFreshLock(current.processingId, current.processingAt)) return null;
+
+  const lockId = crypto.randomUUID();
+  await updateJobCache(predictionId, {
+    processingId: lockId,
+    processingAt: new Date().toISOString(),
+    processingBy: holder,
+  });
+
+  const confirmed = await readJobCache(predictionId);
+  if (!confirmed || confirmed.processingId !== lockId) return null;
+  return confirmed;
+};
+
+const decodeWebhookSecret = (secret: string) => {
+  if (!secret.startsWith('whsec_')) {
+    return Buffer.from(secret, 'utf8');
+  }
+  const raw = secret.slice('whsec_'.length).replace(/-/g, '+').replace(/_/g, '/');
+  const padded = raw.padEnd(Math.ceil(raw.length / 4) * 4, '=');
+  return Buffer.from(padded, 'base64');
+};
+
+const parseWebhookSignatures = (header: string) =>
+  header
+    .split(' ')
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+    .map((entry) => entry.split(','))
+    .filter(([version, signature]) => version === 'v1' && Boolean(signature))
+    .map(([, signature]) => signature);
+
 export async function POST(req: NextRequest) {
   try {
     const webhookId = req.headers.get('webhook-id');
     const webhookTimestamp = req.headers.get('webhook-timestamp');
     const webhookSignatures = req.headers.get('webhook-signature');
-    const secret = process.env.REPLICATE_WEBHOOK_;
+    const secret = process.env.REPLICATE_WEBHOOK_SECRET || process.env.REPLICATE_WEBHOOK_;
 
     if (!webhookId || !webhookTimestamp || !webhookSignatures || !secret) {
       return NextResponse.json({ error: 'Missing headers or secret' }, { status: 400 });
@@ -95,19 +144,32 @@ export async function POST(req: NextRequest) {
 
     const body = await req.text();
     
+    const parsedTimestamp = Number(webhookTimestamp);
+    const timestampSeconds = parsedTimestamp > 1e12 ? Math.floor(parsedTimestamp / 1000) : parsedTimestamp;
+    if (!Number.isFinite(timestampSeconds)) {
+      return NextResponse.json({ error: 'Invalid timestamp' }, { status: 400 });
+    }
+
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    if (Math.abs(nowSeconds - timestampSeconds) > WEBHOOK_TOLERANCE_SECONDS) {
+      return NextResponse.json({ error: 'Timestamp outside tolerance' }, { status: 400 });
+    }
+
     // Signature Verification
     const signedContent = `${webhookId}.${webhookTimestamp}.${body}`;
-    const secretKey = secret.startsWith('whsec_') ? secret.split('_')[1] : secret;
-    const secretBytes = Buffer.from(secretKey, 'base64');
+    const secretBytes = decodeWebhookSecret(secret);
     const computedSignature = crypto
       .createHmac('sha256', secretBytes)
       .update(signedContent)
       .digest('base64');
 
-    const expectedSignatures = webhookSignatures.split(' ').map(sig => sig.split(',')[1]);
-    const isValid = expectedSignatures.some(expectedSig => 
-      crypto.timingSafeEqual(Buffer.from(expectedSig), Buffer.from(computedSignature))
-    );
+    const expectedSignatures = parseWebhookSignatures(webhookSignatures);
+    const computedBytes = Buffer.from(computedSignature, 'base64');
+    const isValid = expectedSignatures.some((expectedSig) => {
+      const expectedBytes = Buffer.from(expectedSig, 'base64');
+      if (expectedBytes.length !== computedBytes.length) return false;
+      return crypto.timingSafeEqual(expectedBytes, computedBytes);
+    });
 
     if (!isValid) {
       return NextResponse.json({ error: 'Invalid signature' }, { status: 403 });
@@ -119,7 +181,7 @@ export async function POST(req: NextRequest) {
 
     console.log(`[Replicate Webhook] Processing ${predictionId} with status ${status}`);
 
-    const cachedJob = await readJobCache(predictionId);
+    let cachedJob = await readJobCache(predictionId);
     if (!cachedJob) {
       console.warn(`[Replicate Webhook] Job ${predictionId} not found in cache`);
       return NextResponse.json({ ok: true }); // Return OK so Replicate doesn't retry
@@ -129,9 +191,19 @@ export async function POST(req: NextRequest) {
       // Check if already processed
       if (cachedJob.assets) return NextResponse.json({ ok: true });
 
+      const lockedJob = await acquireProcessingLock(predictionId, 'webhook');
+      if (!lockedJob) return NextResponse.json({ ok: true });
+      cachedJob = lockedJob;
+      if (cachedJob.assets) return NextResponse.json({ ok: true });
+
       const outputUrls = await extractOutputUrls(prediction.output);
       if (!outputUrls.length) {
-        await updateJobCache(predictionId, { error: 'No output from Replicate' });
+        await updateJobCache(predictionId, {
+          error: 'No output from Replicate',
+          processingId: null,
+          processingAt: null,
+          processingBy: null,
+        });
         return NextResponse.json({ ok: true });
       }
 
@@ -192,6 +264,9 @@ export async function POST(req: NextRequest) {
         assets: resolvedAssets,
         settledAt: new Date().toISOString(),
         creditsRemaining,
+        processingId: null,
+        processingAt: null,
+        processingBy: null,
       });
 
     } else if (status === 'failed' || status === 'canceled') {
@@ -199,7 +274,10 @@ export async function POST(req: NextRequest) {
         await refundEnergy(cachedJob.reservationId, 'generation-failed');
         await updateJobCache(predictionId, {
           refundedAt: new Date().toISOString(),
-          error: prediction.error || 'Generation failed'
+          error: prediction.error || 'Generation failed',
+          processingId: null,
+          processingAt: null,
+          processingBy: null,
         });
       }
     }
