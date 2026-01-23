@@ -4,12 +4,15 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import AuthGuard from '@/app/components/AuthGuard';
 import PageShell from '@/app/components/PageShell';
-import { getUserVentures } from '@/app/actions/ventures';
-import { Plus, Rocket, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
+import { deleteVenture, getUserVentures } from '@/app/actions/ventures';
+import { Plus, Rocket, Clock, CheckCircle2, AlertCircle, Trash2 } from 'lucide-react';
 
 export default function VenturesPage() {
   const [ventures, setVentures] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     loadVentures();
@@ -23,6 +26,21 @@ export default function VenturesPage() {
       console.error('Failed to load ventures:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async (ventureId: string) => {
+    setDeletingId(ventureId);
+    setDeleteError(null);
+    try {
+      await deleteVenture(ventureId);
+      setVentures(prev => prev.filter(venture => venture.id !== ventureId));
+      setConfirmDeleteId(null);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Löschen fehlgeschlagen';
+      setDeleteError(message);
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -98,9 +116,8 @@ export default function VenturesPage() {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {ventures.map((venture) => (
-              <Link
+              <div
                 key={venture.id}
-                href={`/ventures/${venture.id}`}
                 className="glass-card rounded-3xl border border-white/10 p-8 hover:border-[#D4AF37]/40 transition-all group"
               >
                 {/* Status Badge */}
@@ -109,71 +126,110 @@ export default function VenturesPage() {
                     {getStatusIcon(venture.status)}
                     {venture.status}
                   </span>
-                  <span className="text-[9px] text-white/30 font-bold uppercase tracking-widest">
-                    {venture.type}
-                  </span>
-                </div>
-
-                {/* Venture Info */}
-                <h3 className="text-2xl font-instrument-serif text-white mb-2 group-hover:text-[#D4AF37] transition-colors">
-                  {venture.name}
-                </h3>
-                {venture.description && (
-                  <p className="text-sm text-white/50 mb-6 line-clamp-2">
-                    {venture.description}
-                  </p>
-                )}
-
-                {/* Progress */}
-                <div className="mb-6">
-                  <div className="flex justify-between items-center mb-2">
+                  <div className="flex items-center gap-3">
                     <span className="text-[9px] text-white/30 font-bold uppercase tracking-widest">
-                      Fortschritt
+                      {venture.type}
                     </span>
-                    <span className="text-xs text-[#D4AF37] font-bold">
-                      {venture.currentStep}/6
-                    </span>
-                  </div>
-                  <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-[#D4AF37] rounded-full transition-all duration-500"
-                      style={{ width: `${(venture.currentStep / 6) * 100}%` }}
-                    />
+                    <button
+                      onClick={() => setConfirmDeleteId(venture.id)}
+                      className="p-2 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition"
+                      aria-label="Venture löschen"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
 
-                {/* Tasks Preview */}
-                {venture.tasks && venture.tasks.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-[9px] text-white/30 font-bold uppercase tracking-widest mb-3">
-                      Nächste Tasks
+                <Link href={`/ventures/${venture.id}`} className="block">
+                  {/* Venture Info */}
+                  <h3 className="text-2xl font-instrument-serif text-white mb-2 group-hover:text-[#D4AF37] transition-colors">
+                    {venture.name}
+                  </h3>
+                  {venture.description && (
+                    <p className="text-sm text-white/50 mb-6 line-clamp-2">
+                      {venture.description}
                     </p>
-                    {venture.tasks.slice(0, 2).map((task: any) => (
+                  )}
+
+                  {/* Progress */}
+                  <div className="mb-6">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-[9px] text-white/30 font-bold uppercase tracking-widest">
+                        Fortschritt
+                      </span>
+                      <span className="text-xs text-[#D4AF37] font-bold">
+                        {venture.currentStep}/6
+                      </span>
+                    </div>
+                    <div className="h-2 bg-white/5 rounded-full overflow-hidden">
                       <div
-                        key={task.id}
-                        className="flex items-center gap-2 text-xs text-white/50"
+                        className="h-full bg-[#D4AF37] rounded-full transition-all duration-500"
+                        style={{ width: `${(venture.currentStep / 6) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Tasks Preview */}
+                  {venture.tasks && venture.tasks.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-[9px] text-white/30 font-bold uppercase tracking-widest mb-3">
+                        Nächste Tasks
+                      </p>
+                      {venture.tasks.slice(0, 2).map((task: any) => (
+                        <div
+                          key={task.id}
+                          className="flex items-center gap-2 text-xs text-white/50"
+                        >
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]" />
+                          <span className="truncate">{task.title}</span>
+                        </div>
+                      ))}
+                      {venture.tasks.length > 2 && (
+                        <p className="text-[9px] text-white/20 font-bold">
+                          +{venture.tasks.length - 2} weitere
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Completed Tasks Count */}
+                  {venture._count && (
+                    <div className="mt-6 pt-6 border-t border-white/5">
+                      <p className="text-xs text-white/40">
+                        <span className="text-[#D4AF37] font-bold">{venture._count.tasks}</span> Tasks erledigt
+                      </p>
+                    </div>
+                  )}
+                </Link>
+
+                {confirmDeleteId === venture.id && (
+                  <div className="mt-6 rounded-2xl border border-red-500/30 bg-red-500/10 p-4">
+                    <p className="text-[10px] uppercase tracking-widest text-red-200 font-bold mb-3">
+                      Venture wirklich löschen?
+                    </p>
+                    <div className="flex items-center justify-between gap-3">
+                      <button
+                        onClick={() => setConfirmDeleteId(null)}
+                        className="text-[10px] uppercase tracking-widest text-white/40 hover:text-white"
                       >
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]" />
-                        <span className="truncate">{task.title}</span>
-                      </div>
-                    ))}
-                    {venture.tasks.length > 2 && (
-                      <p className="text-[9px] text-white/20 font-bold">
-                        +{venture.tasks.length - 2} weitere
+                        Abbrechen
+                      </button>
+                      <button
+                        onClick={() => handleDelete(venture.id)}
+                        disabled={deletingId === venture.id}
+                        className="px-4 py-2 rounded-xl bg-red-500 text-white text-[10px] font-black uppercase tracking-[0.2em] disabled:opacity-60"
+                      >
+                        {deletingId === venture.id ? 'Löscht...' : 'Löschen'}
+                      </button>
+                    </div>
+                    {deleteError && (
+                      <p className="mt-2 text-[10px] uppercase tracking-widest text-red-200">
+                        {deleteError}
                       </p>
                     )}
                   </div>
                 )}
-
-                {/* Completed Tasks Count */}
-                {venture._count && (
-                  <div className="mt-6 pt-6 border-t border-white/5">
-                    <p className="text-xs text-white/40">
-                      <span className="text-[#D4AF37] font-bold">{venture._count.tasks}</span> Tasks erledigt
-                    </p>
-                  </div>
-                )}
-              </Link>
+              </div>
             ))}
           </div>
         )}

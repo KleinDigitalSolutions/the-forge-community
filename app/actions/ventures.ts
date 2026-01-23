@@ -212,6 +212,32 @@ export async function getUserVentures() {
   return ventures;
 }
 
+export async function deleteVenture(ventureId: string) {
+  const session = await auth();
+  if (!session?.user?.email) {
+    throw new Error('Unauthorized');
+  }
+
+  const venture = await prisma.venture.findFirst({
+    where: {
+      id: ventureId,
+      owner: { email: session.user.email }
+    },
+    select: { id: true }
+  });
+
+  if (!venture) {
+    throw new Error('Venture not found');
+  }
+
+  await prisma.venture.delete({
+    where: { id: ventureId }
+  });
+
+  revalidatePath('/ventures');
+  return { success: true };
+}
+
 export async function updateVentureTask(
   taskId: string,
   data: {
