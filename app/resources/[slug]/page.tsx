@@ -3,9 +3,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import PageShell from '@/app/components/PageShell';
-import { ChevronLeft, BookOpen, Sparkles, Clock, Layers, CheckCircle2, Share2, Bookmark } from 'lucide-react';
+import { ChevronLeft, BookOpen, Sparkles, Clock, Layers, CheckCircle2, Share2, Bookmark, ArrowRight, Play, Zap } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { cn } from '@/lib/utils';
@@ -71,7 +71,7 @@ export default function TrainingDetailPage() {
           }
         });
       },
-      { threshold: 0.3, rootMargin: '-10% 0% -70% 0%' }
+      { threshold: 0.2, rootMargin: '-10% 0% -60% 0%' }
     );
 
     course.modules.forEach((module) => {
@@ -84,102 +84,103 @@ export default function TrainingDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#09090b] flex flex-col items-center justify-center text-white/40 gap-4">
+      <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center text-white/40 gap-6">
         <div className="w-12 h-12 border-2 border-[#D4AF37]/20 border-t-[#D4AF37] rounded-full animate-spin" />
-        <p className="text-xs font-bold uppercase tracking-[0.2em]">System wird geladen...</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.4em] animate-pulse">Initalisiere Wissenstransfer...</p>
       </div>
     );
   }
 
   if (!course) {
     return (
-      <div className="min-h-screen bg-[#09090b] flex items-center justify-center text-white/40">
-        Training nicht gefunden.
+      <div className="min-h-screen bg-[#050505] flex items-center justify-center text-white/40 font-bold uppercase tracking-widest text-xs">
+        Dossier nicht gefunden.
       </div>
     );
   }
 
   return (
     <PageShell>
-      {/* Navigation & Actions */}
+      {/* Top Navigation */}
       <div className="flex items-center justify-between mb-12">
         <Link 
           href="/resources" 
-          className="group inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-[#D4AF37] transition-all"
+          className="group inline-flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-[#D4AF37] transition-all"
         >
-          <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-[#D4AF37]/50 group-hover:bg-[#D4AF37]/10 transition-all">
+          <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-[#D4AF37]/50 group-hover:bg-[#D4AF37]/10 transition-all">
             <ChevronLeft className="w-4 h-4" />
           </div>
-          Zurück zur Academy
+          Academy Übersicht
         </Link>
         <div className="flex gap-3">
-          <button className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-all">
+          <button className="p-3 rounded-2xl bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-all">
             <Bookmark className="w-4 h-4" />
           </button>
-          <button className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-all">
+          <button className="p-3 rounded-2xl bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-all">
             <Share2 className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {/* Hero Header */}
+      {/* Hero Section - Refined */}
       <motion.section 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative mb-16 rounded-[2.5rem] border border-white/10 overflow-hidden glass-card"
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="relative mb-20 rounded-[3rem] border border-white/10 overflow-hidden glass-card shadow-2xl"
       >
-        <div className="absolute inset-0 bg-grid-small opacity-10" />
-        <div className="relative p-8 md:p-12 lg:p-16">
-          <div className="flex flex-wrap items-center gap-4 mb-8">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#D4AF37]/20 bg-[#D4AF37]/5 text-[10px] font-black uppercase tracking-widest text-[#D4AF37]">
+        <div className="absolute inset-0 bg-grid-small opacity-20" />
+        <div className="relative p-10 md:p-16 lg:p-20">
+          <div className="flex flex-wrap items-center gap-4 mb-10">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#D4AF37]/20 bg-[#D4AF37]/5 text-[10px] font-black uppercase tracking-widest text-[#D4AF37]">
               <Sparkles className="w-3.5 h-3.5" />
               {course.category}
             </div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-[10px] font-black uppercase tracking-widest text-white/40">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/5 bg-white/5 text-[10px] font-black uppercase tracking-widest text-white/40">
               <Clock className="w-3.5 h-3.5" />
-              {course.durationMins || '45'} Min Training
+              {course.durationMins || '45'} Min
             </div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-[10px] font-black uppercase tracking-widest text-white/40">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/5 bg-white/5 text-[10px] font-black uppercase tracking-widest text-white/40">
               <Layers className="w-3.5 h-3.5" />
               {course.modules.length} Module
             </div>
           </div>
 
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-instrument-serif text-white tracking-tight max-w-4xl mb-6">
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-instrument-serif text-white tracking-tight max-w-5xl mb-8 leading-[0.9]">
             {course.title}
           </h1>
-          <p className="text-lg md:text-xl text-white/50 max-w-3xl leading-relaxed">
+          <p className="text-xl md:text-2xl text-white/50 max-w-3xl leading-relaxed font-medium">
             {course.summary}
           </p>
 
-          <div className="mt-10 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full border border-white/10 bg-white/5 flex items-center justify-center overflow-hidden">
-               <BookOpen className="w-6 h-6 text-[#D4AF37]" />
+          <div className="mt-12 flex items-center gap-6">
+            <div className="w-14 h-14 rounded-2xl border border-white/10 bg-white/5 flex items-center justify-center overflow-hidden">
+               <BookOpen className="w-7 h-7 text-[#D4AF37]" />
             </div>
             <div>
-              <div className="text-[10px] font-black uppercase tracking-widest text-white/30">Kurs-Level</div>
-              <div className="text-sm font-bold text-white uppercase tracking-wider">{course.level || 'OPERATOR TRACK'}</div>
+              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 mb-1">Dossier-Level</div>
+              <div className="text-base font-bold text-white uppercase tracking-widest">{course.level || 'OPERATOR TRACK'}</div>
             </div>
           </div>
         </div>
         
-        {/* Background Accent */}
-        <div className="absolute top-0 right-0 w-[40%] h-full bg-linear-to-l from-[#D4AF37]/10 to-transparent pointer-events-none" />
+        {/* Decorative Background Glow */}
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#D4AF37]/10 rounded-full blur-[120px] pointer-events-none" />
       </motion.section>
 
-      {/* Course Content Grid */}
-      <div className="grid lg:grid-cols-[320px_1fr] gap-12 mt-10 relative">
+      {/* Main Content Layout */}
+      <div className="grid lg:grid-cols-[340px_1fr] gap-16 relative">
         
-        {/* Sticky Sidebar Navigation */}
+        {/* Sticky Sidebar */}
         <aside className="hidden lg:block">
           <div className="sticky top-24 space-y-8">
-            <div className="rounded-4xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-[10px] font-black uppercase tracking-widest text-white/30">Kurs-Struktur</h3>
-                <span className="text-[10px] font-black text-[#D4AF37]">{course.modules.length} Sektionen</span>
+            <div className="rounded-[2.5rem] border border-white/10 bg-[#0a0a0a] p-8 shadow-xl">
+              <div className="flex items-center justify-between mb-8">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Struktur</h3>
+                <span className="text-[10px] font-black text-[#D4AF37] tracking-widest">{course.modules.length} SEKTIONEN</span>
               </div>
               
-              <div className="space-y-1">
+              <div className="space-y-2">
                 {course.modules.map((module) => {
                   const id = `module-${module.order}`;
                   const isActive = activeModule === id;
@@ -189,87 +190,98 @@ export default function TrainingDetailPage() {
                       key={module.id}
                       href={`#${id}`}
                       className={cn(
-                        "group flex items-center gap-3 rounded-2xl px-4 py-3 border transition-all duration-300",
+                        "group flex items-center gap-4 rounded-2xl px-5 py-4 border transition-all duration-500",
                         isActive 
-                          ? "bg-[#D4AF37] border-[#D4AF37] text-black shadow-[0_10px_20px_rgba(212,175,55,0.15)]" 
-                          : "bg-transparent border-transparent text-white/40 hover:text-white hover:bg-white/5"
+                          ? "bg-[#D4AF37] border-[#D4AF37] text-black shadow-lg shadow-[#D4AF37]/20" 
+                          : "bg-transparent border-transparent text-white/30 hover:text-white hover:bg-white/5"
                       )}
                     >
                       <span className={cn(
-                        "text-[10px] font-black uppercase tracking-widest transition-colors",
-                        isActive ? "text-black/60" : "text-white/20"
+                        "text-[10px] font-black uppercase tracking-widest transition-colors shrink-0",
+                        isActive ? "text-black/60" : "text-white/10"
                       )}>
                         {module.order.toString().padStart(2, '0')}
                       </span>
-                      <span className="text-xs font-bold truncate tracking-tight">{module.title}</span>
-                      {isActive && <CheckCircle2 className="w-3.5 h-3.5 ml-auto" />}
+                      <span className="text-xs font-black truncate tracking-tight uppercase">{module.title}</span>
+                      {isActive && <CheckCircle2 className="w-4 h-4 ml-auto shrink-0" />}
                     </a>
                   );
                 })}
               </div>
             </div>
 
-            <div className="rounded-4xl border border-[#D4AF37]/10 bg-[#D4AF37]/5 p-6">
-              <h4 className="text-xs font-black text-[#D4AF37] uppercase tracking-widest mb-3">Community Help</h4>
-              <p className="text-xs text-[#D4AF37]/60 leading-relaxed mb-4">
-                Hast du Fragen zu diesem Modul? Tausch dich im Squad-Channel aus.
-              </p>
-              <Link 
-                href="/squads" 
-                className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white hover:text-[#D4AF37] transition-colors"
-              >
-                Zum Channel <ChevronLeft className="w-3 h-3 rotate-180" />
-              </Link>
+            {/* Community Box */}
+            <div className="rounded-[2.5rem] border border-[#D4AF37]/10 bg-[#D4AF37]/5 p-8 relative overflow-hidden group">
+              <div className="relative z-10">
+                <h4 className="text-[10px] font-black text-[#D4AF37] uppercase tracking-[0.3em] mb-4">Support & Feedback</h4>
+                <p className="text-sm text-white/50 leading-relaxed mb-6 font-medium">
+                  Hast du Fragen zu diesem Modul? Tausch dich mit anderen Foundern im Squad-Channel aus.
+                </p>
+                <Link 
+                  href="/squads" 
+                  className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white hover:text-[#D4AF37] transition-colors"
+                >
+                  Zum Channel wechseln <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+              <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 transition-transform duration-700">
+                <Sparkles className="w-32 h-32 text-[#D4AF37]" />
+              </div>
             </div>
           </div>
         </aside>
 
-        {/* Content Area */}
-        <div className="space-y-12">
-          {course.modules.map((module) => (
+        {/* Modules List */}
+        <div className="space-y-24 pb-40">
+          {course.modules.map((module, index) => (
             <motion.section
               key={module.id}
               id={`module-${module.order}`}
-              initial={{ opacity: 0, y: 30 }}
+              // FIX: Reduced margin and use opacity by default if index is 0
+              initial={{ opacity: index === 0 ? 1 : 0, y: index === 0 ? 0 : 40 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="group"
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: index === 0 ? 0.2 : 0 }}
+              className="group scroll-mt-24"
             >
-              <div className="relative bg-[#0f0f0f] rounded-[2.5rem] border border-white/10 overflow-hidden hover:border-white/20 transition-all duration-500">
-                <div className="p-8 md:p-12 lg:p-14">
-                  <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-                    <div>
-                      <div className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#D4AF37] mb-4">
-                        <span className="w-8 h-px bg-[#D4AF37]/30" />
-                        Modul {module.order.toString().padStart(2, '0')}
-                      </div>
-                      <h2 className="text-3xl md:text-4xl font-instrument-serif text-white tracking-tight">
-                        {module.title}
-                      </h2>
+              <div className="relative bg-[#0a0a0a] rounded-[3.5rem] border border-white/10 overflow-hidden hover:border-white/20 transition-all duration-700 shadow-2xl">
+                <div className="p-10 md:p-16 lg:p-20">
+                  <header className="mb-12">
+                    <div className="inline-flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] text-[#D4AF37] mb-6">
+                      <span className="w-12 h-px bg-[#D4AF37]/30" />
+                      MODUL {module.order.toString().padStart(2, '0')}
                     </div>
+                    <h2 className="text-4xl md:text-5xl font-instrument-serif text-white tracking-tight leading-[1.1]">
+                      {module.title}
+                    </h2>
                   </header>
 
                   {module.summary && (
-                    <div className="mb-10 p-6 rounded-2xl bg-white/5 border border-white/10 border-l-2 border-l-[#D4AF37]">
-                      <p className="text-sm font-medium text-white/70 italic leading-relaxed">
+                    <div className="mb-16 p-8 rounded-3xl bg-white/[0.02] border border-white/5 border-l-4 border-l-[#D4AF37] relative overflow-hidden">
+                      <div className="absolute top-0 right-0 p-4 opacity-5">
+                        <Zap className="w-12 h-12 text-[#D4AF37]" />
+                      </div>
+                      <p className="text-lg md:text-xl font-medium text-white/70 italic leading-relaxed relative z-10">
                         "{module.summary}"
                       </p>
                     </div>
                   )}
 
-                  <div className="prose prose-invert prose-base max-w-none 
-                    prose-headings:text-white prose-headings:font-bold prose-headings:tracking-tight prose-headings:mb-6 prose-headings:mt-10
-                    prose-h2:text-2xl prose-h3:text-xl
-                    prose-p:text-white/70 prose-p:leading-relaxed prose-p:mb-6 prose-p:text-lg
-                    prose-strong:text-[#D4AF37] prose-strong:font-bold
-                    prose-ul:list-disc prose-ul:pl-6 prose-ul:mb-8 prose-ul:space-y-3
-                    prose-ol:list-decimal prose-ol:pl-6 prose-ol:mb-8 prose-ol:space-y-3
-                    prose-li:text-white/60 prose-li:text-base
-                    prose-a:text-[#D4AF37] prose-a:no-underline prose-a:font-bold border-b border-[#D4AF37]/30 hover:border-[#D4AF37] transition-all
-                    prose-code:bg-white/5 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-[#D4AF37] prose-code:before:content-none prose-code:after:content-none
-                    prose-pre:bg-white/5 prose-pre:border prose-pre:border-white/10 prose-pre:rounded-2xl prose-pre:p-6
-                    prose-blockquote:border-l-[#D4AF37] prose-blockquote:bg-white/5 prose-blockquote:p-6 prose-blockquote:rounded-r-2xl prose-blockquote:italic prose-blockquote:text-white/50
+                  {/* PROSE OPTIMIZATION */}
+                  <div className="prose prose-invert prose-lg max-w-none 
+                    prose-headings:text-white prose-headings:font-instrument-serif prose-headings:tracking-tight prose-headings:mb-8 prose-headings:mt-16
+                    prose-h2:text-4xl prose-h3:text-3xl
+                    prose-p:text-white/60 prose-p:leading-[1.8] prose-p:mb-8 prose-p:text-xl prose-p:font-medium
+                    prose-strong:text-white prose-strong:font-bold
+                    prose-ul:list-none prose-ul:pl-0 prose-ul:mb-10 prose-ul:space-y-4
+                    prose-li:text-white/50 prose-li:text-lg prose-li:pl-8 prose-li:relative
+                    prose-li:before:content-[''] prose-li:before:absolute prose-li:before:left-0 prose-li:before:top-[0.7em] prose-li:before:w-2 prose-li:before:h-2 prose-li:before:bg-[#D4AF37] prose-li:before:rounded-full
+                    prose-a:text-[#D4AF37] prose-a:no-underline prose-a:font-bold border-b border-[#D4AF37]/20 hover:border-[#D4AF37] transition-all
+                    prose-code:bg-white/5 prose-code:px-2 prose-code:py-1 prose-code:rounded-lg prose-code:text-[#D4AF37] prose-code:before:content-none prose-code:after:content-none prose-code:text-sm
+                    prose-pre:bg-[#050505] prose-pre:border prose-pre:border-white/10 prose-pre:rounded-[2rem] prose-pre:p-10 prose-pre:shadow-inner
+                    prose-blockquote:border-l-4 prose-blockquote:border-l-[#D4AF37] prose-blockquote:bg-white/5 prose-blockquote:p-10 prose-blockquote:rounded-r-[2.5rem] prose-blockquote:italic prose-blockquote:text-white/70 prose-blockquote:text-xl
+                    prose-img:rounded-[2.5rem] prose-img:border prose-img:border-white/10 prose-img:shadow-2xl
+                    prose-hr:border-white/5
                   ">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {module.content}
@@ -277,46 +289,32 @@ export default function TrainingDetailPage() {
                   </div>
                 </div>
                 
-                {/* Visual module divider */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-bl from-white/2 to-transparent pointer-events-none" />
+                {/* Visual module divider accent */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-linear-to-bl from-white/[0.03] to-transparent pointer-events-none" />
               </div>
             </motion.section>
           ))}
 
-          {/* Course Footer */}
-          <footer className="pt-12 pb-20 text-center">
-             <div className="w-16 h-px bg-white/10 mx-auto mb-8" />
-             <h3 className="text-2xl font-instrument-serif text-white mb-4">Du hast dieses Training abgeschlossen.</h3>
-             <p className="text-white/40 text-sm mb-8">Bereit für den nächsten Schritt?</p>
-             <Link 
-              href="/resources"
-              className="inline-flex items-center gap-3 px-8 py-4 bg-[#D4AF37] text-black rounded-full font-black uppercase tracking-widest text-[11px] hover:shadow-[0_10px_30px_rgba(212,175,55,0.3)] transition-all hover:-translate-y-1"
+          {/* Training Completion Footer */}
+          <footer className="pt-20 pb-20 text-center">
+             <div className="w-24 h-px bg-white/10 mx-auto mb-12" />
+             <motion.div
+               initial={{ opacity: 0, y: 20 }}
+               whileInView={{ opacity: 1, y: 0 }}
+               viewport={{ once: true }}
              >
-              Alle Trainings ansehen <ArrowRight className="w-4 h-4 rotate-180" />
-             </Link>
+               <h3 className="text-3xl md:text-4xl font-instrument-serif text-white mb-6">Wissen erfolgreich assimiliert.</h3>
+               <p className="text-white/30 text-lg mb-12 font-medium max-w-md mx-auto">Du hast dieses Training abgeschlossen. Wende das Gelernte jetzt in deinen Ventures an.</p>
+               <Link 
+                href="/resources"
+                className="inline-flex items-center gap-4 px-10 py-5 bg-[#D4AF37] text-black rounded-full font-black uppercase tracking-[0.2em] text-xs hover:shadow-2xl hover:shadow-[#D4AF37]/30 transition-all hover:-translate-y-1 active:scale-95"
+               >
+                Weitere Trainings erkunden <ArrowRight className="w-4 h-4" />
+               </Link>
+             </motion.div>
           </footer>
         </div>
       </div>
     </PageShell>
-  );
-}
-
-function ArrowRight(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M18 8L22 12L18 16" />
-      <path d="M2 12H22" />
-    </svg>
   );
 }
