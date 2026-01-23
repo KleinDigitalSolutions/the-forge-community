@@ -1,6 +1,6 @@
 'use client';
 
-import { isValidElement, useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import PageShell from '@/app/components/PageShell';
 import AuthGuard from '@/app/components/AuthGuard';
 import {
@@ -182,57 +182,81 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
   ];
 
   // Helper für Markdown Komponenten
-  const hasBlockChildren = (children: React.ReactNode) => {
-    const nodes = Array.isArray(children) ? children : [children];
-    return nodes.some((child) => {
-      if (!isValidElement(child)) return false;
-      if (typeof child.type !== 'string') return false;
-      return ['div', 'img', 'pre', 'blockquote', 'ul', 'ol', 'table'].includes(child.type);
+  const getMeaningfulChildren = (node: any) => {
+    const children = Array.isArray(node?.children) ? node.children : [];
+    return children.filter((child: any) => {
+      if (child?.type !== 'text') return true;
+      return typeof child.value === 'string' && child.value.trim().length > 0;
     });
   };
 
-  const MarkdownComponents = {
-    p: ({ children }: any) => {
-      if (hasBlockChildren(children)) {
-        return <div className="my-4">{children}</div>;
-      }
-      return <p className="mb-4 last:mb-0">{children}</p>;
-    },
-    // Custom Link Renderer
-    a: ({ href, children }: any) => {
-      const isRawUrl = typeof children === 'string' && children.trim() === href;
-      const isYoutube = href && (href.includes('youtube.com/watch') || href.includes('youtu.be/'));
-      const isLoom = href && href.includes('loom.com/share');
+  const getSingleElementChild = (node: any) => {
+    const children = getMeaningfulChildren(node);
+    if (children.length !== 1) return null;
+    const child = children[0];
+    if (child?.type !== 'element') return null;
+    return child;
+  };
 
-      if (isRawUrl || isYoutube || isLoom) {
+  const getParagraphLinkUrl = (node: any) => {
+    const child = getSingleElementChild(node);
+    if (!child || child.tagName !== 'a') return null;
+    const href = typeof child.properties?.href === 'string' ? child.properties.href : null;
+    if (!href) return null;
+    const linkChildren = Array.isArray(child.children) ? child.children : [];
+    if (linkChildren.length !== 1) return null;
+    const textNode = linkChildren[0];
+    if (textNode?.type !== 'text') return null;
+    const label = typeof textNode.value === 'string' ? textNode.value.trim() : '';
+    if (!label || label !== href) return null;
+    return href;
+  };
+
+  const isParagraphImageOnly = (node: any) => {
+    const child = getSingleElementChild(node);
+    return Boolean(child && child.tagName === 'img');
+  };
+
+  const MarkdownComponents = {
+    p: ({ node, children }: any) => {
+      const previewUrl = getParagraphLinkUrl(node);
+      if (previewUrl) {
         return (
           <div className="not-prose my-4">
-            <LinkPreview url={href} />
+            <LinkPreview url={previewUrl} />
           </div>
         );
       }
 
-      return (
-        <a 
-          href={href} 
-          target="_blank" 
-          rel="noopener noreferrer" 
-          className="text-[#D4AF37] hover:underline hover:text-white transition-colors"
-        >
-          {children}
-        </a>
-      );
+      if (isParagraphImageOnly(node)) {
+        return (
+          <figure className="my-4 rounded-xl overflow-hidden border border-white/10 bg-black/20">
+            {children}
+          </figure>
+        );
+      }
+
+      return <p className="mb-4 last:mb-0 leading-relaxed">{children}</p>;
     },
-    // Bilder responsive machen
+    // Links inline lassen, Vorschau nur bei Link-Absatz
+    a: ({ href, children }: any) => (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-[#D4AF37] hover:underline hover:text-white transition-colors"
+      >
+        {children}
+      </a>
+    ),
+    // Bilder ohne Wrapper, damit Inline-Images valide bleiben
     img: ({ src, alt }: any) => (
-      <div className="relative w-full rounded-xl overflow-hidden my-4 border border-white/10 bg-black/20">
-        <img 
-          src={src} 
-          alt={alt} 
-          className="w-full h-auto object-cover max-h-[600px]"
-          loading="lazy"
-        />
-      </div>
+      <img
+        src={src}
+        alt={alt || ''}
+        className="block w-full h-auto object-cover max-h-[600px]"
+        loading="lazy"
+      />
     ),
     // Blockquotes stylen
     blockquote: ({ children }: any) => (
@@ -240,8 +264,13 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
         {children}
       </blockquote>
     ),
+    pre: ({ children }: any) => (
+      <pre className="bg-[#0d0d0d] border border-white/10 rounded-xl p-4 my-4 overflow-x-auto">
+        {children}
+      </pre>
+    ),
     // Code Blöcke
-    code: ({ node, inline, className, children, ...props }: any) => {
+    code: ({ inline, children, ...props }: any) => {
       if (inline) {
         return (
           <code className="bg-white/10 px-1.5 py-0.5 rounded text-sm text-[#D4AF37] font-mono" {...props}>
@@ -250,11 +279,9 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
         );
       }
       return (
-        <div className="bg-[#0d0d0d] border border-white/10 rounded-xl p-4 my-4 overflow-x-auto">
-          <code className="text-sm font-mono text-white/80" {...props}>
-            {children}
-          </code>
-        </div>
+        <code className="text-sm font-mono text-white/80" {...props}>
+          {children}
+        </code>
       );
     }
   };
