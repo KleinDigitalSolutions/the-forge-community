@@ -20,7 +20,7 @@ import { VoiceInput } from '@/app/components/VoiceInput';
 import { TrendingTopics } from '@/app/components/TrendingTopics';
 import { formatDistanceToNow } from 'date-fns';
 import { de } from 'date-fns/locale';
-import EmojiPicker, { Theme, EmojiClickData } from 'emoji-picker-react';
+import EmojiPicker, { EmojiClickData, EmojiStyle, Theme } from 'emoji-picker-react';
 import { PostSkeleton } from '@/app/components/PostSkeleton';
 
 export interface Comment {
@@ -1473,6 +1473,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                             <EmojiPicker 
                               theme={Theme.DARK} 
                               onEmojiClick={handleEmojiClick}
+                              emojiStyle={EmojiStyle.NATIVE}
                               width={320}
                               height={400}
                               lazyLoadEmojis={true}
