@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import type { ModerationPolicy } from '@/lib/moderation';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 
@@ -167,8 +168,7 @@ export async function POST(
     canUserPost,
     containsHardBlockWords,
     isTargetedContent,
-    shouldBlockContent,
-    type ModerationPolicy
+    shouldBlockContent
   } = await import('@/lib/moderation');
   const messageCheck = await canUserPost(user.id);
   if (!messageCheck.allowed) {

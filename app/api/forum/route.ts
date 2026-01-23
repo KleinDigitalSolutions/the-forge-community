@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import type { ModerationPolicy } from '@/lib/moderation';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { ensureProfileSlug } from '@/lib/profile';
@@ -172,8 +173,7 @@ export async function POST(request: Request) {
       canUserPost,
       sanitizeToxicContent,
       shouldBlockContent,
-      shouldSanitizeContent,
-      type ModerationPolicy
+      shouldSanitizeContent
     } = await import('@/lib/moderation');
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
