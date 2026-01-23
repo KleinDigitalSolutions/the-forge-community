@@ -89,6 +89,7 @@ export default function MobileNav() {
               const isActive = pathname === item.href;
               const Icon = item.icon;
               const showBadge = item.name === 'Messages' && unreadCount > 0;
+              const showStatus = item.status === 'WIP';
               return (
                 <Link
                   key={item.name}
@@ -102,6 +103,11 @@ export default function MobileNav() {
                 >
                   <Icon className={`w-4 h-4 ${isActive ? 'text-[var(--accent)]' : ''}`} />
                   {item.name}
+                  {showStatus && (
+                    <span className="ml-auto rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest text-white/40">
+                      In Arbeit
+                    </span>
+                  )}
                   {showBadge && (
                     <span className="ml-auto min-w-[18px] h-[18px] px-1.5 rounded-full bg-[#D4AF37] text-[9px] font-bold text-black flex items-center justify-center">
                       {messageBadge}

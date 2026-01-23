@@ -1772,7 +1772,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                   </div>
                 </div>
 
-                <div className="p-8 border-t border-white/5 flex items-center justify-between bg-white/[0.01]">
+                <div className="p-6 sm:p-8 border-t border-white/5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white/[0.01]">
                   <div className="flex items-center gap-3">
                     <div className={`w-2 h-2 rounded-full ${(editingPost === 'NEW' ? content : editContent).length > 0 ? 'bg-green-500 animate-pulse' : 'bg-white/10'}`} />
                     <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">
@@ -1780,17 +1780,17 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                     </span>
                   </div>
                   
-                  <div className="flex gap-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
                     <button 
                       onClick={() => setEditingPost(null)}
-                      className="px-8 py-3 text-xs font-bold text-white/20 hover:text-white uppercase tracking-widest transition-all"
+                      className="w-full sm:w-auto px-6 py-3 text-xs font-bold text-white/20 hover:text-white uppercase tracking-widest transition-all"
                     >
                       Verwerfen
                     </button>
                     <button 
                       onClick={handleSubmit} 
                       disabled={isSubmitting || !(editingPost === 'NEW' ? content : editContent).trim()}
-                      className="bg-[#D4AF37] text-black px-12 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-[0_10px_40px_rgba(212,175,55,0.2)] disabled:opacity-20 disabled:shadow-none hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3"
+                      className="w-full sm:w-auto bg-[#D4AF37] text-black px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-[0_10px_40px_rgba(212,175,55,0.2)] disabled:opacity-20 disabled:shadow-none hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
                     >
                       {isSubmitting ? (
                         <>
