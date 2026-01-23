@@ -7,7 +7,7 @@ import {
   MessageSquare, Send, ArrowUp, ArrowDown, Users,
   Quote, Reply, MessageCircle, Edit2, Trash2, Image as ImageIcon, Eye, Code, X,
   Sparkles, Lightbulb, CheckCircle, Search, Target,
-  TrendingUp, Trophy, Home, Hash, Zap, Bell, Info, Filter, Plus, Heart, Smile, Bold, Italic, List, Link as LinkIcon
+  TrendingUp, Trophy, Home, Hash, Zap, Bell, Info, Filter, Plus, Heart, Smile, Bold, Italic, List, Link as LinkIcon, ChevronDown
 } from 'lucide-react';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
@@ -919,6 +919,106 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
     </div>
   );
 
+  const renderUserPanel = () => {
+    if (!user) {
+      return (
+        <div className="bg-[#121212] border border-white/10 rounded-3xl p-6 text-sm text-white/40">
+          Profil wird geladen...
+        </div>
+      );
+    }
+
+    return (
+      <div className="bg-[#121212] border border-white/10 rounded-3xl overflow-hidden shadow-2xl group">
+        <div className="h-20 bg-gradient-to-br from-[#D4AF37] via-amber-600 to-black relative overflow-hidden">
+          <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
+        </div>
+        <div className="px-6 pb-6 -mt-10 relative z-10">
+          <div className="flex justify-between items-end mb-4">
+            <div className="w-20 h-20 rounded-full bg-[#121212] border-4 border-[#050505] flex items-center justify-center text-3xl font-black text-[#D4AF37] shadow-xl overflow-hidden">
+              {user?.image ? (
+                <img src={user.image} alt={user.name || ''} className="w-full h-full object-cover" />
+              ) : (
+                user?.name?.charAt(0)
+              )}
+            </div>
+            <div className="pb-1">
+              <span className="px-2 py-1 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] text-[9px] font-bold uppercase tracking-widest border border-[#D4AF37]/20">
+                {user?.role || 'FOUNDER'}
+              </span>
+            </div>
+          </div>
+
+          <div className="space-y-1 mb-6">
+            <h3 className="text-xl font-bold text-white group-hover:text-[#D4AF37] transition-colors">{user?.name}</h3>
+            <div className="flex items-center gap-2 text-[10px] font-mono text-white/30 uppercase tracking-widest">
+              <span>Founder #{user?.founderNumber?.toString().padStart(3, '0')}</span>
+              <span>•</span>
+              <span className="text-white/50">{user?.email}</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 mb-6">
+            <div className="bg-white/5 rounded-2xl p-3 border border-white/5 hover:bg-white/10 transition-colors">
+              <p className="text-[9px] font-bold text-white/20 uppercase tracking-wider mb-1">Karma</p>
+              <p className="text-lg font-bold text-[#D4AF37]">{user?.karmaScore || 0}</p>
+            </div>
+            <div className="bg-white/5 rounded-2xl p-3 border border-white/5 hover:bg-white/10 transition-colors">
+              <p className="text-[9px] font-bold text-white/20 uppercase tracking-wider mb-1">Ventures</p>
+              <p className="text-lg font-bold text-white">{(user as any)?._count?.ventures || 0}</p>
+            </div>
+            <div className="bg-white/5 rounded-2xl p-3 border border-white/5 hover:bg-white/10 transition-colors">
+              <p className="text-[9px] font-bold text-white/20 uppercase tracking-wider mb-1">Squads</p>
+              <p className="text-lg font-bold text-white">{(user as any)?._count?.squadMemberships || 0}</p>
+            </div>
+            <div className="bg-white/5 rounded-2xl p-3 border border-white/5 hover:bg-white/10 transition-colors">
+              <p className="text-[9px] font-bold text-white/20 uppercase tracking-wider mb-1">Credits</p>
+              <p className="text-lg font-bold text-blue-400">{(user as any)?.credits || 0}</p>
+            </div>
+            <div className="bg-white/5 rounded-2xl p-3 border border-white/5 hover:bg-white/10 transition-colors">
+              <p className="text-[9px] font-bold text-white/20 uppercase tracking-wider mb-1">Follower</p>
+              <p className="text-lg font-bold text-white">{(user as any)?._count?.followers || 0}</p>
+            </div>
+            <div className="bg-white/5 rounded-2xl p-3 border border-white/5 hover:bg-white/10 transition-colors">
+              <p className="text-[9px] font-bold text-white/20 uppercase tracking-wider mb-1">Following</p>
+              <p className="text-lg font-bold text-white">{(user as any)?._count?.following || 0}</p>
+            </div>
+          </div>
+
+          <button
+            onClick={startNewPost}
+            className="w-full bg-[#D4AF37] text-black py-4 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-[#D4AF37]/10"
+          >
+            Neuen Beitrag erstellen
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderTrendingPanel = () => (
+    <div className="bg-[#121212] border border-white/10 rounded-2xl p-6">
+      <h4 className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+        <TrendingUp className="w-3.5 h-3.5 text-[#D4AF37]" /> Trending Topics
+      </h4>
+      <TrendingTopics />
+    </div>
+  );
+
+  const renderGuidelinesPanel = () => (
+    <div className="bg-[#121212] border border-white/10 rounded-2xl p-6">
+      <h4 className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] mb-4">Community-Regeln</h4>
+      <ul className="space-y-3">
+        {['Mehrwert liefern', 'Respektvoll bleiben', 'Kein Spam', 'Wissen teilen'].map((rule, i) => (
+          <li key={i} className="flex items-center gap-3 text-xs text-white/60">
+            <div className="w-1 h-1 rounded-full bg-[#D4AF37]" />
+            {rule}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+
   return (
     <AuthGuard>
       <PageShell>
@@ -990,6 +1090,22 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                 {renderNotificationsPanel()}
               </div>
             )}
+
+            <div className="xl:hidden space-y-3">
+              {[
+                { id: 'profile', label: 'Profil & Stats', content: renderUserPanel() },
+                { id: 'trending', label: 'Trending Topics', content: renderTrendingPanel() },
+                { id: 'rules', label: 'Community-Regeln', content: renderGuidelinesPanel() },
+              ].map((panel) => (
+                <details key={panel.id} className="group rounded-2xl border border-white/10 bg-[#121212]">
+                  <summary className="flex items-center justify-between px-4 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 cursor-pointer list-none marker:hidden">
+                    {panel.label}
+                    <ChevronDown className="w-4 h-4 text-white/40 transition-transform group-open:rotate-180" />
+                  </summary>
+                  <div className="px-4 pb-4">{panel.content}</div>
+                </details>
+              ))}
+            </div>
 
             {/* Post Creation Trigger */}
             <div className="bg-[#121212] border border-white/10 rounded-xl p-3 flex flex-col gap-3 shadow-xl sm:flex-row sm:items-center">
@@ -1407,94 +1523,9 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
             {notificationsOpen && (
               renderNotificationsPanel()
             )}
-
-            {/* User Profile Widget - PRO REDESIGN */}
-            <div className="bg-[#121212] border border-white/10 rounded-3xl overflow-hidden shadow-2xl group">
-              <div className="h-20 bg-gradient-to-br from-[#D4AF37] via-amber-600 to-black relative overflow-hidden">
-                 <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
-              </div>
-              <div className="px-6 pb-6 -mt-10 relative z-10">
-                <div className="flex justify-between items-end mb-4">
-                  <div className="w-20 h-20 rounded-full bg-[#121212] border-4 border-[#050505] flex items-center justify-center text-3xl font-black text-[#D4AF37] shadow-xl overflow-hidden">
-                    {user?.image ? (
-                      <img src={user.image} alt={user.name || ''} className="w-full h-full object-cover" />
-                    ) : (
-                      user?.name?.charAt(0)
-                    )}
-                  </div>
-                  <div className="pb-1">
-                    <span className="px-2 py-1 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] text-[9px] font-bold uppercase tracking-widest border border-[#D4AF37]/20">
-                      {user?.role || 'FOUNDER'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="space-y-1 mb-6">
-                  <h3 className="text-xl font-bold text-white group-hover:text-[#D4AF37] transition-colors">{user?.name}</h3>
-                  <div className="flex items-center gap-2 text-[10px] font-mono text-white/30 uppercase tracking-widest">
-                    <span>Founder #{user?.founderNumber?.toString().padStart(3, '0')}</span>
-                    <span>•</span>
-                    <span className="text-white/50">{user?.email}</span>
-                  </div>
-                </div>
-
-                {/* Stats Grid */}
-                <div className="grid grid-cols-2 gap-2 mb-6">
-                  <div className="bg-white/5 rounded-2xl p-3 border border-white/5 hover:bg-white/10 transition-colors">
-                    <p className="text-[9px] font-bold text-white/20 uppercase tracking-wider mb-1">Karma</p>
-                    <p className="text-lg font-bold text-[#D4AF37]">{user?.karmaScore || 0}</p>
-                  </div>
-                  <div className="bg-white/5 rounded-2xl p-3 border border-white/5 hover:bg-white/10 transition-colors">
-                    <p className="text-[9px] font-bold text-white/20 uppercase tracking-wider mb-1">Ventures</p>
-                    <p className="text-lg font-bold text-white">{(user as any)?._count?.ventures || 0}</p>
-                  </div>
-                  <div className="bg-white/5 rounded-2xl p-3 border border-white/5 hover:bg-white/10 transition-colors">
-                    <p className="text-[9px] font-bold text-white/20 uppercase tracking-wider mb-1">Squads</p>
-                    <p className="text-lg font-bold text-white">{(user as any)?._count?.squadMemberships || 0}</p>
-                  </div>
-                  <div className="bg-white/5 rounded-2xl p-3 border border-white/5 hover:bg-white/10 transition-colors">
-                    <p className="text-[9px] font-bold text-white/20 uppercase tracking-wider mb-1">Credits</p>
-                    <p className="text-lg font-bold text-blue-400">{(user as any)?.credits || 0}</p>
-                  </div>
-                  <div className="bg-white/5 rounded-2xl p-3 border border-white/5 hover:bg-white/10 transition-colors">
-                    <p className="text-[9px] font-bold text-white/20 uppercase tracking-wider mb-1">Follower</p>
-                    <p className="text-lg font-bold text-white">{(user as any)?._count?.followers || 0}</p>
-                  </div>
-                  <div className="bg-white/5 rounded-2xl p-3 border border-white/5 hover:bg-white/10 transition-colors">
-                    <p className="text-[9px] font-bold text-white/20 uppercase tracking-wider mb-1">Following</p>
-                    <p className="text-lg font-bold text-white">{(user as any)?._count?.following || 0}</p>
-                  </div>
-                </div>
-
-                <button 
-                  onClick={startNewPost}
-                  className="w-full bg-[#D4AF37] text-black py-4 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-[#D4AF37]/10"
-                >
-                  Neuen Beitrag erstellen
-                </button>
-              </div>
-            </div>
-
-            {/* Trending Widget */}
-            <div className="bg-[#121212] border border-white/10 rounded-2xl p-6">
-              <h4 className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-                <TrendingUp className="w-3.5 h-3.5 text-[#D4AF37]" /> Trending Topics
-              </h4>
-              <TrendingTopics />
-            </div>
-
-            {/* Guidelines Widget */}
-            <div className="bg-[#121212] border border-white/10 rounded-2xl p-6">
-              <h4 className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] mb-4">Community-Regeln</h4>
-              <ul className="space-y-3">
-                {['Mehrwert liefern', 'Respektvoll bleiben', 'Kein Spam', 'Wissen teilen'].map((rule, i) => (
-                  <li key={i} className="flex items-center gap-3 text-xs text-white/60">
-                    <div className="w-1 h-1 rounded-full bg-[#D4AF37]" />
-                    {rule}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {renderUserPanel()}
+            {renderTrendingPanel()}
+            {renderGuidelinesPanel()}
           </aside>
 
         </div>

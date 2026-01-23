@@ -1,21 +1,5 @@
-import MobileNav from './MobileNav';
-import Sidebar from './Sidebar';
+import AppShell from './AppShell';
 
 export default function PageShell({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex min-h-screen flex-col bg-[var(--background)] text-[var(--foreground)] selection:bg-[var(--accent)] selection:text-[var(--accent-foreground)] lg:flex-row">
-      <MobileNav />
-      <div className="hidden lg:block">
-        <Sidebar />
-      </div>
-      <main className="flex-1 px-4 pb-12 pt-20 sm:px-6 lg:ml-64 lg:p-12 transition-all relative overflow-hidden">
-        {/* Subtle Background Glow */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[var(--accent)]/5 rounded-full blur-[120px] pointer-events-none -mr-64 -mt-64" />
-        
-        <div className="max-w-7xl mx-auto relative z-10">
-          {children}
-        </div>
-      </main>
-    </div>
-  );
+  return <AppShell>{children}</AppShell>;
 }
