@@ -1,15 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import AuthGuard from '@/app/components/AuthGuard';
 import PageShell from '@/app/components/PageShell';
-import { getVenture, updateVentureTask, addVentureCost, getVentureCosts } from '@/app/actions/ventures';
-import { Calendar, CheckCircle2, Circle, AlertCircle, Plus, DollarSign, TrendingUp, Clock, Zap } from 'lucide-react';
+import { deleteVenture, getVenture, updateVentureTask, addVentureCost, getVentureCosts } from '@/app/actions/ventures';
+import { Calendar, CheckCircle2, Circle, AlertCircle, Plus, DollarSign, TrendingUp, Clock, Zap, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function VentureDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const ventureId = params.id as string;
 
   const [venture, setVenture] = useState<any>(null);
@@ -17,6 +18,9 @@ export default function VentureDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'tasks' | 'costs' | 'timeline'>('tasks');
   const [showAddCost, setShowAddCost] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     loadVenture();
@@ -57,6 +61,21 @@ export default function VentureDetailPage() {
     setShowAddCost(false);
     loadVenture();
     (e.target as HTMLFormElement).reset();
+  };
+
+  const handleDeleteVenture = async () => {
+    if (!ventureId) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteVenture(ventureId);
+      router.push('/ventures');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Löschen fehlgeschlagen';
+      setDeleteError(message);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const getTaskStatusIcon = (status: string) => {
@@ -451,6 +470,51 @@ export default function VentureDetailPage() {
             </div>
           </div>
         )}
+
+        {/* Danger Zone */}
+        <section className="mt-12">
+          <div className="rounded-3xl border border-red-500/20 bg-red-500/5 p-6 md:p-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+              <div>
+                <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-red-300 mb-2">Danger Zone</div>
+                <h3 className="text-2xl font-instrument-serif text-white">Venture löschen</h3>
+                <p className="text-sm text-white/50 mt-2 max-w-xl">
+                  Löscht alle zugehörigen Steps, Tasks, Kosten und Assets. Dieser Vorgang ist endgültig.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-red-200">
+                <Trash2 className="h-4 w-4" />
+                irreversible
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-[1fr_auto] gap-4 items-center">
+              <div>
+                <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2">
+                  Tippe DELETE zur Bestätigung
+                </label>
+                <input
+                  value={deleteConfirmText}
+                  onChange={(event) => setDeleteConfirmText(event.target.value)}
+                  placeholder="DELETE"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-red-400"
+                />
+                {deleteError && (
+                  <p className="mt-2 text-[10px] uppercase tracking-widest text-red-300">
+                    {deleteError}
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={handleDeleteVenture}
+                disabled={deleteConfirmText.trim().toUpperCase() !== 'DELETE' || isDeleting}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-500 px-6 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-white disabled:opacity-40"
+              >
+                {isDeleting ? 'Löscht...' : 'Venture löschen'}
+              </button>
+            </div>
+          </div>
+        </section>
       </PageShell>
     </AuthGuard>
   );
