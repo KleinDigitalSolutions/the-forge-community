@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type FormEvent, useRef } from 'react';
+import { isValidElement, useEffect, useRef, useState, type FormEvent } from 'react';
 import PageShell from '@/app/components/PageShell';
 import AuthGuard from '@/app/components/AuthGuard';
 import {
@@ -182,7 +182,22 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
   ];
 
   // Helper für Markdown Komponenten
+  const hasBlockChildren = (children: React.ReactNode) => {
+    const nodes = Array.isArray(children) ? children : [children];
+    return nodes.some((child) => {
+      if (!isValidElement(child)) return false;
+      if (typeof child.type !== 'string') return false;
+      return ['div', 'img', 'pre', 'blockquote', 'ul', 'ol', 'table'].includes(child.type);
+    });
+  };
+
   const MarkdownComponents = {
+    p: ({ children }: any) => {
+      if (hasBlockChildren(children)) {
+        return <div className="my-4">{children}</div>;
+      }
+      return <p className="mb-4 last:mb-0">{children}</p>;
+    },
     // Custom Link Renderer
     a: ({ href, children }: any) => {
       const isRawUrl = typeof children === 'string' && children.trim() === href;
