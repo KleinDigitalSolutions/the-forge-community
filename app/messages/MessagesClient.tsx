@@ -95,6 +95,7 @@ export default function MessagesClient() {
   const [search, setSearch] = useState('');
   const [searchResults, setSearchResults] = useState<UserResult[]>([]);
   const [searching, setSearching] = useState(false);
+  const [showThreadList, setShowThreadList] = useState(true);
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   const activeThread = useMemo(
@@ -150,7 +151,10 @@ export default function MessagesClient() {
   useEffect(() => {
     if (!preferredThreadId || threads.length === 0) return;
     const exists = threads.some((thread) => thread.id === preferredThreadId);
-    if (exists) setActiveThreadId(preferredThreadId);
+    if (exists) {
+      setActiveThreadId(preferredThreadId);
+      setShowThreadList(false);
+    }
   }, [preferredThreadId, threads]);
 
   useEffect(() => {
@@ -190,6 +194,7 @@ export default function MessagesClient() {
 
   const handleSelectThread = (threadId: string) => {
     setActiveThreadId(threadId);
+    setShowThreadList(false);
   };
 
   const handleStartThread = async (recipientId: string) => {
@@ -207,6 +212,7 @@ export default function MessagesClient() {
       setActiveThreadId(payload.threadId);
       setSearch('');
       setSearchResults([]);
+      setShowThreadList(false);
     } catch (error) {
       console.error(error);
     }
@@ -252,7 +258,7 @@ export default function MessagesClient() {
           </div>
 
           <div className="grid grid-cols-1 gap-6 lg:min-h-[calc(100vh-220px)] lg:grid-cols-[340px,1fr]">
-            <div className="glass-card flex min-h-[620px] flex-col overflow-hidden rounded-3xl border border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.4)]">
+            <div className={`glass-card flex min-h-[60vh] lg:min-h-[620px] flex-col overflow-hidden rounded-3xl border border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.4)] ${showThreadList ? 'block' : 'hidden'} lg:block`}>
               <div className="border-b border-white/10 bg-gradient-to-b from-white/5 to-transparent px-5 py-4">
                 <div className="flex items-center justify-between">
                   <div className="text-sm font-semibold text-white">Inbox</div>
@@ -359,10 +365,21 @@ export default function MessagesClient() {
               </div>
             </div>
 
-            <div className="glass-card flex min-h-[620px] flex-col rounded-3xl border border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.5)]">
+            <div className={`glass-card flex min-h-[60vh] lg:min-h-[620px] flex-col rounded-3xl border border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.5)] ${showThreadList ? 'hidden' : 'block'} lg:block`}>
               <div className="border-b border-white/10 bg-gradient-to-b from-white/5 to-transparent px-6 py-4">
                 {activePeer ? (
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center justify-between gap-3 lg:hidden">
+                      <button
+                        onClick={() => setShowThreadList(true)}
+                        className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white/60"
+                      >
+                        Zur Inbox
+                      </button>
+                      <div className="text-[10px] uppercase tracking-[0.2em] text-white/30">
+                        {activeThread?.lastMessageAt ? formatShortDate(activeThread.lastMessageAt) : ''}
+                      </div>
+                    </div>
                     <div className="flex items-center gap-4">
                       <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5 text-xs font-bold text-[var(--accent)]">
                         {activePeer.image ? (

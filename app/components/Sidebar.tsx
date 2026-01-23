@@ -2,34 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  LayoutDashboard,
-  MessageSquare,
-  MessageCircle,
-  Users,
-  CheckSquare,
-  PieChart,
-  BookOpen,
-  Settings,
-  LogOut,
-  Zap,
-  Target,
-  Rocket
-} from 'lucide-react';
+import { Settings } from 'lucide-react';
 import { SignOutButton } from './SignOutButton';
 import { CreditsDisplay } from './CreditsDisplay';
 import { useUnreadMessages } from '@/app/hooks/useUnreadMessages';
-
-const navigation = [
-  { name: 'Cockpit', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Ventures', href: '/ventures', icon: Rocket },
-  { name: 'Forum', href: '/forum', icon: MessageSquare },
-  { name: 'Messages', href: '/messages', icon: MessageCircle },
-  { name: 'Squad Markt', href: '/squads', icon: Users },
-  { name: 'Mission Control', href: '/tasks', icon: CheckSquare },
-  { name: 'Finanzen', href: '/transparency', icon: PieChart },
-  { name: 'Academy', href: '/resources', icon: BookOpen },
-];
+import { navigation } from './navigation';
 
 export default function Sidebar() {
   const pathname = usePathname();
