@@ -21,7 +21,7 @@ Ziel: Mobile ist first-class. Keine Desktop-Shrink-Version. Diese Checkliste ist
 - Content no-clip: keine abgeschnittenen Buttons, Inputs, Modals.
 - Touch targets >= 44px, keine dichten Icon-Cluster.
 - Lesen ohne Zoom (min. 14px text size, ausreichender Kontrast).
-- Keine horizontalen Scroll-Bars ausser bewusstes Chips/Carousels.
+- Keine horizontalen Scroll-Bars außer bewusstes Chips/Carousels.
 - Sticky/Header/Overlays blockieren keinen Content-Flow.
 
 ## Core Flows (must-pass)
@@ -30,7 +30,7 @@ Ziel: Mobile ist first-class. Keine Desktop-Shrink-Version. Diese Checkliste ist
 - Turnstile sichtbar, keine Overflows.
 
 ### Forum
-- Feed scrollt flussig, Votes/Comments erreichbar.
+- Feed scrollt flüssig, Votes/Comments erreichbar.
 - New Post Modal: Editor, Emoji, Upload, Preview und Submit.
 - Kommentare: Reply, Edit/Delete, Voting, Threaded view.
 - Notifications: anzeigen, als gelesen markieren, Navigation zu Zielpost.

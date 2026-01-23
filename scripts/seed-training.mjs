@@ -28,7 +28,7 @@ Du verkaufst **vor** dem Bauen. Nicht, weil du bluffst, sondern weil du klare Pr
 
 ## Vorgehen (kompakt)
 - Finde 10 potenzielle Kunden und frage nach **Beratung**, nicht nach Geld.
-- Leitfrage: **"Was ist in deinem Business so schwer/teuer, dass du es sofort mit AI automatisieren wuerdest?"**
+- Leitfrage: **"Was ist in deinem Business so schwer/teuer, dass du es sofort mit AI automatisieren würdest?"**
 - Aus der Antwort formst du ein klares Ergebnis-Angebot.
 - Preisregel: 12-Monats-Preis -50% gegen **Case Study + Name als Proof**.
 
@@ -45,18 +45,18 @@ Der Deal ist nur der Start. Plane den Weg:
     order: 2,
     title: 'Boring Markets & echte Schmerzen',
     summary:
-      'Boring Markets schlagen Hype. Du suchst Stabilitaet, hohe Deal-Size und manuelle Prozesse.',
+      'Boring Markets schlagen Hype. Du suchst Stabilität, hohe Deal-Size und manuelle Prozesse.',
     content: `## Warum "boring" gewinnt
-Hype-Maerkte sind laut, aber instabil. "Boring" bedeutet:
+Hype-Märkte sind laut, aber instabil. "Boring" bedeutet:
 - Langfristige Nachfrage
 - weniger Wettbewerb
-- hoehere Margen
+- höhere Margen
 
 ## Praktische Auswahl
 - Frage AI: **"Nenne 20 boring Industrien mit hoher Deal-Size und manuellen Prozessen."**
 - Suche **einen** klaren Pain (z.B. verpasste Anrufe, manuelle Nachbearbeitung).
 
-## Nutzen in Benefits uebersetzen
+## Nutzen in Benefits übersetzen
 Ein Pain = ein Outcome. Beispiel:
 - Pain: verpasste Anrufe
 - Benefit: **"10 neue Kunden/Woche ohne ein Telefon anzufassen"**
@@ -102,8 +102,8 @@ So kommst du von "Zeit gegen Geld" zu **Skalierung ohne Burnout**.
 - So sinkt Churn und du investierst aus eigener Power, nicht fremdem Kredit.
 
 ## Scarcity + Objection-Killer
-- Begrenzte Plaetze (echte Kapazitaet)
-- Bonus, der die groesste Angst klaert (z.B. Team-Onboarding)
+- Begrenzte Plätze (echte Kapazität)
+- Bonus, der die größte Angst klärt (z.B. Team-Onboarding)
 
 ## Output dieses Moduls
 - 1 Angebots-Satz
@@ -114,7 +114,7 @@ So kommst du von "Zeit gegen Geld" zu **Skalierung ohne Burnout**.
     order: 5,
     title: 'MVP bauen und Delivery automatisieren',
     summary:
-      'MVP muss liefern, nicht glaenzen. Danach automatisierst du den gesamten Delivery-Funnel.',
+      'MVP muss liefern, nicht glänzen. Danach automatisierst du den gesamten Delivery-Funnel.',
     content: `## MVP-Optionen (aus dem File)
 1. **No-Code** (Zapier, Make, GoHighLevel, Lovable)
 2. **AI-Assisted Coding** (Cursor, Replit)
@@ -136,7 +136,7 @@ So kommst du von "Zeit gegen Geld" zu **Skalierung ohne Burnout**.
     summary:
       'Kurzfristige Gier killt langfristigen Wert. Die 3 S bringen Substanz.',
     content: `## Long-Term Greedy
-Du optimierst fuer 50 Jahre, nicht fuer 50 Tage.
+Du optimierst für 50 Jahre, nicht für 50 Tage.
 
 ## Die 3 S der Skalierung
 1. **Sell** - erster stabiler Umsatz
@@ -153,12 +153,12 @@ Du optimierst fuer 50 Jahre, nicht fuer 50 Tage.
     summary:
       'TikTok 2026 belohnt radikale Echtheit. Du verkaufst nicht nur Software, sondern den Prozess.',
     content: `## Reali-TEA (Trend 2026)
-- Keine Hochglanz-Aesthetik
+- Keine Hochglanz-Ästhetik
 - Fehler und Chaos sind **Proof of Work**
 - Screen + Handheld statt sterile Screen-Recording
 
 ## Curiosity Detours
-Hooks muessen Wissensluecken oeffnen:
+Hooks müssen Wissenslücken öffnen:
 Schlecht: "Neues Tool!"
 Gut: "Ich habe die 4-Sekunden-Antwort gebaut, die Dan Martell meint."
 
@@ -179,13 +179,13 @@ Hook-Typen mit hohem ROI:
     summary:
       'Der Content braucht einen Funnel: Hook -> Demo -> CTA. Danach Community als Engine.',
     content: `## Hook-Architektur (aus dem Bericht)
-1. **Martell Hack**: Autoritaet + Demo + CTA
+1. **Martell Hack**: Autorität + Demo + CTA
 2. **Trauma/Fail**: Schmerz zeigen, dann Wendepunkt
 3. **Mathematische Logik**: simple Rechnung + Automation
 4. **Geheimer Code**: exklusive Struktur statt Output
 
 ## Funnel
-Hook -> Demo im Gemini-Window -> CTA (Kommentar fuer Warteliste).
+Hook -> Demo im Gemini-Window -> CTA (Kommentar für Warteliste).
 Automatisiere DMs (ManyChat o.a.), sonst brichst du unter Nachfrage zusammen.
 
 ## Community-Mechanik
@@ -201,7 +201,7 @@ Frag die Community nach Annahmen, die dein System testen soll.
     order: 9,
     title: 'Opportunity Buckets & Fokus',
     summary:
-      'Die falsche Idee kostet Zeit. Filtere hart, waehle einen Bucket und bleib drin.',
+      'Die falsche Idee kostet Zeit. Filtere hart, wähle einen Bucket und bleib drin.',
     content: `## Trash-Filter (sofort aussortieren)
 - AI ersetzt es bereits?
 - Industrie schrumpft?
@@ -222,7 +222,7 @@ Commit auf einen Track (1.000 Tage). Shiny-Object-Syndrom killt mehr Companies a
 
 ## Output dieses Moduls
 - 1 Bucket-Entscheidung
-- 1 Fokus-Regel fuer 12 Monate`,
+- 1 Fokus-Regel für 12 Monate`,
   },
 ];
 

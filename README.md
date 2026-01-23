@@ -23,12 +23,12 @@ The Forge nutzt ein **Product-Led Growth** Modell für maximale Konvertierung vo
 
 ### Heute
 
-*   **Account Settings:** Neue `/settings`‑Seite mit Notification‑Prefs, Privacy‑Prefs und sofortiger Account‑Loeschung (mit Sicherheitsarchiv).
+*   **Account Settings:** Neue `/settings`‑Seite mit Notification‑Prefs, Privacy‑Prefs und sofortiger Account‑Löschung (mit Sicherheitsarchiv).
 *   **Deletion Flow:** `AccountStatus` + Tombstone/Anonymisierung, Sign‑In Lockout, Retention in `UserDeletion`.
 *   **DM‑Moderation:** Nachrichten werden wie Forum‑Posts moderiert (Toxicity‑Check + Warnung), Fehler wird im UI gezeigt.
 *   **Privacy Controls:** Profil‑Sichtbarkeit und Follower‑Counts serverseitig enforced.
-*   **Forum Mobile Revamp:** Reddit‑like Card‑Style, kompakte Actions, fixes fuer Editor‑Modal, Emoji‑Picker und Toolbar‑Breiten.
-*   **Mobile Navigation:** Header/Tab‑Bar, Account‑Eintrag im Hamburger‑Menue, Hub‑Badge entfernt.
+*   **Forum Mobile Revamp:** Reddit‑like Card‑Style, kompakte Actions, fixes für Editor‑Modal, Emoji‑Picker und Toolbar‑Breiten.
+*   **Mobile Navigation:** Header/Tab‑Bar, Account‑Eintrag im Hamburger‑Menü, Hub‑Badge entfernt.
 
 ---
 
@@ -100,7 +100,7 @@ npm run dev
 | **Next.js 16** | App Router, React Server Components |
 | **TypeScript** | Type-safe Code |
 | **Prisma 7** | ORM & Database Migrations |
-| **PostgreSQL** | Relationele Datenbank mit RLS |
+| **PostgreSQL** | Relationale Datenbank mit RLS |
 | **NextAuth v5** | Open Magic Link Registration |
 | **Energy System** | Custom AI Credit Management |
 | **Stripe** | Subscriptions & Connect (Marketplace) |

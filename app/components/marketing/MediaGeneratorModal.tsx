@@ -23,11 +23,6 @@ const MEDIA_MODES = [
     description: 'Generiere Visuals aus einem Prompt.',
   },
   {
-    id: 'image-to-image',
-    label: 'Image → Image',
-    description: 'Style-Transfer oder Re-Design auf Basis eines Bildes.',
-  },
-  {
     id: 'text-to-video',
     label: 'Text → Video',
     description: 'Kurze Clips aus einem Text-Prompt.',
@@ -39,20 +34,55 @@ const MEDIA_MODES = [
   },
 ] as const;
 
-const IMAGE_MODELS = [
-  { id: 'black-forest-labs/flux-schnell', label: 'Flux Schnell · Ultra Fast' },
-];
+type MediaMode = (typeof MEDIA_MODES)[number]['id'];
 
-const VIDEO_MODELS = [
-  { id: 'wan-video/wan-2.1-1.3b', label: 'Wan 2.1 · Video' },
-];
-
-const MODE_DEFAULT_MODEL: Record<MediaMode, string> = {
-  'text-to-image': 'black-forest-labs/flux-schnell',
-  'image-to-image': 'black-forest-labs/flux-schnell',
-  'text-to-video': 'wan-video/wan-2.1-1.3b',
-  'image-to-video': 'wan-video/wan-2.1-1.3b',
+type ModelConfig = {
+  id: string;
+  label: string;
+  outputType: 'image' | 'video';
+  modes: MediaMode[];
+  supportsImageInput?: boolean;
+  supportsNegativePrompt?: boolean;
+  supportsGuidance?: boolean;
+  supportsSteps?: boolean;
+  supportsSeed?: boolean;
+  supportsDuration?: boolean;
+  supportsFps?: boolean;
 };
+
+const MODEL_CONFIGS: ModelConfig[] = [
+  {
+    id: 'prunaai/z-image-turbo',
+    label: 'Z-Image Turbo · Ultra Fast',
+    outputType: 'image',
+    modes: ['text-to-image'],
+    supportsGuidance: true,
+    supportsSteps: true,
+  },
+  {
+    id: 'black-forest-labs/flux-schnell',
+    label: 'Flux Schnell',
+    outputType: 'image',
+    modes: ['text-to-image'],
+    supportsNegativePrompt: true,
+  },
+  {
+    id: 'wan-video/wan-2.1-1.3b',
+    label: 'Wan 2.1 · Text to Video',
+    outputType: 'video',
+    modes: ['text-to-video'],
+    supportsNegativePrompt: true,
+  },
+  {
+    id: 'kwaivgi/kling-v2.5-turbo-pro',
+    label: 'Kling 2.5 Turbo Pro · Image to Video',
+    outputType: 'video',
+    modes: ['image-to-video'],
+    supportsImageInput: true,
+    supportsGuidance: true,
+    supportsDuration: true,
+  },
+];
 
 const ASPECT_RATIOS = [
   { id: '1:1', label: '1:1 Square' },
@@ -61,8 +91,6 @@ const ASPECT_RATIOS = [
   { id: '16:9', label: '16:9 Wide' },
   { id: '3:2', label: '3:2 Classic' },
 ];
-
-type MediaMode = (typeof MEDIA_MODES)[number]['id'];
 
 type MediaAsset = {
   url: string;
@@ -79,6 +107,16 @@ interface MediaGeneratorModalProps {
   onAssetCreated?: (asset: any) => void;
 }
 
+const getModelsForMode = (mode: MediaMode) =>
+  MODEL_CONFIGS.filter((config) => config.modes.includes(mode));
+
+const getDefaultMode = () => {
+  const first = MEDIA_MODES.find((item) => getModelsForMode(item.id).length > 0);
+  return (first?.id ?? 'text-to-image') as MediaMode;
+};
+
+const getDefaultModelForMode = (mode: MediaMode) => getModelsForMode(mode)[0]?.id ?? '';
+
 export function MediaGeneratorModal({
   isOpen = true,
   onClose,
@@ -88,18 +126,16 @@ export function MediaGeneratorModal({
   inline = false,
   onAssetCreated
 }: MediaGeneratorModalProps) {
-  const [mode, setMode] = useState<MediaMode>('text-to-image');
-  const [model, setModel] = useState(IMAGE_MODELS[0].id);
+  const [mode, setMode] = useState<MediaMode>(getDefaultMode());
+  const [model, setModel] = useState(getDefaultModelForMode(mode));
   const [prompt, setPrompt] = useState('');
   const [negativePrompt, setNegativePrompt] = useState('');
   const [aspectRatio, setAspectRatio] = useState(ASPECT_RATIOS[0].id);
   const [steps, setSteps] = useState(20);
   const [guidance, setGuidance] = useState(7.5);
   const [seed, setSeed] = useState('');
-  const [strength, setStrength] = useState(0.6);
   const [duration, setDuration] = useState(4);
   const [fps, setFps] = useState(24);
-  const [variants, setVariants] = useState(1);
   const [useBrandContext, setUseBrandContext] = useState(Boolean(brandDNA));
   const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -112,19 +148,77 @@ export function MediaGeneratorModal({
   const [creditsUsed, setCreditsUsed] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [predictionStatus, setPredictionStatus] = useState<string | null>(null);
 
-  const isVideoMode = mode.includes('video');
-  const requiresImage = mode.includes('image-to');
+  const availableModels = useMemo(() => getModelsForMode(mode), [mode]);
+  const selectedModel = availableModels.find((item) => item.id === model) ?? availableModels[0];
+  const isVideoMode = selectedModel?.outputType === 'video' || mode.includes('video');
+  const requiresImage = Boolean(selectedModel?.supportsImageInput);
+  const supportsNegativePrompt = Boolean(selectedModel?.supportsNegativePrompt);
+  const supportsGuidance = Boolean(selectedModel?.supportsGuidance);
+  const supportsSteps = Boolean(selectedModel?.supportsSteps);
+  const supportsSeed = Boolean(selectedModel?.supportsSeed);
+  const supportsDuration = Boolean(selectedModel?.supportsDuration);
+  const supportsFps = Boolean(selectedModel?.supportsFps);
 
   useEffect(() => {
     if (!isOpen && !inline) return;
     setErrorMessage('');
     setSuccessMessage('');
+    setPredictionStatus(null);
   }, [isOpen, inline]);
 
   useEffect(() => {
-    setModel(MODE_DEFAULT_MODEL[mode]);
-  }, [mode]);
+    if (!availableModels.length) {
+      setModel('');
+      return;
+    }
+    if (!availableModels.some((item) => item.id === model)) {
+      setModel(availableModels[0].id);
+    }
+  }, [availableModels, model]);
+
+  useEffect(() => {
+    if (!requiresImage) {
+      setImageFile(null);
+    }
+  }, [requiresImage]);
+
+  useEffect(() => {
+    if (!supportsNegativePrompt) {
+      setNegativePrompt('');
+    }
+  }, [supportsNegativePrompt]);
+
+  useEffect(() => {
+    if (!supportsDuration) {
+      setDuration(4);
+    }
+  }, [supportsDuration]);
+
+  useEffect(() => {
+    if (!supportsGuidance) {
+      setGuidance(7.5);
+    }
+  }, [supportsGuidance]);
+
+  useEffect(() => {
+    if (!supportsSteps) {
+      setSteps(20);
+    }
+  }, [supportsSteps]);
+
+  useEffect(() => {
+    if (!supportsSeed) {
+      setSeed('');
+    }
+  }, [supportsSeed]);
+
+  useEffect(() => {
+    if (!supportsFps) {
+      setFps(24);
+    }
+  }, [supportsFps]);
 
   useEffect(() => {
     if (!imageFile) {
@@ -139,20 +233,61 @@ export function MediaGeneratorModal({
   const promptPlaceholder = useMemo(() => {
     if (mode === 'text-to-video') return 'z.B. Minimalistisches Produkt-Teasing mit weichen Lichtfahrten';
     if (mode === 'image-to-video') return 'z.B. Sanfte Kamerafahrt, leichte Stoffbewegung, cineastisch';
-    if (mode === 'image-to-image') return 'z.B. High-end Editorial Look, sauberer Hintergrund, Premium Feel';
     return 'z.B. Studio Shot, natürliche Hauttöne, hochwertige Materialien, cleanes Layout';
   }, [mode]);
+
+  const pollPrediction = async (predictionId: string) => {
+    const pollStart = Date.now();
+    const maxWaitMs = isVideoMode ? 1000 * 60 * 12 : 1000 * 60 * 4;
+    let attempt = 0;
+
+    while (Date.now() - pollStart < maxWaitMs) {
+      await new Promise((resolve) => setTimeout(resolve, attempt === 0 ? 800 : 1800));
+      attempt += 1;
+
+      const res = await fetch(`/api/ventures/${ventureId}/marketing/media?predictionId=${predictionId}`);
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(data?.error || 'Prediction fehlgeschlagen.');
+      }
+
+      setPredictionStatus(data?.status || null);
+
+      if (data?.status === 'succeeded') {
+        setAssets(data.assets || []);
+        setCreditsRemaining(data.creditsRemaining ?? null);
+        setSuccessMessage('Generierung abgeschlossen.');
+        if (onAssetCreated && data.assets) {
+          data.assets.forEach((asset: any) => onAssetCreated(asset));
+        }
+        return;
+      }
+
+      if (data?.status === 'failed' || data?.status === 'canceled') {
+        throw new Error(data?.error || 'Generierung fehlgeschlagen.');
+      }
+    }
+
+    throw new Error('Timeout: Bitte später erneut prüfen.');
+  };
 
   if (!isOpen && !inline) return null;
 
   const handleGenerate = async () => {
     setErrorMessage('');
     setSuccessMessage('');
+    setPredictionStatus(null);
     setCreditsRemaining(null);
     setCreditsUsed(null);
+    setAssets([]);
 
     if (!prompt.trim()) {
       setErrorMessage('Bitte gib einen Prompt an.');
+      return;
+    }
+    if (!selectedModel) {
+      setErrorMessage('Kein Modell verfügbar.');
       return;
     }
     if (requiresImage && !imageFile) {
@@ -164,18 +299,20 @@ export function MediaGeneratorModal({
     try {
       const formData = new FormData();
       formData.append('mode', mode);
-      formData.append('model', model);
+      formData.append('model', selectedModel.id);
       formData.append('prompt', prompt.trim());
-      if (negativePrompt.trim()) formData.append('negativePrompt', negativePrompt.trim());
+      if (supportsNegativePrompt && negativePrompt.trim()) {
+        formData.append('negativePrompt', negativePrompt.trim());
+      }
       formData.append('aspectRatio', aspectRatio);
-      formData.append('steps', String(steps));
-      formData.append('guidance', String(guidance));
-      formData.append('variants', String(variants));
-      if (seed.trim()) formData.append('seed', seed.trim());
+      if (supportsSteps) formData.append('steps', String(steps));
+      if (supportsGuidance) formData.append('guidance', String(guidance));
+      if (supportsSeed && seed.trim()) formData.append('seed', seed.trim());
       if (requiresImage && imageFile) formData.append('image', imageFile);
-      if (mode === 'image-to-image') formData.append('strength', String(strength));
-      if (isVideoMode) {
+      if (supportsDuration) {
         formData.append('duration', String(duration));
+      }
+      if (supportsFps) {
         formData.append('fps', String(fps));
       }
       if (useBrandContext && brandDNA) formData.append('useBrandContext', 'true');
@@ -197,23 +334,31 @@ export function MediaGeneratorModal({
         return;
       }
 
-      setAssets(data.assets || []);
-      setCreditsRemaining(data.creditsRemaining ?? null);
       setCreditsUsed(data.creditsUsed ?? null);
-      setSuccessMessage('Generierung abgeschlossen.');
-      
-      // Notify parent about new assets
-      if (onAssetCreated && data.assets) {
-        data.assets.forEach((asset: any) => onAssetCreated(asset));
+      setPredictionStatus(data.status || 'starting');
+      setSuccessMessage('Generierung gestartet...');
+
+      if (data.predictionId) {
+        await pollPrediction(data.predictionId);
+      } else if (data.assets) {
+        setAssets(data.assets || []);
+        if (onAssetCreated && data.assets) {
+          data.assets.forEach((asset: any) => onAssetCreated(asset));
+        }
+      } else {
+        throw new Error('Keine Prediction-ID erhalten.');
       }
 
     } catch (error) {
       console.error('Media generation failed', error);
-      setErrorMessage('Serverfehler. Bitte erneut versuchen.');
+      setErrorMessage(error instanceof Error ? error.message : 'Serverfehler. Bitte erneut versuchen.');
     } finally {
       setIsGenerating(false);
     }
   };
+
+  const hasAdvancedFields =
+    supportsSteps || supportsGuidance || supportsDuration || supportsSeed || supportsFps;
 
   const Content = (
     <div className={`flex flex-col h-full ${inline ? '' : 'max-h-[90vh] overflow-hidden'}`}>
@@ -239,23 +384,32 @@ export function MediaGeneratorModal({
       <div className={`grid grid-cols-1 ${inline ? 'lg:grid-cols-2' : 'lg:grid-cols-[1.1fr_1fr]'} gap-6 p-6 overflow-y-auto`}>
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {MEDIA_MODES.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setMode(item.id)}
-                className={`rounded-xl border px-4 py-3 text-left transition-all ${
-                  mode === item.id
-                    ? 'bg-[#D4AF37]/10 border-[#D4AF37] text-white'
-                    : 'bg-white/5 border-white/10 text-white/50 hover:text-white'
-                }`}
-              >
-                <div className="flex items-center gap-2 text-sm font-bold">
-                  {item.id.includes('video') ? <Video className="w-4 h-4" /> : <ImageIcon className="w-4 h-4" />}
-                  {item.label}
-                </div>
-                <p className="text-[10px] text-white/50 mt-1">{item.description}</p>
-              </button>
-            ))}
+            {MEDIA_MODES.map((item) => {
+              const modeModels = getModelsForMode(item.id);
+              const isAvailable = modeModels.length > 0;
+
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => isAvailable && setMode(item.id)}
+                  disabled={!isAvailable}
+                  className={`rounded-xl border px-4 py-3 text-left transition-all ${
+                    mode === item.id
+                      ? 'bg-[#D4AF37]/10 border-[#D4AF37] text-white'
+                      : 'bg-white/5 border-white/10 text-white/50 hover:text-white'
+                  } ${!isAvailable ? 'opacity-40 cursor-not-allowed hover:text-white/50' : ''}`}
+                >
+                  <div className="flex items-center gap-2 text-sm font-bold">
+                    {item.id.includes('video') ? <Video className="w-4 h-4" /> : <ImageIcon className="w-4 h-4" />}
+                    {item.label}
+                  </div>
+                  <p className="text-[10px] text-white/50 mt-1">{item.description}</p>
+                  {!isAvailable && (
+                    <p className="text-[10px] text-white/40 mt-2 uppercase tracking-widest">Kein Modell</p>
+                  )}
+                </button>
+              );
+            })}
           </div>
 
           <div className="glass-card rounded-xl border border-white/10 p-5 space-y-4">
@@ -281,25 +435,29 @@ export function MediaGeneratorModal({
               placeholder={promptPlaceholder}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-[#D4AF37] outline-none resize-none"
             />
-            <textarea
-              rows={2}
-              value={negativePrompt}
-              onChange={(event) => setNegativePrompt(event.target.value)}
-              placeholder="Optional: Negative Prompt (z.B. blurry, low quality, artifacts)"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white/80 text-xs focus:border-[#D4AF37] outline-none resize-none"
-            />
+            {supportsNegativePrompt && (
+              <textarea
+                rows={2}
+                value={negativePrompt}
+                onChange={(event) => setNegativePrompt(event.target.value)}
+                placeholder="Optional: Negative Prompt (z.B. blurry, low quality, artifacts)"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white/80 text-xs focus:border-[#D4AF37] outline-none resize-none"
+              />
+            )}
           </div>
 
           <div className="glass-card rounded-xl border border-white/10 p-5 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold uppercase tracking-widest text-white/40">Model & Output</h3>
-              <button
-                onClick={() => setShowAdvanced((prev) => !prev)}
-                className="text-[10px] uppercase tracking-widest text-white/50 hover:text-white flex items-center gap-2"
-              >
-                <Sliders className="w-3.5 h-3.5" />
-                {showAdvanced ? 'Basic' : 'Advanced'}
-              </button>
+              {hasAdvancedFields && (
+                <button
+                  onClick={() => setShowAdvanced((prev) => !prev)}
+                  className="text-[10px] uppercase tracking-widest text-white/50 hover:text-white flex items-center gap-2"
+                >
+                  <Sliders className="w-3.5 h-3.5" />
+                  {showAdvanced ? 'Basic' : 'Advanced'}
+                </button>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -310,7 +468,10 @@ export function MediaGeneratorModal({
                   onChange={(event) => setModel(event.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-[#D4AF37] outline-none"
                 >
-                  {(isVideoMode ? VIDEO_MODELS : IMAGE_MODELS).map((option) => (
+                  {availableModels.length === 0 && (
+                    <option value="">Kein Modell verfügbar</option>
+                  )}
+                  {availableModels.map((option) => (
                     <option key={option.id} value={option.id}>
                       {option.label}
                     </option>
@@ -332,6 +493,75 @@ export function MediaGeneratorModal({
                 </select>
               </div>
             </div>
+
+            {showAdvanced && hasAdvancedFields && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                {supportsSteps && (
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-widest text-white/40">Steps</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={50}
+                      value={steps}
+                      onChange={(event) => setSteps(Number(event.target.value))}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-[#D4AF37] outline-none"
+                    />
+                  </div>
+                )}
+                {supportsGuidance && (
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-widest text-white/40">Guidance</label>
+                    <input
+                      type="number"
+                      step={0.1}
+                      min={0}
+                      max={20}
+                      value={guidance}
+                      onChange={(event) => setGuidance(Number(event.target.value))}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-[#D4AF37] outline-none"
+                    />
+                  </div>
+                )}
+                {supportsDuration && (
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-widest text-white/40">Duration (sec)</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={10}
+                      value={duration}
+                      onChange={(event) => setDuration(Number(event.target.value))}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-[#D4AF37] outline-none"
+                    />
+                  </div>
+                )}
+                {supportsSeed && (
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-widest text-white/40">Seed</label>
+                    <input
+                      type="number"
+                      value={seed}
+                      onChange={(event) => setSeed(event.target.value)}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-[#D4AF37] outline-none"
+                    />
+                  </div>
+                )}
+                {supportsFps && (
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-widest text-white/40">FPS</label>
+                    <input
+                      type="number"
+                      min={12}
+                      max={60}
+                      value={fps}
+                      onChange={(event) => setFps(Number(event.target.value))}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-[#D4AF37] outline-none"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {requiresImage && (
@@ -375,10 +605,13 @@ export function MediaGeneratorModal({
               {creditsRemaining !== null && (
                 <span className="text-white/70">· {creditsRemaining} übrig</span>
               )}
+              {predictionStatus && (
+                <span className="text-white/60">· Status: {predictionStatus}</span>
+              )}
             </div>
             <button
               onClick={handleGenerate}
-              disabled={isGenerating}
+              disabled={isGenerating || !selectedModel}
               className="px-6 py-3 rounded-xl bg-[#D4AF37] text-black font-bold text-sm hover:opacity-90 transition-all disabled:opacity-50 flex items-center gap-2"
             >
               {isGenerating ? (
