@@ -23,6 +23,13 @@ const MODE_ENDPOINTS: Record<string, string | undefined> = {
   'image-to-video': process.env.MODAL_MEDIA_IMAGE_TO_VIDEO_URL,
 };
 
+const MODE_MODEL_ALLOWLIST: Record<string, Set<string>> = {
+  'text-to-image': new Set(['qwen-image-2512', 'z-image-turbo', 'glm-image']),
+  'image-to-image': new Set(['qwen-image-2512', 'z-image-turbo', 'glm-image']),
+  'text-to-video': new Set(['mochi-1']),
+  'image-to-video': new Set(['wan-2.2', 'mochi-1']),
+};
+
 const normalizeNumber = (value: FormDataEntryValue | null, fallback: number) => {
   if (value === null) return fallback;
   const parsed = Number(value);
@@ -108,6 +115,11 @@ export async function POST(
 
   if (!mode || !prompt) {
     return NextResponse.json({ error: 'Fehlende Parameter' }, { status: 400 });
+  }
+
+  const allowedModels = MODE_MODEL_ALLOWLIST[mode];
+  if (allowedModels && model && !allowedModels.has(model)) {
+    return NextResponse.json({ error: 'Modell nicht fuer dieses Format freigegeben' }, { status: 400 });
   }
 
   const endpoint = MODE_ENDPOINTS[mode] || process.env.MODAL_MEDIA_ENDPOINT;

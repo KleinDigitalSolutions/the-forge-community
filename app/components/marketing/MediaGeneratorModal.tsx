@@ -50,6 +50,13 @@ const VIDEO_MODELS = [
   { id: 'mochi-1', label: 'Mochi 1 · Premium' },
 ];
 
+const MODE_DEFAULT_MODEL: Record<MediaMode, string> = {
+  'text-to-image': 'qwen-image-2512',
+  'image-to-image': 'qwen-image-2512',
+  'text-to-video': 'mochi-1',
+  'image-to-video': 'wan-2.2',
+};
+
 const ASPECT_RATIOS = [
   { id: '1:1', label: '1:1 Square' },
   { id: '4:5', label: '4:5 Portrait' },
@@ -115,11 +122,7 @@ export function MediaGeneratorModal({
   }, [isOpen]);
 
   useEffect(() => {
-    if (mode.includes('video')) {
-      setModel(VIDEO_MODELS[0].id);
-    } else {
-      setModel(IMAGE_MODELS[0].id);
-    }
+    setModel(MODE_DEFAULT_MODEL[mode]);
   }, [mode]);
 
   useEffect(() => {
