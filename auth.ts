@@ -77,7 +77,9 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         session.user.id = token.sub;
       }
       if (session.user) {
-        session.user.accountStatus = (token as { accountStatus?: string }).accountStatus ?? 'ACTIVE';
+        const accountStatus =
+          (token as { accountStatus?: 'ACTIVE' | 'DELETED' }).accountStatus ?? 'ACTIVE';
+        session.user.accountStatus = accountStatus;
       }
       return session;
     }

@@ -209,7 +209,7 @@ ${formattedSources}
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         return NextResponse.json({
-          error: 'Live-Recherche ist aktuell nicht verfuegbar.',
+          error: 'Live-Recherche ist aktuell nicht verfügbar.',
           code: 'RESEARCH_UNAVAILABLE',
           detail: message
         }, { status: 503 });

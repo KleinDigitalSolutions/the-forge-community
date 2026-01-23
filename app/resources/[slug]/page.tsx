@@ -72,7 +72,7 @@ export default function TrainingDetailPage() {
       <div className="mb-8">
         <Link href="/resources" className="inline-flex items-center gap-2 text-xs text-white/40 hover:text-white transition-colors">
           <ChevronLeft className="w-4 h-4" />
-          Zurueck zur Academy
+          Zurück zur Academy
         </Link>
       </div>
 

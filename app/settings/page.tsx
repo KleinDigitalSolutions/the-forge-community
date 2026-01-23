@@ -140,12 +140,12 @@ export default function SettingsPage() {
       });
       if (!res.ok) {
         const payload = await res.json().catch(() => ({}));
-        throw new Error(payload?.error || 'Account konnte nicht geloescht werden');
+        throw new Error(payload?.error || 'Account konnte nicht gelöscht werden');
       }
       await signOut({ callbackUrl: '/login?deleted=1' });
     } catch (error) {
       console.error(error);
-      setDeleteError('Loeschung fehlgeschlagen. Bitte erneut versuchen.');
+      setDeleteError('Löschung fehlgeschlagen. Bitte erneut versuchen.');
     } finally {
       setDeleting(false);
     }
@@ -256,7 +256,7 @@ export default function SettingsPage() {
               <div className="text-xs font-bold uppercase tracking-[0.3em] text-white/40">Messaging</div>
             </div>
             <div className="p-6 space-y-3 text-sm text-white/60">
-              <div>DMs sind fuer alle Founder offen.</div>
+              <div>DMs sind für alle Founder offen.</div>
               <div className="text-xs text-white/30">Spam- und Beleidigungsfilter werden serverseitig enforced.</div>
             </div>
           </section>
@@ -268,8 +268,8 @@ export default function SettingsPage() {
             </div>
             <div className="p-6 space-y-4 text-sm text-red-100/80">
               <p>
-                Account-Loeschung ist endgueltig. Dein Login wird deaktiviert, dein Profil wird entfernt.
-                Nachrichten und Account-Infos werden aus Sicherheitsgruenden archiviert.
+                Account-Löschung ist endgültig. Dein Login wird deaktiviert, dein Profil wird entfernt.
+                Nachrichten und Account-Infos werden aus Sicherheitsgründen archiviert.
               </p>
 
               {!deleteOpen ? (
@@ -277,7 +277,7 @@ export default function SettingsPage() {
                   onClick={() => setDeleteOpen(true)}
                   className="rounded-2xl border border-red-400/40 px-5 py-3 text-xs font-bold uppercase tracking-[0.2em] text-red-200 transition hover:bg-red-500/10"
                 >
-                  Account loeschen
+                  Account löschen
                 </button>
               ) : (
                 <div className="space-y-4">
@@ -312,7 +312,7 @@ export default function SettingsPage() {
                       disabled={!canDelete || deleting}
                       className="rounded-2xl bg-red-500 px-6 py-3 text-xs font-bold uppercase tracking-[0.2em] text-black transition disabled:opacity-40"
                     >
-                      {deleting ? 'Loescht...' : 'Endgueltig loeschen'}
+                      {deleting ? 'Löscht...' : 'Endgültig löschen'}
                     </button>
                     <button
                       onClick={() => {

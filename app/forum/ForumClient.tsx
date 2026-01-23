@@ -719,7 +719,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
   };
 
   const handleDelete = async (id: string) => {
-    const confirmed = window.confirm('Beitrag wirklich loeschen?');
+    const confirmed = window.confirm('Beitrag wirklich löschen?');
     if (!confirmed) return;
     try {
       const response = await fetch('/api/forum/delete', {
@@ -1321,7 +1321,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                             <button
                               onClick={() => handleDelete(post.id)}
                               className="sm:ml-auto p-1.5 text-white/20 hover:text-white transition-all"
-                              aria-label="Beitrag loeschen"
+                              aria-label="Beitrag löschen"
                             >
                               <X className="w-4 h-4" />
                             </button>
@@ -1397,7 +1397,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                             <button
                               onClick={() => handleDelete(post.id)}
                               className="p-1.5 text-white/40 hover:text-white transition-all"
-                              aria-label="Beitrag loeschen"
+                              aria-label="Beitrag löschen"
                             >
                               <X className="w-4 h-4" />
                             </button>
