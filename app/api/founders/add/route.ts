@@ -1,17 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { addFounder } from '@/lib/notion';
 import { prisma } from '@/lib/prisma';
+import { verifyTurnstileToken } from '@/lib/turnstile';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const { name, email, phone, instagram, why, role, capital, skill } = body;
+    const { name, email, phone, instagram, why, role, capital, skill, turnstileToken } = body;
 
     if (!name || !email) {
       return NextResponse.json(
         { success: false, error: 'Name and email are required' },
         { status: 400 }
+      );
+    }
+
+    // Turnstile Verification
+    const isHuman = await verifyTurnstileToken(turnstileToken);
+    if (!isHuman) {
+      return NextResponse.json(
+        { success: false, error: 'Sicherheitsscheck fehlgeschlagen (Turnstile).' },
+        { status: 403 }
       );
     }
 

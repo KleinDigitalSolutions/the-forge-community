@@ -436,9 +436,16 @@ export async function POST(
       imageUrl,
     });
 
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null);
+    const webhookUrl = appUrl ? `${appUrl}/api/webhooks/replicate` : undefined;
+
     const prediction = await replicate.predictions.create({
       model: modelConfig.id,
       input: replicateInput,
+      ...(webhookUrl ? {
+        webhook: webhookUrl,
+        webhook_events_filter: ['completed'],
+      } : {}),
     });
 
     await writeJobCache(prediction.id, {
@@ -545,7 +552,7 @@ export async function GET(
             }
           });
 
-          return { url: blob.url, type: isVideoMode ? 'video' : 'image' };
+          return { url: blob.url, type: (isVideoMode ? 'video' : 'image') as 'image' | 'video' };
         })
       );
 
