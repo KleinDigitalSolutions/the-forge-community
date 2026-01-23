@@ -14,6 +14,11 @@ export default function AdminDashboard() {
     recent: [] as any[]
   });
   const [loading, setLoading] = useState(true);
+  const [topupEmail, setTopupEmail] = useState('');
+  const [topupAmount, setTopupAmount] = useState(50);
+  const [topupStatus, setTopupStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [topupLoading, setTopupLoading] = useState(false);
+  const amountIsValid = Number.isFinite(topupAmount) && topupAmount > 0;
 
   useEffect(() => {
     fetch('/api/admin/applicants')
@@ -33,6 +38,40 @@ export default function AdminDashboard() {
         setLoading(false);
       });
   }, []);
+
+  const handleTopup = async () => {
+    setTopupLoading(true);
+    setTopupStatus(null);
+
+    try {
+      const res = await fetch('/api/admin/credits/grant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: topupEmail.trim() || undefined,
+          amount: topupAmount,
+          reason: 'admin-topup'
+        })
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setTopupStatus({ type: 'error', message: data?.error || 'Top-up fehlgeschlagen.' });
+        return;
+      }
+
+      setTopupStatus({
+        type: 'success',
+        message: `${data.email} hat jetzt ${data.creditsRemaining} Credits.`
+      });
+      setTopupEmail('');
+    } catch (error) {
+      console.error('Top-up failed', error);
+      setTopupStatus({ type: 'error', message: 'Serverfehler beim Top-up.' });
+    } finally {
+      setTopupLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -141,15 +180,63 @@ export default function AdminDashboard() {
           )}
         </div>
 
-        {/* System Info / Placeholder */}
-        <div className="glass-card p-6 rounded-2xl border border-white/10 flex flex-col justify-center items-center text-center space-y-4 bg-gradient-to-br from-white/[0.02] to-transparent">
-          <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10">
-            <Activity className="w-8 h-8 text-white/20" />
+        {/* Energy Top-up */}
+        <div className="glass-card p-6 rounded-2xl border border-white/10 space-y-5 bg-gradient-to-br from-white/[0.02] to-transparent">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10">
+              <Activity className="w-6 h-6 text-white/30" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-white">Energy Top-up</h3>
+              <p className="text-xs text-white/40">Admin-only Credits für Tests & Ops.</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-lg font-bold text-white mb-1">System Metrics</h3>
-            <p className="text-sm text-white/40">Weitere Analytics Module folgen in Kürze.</p>
+
+          <div className="space-y-3">
+            <div>
+              <label className="block text-[10px] uppercase tracking-widest text-white/40 mb-2">
+                Ziel-Email (optional)
+              </label>
+              <input
+                value={topupEmail}
+                onChange={(event) => setTopupEmail(event.target.value)}
+                placeholder="info@kleindigitalsolutions.de"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white focus:border-[#D4AF37] outline-none"
+              />
+              <p className="mt-1 text-[10px] text-white/30">Leer lassen = dein Account.</p>
+            </div>
+            <div>
+              <label className="block text-[10px] uppercase tracking-widest text-white/40 mb-2">
+                Credits
+              </label>
+              <input
+                type="number"
+                min={1}
+                value={topupAmount}
+                onChange={(event) => setTopupAmount(Number(event.target.value))}
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white focus:border-[#D4AF37] outline-none"
+              />
+            </div>
+            <button
+              onClick={handleTopup}
+              disabled={topupLoading || !amountIsValid}
+              className="w-full rounded-xl bg-[#D4AF37] px-4 py-2 text-sm font-bold text-black disabled:opacity-50"
+            >
+              {topupLoading ? 'Lade Credits...' : 'Credits gutschreiben'}
+            </button>
           </div>
+
+          {topupStatus && (
+            <div
+              className={`rounded-xl border px-4 py-2 text-xs font-bold uppercase tracking-widest ${
+                topupStatus.type === 'success'
+                  ? 'border-green-500/30 bg-green-500/10 text-green-300'
+                  : 'border-red-500/30 bg-red-500/10 text-red-300'
+              }`}
+            >
+              {topupStatus.message}
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -3,10 +3,19 @@
 import { useState, useEffect, useRef } from 'react';
 import PageShell from '@/app/components/PageShell';
 import AuthGuard from '@/app/components/AuthGuard';
-import { User, MapPin, Briefcase, Target, Phone, Instagram, Linkedin, Save, CheckCircle, Shield, Rocket, Zap, Camera, Loader2 } from 'lucide-react';
+import { 
+  User, MapPin, Briefcase, Target, Phone, 
+  Instagram, Linkedin, Save, CheckCircle, 
+  Shield, Rocket, Zap, Camera, Loader2,
+  Trophy, Globe, Mail, Calendar, Settings,
+  Activity, LayoutGrid, Lock
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 const skillOptions = ['Tech', 'Marketing', 'Sales', 'Operations', 'Finance', 'Legal', 'Creative', 'E-Commerce'];
+
+type Tab = 'identity' | 'expertise' | 'security';
 
 export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
@@ -14,7 +23,9 @@ export default function ProfilePage() {
   const [success, setSuccess] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const [activeTab, setActiveTab] = useState<Tab>('identity');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const [formData, setFormData] = useState({
     name: '',
     image: '',
@@ -74,14 +85,12 @@ export default function ProfilePage() {
       });
 
       const payload = await response.json();
-      if (!response.ok) {
-        throw new Error(payload?.error || 'Upload fehlgeschlagen');
-      }
+      if (!response.ok) throw new Error(payload?.error || 'Upload fehlgeschlagen');
 
       setFormData(prev => ({ ...prev, image: payload.url }));
     } catch (error) {
       console.error('Upload failed', error);
-      setUploadError('Upload fehlgeschlagen. Bitte erneut versuchen.');
+      setUploadError('Upload fehlgeschlagen.');
     } finally {
       setUploading(false);
     }
@@ -113,11 +122,10 @@ export default function ProfilePage() {
   };
 
   if (loading) return (
-    <div className="min-h-screen bg-[var(--background)] flex items-center justify-center p-6 relative overflow-hidden text-center">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[var(--accent)]/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="relative z-10">
-        <div className="w-12 h-12 border-2 border-[var(--accent)]/20 border-t-[var(--accent)] rounded-full animate-spin mx-auto mb-6" />
-        <p className="text-white/20 text-[10px] font-bold uppercase tracking-[0.4em] animate-pulse">Lade Dossier...</p>
+    <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-12 h-12 border-2 border-[#D4AF37]/20 border-t-[#D4AF37] rounded-full animate-spin" />
+        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30">Dossier wird geladen</span>
       </div>
     </div>
   );
@@ -125,198 +133,322 @@ export default function ProfilePage() {
   return (
     <AuthGuard>
       <PageShell>
-        
-        <div className="max-w-4xl mx-auto px-4 py-16">
-          <header className="mb-16 relative">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 text-[10px] font-bold text-[var(--accent)] uppercase tracking-[0.3em] mb-6">
-              <Shield className="w-3 h-3" />
-              Operative Identität
+        <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
+          
+          {/* PROFILE HEADER - PRO STYLE */}
+          <div className="relative mb-12 rounded-[2.5rem] overflow-hidden border border-white/10 glass-card">
+            {/* Cover Image Placeholder */}
+            <div className="h-48 md:h-64 w-full bg-linear-to-br from-[#1a1a1a] via-[#0a0a0a] to-[#050505] relative overflow-hidden">
+               <div className="absolute inset-0 bg-grid-small opacity-20" />
+               <div className="absolute inset-0 bg-gradient-to-t from-[#050505] to-transparent" />
             </div>
-            <h1 className="text-5xl md:text-6xl font-instrument-serif text-white tracking-tight mb-4">Founder Dossier</h1>
-            <p className="text-white/40 uppercase tracking-[0.2em] text-xs font-bold">Vervollständige dein Dossier für das Netzwerk.</p>
-          </header>
 
-          <div className="grid gap-12">
-            
-            {/* PERSONAL INFO */}
-            <section className="glass-card rounded-3xl border border-white/10 overflow-hidden relative group transition-all duration-700 hover:border-white/20">
-              <div className="p-8 border-b border-white/5 bg-white/[0.01] flex items-center gap-4">
-                <div className="p-2 rounded-lg bg-white/5 border border-white/10">
-                  <User className="w-4 h-4 text-[var(--accent)]" />
+            <div className="px-8 pb-10 -mt-16 relative z-10">
+              <div className="flex flex-col md:flex-row md:items-end gap-6 md:gap-8">
+                {/* Avatar Section */}
+                <div className="relative group self-start">
+                  <div className="w-32 h-32 md:w-40 md:h-40 rounded-[2rem] bg-[#0f0f0f] border-4 border-[#050505] overflow-hidden shadow-2xl relative">
+                    {formData.image ? (
+                      <img src={formData.image} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-4xl font-black text-[#D4AF37]">
+                        {formData.name?.charAt(0) || '?'}
+                      </div>
+                    )}
+                    {uploading && (
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
+                        <Loader2 className="w-8 h-8 text-[#D4AF37] animate-spin" />
+                      </div>
+                    )}
+                  </div>
+                  <button 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute -bottom-2 -right-2 p-3 bg-[#D4AF37] rounded-2xl text-black shadow-xl hover:scale-105 active:scale-95 transition-all"
+                  >
+                    <Camera className="w-5 h-5" />
+                  </button>
+                  <input type="file" ref={fileInputRef} onChange={handleImageUpload} className="hidden" accept="image/*" />
                 </div>
-                <h2 className="text-xl font-instrument-serif text-white uppercase tracking-wider">Persönliche Angaben</h2>
-              </div>
-              <div className="p-10 relative z-10">
-                {/* Avatar Upload */}
-                <div className="flex flex-col items-center mb-12">
-                  <div className="relative group">
-                    <div className="w-32 h-32 md:w-32 md:h-32 rounded-full bg-white/5 border-2 border-white/10 flex items-center justify-center text-4xl font-black text-[#D4AF37] overflow-hidden shadow-2xl transition-all group-hover:border-[#D4AF37]/50">
-                      {formData.image ? (
-                        <img src={formData.image} alt="Profile" className="w-full h-full object-cover" />
-                      ) : (
-                        formData.name?.charAt(0) || '?'
-                      )}
-                      
-                      {uploading && (
-                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                          <Loader2 className="w-8 h-8 text-[#D4AF37] animate-spin" />
-                        </div>
-                      )}
+
+                {/* Basic Info */}
+                <div className="flex-1 pb-2">
+                  <div className="flex flex-wrap items-center gap-3 mb-2">
+                    <h1 className="text-3xl md:text-5xl font-instrument-serif text-white">{formData.name || 'Neuer Operator'}</h1>
+                    <span className="px-2 py-0.5 rounded-md bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[9px] font-black text-[#D4AF37] uppercase tracking-widest">Founder</span>
+                  </div>
+                  <div className="flex flex-wrap gap-4 text-white/40 text-sm">
+                    <div className="flex items-center gap-1.5 font-medium">
+                      <MapPin className="w-4 h-4 text-[#D4AF37]" />
+                      {formData.address_city || 'Standort unbekannt'}
                     </div>
-                    
-                    <button 
-                      onClick={() => fileInputRef.current?.click()}
-                      className="absolute bottom-0 right-0 p-2.5 bg-[#D4AF37] rounded-full text-black shadow-xl hover:scale-110 active:scale-95 transition-all border-4 border-[#050505]"
-                    >
-                      <Camera className="w-4 h-4" />
-                    </button>
-                    <input 
-                      type="file" ref={fileInputRef} onChange={handleImageUpload} 
-                      className="hidden" accept="image/*" 
-                    />
+                    <div className="flex items-center gap-1.5 font-medium">
+                      <Briefcase className="w-4 h-4 text-[#D4AF37]" />
+                      {formData.skills.slice(0, 2).join(', ') || 'Keine Expertise angegeben'}
+                    </div>
                   </div>
-                  <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] mt-4">Identitäts-Bild ändern</p>
-                  {uploadError && (
-                    <p className="mt-2 text-[10px] uppercase tracking-widest text-red-300">{uploadError}</p>
-                  )}
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-8">
-                  <div className="space-y-3">
-                    <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] ml-1">Vollständiger Name</label>
-                    <input 
-                      type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
-                      className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-6 py-4 text-sm text-white focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-white/10"
-                    />
-                  </div>
-                <div className="space-y-3">
-                  <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] ml-1">Geburtsdatum</label>
-                  <input 
-                    type="date" value={formData.birthday} onChange={e => setFormData({...formData, birthday: e.target.value})}
-                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-6 py-4 text-sm text-white focus:border-[var(--accent)] focus:ring-0 outline-none transition-all appearance-none"
-                  />
-                </div>
-                <div className="space-y-3">
-                  <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] ml-1">Telefonnummer (Signal/WA)</label>
-                  <div className="relative">
-                    <Phone className="absolute left-6 top-4 w-4 h-4 text-white/20" />
-                    <input 
-                      type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})}
-                      placeholder="+49 123 456789"
-                      className="w-full bg-white/[0.03] border border-white/10 rounded-xl pl-14 pr-6 py-4 text-sm text-white focus:border-[var(--accent)] focus:ring-0 outline-none transition-all"
-                    />
-                  </div>
+                {/* Quick Actions */}
+                <div className="flex gap-3 mb-2 self-start md:self-end">
+                   <button 
+                    onClick={handleSave} 
+                    disabled={saving}
+                    className="flex items-center gap-2 px-8 py-3.5 bg-white text-black rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-[#D4AF37] transition-all disabled:opacity-50"
+                   >
+                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                     Dossier Sichern
+                   </button>
                 </div>
               </div>
             </div>
-            </section>
+          </div>
 
-            {/* EXPERTISE */}
-            <section className="glass-card rounded-3xl border border-white/10 overflow-hidden relative group transition-all duration-700 hover:border-white/20">
-              <div className="p-8 border-b border-white/5 bg-white/[0.01] flex items-center gap-4">
-                <div className="p-2 rounded-lg bg-white/5 border border-white/10">
-                  <Zap className="w-4 h-4 text-[var(--accent)]" />
-                </div>
-                <h2 className="text-xl font-instrument-serif text-white uppercase tracking-wider">Expertise & Matching</h2>
-              </div>
-              <div className="p-10 space-y-10 relative z-10">
-                <div className="space-y-6">
-                  <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] ml-1">Was sind deine Kernkompetenzen?</label>
-                  <div className="flex flex-wrap gap-3">
-                    {skillOptions.map(skill => (
-                      <button
-                        key={skill} onClick={() => handleToggleSkill(skill)}
-                        className={`px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-500 border ${
-                          formData.skills.includes(skill) 
-                            ? 'bg-[var(--accent)] border-[var(--accent)] text-black shadow-[0_0_15px_rgba(212,175,55,0.2)]' 
-                            : 'bg-white/5 border-white/10 text-white/40 hover:text-white hover:border-white/20'
-                        }`}
-                      >
-                        {skill}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] ml-1">Operative Bio</label>
-                  <textarea 
-                    value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})}
-                    placeholder="Erzähl den anderen Foundern kurz, wer du bist..."
-                    className="w-full min-h-[150px] bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-sm text-white focus:border-[var(--accent)] focus:ring-0 outline-none transition-all resize-none placeholder:text-white/10"
-                  />
-                </div>
-                <div className="space-y-3">
-                  <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] ml-1">Primäres Ziel</label>
-                  <div className="relative">
-                    <Target className="absolute left-6 top-4 w-4 h-4 text-white/20" />
-                    <input 
-                      type="text" value={formData.goal} onChange={e => setFormData({...formData, goal: e.target.value})}
-                      placeholder="z.B. Aufbau einer hochprofitablen Brand"
-                      className="w-full bg-white/[0.03] border border-white/10 rounded-xl pl-14 pr-6 py-4 text-sm text-white focus:border-[var(--accent)] focus:ring-0 outline-none transition-all placeholder:text-white/10"
-                    />
-                  </div>
-                </div>
-              </div>
-            </section>
+          {/* MAIN GRID */}
+          <div className="grid lg:grid-cols-[280px_1fr] gap-12">
+            
+            {/* SIDEBAR NAVIGATION */}
+            <aside className="space-y-8">
+              <nav className="flex flex-col gap-1">
+                <button 
+                  onClick={() => setActiveTab('identity')}
+                  className={cn(
+                    "flex items-center gap-3 px-6 py-4 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all",
+                    activeTab === 'identity' ? "bg-white/5 text-[#D4AF37] border border-white/10" : "text-white/30 hover:text-white hover:bg-white/5"
+                  )}
+                >
+                  <User className="w-4 h-4" /> Identity
+                </button>
+                <button 
+                  onClick={() => setActiveTab('expertise')}
+                  className={cn(
+                    "flex items-center gap-3 px-6 py-4 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all",
+                    activeTab === 'expertise' ? "bg-white/5 text-[#D4AF37] border border-white/10" : "text-white/30 hover:text-white hover:bg-white/5"
+                  )}
+                >
+                  <Trophy className="w-4 h-4" /> Expertise
+                </button>
+                <button 
+                  onClick={() => setActiveTab('security')}
+                  className={cn(
+                    "flex items-center gap-3 px-6 py-4 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all",
+                    activeTab === 'security' ? "bg-white/5 text-[#D4AF37] border border-white/10" : "text-white/30 hover:text-white hover:bg-white/5"
+                  )}
+                >
+                  <Lock className="w-4 h-4" /> Sicherheit
+                </button>
+              </nav>
 
-            {/* ADDRESS */}
-            <section className="glass-card rounded-3xl border border-white/10 overflow-hidden relative group transition-all duration-700 hover:border-white/20">
-              <div className="p-8 border-b border-white/5 bg-white/[0.01] flex items-center gap-4">
-                <div className="p-2 rounded-lg bg-white/5 border border-white/10">
-                  <MapPin className="w-4 h-4 text-[var(--accent)]" />
-                </div>
-                <h2 className="text-xl font-instrument-serif text-white uppercase tracking-wider">Logistische Daten (Anschrift)</h2>
-              </div>
-              <div className="p-10 space-y-8 relative z-10">
-                <div className="space-y-3">
-                  <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] ml-1">Straße & Hausnummer</label>
-                  <input 
-                    type="text" value={formData.address_street} onChange={e => setFormData({...formData, address_street: e.target.value})}
-                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-6 py-4 text-sm text-white focus:border-[var(--accent)] focus:ring-0 outline-none transition-all"
-                  />
-                </div>
-                <div className="grid md:grid-cols-3 gap-8">
-                  <div className="space-y-3">
-                    <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] ml-1">PLZ</label>
-                    <input 
-                      type="text" value={formData.address_zip} onChange={e => setFormData({...formData, address_zip: e.target.value})}
-                      className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-6 py-4 text-sm text-white focus:border-[var(--accent)] focus:ring-0 outline-none transition-all"
-                    />
-                  </div>
-                  <div className="md:col-span-2 space-y-3">
-                    <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] ml-1">Stadt</label>
-                    <input 
-                      type="text" value={formData.address_city} onChange={e => setFormData({...formData, address_city: e.target.value})}
-                      className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-6 py-4 text-sm text-white focus:border-[var(--accent)] focus:ring-0 outline-none transition-all"
-                    />
+              <div className="p-6 rounded-3xl border border-white/5 bg-white/[0.02] space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">Status</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                    <span className="text-[10px] font-bold text-green-500 uppercase">Aktiv</span>
                   </div>
                 </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">Karma</span>
+                  <span className="text-[10px] font-bold text-white tracking-widest">1,240 XP</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">Dossier</span>
+                  <span className="text-[10px] font-bold text-[#D4AF37] tracking-widest">85% Ready</span>
+                </div>
               </div>
-            </section>
+            </aside>
 
-            {/* SAVE BUTTON */}
-            <div className="flex flex-col items-center gap-6 mt-16 pb-24">
-              <button 
-                onClick={handleSave} disabled={saving}
-                className="btn-shimmer group relative bg-white text-black px-16 py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.4em] transition-all shadow-2xl flex items-center gap-4 active:scale-95 disabled:opacity-30 hover:bg-[var(--accent)]"
-              >
-                {saving ? 'Synchronisiere...' : <><Save className="w-4 h-4" /> Dossier aktualisieren</>}
-              </button>
+            {/* CONTENT AREA */}
+            <main className="space-y-12 pb-32">
+              <AnimatePresence mode="wait">
+                
+                {activeTab === 'identity' && (
+                  <motion.div
+                    key="identity"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="space-y-10"
+                  >
+                    {/* Identity Group */}
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-1 h-6 bg-[#D4AF37] rounded-full" />
+                        <h2 className="text-xl font-instrument-serif text-white tracking-wide">Basis Informationen</h2>
+                      </div>
+                      
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-1">Vollständiger Name</label>
+                          <input 
+                            type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
+                            className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-sm text-white focus:border-[#D4AF37] focus:bg-white/[0.06] outline-none transition-all placeholder:text-white/10"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-1">Geburtsdatum</label>
+                          <input 
+                            type="date" value={formData.birthday} onChange={e => setFormData({...formData, birthday: e.target.value})}
+                            className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-sm text-white focus:border-[#D4AF37] focus:bg-white/[0.06] outline-none transition-all"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-1">Kontakt Kanal (Signal/WA)</label>
+                          <input 
+                            type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})}
+                            placeholder="+49 151..."
+                            className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-sm text-white focus:border-[#D4AF37] focus:bg-white/[0.06] outline-none transition-all"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-1">Primäre Region</label>
+                          <input 
+                            type="text" value={formData.address_city} onChange={e => setFormData({...formData, address_city: e.target.value})}
+                            placeholder="z.B. Berlin, Deutschland"
+                            className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-sm text-white focus:border-[#D4AF37] focus:bg-white/[0.06] outline-none transition-all"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Socials Group */}
+                    <div className="space-y-6 pt-6 border-t border-white/5">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-1 h-6 bg-[#D4AF37] rounded-full" />
+                        <h2 className="text-xl font-instrument-serif text-white tracking-wide">Digitale Präsenz</h2>
+                      </div>
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div className="relative group">
+                          <Linkedin className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-[#D4AF37] transition-colors" />
+                          <input 
+                            type="text" value={formData.linkedin} onChange={e => setFormData({...formData, linkedin: e.target.value})}
+                            placeholder="LinkedIn URL"
+                            className="w-full bg-white/[0.03] border border-white/10 rounded-2xl pl-14 pr-6 py-4 text-sm text-white focus:border-[#D4AF37] focus:bg-white/[0.06] outline-none transition-all"
+                          />
+                        </div>
+                        <div className="relative group">
+                          <Instagram className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-[#D4AF37] transition-colors" />
+                          <input 
+                            type="text" value={formData.instagram} onChange={e => setFormData({...formData, instagram: e.target.value})}
+                            placeholder="Instagram Profile"
+                            className="w-full bg-white/[0.03] border border-white/10 rounded-2xl pl-14 pr-6 py-4 text-sm text-white focus:border-[#D4AF37] focus:bg-white/[0.06] outline-none transition-all"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {activeTab === 'expertise' && (
+                  <motion.div
+                    key="expertise"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="space-y-12"
+                  >
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-1 h-6 bg-[#D4AF37] rounded-full" />
+                        <h2 className="text-xl font-instrument-serif text-white tracking-wide">Skills & Expertise</h2>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {skillOptions.map(skill => (
+                          <button
+                            key={skill} onClick={() => handleToggleSkill(skill)}
+                            className={cn(
+                              "px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border",
+                              formData.skills.includes(skill) 
+                                ? "bg-[#D4AF37] border-[#D4AF37] text-black" 
+                                : "bg-white/5 border-white/5 text-white/40 hover:text-white hover:bg-white/10"
+                            )}
+                          >
+                            {skill}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-6 pt-6 border-t border-white/5">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-1 h-6 bg-[#D4AF37] rounded-full" />
+                        <h2 className="text-xl font-instrument-serif text-white tracking-wide">Strategische Bio</h2>
+                      </div>
+                      <textarea 
+                        value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})}
+                        placeholder="Deine Erfahrung, deine Erfolge, dein Fokus..."
+                        className="w-full min-h-[200px] bg-white/[0.03] border border-white/10 rounded-[2rem] px-8 py-6 text-sm text-white focus:border-[#D4AF37] focus:bg-white/[0.06] outline-none transition-all resize-none leading-relaxed"
+                      />
+                    </div>
+                  </motion.div>
+                )}
+
+                {activeTab === 'security' && (
+                  <motion.div
+                    key="security"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="space-y-10"
+                  >
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-1 h-6 bg-red-500 rounded-full" />
+                        <h2 className="text-xl font-instrument-serif text-white tracking-wide">Sicherheits & Versanddaten</h2>
+                      </div>
+                      
+                      <div className="glass-card p-8 rounded-[2rem] border border-white/5 space-y-8">
+                        <div className="space-y-3">
+                          <label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-1">Anschrift (Straße & Hausnummer)</label>
+                          <input 
+                            type="text" value={formData.address_street} onChange={e => setFormData({...formData, address_street: e.target.value})}
+                            className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-sm text-white focus:border-[#D4AF37] outline-none transition-all"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-3">
+                            <label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-1">PLZ</label>
+                            <input 
+                              type="text" value={formData.address_zip} onChange={e => setFormData({...formData, address_zip: e.target.value})}
+                              className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-sm text-white focus:border-[#D4AF37] outline-none transition-all"
+                            />
+                          </div>
+                          <div className="space-y-3">
+                            <label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-1">Stadt</label>
+                            <input 
+                              type="text" value={formData.address_city} onChange={e => setFormData({...formData, address_city: e.target.value})}
+                              className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-sm text-white focus:border-[#D4AF37] outline-none transition-all"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-8 rounded-[2rem] border border-white/10 bg-white/[0.02] flex items-center justify-between">
+                       <div>
+                          <h4 className="text-white font-bold text-sm mb-1">Zwei-Faktor Authentifizierung</h4>
+                          <p className="text-white/40 text-[10px] uppercase tracking-widest">Erhöhe die Sicherheit deines Accounts</p>
+                       </div>
+                       <div className="px-4 py-2 rounded-lg border border-white/10 text-[9px] font-black text-white/30 uppercase tracking-widest">In Kürze</div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Status Indicator */}
               <AnimatePresence>
                 {success && (
                   <motion.div 
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    className="flex items-center gap-2 text-green-500 font-black text-[10px] uppercase tracking-[0.2em]"
+                    className="flex items-center gap-2 text-green-500 font-bold text-[11px] uppercase tracking-widest bg-green-500/5 border border-green-500/20 p-4 rounded-2xl"
                   >
                     <CheckCircle className="w-4 h-4" />
-                    Daten erfolgreich im System gesichert
+                    Profil erfolgreich mit der Forge synchronisiert
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
-
+            </main>
           </div>
         </div>
       </PageShell>
