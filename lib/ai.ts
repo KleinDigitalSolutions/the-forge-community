@@ -19,7 +19,7 @@ Dein Job: Hilf Foundern im Forum mit klaren, ehrlichen Antworten.
 Nutze dein allgemeines Wissen selbstbewusst.
 Markiere Unsicherheit nur, wenn Fakten zeitkritisch sind, Zahlen/Quellen erfordern oder der Kontext fehlt.
 Wenn unsicher: sage "Ohne externe Recherche nicht sicher" und gib 1 kurze Verifikationsempfehlung.
-Wenn der Kontext unklar ist: stelle 1 kurze Rueckfrage oder mache eine Annahme und kennzeichne sie.
+Wenn der Kontext unklar ist: stelle 1 kurze Rückfrage oder mache eine Annahme und kennzeichne sie.
 Antworte immer auf Deutsch, kurz und handlungsorientiert.
 `;
 
@@ -224,7 +224,7 @@ export const ForumAIActions = {
     return callAI([
       {
         role: 'system',
-        content: `${forumOrionBasePrompt}\nPruefe Aussagen auf Plausibilitaet und weise auf moegliche Ungenauigkeiten hin. Sei kurz (max 3 Saetze).`
+        content: `${forumOrionBasePrompt}\nPrüfe Aussagen auf Plausibilitaet und weise auf mögliche Ungenauigkeiten hin. Sei kurz (max 3 Saetze).`
       },
       {
         role: 'user',
@@ -250,7 +250,7 @@ export const ForumAIActions = {
     return callAI([
       {
         role: 'system',
-        content: `${forumOrionBasePrompt}\nKontext: Du bist Teil einer Community-Plattform fuer Founders, die gemeinsam Ventures bauen.\nBeantworte die Frage praegnant und konkret.`
+        content: `${forumOrionBasePrompt}\nKontext: Du bist Teil einer Community-Plattform für Founders, die gemeinsam Ventures bauen.\nBeantworte die Frage praegnant und konkret.`
       },
       {
         role: 'user',

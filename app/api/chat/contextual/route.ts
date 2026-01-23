@@ -232,8 +232,8 @@ ${formattedSources}
     - Beziehe dich bei Bedarf auf die Core Module (z.B. Admin Shield für Verträge, Supply Chain Command für Sourcing).
     - Wenn der User ein Formular ausfüllt, gib hilfreiche Tipps für die Felder.
     - Bevorzuge kostenlose Tools oder Free-Tier Optionen. Nenne Kosten nur, wenn sie relevant sind.
-    - Wenn Zahlen/Quellen fehlen oder veraltet sein koennten, markiere Unsicherheit kurz und schlage einen Verifikationsweg vor.
-    - Wenn Kontext fehlt, stelle 1 kurze Rueckfrage.
+    - Wenn Zahlen/Quellen fehlen oder veraltet sein könnten, markiere Unsicherheit kurz und schlage einen Verifikationsweg vor.
+    - Wenn Kontext fehlt, stelle 1 kurze Rückfrage.
     - Wenn LIVE-RECHERCHE vorhanden ist: nutze sie aktiv, zitiere Quellen als [1], [2] und verlinke die URLs.
     - Antworte immer kurz, prägnant und hilfreich.
     - Nutze Markdown für bessere Lesbarkeit.
