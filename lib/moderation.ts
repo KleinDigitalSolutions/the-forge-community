@@ -46,7 +46,9 @@ export async function moderateContent(content: string): Promise<ModerationResult
           - MEDIUM: Klare Beleidigungen, aggressive Sprache
           - HIGH: Hassrede, Gewaltdrohungen, schwere Verstöße
 
-          Sei fair aber strikt. Business-Kritik ist OK, persönliche Angriffe nicht.`
+          Nur als toxisch markieren, wenn es eine direkte Beleidigung, gezielte Herabwürdigung,
+          Mobbing oder klare Drohung ist. Einzelne Woerter ohne Angriff (z.B. Tippfehler oder
+          neutrale Begriffe) nicht als toxisch werten. Business-Kritik ist OK, persoenliche Angriffe nicht.`
         },
         {
           role: 'user',
@@ -98,11 +100,69 @@ const BAD_WORDS = [
   'hurensohn'
 ];
 
+const TARGETED_REGEX = /\b(du|dir|dich|dein|deine|deinen|deiner|deines|you|your|u)\b|@/i;
+
 const MODERATION_NOTE = '_Moderation: Beitrag wurde sprachlich entschärft._\n\n';
 
 function maskBadWords(content: string) {
   const pattern = new RegExp(`\\b(${BAD_WORDS.join('|')})\\b`, 'gi');
   return content.replace(pattern, '*****');
+}
+
+export function isTargetedContent(content: string) {
+  return TARGETED_REGEX.test(content);
+}
+
+export function containsHardBlockWords(content: string) {
+  const pattern = new RegExp(`\\b(${BAD_WORDS.join('|')})\\b`, 'gi');
+  return pattern.test(content);
+}
+
+export type ModerationPolicy = {
+  minConfidence: number;
+  blockSeverities: ModerationResult['severity'][];
+  blockCategories: NonNullable<ModerationResult['category']>[];
+  requireTargeted: boolean;
+  allowSanitize: boolean;
+  sanitizeSeverities: ModerationResult['severity'][];
+  sanitizeCategories: NonNullable<ModerationResult['category']>[];
+};
+
+export function shouldBlockContent(
+  content: string,
+  moderationResult: ModerationResult,
+  policy: ModerationPolicy
+) {
+  if (!moderationResult.isToxic) return false;
+  if (moderationResult.confidence < policy.minConfidence) return false;
+  if (!policy.blockSeverities.includes(moderationResult.severity)) return false;
+  const category = moderationResult.category || 'OTHER';
+  if (!policy.blockCategories.includes(category)) return false;
+
+  const requiresTarget =
+    policy.requireTargeted && (category === 'HARASSMENT' || category === 'HATE_SPEECH');
+  if (requiresTarget && !isTargetedContent(content)) return false;
+
+  return true;
+}
+
+export function shouldSanitizeContent(
+  content: string,
+  moderationResult: ModerationResult,
+  policy: ModerationPolicy
+) {
+  if (!policy.allowSanitize) return false;
+  if (!moderationResult.isToxic) return false;
+  if (moderationResult.confidence < policy.minConfidence) return false;
+  if (!policy.sanitizeSeverities.includes(moderationResult.severity)) return false;
+  const category = moderationResult.category || 'OTHER';
+  if (!policy.sanitizeCategories.includes(category)) return false;
+
+  const requiresTarget =
+    policy.requireTargeted && (category === 'HARASSMENT' || category === 'HATE_SPEECH');
+  if (requiresTarget && !isTargetedContent(content)) return false;
+
+  return true;
 }
 
 export async function sanitizeToxicContent(

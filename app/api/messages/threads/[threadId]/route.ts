@@ -161,7 +161,15 @@ export async function POST(
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  const { moderateContent, issueWarning, canUserPost, sanitizeToxicContent } = await import('@/lib/moderation');
+  const {
+    moderateContent,
+    issueWarning,
+    canUserPost,
+    containsHardBlockWords,
+    isTargetedContent,
+    shouldBlockContent,
+    type ModerationPolicy
+  } = await import('@/lib/moderation');
   const messageCheck = await canUserPost(user.id);
   if (!messageCheck.allowed) {
     return NextResponse.json({
@@ -173,37 +181,29 @@ export async function POST(
   const moderationResult = await moderateContent(trimmedContent);
   let finalContent = trimmedContent;
 
-  if (moderationResult.isToxic && moderationResult.confidence > 0.6) {
+  const dmPolicy: ModerationPolicy = {
+    minConfidence: 0.8,
+    blockSeverities: ['MEDIUM', 'HIGH'],
+    blockCategories: ['HARASSMENT', 'HATE_SPEECH', 'VIOLENCE'],
+    requireTargeted: true,
+    allowSanitize: false,
+    sanitizeSeverities: [],
+    sanitizeCategories: []
+  };
+
+  const hasHardBlock = containsHardBlockWords(trimmedContent) && isTargetedContent(trimmedContent);
+  const shouldBlock = hasHardBlock || shouldBlockContent(trimmedContent, moderationResult, dmPolicy);
+
+  if (shouldBlock) {
     const warningResult = await issueWarning(user.id, trimmedContent, moderationResult);
-
-    if (warningResult.shouldBan) {
-      return NextResponse.json({
-        error: 'Content violates community guidelines',
-        warning: {
-          number: warningResult.warningNumber,
-          message: warningResult.message,
-          banned: warningResult.shouldBan
-        }
-      }, { status: 400 });
-    }
-
-    const canSanitize =
-      moderationResult.confidence >= 0.7 &&
-      moderationResult.severity === 'MEDIUM' &&
-      ['HARASSMENT', 'HATE_SPEECH'].includes(moderationResult.category || '');
-
-    if (!canSanitize) {
-      return NextResponse.json({
-        error: 'Content violates community guidelines',
-        warning: {
-          number: warningResult.warningNumber,
-          message: warningResult.message,
-          banned: warningResult.shouldBan
-        }
-      }, { status: 400 });
-    }
-
-    finalContent = await sanitizeToxicContent(trimmedContent, moderationResult);
+    return NextResponse.json({
+      error: 'Content violates community guidelines',
+      warning: {
+        number: warningResult.warningNumber,
+        message: warningResult.message,
+        banned: warningResult.shouldBan
+      }
+    }, { status: 400 });
   }
 
   const message = await prisma.directMessage.create({

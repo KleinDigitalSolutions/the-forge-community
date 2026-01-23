@@ -468,6 +468,10 @@ export default function MessagesClient() {
                       }
                     }}
                     placeholder={activeThreadId ? 'Nachricht schreiben...' : 'Wähle zuerst eine Konversation'}
+                    lang="de"
+                    spellCheck
+                    autoCorrect="on"
+                    autoCapitalize="sentences"
                     rows={2}
                     className="w-full resize-none rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none transition focus:border-[var(--accent)]"
                     disabled={!activeThreadId || sending}

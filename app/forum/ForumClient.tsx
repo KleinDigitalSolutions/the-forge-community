@@ -504,12 +504,57 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
   };
 
   const formatText = (format: 'bold' | 'italic' | 'list' | 'link') => {
-    switch (format) {
-      case 'bold': insertText('**Fett**'); break;
-      case 'italic': insertText('_Kursiv_'); break;
-      case 'list': insertText('\n- Liste\n'); break;
-      case 'link': insertText('[Link Text](https://)'); break;
+    const textarea = editorRef.current;
+    const currentText = editingPost === 'NEW' ? content : editContent;
+    const setText = editingPost === 'NEW' ? setContent : setEditContent;
+    const start = textarea?.selectionStart ?? currentText.length;
+    const end = textarea?.selectionEnd ?? currentText.length;
+    const selected = currentText.substring(start, end);
+    const hasSelection = start !== end;
+
+    const apply = (replacement: string, selectionStart: number, selectionEnd: number) => {
+      const next = currentText.substring(0, start) + replacement + currentText.substring(end);
+      setText(next);
+      if (textarea) {
+        setTimeout(() => {
+          textarea.focus();
+          textarea.setSelectionRange(selectionStart, selectionEnd);
+        }, 0);
+      }
+    };
+
+    if (format === 'bold') {
+      const body = hasSelection ? selected : 'Fett';
+      const replacement = `**${body}**`;
+      apply(replacement, start + 2, start + 2 + body.length);
+      return;
     }
+
+    if (format === 'italic') {
+      const body = hasSelection ? selected : 'Kursiv';
+      const replacement = `_${body}_`;
+      apply(replacement, start + 1, start + 1 + body.length);
+      return;
+    }
+
+    if (format === 'link') {
+      const text = hasSelection ? selected : 'Link Text';
+      const url = 'https://';
+      const replacement = `[${text}](${url})`;
+      const urlStart = start + text.length + 3;
+      apply(replacement, urlStart, urlStart + url.length);
+      return;
+    }
+
+    const listText = hasSelection
+      ? selected
+          .split('\n')
+          .map(line => (line.trim().length ? `- ${line}` : '- '))
+          .join('\n')
+      : '- Liste';
+    const selectionStart = hasSelection ? start : start + 2;
+    const selectionEnd = hasSelection ? start + listText.length : start + 2 + 'Liste'.length;
+    apply(listText, selectionStart, selectionEnd);
   };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1156,8 +1201,12 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
             {/* Post Creation Trigger */}
             <div className="bg-[#121212] border border-white/10 rounded-xl p-3 flex flex-col gap-3 shadow-xl sm:flex-row sm:items-center">
               <div className="flex items-center gap-3 w-full">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#D4AF37] to-amber-700 flex items-center justify-center text-black font-black text-sm">
-                  {user?.name?.charAt(0)}
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#D4AF37] to-amber-700 flex items-center justify-center text-black font-black text-sm overflow-hidden">
+                  {user?.image ? (
+                    <img src={user.image} alt={user?.name || 'Profilbild'} className="w-full h-full object-cover" />
+                  ) : (
+                    user?.name?.charAt(0)
+                  )}
                 </div>
                 <div className="relative flex-1">
                   <button 
@@ -1517,6 +1566,10 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                                             <textarea
                                               value={commentEditDrafts[comment.id] || ''}
                                               onChange={(e) => setCommentEditDrafts(prev => ({ ...prev, [comment.id]: e.target.value }))}
+                                              lang="de"
+                                              spellCheck
+                                              autoCorrect="on"
+                                              autoCapitalize="sentences"
                                               className="w-full min-h-[90px] bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/10 outline-none focus:border-[#D4AF37] transition-all"
                                             />
                                             <div className="flex justify-end gap-2">
@@ -1615,6 +1668,10 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                                 value={commentDrafts[post.id] || ''}
                                 onChange={(e) => setCommentDrafts(prev => ({ ...prev, [post.id]: e.target.value }))}
                                 placeholder={replyTargets[post.id] ? 'Antwort schreiben...' : 'Antworte oder ergänze den Thread...'}
+                                lang="de"
+                                spellCheck
+                                autoCorrect="on"
+                                autoCapitalize="sentences"
                                 className="w-full min-h-[90px] bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/10 outline-none focus:border-[#D4AF37] transition-all"
                               />
                               <div className="flex justify-end">
@@ -1798,6 +1855,10 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                         value={editingPost === 'NEW' ? content : editContent}
                         onChange={e => editingPost === 'NEW' ? setContent(e.target.value) : setEditContent(e.target.value)}
                         placeholder="Was gibt es neues im Netzwerk? Teile deine Gedanken, Updates oder Fragen..."
+                        lang="de"
+                        spellCheck
+                        autoCorrect="on"
+                        autoCapitalize="sentences"
                         className="w-full min-h-[45vh] sm:min-h-[350px] bg-transparent border-none outline-none text-lg sm:text-xl text-white placeholder:text-white/10 resize-none leading-relaxed"
                       />
                     )}

@@ -166,7 +166,15 @@ export async function POST(request: Request) {
     }
 
     // AI MODERATION CHECK
-    const { moderateContent, issueWarning, canUserPost, sanitizeToxicContent } = await import('@/lib/moderation');
+    const {
+      moderateContent,
+      issueWarning,
+      canUserPost,
+      sanitizeToxicContent,
+      shouldBlockContent,
+      shouldSanitizeContent,
+      type ModerationPolicy
+    } = await import('@/lib/moderation');
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
       select: { id: true, name: true, founderNumber: true, profileSlug: true }
@@ -189,26 +197,23 @@ export async function POST(request: Request) {
     const moderationResult = await moderateContent(trimmedContent);
     let finalContent = trimmedContent;
 
-    if (moderationResult.isToxic && moderationResult.confidence > 0.6) {
+    const forumPolicy: ModerationPolicy = {
+      minConfidence: 0.75,
+      blockSeverities: ['MEDIUM', 'HIGH'],
+      blockCategories: ['HARASSMENT', 'HATE_SPEECH', 'VIOLENCE'],
+      requireTargeted: true,
+      allowSanitize: true,
+      sanitizeSeverities: ['MEDIUM'],
+      sanitizeCategories: ['HARASSMENT', 'HATE_SPEECH']
+    };
+
+    const shouldBlock = shouldBlockContent(trimmedContent, moderationResult, forumPolicy);
+    const shouldSanitize = shouldSanitizeContent(trimmedContent, moderationResult, forumPolicy);
+
+    if (shouldBlock || shouldSanitize) {
       const warningResult = await issueWarning(user.id, trimmedContent, moderationResult);
 
-      if (warningResult.shouldBan) {
-        return NextResponse.json({
-          error: 'Content violates community guidelines',
-          warning: {
-            number: warningResult.warningNumber,
-            message: warningResult.message,
-            banned: warningResult.shouldBan
-          }
-        }, { status: 400 });
-      }
-
-      const canSanitize =
-        moderationResult.confidence >= 0.7 &&
-        moderationResult.severity === 'MEDIUM' &&
-        ['HARASSMENT', 'HATE_SPEECH'].includes(moderationResult.category || '');
-
-      if (!canSanitize) {
+      if (warningResult.shouldBan || shouldBlock) {
         return NextResponse.json({
           error: 'Content violates community guidelines',
           warning: {
