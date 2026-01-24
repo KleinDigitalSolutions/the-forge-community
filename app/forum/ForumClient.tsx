@@ -1690,7 +1690,13 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
                                         {isEditing ? (
                                           <ForumEditor
                                             value={commentEditDrafts[comment.id] || ''}
-                                            onChange={(val) => setCommentEditDrafts(prev => ({ ...prev, [comment.id]: val }))}
+                                            onChange={(val) =>
+                                              setCommentEditDrafts((prev) => {
+                                                const current = prev[comment.id] || '';
+                                                const nextValue = typeof val === 'function' ? val(current) : val;
+                                                return { ...prev, [comment.id]: nextValue };
+                                              })
+                                            }
                                             onSubmit={() => handleCommentEdit(post.id, comment.id)}
                                             isSubmitting={commentEditSubmitting === comment.id}
                                             submitLabel="Speichern"
