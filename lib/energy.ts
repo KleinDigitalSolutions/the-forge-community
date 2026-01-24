@@ -143,6 +143,39 @@ export async function reserveEnergy(input: EnergyReserveInput): Promise<EnergyRe
       }
     }
 
+    const adminBypassEnabled = process.env.ADMIN_UNLIMITED_ENERGY !== 'false';
+    if (adminBypassEnabled) {
+      const adminUser = await tx.user.findUnique({
+        where: { id: input.userId },
+        select: { role: true, credits: true }
+      });
+
+      if (adminUser?.role === 'ADMIN') {
+        const reservation = await tx.energyTransaction.create({
+          data: {
+            userId: input.userId,
+            delta: 0,
+            balanceAfter: adminUser.credits,
+            type: 'SPEND',
+            status: 'RESERVED',
+            feature: input.feature,
+            provider: input.provider,
+            model: input.model,
+            requestId: input.requestId,
+            metadata: mergeMetadata(input.metadata, { reservedCredits: amount, bypass: 'admin' })
+          },
+          select: { id: true }
+        });
+
+        return {
+          reservationId: reservation.id,
+          reservedCredits: amount,
+          balanceAfter: adminUser.credits,
+          status: 'RESERVED'
+        };
+      }
+    }
+
     const updateResult = await tx.user.updateMany({
       where: { id: input.userId, credits: { gte: amount } },
       data: { credits: { decrement: amount } }

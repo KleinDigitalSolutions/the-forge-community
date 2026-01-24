@@ -10,7 +10,9 @@ import {
   Settings, UserPlus, Target, Zap, MessageSquare, FileText,
   ArrowUpRight, Sparkles, Shield, Lock, Globe, X
 } from 'lucide-react';
-import Link from 'next/link';
+import { SquadWalletView } from '@/app/components/squads/SquadWalletView';
+
+// ... (rest of imports)
 
 interface Squad {
   id: string;
@@ -62,9 +64,11 @@ interface VenturePhase {
 
 interface Wallet {
   balance: number;
-  budget_total: number;
-  budget_allocated_samples?: number;
-  budget_allocated_production?: number;
+  budgetTotal: number;
+  budgetSamples: number;
+  budgetProduction: number;
+  budgetMarketing: number;
+  transactions: Transaction[];
 }
 
 interface Transaction {
@@ -73,8 +77,8 @@ interface Transaction {
   category: string;
   amount: number;
   description: string;
-  created_at: string;
-  created_by_name?: string;
+  createdAt: string;
+  createdBy: { name: string };
 }
 
 export default function SquadDetailPage() {
@@ -291,25 +295,9 @@ export default function SquadDetailPage() {
               </div>
             )}
 
-            {/* Budget & Transactions */}
+            {/* Squad Wallet & Financial Transparency */}
             {wallet && (
-              <div className="glass-card rounded-[2rem] border border-white/10 p-8">
-                <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-2xl font-instrument-serif text-white">Budget</h2>
-                  <span className="text-2xl font-bold text-[var(--accent)]">
-                    €{wallet.balance.toLocaleString()}
-                  </span>
-                </div>
-
-                {transactions.length > 0 && (
-                  <div className="space-y-2">
-                    <h3 className="text-xs uppercase tracking-widest font-bold text-white/40 mb-4">Letzte Transaktionen</h3>
-                    {transactions.slice(0, 5).map((tx) => (
-                      <TransactionRow key={tx.id} transaction={tx} />
-                    ))}
-                  </div>
-                )}
-              </div>
+              <SquadWalletView wallet={wallet as any} />
             )}
 
             {/* Quick Actions */}

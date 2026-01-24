@@ -179,6 +179,8 @@ model User {
   createdOrders     ProductionOrder[]
   createdCampaigns  MarketingCampaign[]
   createdPosts      ContentPost[]
+  timeEntries       TimeEntry[]
+  walletTransactions WalletTransaction[]
 
   // NextAuth
   accounts      Account[]
@@ -315,7 +317,9 @@ model Squad {
   id          String   @id @default(cuid())
   name        String
   description String?
+  mission     String?  @db.Text
   slug        String   @unique
+  status      String   @default("forming") // forming, planning, building, launched
 
   // Stripe Connect (Squad erhält Zahlungen)
   stripeConnectedAccountId String?  @unique
@@ -324,15 +328,57 @@ model Squad {
   stripeChargesEnabled     Boolean  @default(false) // Kann Squad Zahlungen empfangen?
   stripePayoutsEnabled     Boolean  @default(false) // Kann Squad auszahlen?
 
+  // Wallet Extension
+  wallet      SquadWallet?
+
   members     SquadMember[]
   roadmaps    RoadmapItem[]
   decisions   Decision[]
   ventures    Venture[]
   transactions SquadTransaction[]
   legalDocuments LegalDocument[]
+  timeEntries    TimeEntry[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model SquadWallet {
+  id              String   @id @default(cuid())
+  squadId         String   @unique
+  squad           Squad    @relation(fields: [squadId], references: [id], onDelete: Cascade)
+
+  balance         Float    @default(0.0)
+  budgetTotal     Float    @default(0.0)
+  
+  // Allocated Budgets
+  budgetSamples    Float   @default(0.0)
+  budgetProduction Float   @default(0.0)
+  budgetMarketing  Float   @default(0.0)
+
+  transactions    WalletTransaction[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model WalletTransaction {
+  id              String   @id @default(cuid())
+  walletId        String
+  wallet          SquadWallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  
+  type            String   // deposit, expense, refund
+  category        String   // samples, production, marketing, software, misc
+  amount          Float
+  description     String?
+  
+  createdById     String
+  createdBy       User     @relation(fields: [createdById], references: [id])
+  
+  createdAt       DateTime @default(now())
+
+  @@index([walletId])
+  @@index([type])
 }
 
 // ============================================
@@ -693,8 +739,8 @@ model Venture {
   status          VentureStatus @default(IDEATION)
 
   // Wizard Progress
-  currentStep     Int           @default(1)
-  completedSteps  Int[]         @default([])
+  currentPhase    Int           @default(1) // 1-6 (Ideation -> Launch)
+  phases          VenturePhase[]
 
   // Business Data
   productType     String?
@@ -739,6 +785,27 @@ model Venture {
   @@index([ownerId])
   @@index([squadId])
   @@index([status])
+}
+
+model VenturePhase {
+  id              String   @id @default(cuid())
+  ventureId       String
+  venture         Venture  @relation(fields: [ventureId], references: [id], onDelete: Cascade)
+
+  phaseNumber     Int      // 1-6
+  name            String
+  status          String   @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED
+  
+  totalTasks      Int      @default(0)
+  completedTasks  Int      @default(0)
+
+  startedAt       DateTime?
+  completedAt     DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([ventureId, phaseNumber])
 }
 
 // ============================================
@@ -1070,7 +1137,7 @@ model MarketingContent {
   createdAt       DateTime @default(now())
   
   createdById     String
-  createdBy       User     @relation(fields: [createdById], references: [id])
+  createdBy     User     @relation(fields: [createdById], references: [id])
 
   @@index([ventureId])
   @@index([createdById])
@@ -1445,7 +1512,7 @@ model MediaAssetLike {
   assetId   String
   asset     MediaAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
   userId    String
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime   @default(now())
 
   @@unique([assetId, userId])
@@ -1463,4 +1530,24 @@ enum MediaSource {
   UPLOADED
   EDITED
   EXTERNAL
+}
+
+model TimeEntry {
+  id              String   @id @default(cuid())
+  squadId         String
+  squad           Squad    @relation(fields: [squadId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  hours           Float
+  description     String
+  date            DateTime @default(now())
+  activityType    String   // development, design, marketing, admin
+
+  isApproved      Boolean  @default(false)
+  
+  createdAt       DateTime @default(now())
+
+  @@index([squadId])
+  @@index([userId])
 }

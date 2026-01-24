@@ -10,6 +10,81 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { cn } from '@/lib/utils';
 
+const normalizeTrainingContent = (value: string) => {
+  let working = value.trim();
+  if (!working) return '';
+
+  if (!/\r?\n/.test(working)) {
+    working = working
+      .replace(/\s*(#{1,6}\s+)/g, '\n\n$1')
+      .replace(/\s*(\*\*[^*]+?\*\*:)/g, '\n\n$1')
+      .replace(/\s*(\d+)\.\s+/g, '\n$1. ')
+      .replace(/\s*(-)\s+/g, '\n- ')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+
+    if (!/\r?\n/.test(working)) {
+      working = working.replace(/([.!?])\s+(?=[A-ZÄÖÜ])/g, '$1\n\n');
+    }
+  }
+
+  if (/\n\s*\n/.test(working)) {
+    return working;
+  }
+
+  const lines = working.split(/\r?\n/);
+  const normalized: string[] = [];
+  let inCodeFence = false;
+
+  const isListLine = (line: string) => /^\s{0,3}([-*+]|\d+\.)\s+/.test(line);
+  const isTableLine = (line: string) => /^\s*\|/.test(line);
+  const isQuoteLine = (line: string) => /^\s{0,3}>\s?/.test(line);
+  const isHeadingLine = (line: string) => /^\s{0,3}#{1,6}\s+/.test(line);
+
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+    const next = lines[i + 1];
+    const trimmedLine = line.trimEnd();
+
+    if (/^\s*```/.test(trimmedLine)) {
+      inCodeFence = !inCodeFence;
+      normalized.push(trimmedLine);
+      continue;
+    }
+
+    if (inCodeFence) {
+      normalized.push(line);
+      continue;
+    }
+
+    if (!trimmedLine.trim()) {
+      if (normalized[normalized.length - 1] !== '') normalized.push('');
+      continue;
+    }
+
+    normalized.push(trimmedLine);
+
+    if (next && next.trim()) {
+      const currentIsList = isListLine(trimmedLine);
+      const nextIsList = isListLine(next);
+      const currentIsTable = isTableLine(trimmedLine);
+      const nextIsTable = isTableLine(next);
+      const currentIsQuote = isQuoteLine(trimmedLine);
+      const nextIsQuote = isQuoteLine(next);
+      const currentIsHeading = isHeadingLine(trimmedLine);
+
+      const keepTogether =
+        (currentIsList && nextIsList) ||
+        (currentIsTable && nextIsTable) ||
+        (currentIsQuote && nextIsQuote);
+
+      if (!keepTogether || currentIsHeading) normalized.push('');
+    }
+  }
+
+  return normalized.join('\n').trim();
+};
+
 type TrainingModule = {
   id: string;
   order: number;
@@ -284,7 +359,7 @@ export default function TrainingDetailPage() {
                     prose-hr:border-white/5
                   ">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {module.content}
+                      {normalizeTrainingContent(module.content)}
                     </ReactMarkdown>
                   </div>
                 </div>
