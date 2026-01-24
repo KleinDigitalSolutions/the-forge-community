@@ -322,6 +322,21 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
     return () => window.removeEventListener('resize', updateEmojiPickerSize);
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.orion-menu-container') && !target.closest('.orion-menu-trigger')) {
+        setAiMenuOpen(null);
+      }
+    };
+    if (aiMenuOpen) {
+      document.addEventListener('click', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [aiMenuOpen]);
+
   // Load More on Scroll
   useEffect(() => {
     if (isInView && hasMore && !isLoadingMore && !isLoadingInitial && posts.length > 0) {
@@ -1338,24 +1353,35 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                           </button>
                           <div className="relative">
                             <button
-                              onClick={() => setAiMenuOpen(aiMenuOpen === post.id ? null : post.id)}
-                              className="flex items-center gap-2 text-[10px] font-bold text-white/40 hover:text-white uppercase tracking-widest transition-all"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setAiMenuOpen(aiMenuOpen === post.id ? null : post.id);
+                              }}
+                              className="flex items-center gap-2 text-[10px] font-bold text-white/40 hover:text-white uppercase tracking-widest transition-all orion-menu-trigger"
                             >
                               <Sparkles className="w-3.5 h-3.5" /> {aiLoading && aiMenuOpen === post.id ? 'Lädt...' : 'Orion Insight'}
                             </button>
-                            {aiMenuOpen === post.id && (
-                              <div className="absolute left-0 bottom-full mb-2 w-48 rounded-xl border border-white/10 bg-[#0d0d0d] shadow-2xl z-20">
-                                {AI_ACTIONS.map(action => (
-                                  <button
-                                    key={action.id}
-                                    onClick={() => handleAIAction(post, action.id)}
-                                    className="w-full text-left px-4 py-2 text-[11px] text-white/70 hover:bg-white/5 transition-colors"
-                                  >
-                                    {action.label}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
+                            <AnimatePresence>
+                              {aiMenuOpen === post.id && (
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.95, y: 5 }}
+                                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                                  exit={{ opacity: 0, scale: 0.95, y: 5 }}
+                                  transition={{ duration: 0.15, ease: 'easeOut' }}
+                                  className="absolute left-0 bottom-full mb-2 w-48 rounded-xl border border-[#D4AF37]/20 bg-[#121212]/95 backdrop-blur-xl shadow-[0_0_20px_rgba(212,175,55,0.1)] z-20 overflow-hidden orion-menu-container"
+                                >
+                                  {AI_ACTIONS.map(action => (
+                                    <button
+                                      key={action.id}
+                                      onClick={() => handleAIAction(post, action.id)}
+                                      className="w-full text-left px-4 py-2.5 text-[11px] text-white/70 hover:text-white hover:bg-[#D4AF37]/10 transition-colors border-b border-white/5 last:border-0"
+                                    >
+                                      {action.label}
+                                    </button>
+                                  ))}
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
                           </div>
                           {user && user.id && post.authorId === user.id && (
                             <button
@@ -1413,25 +1439,36 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                           </button>
                           <div className="relative">
                             <button
-                              onClick={() => setAiMenuOpen(aiMenuOpen === post.id ? null : post.id)}
-                              className="flex items-center gap-2 text-white/40 hover:text-white transition-all"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setAiMenuOpen(aiMenuOpen === post.id ? null : post.id);
+                              }}
+                              className="flex items-center gap-2 text-white/40 hover:text-white transition-all orion-menu-trigger"
                             >
                               <Sparkles className="w-4 h-4" />
                               {aiLoading && aiMenuOpen === post.id ? 'Lädt...' : 'Orion'}
                             </button>
-                            {aiMenuOpen === post.id && (
-                              <div className="absolute left-0 bottom-full mb-2 w-48 rounded-xl border border-white/10 bg-[#0d0d0d] shadow-2xl z-20">
-                                {AI_ACTIONS.map(action => (
-                                  <button
-                                    key={action.id}
-                                    onClick={() => handleAIAction(post, action.id)}
-                                    className="w-full text-left px-4 py-2 text-[11px] text-white/70 hover:bg-white/5 transition-colors"
-                                  >
-                                    {action.label}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
+                            <AnimatePresence>
+                              {aiMenuOpen === post.id && (
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.95, y: 5 }}
+                                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                                  exit={{ opacity: 0, scale: 0.95, y: 5 }}
+                                  transition={{ duration: 0.15, ease: 'easeOut' }}
+                                  className="absolute left-0 bottom-full mb-2 w-48 rounded-xl border border-[#D4AF37]/20 bg-[#121212]/95 backdrop-blur-xl shadow-[0_0_20px_rgba(212,175,55,0.1)] z-20 overflow-hidden orion-menu-container"
+                                >
+                                  {AI_ACTIONS.map(action => (
+                                    <button
+                                      key={action.id}
+                                      onClick={() => handleAIAction(post, action.id)}
+                                      className="w-full text-left px-4 py-2.5 text-[11px] text-white/70 hover:text-white hover:bg-[#D4AF37]/10 transition-colors border-b border-white/5 last:border-0"
+                                    >
+                                      {action.label}
+                                    </button>
+                                  ))}
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
                           </div>
                           {user && user.id && post.authorId === user.id && (
                             <button

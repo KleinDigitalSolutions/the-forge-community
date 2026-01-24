@@ -93,6 +93,32 @@ npm run dev
 
 ---
 
+## 🏗️ Core Engine & Professional Architecture (Updated Jan 2026)
+
+Das Projekt wurde auf eine professionelle **Multi-Tenant Architektur** für skalierbare Venture-Entwicklung gehoben:
+
+### 1. Venture Phase Engine (Automatisierter Workflow)
+*   **Logik:** Ein zentraler Service (`lib/ventures.ts`) steuert den Fortschritt über 6 Phasen (Ideation → Branding → Legal → Sourcing → Marketing → Launch).
+*   **Trigger:** Jede Aktion in den Studios (z.B. Brand DNA Speicherung, Lieferant-Übernahme) triggert automatisch eine Neuberechnung des Projektstatus.
+*   **Personalisiert:** Fortschritt und Berechtigungen sind strikt an `ownerId` oder `squadId` gekoppelt.
+
+### 2. AI Sourcing Agent (Enterprise Level)
+*   **Discovery:** Neuer "AI Discovery" Button im Sourcing Studio.
+*   **Kontext:** Nutzt die **Brand DNA** (Kategorie, Zielmarkt, Werte), um per Gemini Flash 2.0 gezielt Lieferanten weltweit zu identifizieren.
+*   **UX:** Modulares UI-Modal zur Prüfung und selektiven Übernahme von KI-Vorschlägen in die Datenbank.
+
+### 3. Squad Safe (Financial Transparency)
+*   **Wallet:** Integriertes `SquadWallet` System für jede Gruppe.
+*   **Transparency:** Neues Dashboard zeigt Budget-Verteilung (Samples, Produktion, Marketing) und eine lückenlose Transaktionshistorie mit Klarnamen der Ersteller.
+*   **Stripe Ready:** Vorbereitet für Einzahlungen direkt auf Squad-Connected-Accounts.
+
+### 4. Technical Excellence
+*   **Prisma 7 Migration:** Schema bereinigt, `DATABASE_URL` Management über `prisma.config.ts` (Next-Gen Standard).
+*   **TypeScript Mastery:** Vollständige Umstellung auf CamelCase, typsichere API-Routen über Prisma-Relationen statt SQL.
+*   **Stability:** Build-geprüfte Codebase mit robusten Error-Boundaries und expliziten Interfaces.
+
+---
+
 ## 📦 Tech Stack
 
 | Technologie | Verwendung |
