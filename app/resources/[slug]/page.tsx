@@ -28,10 +28,6 @@ const normalizeTrainingContent = (value: string) => {
     }
   }
 
-  if (/\n\s*\n/.test(working)) {
-    return working;
-  }
-
   const lines = working.split(/\r?\n/);
   const normalized: string[] = [];
   let inCodeFence = false;
@@ -344,9 +340,9 @@ export default function TrainingDetailPage() {
 
                   {/* PROSE OPTIMIZATION */}
                   <div className="prose prose-invert prose-lg max-w-none 
-                    prose-headings:text-white prose-headings:font-instrument-serif prose-headings:tracking-tight prose-headings:mb-8 prose-headings:mt-16
+                    prose-headings:text-white prose-headings:font-instrument-serif prose-headings:tracking-tight prose-headings:mb-8 prose-headings:mt-16 prose-headings:text-center
                     prose-h2:text-4xl prose-h3:text-3xl
-                    prose-p:text-white/60 prose-p:leading-[1.8] prose-p:mb-8 prose-p:text-xl prose-p:font-medium
+                    prose-p:text-white/60 prose-p:leading-[1.8] prose-p:mb-8 prose-p:text-xl prose-p:font-medium prose-p:text-center
                     prose-strong:text-white prose-strong:font-bold
                     prose-ul:list-none prose-ul:pl-0 prose-ul:mb-10 prose-ul:space-y-4
                     prose-li:text-white/50 prose-li:text-lg prose-li:pl-8 prose-li:relative
@@ -354,7 +350,7 @@ export default function TrainingDetailPage() {
                     prose-a:text-[#D4AF37] prose-a:no-underline prose-a:font-bold border-b border-[#D4AF37]/20 hover:border-[#D4AF37] transition-all
                     prose-code:bg-white/5 prose-code:px-2 prose-code:py-1 prose-code:rounded-lg prose-code:text-[#D4AF37] prose-code:before:content-none prose-code:after:content-none prose-code:text-sm
                     prose-pre:bg-[#050505] prose-pre:border prose-pre:border-white/10 prose-pre:rounded-[2rem] prose-pre:p-10 prose-pre:shadow-inner
-                    prose-blockquote:border-l-4 prose-blockquote:border-l-[#D4AF37] prose-blockquote:bg-white/5 prose-blockquote:p-10 prose-blockquote:rounded-r-[2.5rem] prose-blockquote:italic prose-blockquote:text-white/70 prose-blockquote:text-xl
+                    prose-blockquote:border-l-4 prose-blockquote:border-l-[#D4AF37] prose-blockquote:bg-white/5 prose-blockquote:p-10 prose-blockquote:rounded-r-[2.5rem] prose-blockquote:italic prose-blockquote:text-white/70 prose-blockquote:text-xl prose-blockquote:text-center
                     prose-img:rounded-[2.5rem] prose-img:border prose-img:border-white/10 prose-img:shadow-2xl
                     prose-hr:border-white/5
                   ">
