@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useUnreadMessages } from '@/app/hooks/useUnreadMessages';
+import { CoreSpinLoader } from '@/components/ui/core-spin-loader';
 
 interface CockpitControlProps {
   userImage?: string | null;
@@ -127,9 +128,6 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
   }, []);
 
   const displayName = userName?.trim().split(' ')[0] || 'Operator';
-  const initials = userName
-    ? userName.split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase()
-    : 'OP';
 
   return (
     <div ref={containerRef} className="relative flex items-center justify-center w-[min(720px,90vw)] h-[min(720px,90vw)]">
@@ -139,7 +137,7 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
         ref={parallaxRef}
         className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
       >
-         <div className={`transition-all duration-1000 absolute w-[300px] h-[300px] bg-[#D4AF37]/6 blur-[100px] rounded-full ${isOpen ? 'scale-150 opacity-40' : 'scale-100 opacity-20'}`} />
+         <div className={`transition-all duration-1000 absolute w-[300px] h-[300px] bg-[#D4AF37]/6 rounded-full ${isOpen ? 'scale-150 opacity-40' : 'scale-100 opacity-20'}`} />
          
          {/* Rotating Tech Rings (Subtle) */}
          <motion.div 
@@ -184,38 +182,15 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
           whileTap={{ scale: 0.95 }}
           onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }}
           className="relative w-32 h-32 flex items-center justify-center group outline-none cursor-pointer"
+          aria-label={`${isOpen ? 'Close' : 'Open'} cockpit for ${displayName}`}
         >
-          {/* Main Sphere */}
-          <div className="absolute inset-0 rounded-full bg-[#0b0c0f] border border-white/10 shadow-2xl overflow-hidden group-hover:border-[#D4AF37]/40 transition-colors duration-500">
-             {/* Shine Effect */}
-             <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent opacity-50" />
-             {/* Inner Rings */}
-             <div className="absolute inset-3 rounded-full border border-white/5 bg-gradient-to-br from-white/5 to-transparent" />
-             <div className={`absolute inset-0 bg-white/5 blur-xl transition-opacity duration-500 ${isOpen ? 'opacity-80' : 'opacity-30'}`} />
-          </div>
-
-          {/* Icon */}
-          <div className="relative z-10 flex flex-col items-center gap-1.5 text-center translate-y-2">
-            {isOpen ? (
-               <div className="flex flex-col items-center gap-1.5">
-                 <X className="w-8 h-8 text-[#D4AF37]" />
-                 <span className="text-[10px] leading-none font-mono uppercase tracking-[0.3em] text-white/40">Close</span>
-               </div>
-            ) : (
-              <>
-                <div className="w-12 h-12 rounded-full border border-[#D4AF37]/30 flex items-center justify-center bg-[#D4AF37]/5 overflow-hidden">
-                  {userImage ? (
-                    <img src={userImage} alt={displayName} className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-xs font-bold text-[#D4AF37]">{initials}</span>
-                  )}
-                </div>
-                <div className="text-[10px] leading-none font-mono text-white/70 tracking-widest uppercase">
-                  {displayName}
-                </div>
-              </>
-            )}
-          </div>
+          <CoreSpinLoader
+            size={96}
+            showText={false}
+            disableBlur
+            variant="forge"
+            className="pointer-events-none"
+          />
           
           {/* Orbit Ring Animation */}
           <div className="absolute inset-[-8px] rounded-full border border-white/5 border-t-[#D4AF37]/50 animate-spin-slow pointer-events-none" />

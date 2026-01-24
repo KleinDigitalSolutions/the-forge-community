@@ -141,7 +141,7 @@ export default function Dashboard() {
                   transition={{ type: "spring", damping: 30, stiffness: 200 }}
                   className="pointer-events-auto absolute left-8 top-1/2 -translate-y-1/2 w-[400px] h-[60vh] flex flex-col perspective-1000 z-40"
                 >
-                  <div className="w-full h-full bg-[#050505]/80 backdrop-blur-2xl border border-white/10 p-1 rounded-3xl shadow-[0_0_100px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden">
+                  <div className="w-full h-full bg-[#050505]/80 border border-white/10 p-1 rounded-3xl shadow-[0_0_100px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden">
                     {/* Panel Header */}
                     <div className="p-6 border-b border-white/5 bg-white/5">
                       <div className="flex justify-between items-center">
@@ -211,7 +211,7 @@ export default function Dashboard() {
                   transition={{ type: "spring", damping: 30, stiffness: 200 }}
                   className="pointer-events-auto absolute right-8 top-1/2 -translate-y-1/2 w-[400px] h-[60vh] flex flex-col perspective-1000 z-40"
                 >
-                  <div className="w-full h-full bg-[#050505]/80 backdrop-blur-2xl border border-white/10 p-1 rounded-3xl shadow-[0_0_100px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden">
+                  <div className="w-full h-full bg-[#050505]/80 border border-white/10 p-1 rounded-3xl shadow-[0_0_100px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden">
                     <div className="p-6 border-b border-white/5 bg-white/5">
                       <div className="flex justify-between items-center">
                         <h2 className="text-xl font-instrument-serif text-red-400 flex items-center gap-3">
@@ -271,7 +271,7 @@ export default function Dashboard() {
         
         {/* Onboarding Overlay */}
         {user && !user.onboardingComplete && (
-          <div className="absolute inset-0 z-[60] bg-black/90 backdrop-blur-md flex items-center justify-center">
+          <div className="absolute inset-0 z-[60] bg-black/90 flex items-center justify-center">
              <div className="max-w-4xl w-full">
                <OnboardingWizard 
                 user={user} 

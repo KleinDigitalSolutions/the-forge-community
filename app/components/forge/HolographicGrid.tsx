@@ -107,8 +107,7 @@ export default function HolographicGrid() {
       />
 
       {/* 3. Layer: Horizont-Linie & Glow */}
-      <div className="absolute top-1/2 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent z-10 opacity-30 blur-[1px]" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[100vh] bg-[#D4AF37]/5 blur-[100px] pointer-events-none" />
+      <div className="absolute top-1/2 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent z-10 opacity-30" />
 
       {/* 4. Layer: Bewegtes 3D Gitter */}
       <div className="absolute top-0 left-0 w-full h-[50%] overflow-hidden" style={{ perspective: '800px' }}>
