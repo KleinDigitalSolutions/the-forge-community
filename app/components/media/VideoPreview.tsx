@@ -12,6 +12,8 @@ interface VideoPreviewProps {
   enableHover?: boolean;
   allowClick?: boolean;
   stopClickPropagation?: boolean;
+  openOnClick?: boolean;
+  onOpen?: () => void;
   muted?: boolean;
   loop?: boolean;
   ariaLabel?: string;
@@ -36,6 +38,8 @@ export function VideoPreview({
   enableHover = true,
   allowClick = true,
   stopClickPropagation = false,
+  openOnClick = true,
+  onOpen,
   muted = true,
   loop = true,
   ariaLabel = 'Video abspielen',
@@ -45,8 +49,8 @@ export function VideoPreview({
   const [hoverEnabled, setHoverEnabled] = useState(enableHover);
 
   useEffect(() => {
-    setHoverEnabled(enableHover && canAutoplayOnHover());
-  }, [enableHover]);
+    setHoverEnabled(enableHover && !onOpen && canAutoplayOnHover());
+  }, [enableHover, onOpen]);
 
   useEffect(() => {
     if (!active) return;
@@ -78,11 +82,25 @@ export function VideoPreview({
     }
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+  const handleOpen = (event?: React.SyntheticEvent) => {
+    if (stopClickPropagation) {
+      event?.stopPropagation();
+    }
+    if (onOpen) {
+      onOpen();
+      return;
+    }
     if (!allowClick) return;
+    toggle(event);
+  };
+
+  const canActivate = Boolean(onOpen ? openOnClick : allowClick);
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!canActivate) return;
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      toggle(event);
+      handleOpen(event);
     }
   };
 
@@ -91,11 +109,11 @@ export function VideoPreview({
       className={`relative ${className}`}
       onMouseEnter={hoverEnabled ? activate : undefined}
       onMouseLeave={hoverEnabled ? deactivate : undefined}
-      onClick={allowClick ? toggle : undefined}
+      onClick={canActivate ? handleOpen : undefined}
       onKeyDown={handleKeyDown}
-      role={allowClick ? 'button' : undefined}
-      tabIndex={allowClick ? 0 : -1}
-      aria-label={allowClick ? ariaLabel : undefined}
+      role={canActivate ? 'button' : undefined}
+      tabIndex={canActivate ? 0 : -1}
+      aria-label={canActivate ? ariaLabel : undefined}
     >
       {active ? (
         <video
@@ -128,7 +146,7 @@ export function VideoPreview({
             type="button"
             onClick={(event) => {
               event.stopPropagation();
-              toggle(event);
+              handleOpen(event);
             }}
             className="pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full border border-white/40 bg-black/50"
             aria-label={ariaLabel}

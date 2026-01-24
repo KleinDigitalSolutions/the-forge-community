@@ -242,6 +242,7 @@ export function MediaStudio({ ventureId, brandDNA }: MediaStudioProps) {
                     <MediaAssetGrid 
                       assets={assets.filter(a => a.type === 'VIDEO')} 
                       onSelect={handleAssetSelect}
+                      enableLightbox={false}
                     />
                   </div>
                 </div>

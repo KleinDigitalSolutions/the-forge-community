@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { MediaAsset } from '@prisma/client';
 import { Play, Image as ImageIcon, CheckCircle2, Trash2, Download } from 'lucide-react';
 import { VideoPreview } from '@/app/components/media/VideoPreview';
+import { MediaLightbox } from '@/app/components/media/MediaLightbox';
 
 interface MediaAssetGridProps {
   assets: MediaAsset[];
@@ -11,6 +12,7 @@ interface MediaAssetGridProps {
   selectedIds?: string[];
   onDelete?: (id: string) => void;
   className?: string;
+  enableLightbox?: boolean;
 }
 
 export function MediaAssetGrid({ 
@@ -18,9 +20,11 @@ export function MediaAssetGrid({
   onSelect, 
   selectedIds = [], 
   onDelete,
-  className = '' 
+  className = '',
+  enableLightbox = true,
 }: MediaAssetGridProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [lightboxAsset, setLightboxAsset] = useState<MediaAsset | null>(null);
 
   if (assets.length === 0) {
     return (
@@ -53,85 +57,95 @@ export function MediaAssetGrid({
   };
 
   return (
-    <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 ${className}`}>
-      {assets.map((asset) => {
-        const isSelected = selectedIds.includes(asset.id);
-        const isVideo = asset.type.toLowerCase() === 'video';
-        // Add #t=0.001 to force browser to render the first frame
+    <>
+      <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 ${className}`}>
+        {assets.map((asset) => {
+          const isSelected = selectedIds.includes(asset.id);
+          const isVideo = asset.type.toLowerCase() === 'video';
+          const openLightbox = enableLightbox && isVideo ? () => setLightboxAsset(asset) : undefined;
 
-        return (
-          <div
-            key={asset.id}
-            className={`group relative aspect-square rounded-xl overflow-hidden border transition-all cursor-pointer ${
-              isSelected 
-                ? 'border-[#D4AF37] ring-1 ring-[#D4AF37]' 
-                : 'border-white/10 hover:border-white/30'
-            }`}
-            onMouseEnter={() => setHoveredId(asset.id)}
-            onMouseLeave={() => setHoveredId(null)}
-            onClick={() => onSelect?.(asset)}
-          >
-            {/* Thumbnail / Content */}
-            {isVideo ? (
-              <VideoPreview
-                src={asset.url}
-                poster={asset.thumbnailUrl}
-                className="h-full w-full"
-                mediaClassName="h-full w-full object-cover"
-                enableHover={false}
-                allowClick={false}
-                stopClickPropagation={true}
-                loop={false}
-              />
-            ) : (
-              <img
-                src={asset.url}
-                alt="Asset"
-                className="w-full h-full object-cover"
-                loading="lazy"
-                decoding="async"
-              />
-            )}
-
-            {/* Type Indicator */}
-            <div className="absolute top-2 left-2 px-2 py-1 rounded-md bg-black/60 backdrop-blur-md text-[10px] font-bold text-white uppercase tracking-wider flex items-center gap-1">
-              {isVideo ? <Play className="w-3 h-3" /> : <ImageIcon className="w-3 h-3" />}
-              {asset.source === 'EDITED' && <span className="text-[#D4AF37] ml-1">Edited</span>}
-            </div>
-
-            {/* Selection Check */}
-            {isSelected && (
-              <div className="absolute top-2 right-2 w-6 h-6 bg-[#D4AF37] rounded-full flex items-center justify-center text-black">
-                <CheckCircle2 className="w-4 h-4" />
-              </div>
-            )}
-
-            {/* Hover Actions */}
-            <div className={`absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/90 to-transparent transition-opacity flex justify-between items-end ${
-              hoveredId === asset.id ? 'opacity-100' : 'opacity-0'
-            }`}>
-              <button 
-                onClick={(e) => handleDownload(e, asset.url, asset.filename || 'asset.mp4')}
-                className="p-2 hover:bg-white/10 rounded-lg text-white/70 hover:text-white transition-colors"
-              >
-                <Download className="w-4 h-4" />
-              </button>
-              
-              {onDelete && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if(confirm('Wirklich löschen?')) onDelete(asset.id);
-                  }}
-                  className="p-2 hover:bg-red-500/20 rounded-lg text-white/70 hover:text-red-400 transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+          return (
+            <div
+              key={asset.id}
+              className={`group relative aspect-square rounded-xl overflow-hidden border transition-all cursor-pointer ${
+                isSelected 
+                  ? 'border-[#D4AF37] ring-1 ring-[#D4AF37]' 
+                  : 'border-white/10 hover:border-white/30'
+              }`}
+              onMouseEnter={() => setHoveredId(asset.id)}
+              onMouseLeave={() => setHoveredId(null)}
+              onClick={() => onSelect?.(asset)}
+            >
+              {/* Thumbnail / Content */}
+              {isVideo ? (
+                <VideoPreview
+                  src={asset.url}
+                  poster={asset.thumbnailUrl}
+                  className="h-full w-full"
+                  mediaClassName="h-full w-full object-cover"
+                  enableHover={false}
+                  allowClick={false}
+                  showOverlay={Boolean(openLightbox)}
+                  stopClickPropagation={true}
+                  openOnClick={!onSelect}
+                  onOpen={openLightbox}
+                  loop={false}
+                />
+              ) : (
+                <img
+                  src={asset.url}
+                  alt="Asset"
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
               )}
+
+              {/* Type Indicator */}
+              <div className="absolute top-2 left-2 px-2 py-1 rounded-md bg-black/60 backdrop-blur-md text-[10px] font-bold text-white uppercase tracking-wider flex items-center gap-1">
+                {isVideo ? <Play className="w-3 h-3" /> : <ImageIcon className="w-3 h-3" />}
+                {asset.source === 'EDITED' && <span className="text-[#D4AF37] ml-1">Edited</span>}
+              </div>
+
+              {/* Selection Check */}
+              {isSelected && (
+                <div className="absolute top-2 right-2 w-6 h-6 bg-[#D4AF37] rounded-full flex items-center justify-center text-black">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+              )}
+
+              {/* Hover Actions */}
+              <div className={`absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/90 to-transparent transition-opacity flex justify-between items-end ${
+                hoveredId === asset.id ? 'opacity-100' : 'opacity-0'
+              }`}>
+                <button 
+                  onClick={(e) => handleDownload(e, asset.url, asset.filename || 'asset.mp4')}
+                  className="p-2 hover:bg-white/10 rounded-lg text-white/70 hover:text-white transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                </button>
+                
+                {onDelete && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if(confirm('Wirklich löschen?')) onDelete(asset.id);
+                    }}
+                    className="p-2 hover:bg-red-500/20 rounded-lg text-white/70 hover:text-red-400 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        );
-      })}
-    </div>
+          );
+        })}
+      </div>
+      <MediaLightbox
+        open={Boolean(lightboxAsset)}
+        asset={lightboxAsset}
+        onClose={() => setLightboxAsset(null)}
+      />
+    </>
   );
 }

@@ -6,6 +6,7 @@ import AuthGuard from '@/app/components/AuthGuard';
 import PageShell from '@/app/components/PageShell';
 import { Heart, Image as ImageIcon, Loader2, Play, Share2 } from 'lucide-react';
 import { VideoPreview } from '@/app/components/media/VideoPreview';
+import { MediaLightbox } from '@/app/components/media/MediaLightbox';
 
 export type MediaFeedItem = {
   id: string;
@@ -60,6 +61,7 @@ export default function MediaFeedClient({ initialItems, initialCursor }: MediaFe
   const [error, setError] = useState<string | null>(null);
   const [pendingLikes, setPendingLikes] = useState<Record<string, boolean>>({});
   const [toast, setToast] = useState<string | null>(null);
+  const [lightboxItem, setLightboxItem] = useState<MediaFeedItem | null>(null);
 
   const feedStats = useMemo(() => {
     const totalLikes = items.reduce((sum, item) => sum + item.likes, 0);
@@ -305,9 +307,10 @@ export default function MediaFeedClient({ initialItems, initialCursor }: MediaFe
                           poster={item.thumbnailUrl}
                           className="h-full w-full"
                           mediaClassName="h-full w-full object-cover"
-                          enableHover={true}
-                          allowClick={true}
+                          enableHover={false}
+                          allowClick={false}
                           showOverlay={true}
+                          onOpen={() => setLightboxItem(item)}
                         />
                       ) : (
                         <img
@@ -413,6 +416,11 @@ export default function MediaFeedClient({ initialItems, initialCursor }: MediaFe
             </div>
           )}
         </div>
+        <MediaLightbox
+          open={Boolean(lightboxItem)}
+          asset={lightboxItem}
+          onClose={() => setLightboxItem(null)}
+        />
       </PageShell>
     </AuthGuard>
   );
