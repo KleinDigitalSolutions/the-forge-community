@@ -7,7 +7,7 @@ type CoreSpinLoaderProps = {
   size?: number
   className?: string
   disableBlur?: boolean
-  variant?: 'emerald' | 'forge'
+  variant?: 'emerald' | 'forge' | 'alien'
 }
 
 export function CoreSpinLoader({
@@ -54,6 +54,21 @@ export function CoreSpinLoader({
           core: 'bg-[#D4AF37]',
           coreShadow: 'shadow-[0_0_6px_rgba(212,175,55,0.6)]',
           text: 'text-[#D4AF37]'
+        }
+      : variant === 'alien'
+      ? {
+          baseGlow: 'bg-cyan-400/15',
+          outerRing: 'border-cyan-400/40',
+          mainArc: 'border-t-cyan-300',
+          mainShadow: 'shadow-[0_0_6px_rgba(34,211,238,0.55)]',
+          reverseArc: 'border-b-blue-500/80',
+          reverseShadow: 'shadow-[0_0_6px_rgba(59,130,246,0.45)]',
+          innerRing: 'border-l-cyan-200/70',
+          dot: 'bg-cyan-300',
+          dotShadow: 'shadow-[0_0_4px_rgba(34,211,238,0.9)]',
+          core: 'bg-blue-300',
+          coreShadow: 'shadow-[0_0_6px_rgba(59,130,246,0.6)]',
+          text: 'text-cyan-200/80'
         }
       : {
           baseGlow: 'bg-emerald-400/15 dark:bg-cyan-500/10',
