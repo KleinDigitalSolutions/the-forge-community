@@ -109,7 +109,7 @@ export default function ContractGeneratorPage() {
 
   const handleSaveAndView = () => {
     if (savedDocId) {
-      router.push(`/forge/${params.ventureId}/legal/contracts/${savedDocId}`);
+      router.push(`/forge/${ventureId}/legal/contracts/${savedDocId}`);
     }
   };
 
