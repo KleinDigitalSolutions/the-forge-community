@@ -59,7 +59,6 @@ export function ForumEditor({
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showVisualTools, setShowVisualTools] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
-  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [emojiPickerSize, setEmojiPickerSize] = useState({ width: 320, height: 400 });
   const [showImageGenerator, setShowImageGenerator] = useState(false);
   const [heroSettings, setHeroSettings] = useState<HeroSettings>({
@@ -72,68 +71,6 @@ export function ForumEditor({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bgInputRef = useRef<HTMLInputElement>(null);
 
-  const handleImageCommand = async (prompt: string, fullMatch: string) => {
-    if (isGeneratingImage) return;
-    setIsGeneratingImage(true);
-    setStatusMessage('🎨 KI generiert Bild...');
-
-    const placeholder = `\n![Generating: ${prompt}...](loading)\n`;
-    const newValue = value.replace(fullMatch, placeholder);
-    onChange(newValue);
-
-    try {
-      const res = await fetch('/api/forge/media', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, type: 'image', isForum: true })
-      });
-      
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Fehler');
-
-      let finalUrl = "";
-      if (data.predictionId) {
-        for (let i = 0; i < 22; i++) {
-          const pollRes = await fetch(`/api/ventures/global/marketing/media?predictionId=${data.predictionId}`);
-          const pollData = await pollRes.json();
-          if (pollData.status === 'succeeded' && pollData.assets?.[0]?.url) {
-            finalUrl = pollData.assets[0].url;
-            break;
-          }
-          if (pollData.status === 'failed') throw new Error('Generierung fehlgeschlagen');
-          await new Promise(r => setTimeout(r, 2000));
-        }
-      }
-
-      if (finalUrl) {
-        const finalMarkdown = `\n![AI Image: ${prompt}](${finalUrl})\n`;
-        onChange(prev => (typeof prev === 'string' ? prev.replace(placeholder, finalMarkdown) : prev));
-        setStatusMessage('✅ Bild bereit!');
-      } else {
-        throw new Error('Timeout');
-      }
-    } catch (error) {
-      console.error('Image Gen Error:', error);
-      setStatusMessage('❌ KI-Bild fehlgeschlagen');
-      onChange(prev => (typeof prev === 'string' ? prev.replace(placeholder, `\n@image ${prompt}\n`) : prev));
-    } finally {
-      setIsGeneratingImage(false);
-      setTimeout(() => setStatusMessage(''), 3000);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      const lines = value.split('\n');
-      const lastLine = lines[lines.length - 1];
-      const match = lastLine.match(/@image\s+(.+)$/i);
-      
-      if (match) {
-        e.preventDefault();
-        handleImageCommand(match[1], match[0]);
-      }
-    }
-  };
 
   useEffect(() => {
     const match = value.match(META_REGEX);
@@ -260,21 +197,6 @@ export function ForumEditor({
     insertText(`\n![Forum Image](${asset.url})\n`);
     setStatusMessage('✅ Bild eingefügt.');
     setTimeout(() => setStatusMessage(''), 2500);
-  };
-
-  const extendedMarkdownComponents = {
-    ...markdownComponents,
-    img: ({ src, alt }: any) => {
-      if (src === 'loading') {
-        return (
-          <div className="w-full aspect-square sm:aspect-video bg-white/5 animate-pulse rounded-xl flex flex-col items-center justify-center border border-white/10 gap-3 my-4">
-            <Sparkles className="w-8 h-8 text-[#D4AF37] animate-bounce" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">{alt}</span>
-          </div>
-        );
-      }
-      return <img src={src} alt={alt} className="rounded-xl border border-white/10 w-full h-auto my-4 shadow-xl" />;
-    }
   };
 
   return (
@@ -438,7 +360,7 @@ export function ForumEditor({
                heroSettings.size === 'lg' ? 'prose-xl' : 
                heroSettings.size === 'xl' ? 'prose-2xl' : 'prose-base' 
              }`}>
-              <ReactMarkdown remarkPlugins={[remarkGfm]} components={extendedMarkdownComponents}>
+              <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
                 {value.replace(META_REGEX, '').trimEnd() || '*Vorschau...*'}
               </ReactMarkdown>
             </div>
@@ -449,7 +371,6 @@ export function ForumEditor({
             autoFocus={autoFocus}
             value={value}
             onChange={e => onChange(e.target.value)}
-            onKeyDown={handleKeyDown}
             placeholder={placeholder}
             className={`relative z-10 w-full h-full bg-transparent px-6 py-4 text-sm outline-none resize-none placeholder:text-white/20 ${showVisualTools ? 'font-bold shadow-black drop-shadow-md' : ''}`}
             style={{
@@ -470,10 +391,10 @@ export function ForumEditor({
         <button 
           type="button"
           onClick={onSubmit} 
-          disabled={isSubmitting || !value.trim() || isGeneratingImage}
+          disabled={isSubmitting || !value.trim()}
           className="bg-[#D4AF37] text-black px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] disabled:opacity-20 hover:brightness-110 transition-all flex items-center gap-2"
         >
-          {isSubmitting || isGeneratingImage ? '...' : submitLabel}
+          {isSubmitting ? '...' : submitLabel}
         </button>
       </div>
     </div>

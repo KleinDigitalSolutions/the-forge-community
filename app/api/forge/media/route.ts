@@ -116,3 +116,27 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: error.message || 'Generierung fehlgeschlagen' }, { status: 500 });
   }
 }
+
+export async function GET(request: NextRequest) {
+  const predictionId = request.nextUrl.searchParams.get('predictionId');
+  if (!predictionId) return NextResponse.json({ error: 'Missing predictionId' }, { status: 400 });
+
+  try {
+    const prediction = await replicate.predictions.get(predictionId);
+    
+    let assets = null;
+    if (prediction.status === 'succeeded' && prediction.output) {
+      // Replicate output format varies, normalize to array of objects
+      const urls = Array.isArray(prediction.output) ? prediction.output : [prediction.output];
+      assets = urls.map(url => ({ url, type: 'image' }));
+    }
+
+    return NextResponse.json({
+      status: prediction.status,
+      assets,
+      error: prediction.error
+    });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
