@@ -1,0 +1,198 @@
+Alles was du brauchst um künstlich intelligenz zu lernen, ist dein Laptop und diese Liste an Schritten die du kennen musst. Kurz zu deinen Kontext. Ich bin selbst KI Unternehmer mit einem Team von 30 Mitarbeitern und habe über 1500 Unternehmen bei der KI Implementierung geholfen. Es hat mich jedoch über 3 Jahre gekostet, um zu diesem Punkt zu kommen und deswegen teile ich heute mit dir, wie ich KI lernen würde, wenn ich heute noch mal ganz von vorne anfangen könnte. zeige dir die sieben wichtigsten Schritte, um alles über KI zu lernen. Und mein Ziel mit diesem Video ist es, dass du abseits vom ganzen Hype mehr über KI weiß als 99% der Menschen und dein gesamtes Umfeld. Grundsätzlich müssen all diese Schritte nicht strickt in einer bestimmten Reihenfolge abgeschlossen werden, aber ich würde nicht mit dem letzten und wohl wichtigsten Schritt anfangen. Das vorweggeschickt, bevor wir mit dem ersten Schritt beginnen, ist es wichtig zu verstehen, was gerade mit KI vor sich geht, denn immer mehr Leute springen gerade auf den KI Zug auf und das aus gutem Grund, denn der KIMK wird voraussichtlich bis 2030 auf 2 Billionen US-Dollar anwachsen. Jetzt ist also eine der besten Gelegenheiten einzusteigen, weil wir immer noch früh dran sind. Wir sind immer noch am Anfang dieser KI Revolution und auch mit der Veröffentlichung dieser ganzen Modelle wie ChatGBT von Open AI ist es jetzt auch einfacher denn je in das Feld einzusteigen. Dennoch weiß jeder, der schon mal anfangen wollte mehr über KI zu lernen, dass das Thema ein komplettes Rabbit Hall ist. Du könntest locker ein ganzes Jahr 16 Stunden täglich KI lernen und hättest maximal 1 2% des verfügbaren Wissens erschlossen. Täglich kommen neue Tools raus, neue Updates, neue Studien und neue Ideen. Die meisten sind daher nach zwei Wochen völlig überfordert und geben wieder auf. Und hier ist mein erstes Learning für dich. 2025 solltest du nicht mehr oberflächliche Theorie lernen. Das bringt dich nicht weiter. Stattdessen solltest du die Skills lernen, die deutsche Unternehmen gerade händeringend suchen. Skills, mit denen du sofort Geld verdienen kannst, denn alles andere sind Spielereien. Und damit sind wir auch schon im ersten Schritt und zwar die drei größten KI Fallen und wie du sie überwindest. Das erste nenne ich die Toolpalyse. Produktlounges, neue Features und Benchmarkschlachten machen den Großteil des Lärms um KI momentan aus. Und all dieser Hype macht es nahezu unmöglich zu identifizieren, welche Tools tatsächlich unsere tägliche Produktivität steigern. Wenn du selbst gerade am Punkt dieser Überforderung bist, dann kann ich dich beruhigen. Du brauchst dich nicht weiter mit Tools beschäftigen, zumindest nicht zu diesem Zeitpunkt. Du brauchst nur eine kleine Auswahl an Tools sowie eine genaue Strategie, die ich dir gleich noch aufzeigen werde. Falle Nummer 2 ist der Zertifikats und Compliance Wen. Das ist ein typisch deutsches Phänomen. Noch bevor wir etwas wirklich verstehen, wollen wir es direkt regulieren. Und ich kann das auch schon verstehen, bei einem so neuen und disruptiven Thema kann ein Zertifikat oder rechtliches Rahmenwerk dir ein Gefühl von Sicherheit geben. Doch damit löst du das eigentliche Thema nicht und verlierst Monate an Zeit, die andere in das Lernen realer Fähigkeiten investieren für ein Zertifikat, das am Ende niemanden interessiert. Und das sage ich dir als jemand, der selbst staatlich und tüfzertifizierte Lehrgänge anbietet. Mach niemals einen Kurs, weil dir irgendjemand sagt, du musst es wegen dem AI Act oder sonst irgendwas machen oder nur um ein Zertifikat zu bekommen. Und damit komme ich auch zum nächsten Punkt. Entscheide dich, welche Rolle du einnehmen willst. Das Problem liegt oft darin, dass nicht technische Leute glauben, um KI zu verstehen, müssten sie Programmierer werden, was dazu führt, dass sie schnell entmutigt aufgeben. Und genau umgekehrt denken Techniker häufig, all ihre Fähigkeiten sind plötzlich irrelevant, weil jeder mit einfachen Deutsch oder Englischkenntnissen plötzlich alles selbst programmieren kann. Doch beides ist falsch, denn es gibt zwei Spielarten, die du wählen kannst. Entweder du wirst Techniker oder du willst Anwender. Z.B. Als Techniker programmierst und installierst du KI-Agenten für Unternehmen. Als Anwender nutzt du KI Agenten, um z.B. Marketingkampagnen effizienter zu erstellen und zu kontrollen. Und beide Spielarten sind gigantische Chancen, um von KI zu profitieren. Und damit kommen wir zu Schritt 2. Grundlegende Begriffe richtig verstehen und einordnen können, die dir immer wieder um die Ohren geschmissen werden. Besonders häufig durcheinander gebracht wird der Unterschied zwischen Prozess, Workflow und Script. Ein Prozess ist eine Beschreibung dessen, was passieren soll, z.B. Kundenanfragen bearbeiten. Ein Workflow ist die konkrete Abfolge von Schritten in diesem Prozess. Also E-Mail kommt rein, wird kategorisiert, an richtige Abteilung weitergeleitet, Antwort wird erstellt und versendet. Ein Script ist dann die technische Umsetzung dieses Workflows, der Code oder die Automatisierung, die das tatsächlich ausführt. Weitere Begriffe, die du besonders häufig hörst, sind KI Modelle und KI Agenten. Beide sind jedoch grunderschieden. Einfach gesagt, sind KI Modelle statisch. für sie antworten. Nur wenn du sie fragst. KI-Agenten hingegen können autonom agieren. Sie können selbständig Entscheidung treffen, andere Tools verwenden und mehrere Aufgaben nacheinander abarbeiten, ohne dass du jeden Schritt vorgibst. In der Umsetzung von KI Workflows brauchst du dann auch no und Low Code Plattformen. Diese ermöglichen die Entwicklung ohne oder mit sehr wenig Code. Wichtig zu wissen ist, verschiedene Plattformen verwenden unterschiedliche Bezeichnungen für ihre Workflows. Make.com nennt sie Szenarien, SP nennt sie ZS, Microsoft Power Automate nennt sie Flows. Es ist alles dasselbe Konzept, nur andere Wörter. Dann brauchst du noch APIs, Webhooks und HTTP Request. API sind Schnittstellen zwischen Softwaresystemen, die es ermöglichen, Daten auszutauschen. Das kannst du mit einem Kellner im Restaurant vergleichen, der deine Bestellung entgegennimmt und dir das Essen aus der Küche bringt. Webhooks sind automatische Benachrichtigungssysteme Zwischenprogramm. Das funktioniert wie eine Türklingel. Sie klingelt automatisch, sobald etwas Wichtiges passiert, ohne dass du nachfragen musst. Z.B. also, wenn das Essen fertig ist und dann deinen Tisch gebracht werden kann. HTTP Request sind die konkreten Datenanfragen, die gesendet werden. Das sind quasi die Bestellungen, die du aufgibst. Ich hätte gern die Kundendaten von Herrn Müller. Und sobald du dann beginnst, diese Systeme praktisch aufzubauen, beginnest du noch drei weiteren Begriffen. Module, Datenmapping und Jason. Module sind die einzelnen Funktionsbausteine in Lowcode Plattformen. Stell dir das wie Lego Bausteine vor. Jeder Baustein macht eine bestimmte Sache und du setzt sie zusammen, um etwas Größeres zu bauen. Datenmapping definiert, welche Daten wohin gehören. Das ist wie ein Übersetzer. Er sagt, das Feld Vorname aus System A gehört in das Feld First Name in System B. Ohne diesen Übersetzer verstehen sich die Systeme nicht und Jason ist ein Datenformat für den Austausch zwischen System. Stell dir vor, alle Softwaresysteme weltweit hätten sich darauf geeinigt, Englisch zu sprechen. Jason ist diese gemeinsame Sprache nur für Computer. Halte nun kurz das Video an und mache dieses kleine Mini, um dein Wissen zu testen. Falls du dir noch nicht ganz sicher bist, dann nutze die Gelegenheit, diesen Teil noch einmal kurz zu wiederholen. Diese Begriffe sind nämlich das Fundament und damit weißt du bereits jetzt mehr als 90% der Menschen. Und damit kommen wir zu Schritt 3. Prompt Engineering. Prompting ist der Prozess KI Tool spezifische Anweisung zu geben, um neue Informationen zu erhalten oder ein gewünschtes Ergebnis bei einer Aufgabe zu erreichen. Das kann durch Text, Bilder, Audio, Video oder sogar Code passieren. Prompting ist wahrscheinlich die Fähigkeit mit dem höchsten Return on Invest, die du lernen kannst und es ist auch die Grundlage für jede andere wertvolle KI Fähigkeit und das macht auch Sinn, denn Prompting ist der Weg, wie du mit diesen KI Modellen kommunizierst. Du kannst die besten Modelle und Tools haben, aber wenn du nicht weißt, wie du mit ihnen interagierst, sind sie trotzdem nutzlos. Wenn du als Anfänger mit dem Prompting anfangen und üben willst, ist der erste Schritt, einfach deinen liebsten KI Chatbot zu wählen. Du, das könnte Chat GBT oder Gemini oder Clod sein, was auch immer dir gefällt. Als nächstes habe ich zwei Merksprüche für dich, die dich, wenn du sie dir merken und umsetzen kannst besser machen als jeden normalen ChatGBT Nutzer, den du kennst. Der erste kommt aus einem Google Prompting Kurs und lautet Tiny Crabs Write Enormous Iganas Framework, was für Task, Context, Resources, Evaluate und Iterate steht. Oder falls du dir Deutsch besser merken kannst, Alpakas kaufen Regenschirme bei IKEA für Aufgabe, Kontext, Ressourcen, Bewertung und Iteration. Wenn du ein Prompt erstellst, ist das erste, was du dir überlegen willst, also die Aufgabe. Was genau soll die KI tun? Z.B. Möchtest du vielleicht, dass dir die KI hilft, LinkedIn Post zu erstellen, um deine neue KI Dienstleistung zu vermarken? Du kannst einfach prompten, erstelle einen LinkedIn Post, der meine neue KI Beratung bewirbt und damit wirst du wahrscheinlich semiute Ergebnisse bekommen. Doch du kannst die Ergebnisse noch viel besser machen. Du fügst zuerst eine Person hinzu, indem du der KI sagst, sie soll als Experte für emotionales Copywriting auf LinkedIn agieren. Das ermöglicht ist, der KI die Rolle eines Marketingexperten einzunehmen und dieses spezifische Fachwissen zu nutzen. Dann kannst du auch das gewünschte Format der Ausgabe hinzufügen. Standardmäßig ist das jetzt ein generischer Post mit ein paar Hashtags, aber vielleicht willst du etwas, das etwas strukturierter ist. Du kannst das Modell bitten, den Post mit einer Statistik über KI Produktivität zu beginnen, gefolgt von deinem Angebot und enden mit zwei relevanten Hashtags. Der nächste Teil dieses Frameworks ist Kontext. Die allgemeine Faustregel ist, dass je mehr Kontext du der KI geben kannst, desto spezifischer und besser werden die Ergebnisse sein. Das Nahste sind Details über dein Unternehmen, wie mein Unternehmen heißt Everlast AI. Wir helfen deutschen Unternehmen bei der KI Implementierung. Wir haben über 1500 erfolgreiche Projekte abgeschlossen und unser Fokus liegt auf praktischen KI Lösung, die sofort ein Return an Invest generieren. Als nächstes kommen die Ressourcen ins Spiel. Das sind z.B. Beispiele von anderen LinkedIn Post, die dir gefallen. Auf diese Weise kann die KI Inspiration aus diesem Beispiel nehmen und sich daran orientieren. Das ist enorm kraftvoll, weil du Dinge mit Worten so viel du willst beschreiben kannst, aber wenn du einfach ein Beispiel bereitstellst, enthält dies bereits alle Informationen und Nuanc. Dann bewertest du, gefällt dir das Ergebnis? Gibt es etwas, was du anpassen oder ändern möchtest? Wenn ja, gehst zum letzten Schritt des Frameworks über und zwar der Iteration. Die Interaktion mit KI Modellen ist ein sehr iterativer Prozess. Selbst wenn du beim ersten Mal nicht bekommst, was du willst, kannst du bitten, ein bisschen hieran zu drehen, etwas dort hinzuzufügen, etwas zu ändern und du arbeitest zusammen mit der KI, um das Ergebnis zu bekommen, dass du schließlich haben willst. Alpakas kaufen Regenschimme bei IKEA. Wenn du dir diesen Merkspruch merken kannst und weißt, wie du ihn anwendest, wirst du besser als 90% der Leute im Prompting sein. Aber wenn du besser als 98% der Menschen sein willst, habe ich noch einen Geheimtipp für dich. Und zwar basieren alle diese großartigen KI Modelle da draußen selbst auf sogenannten System Prompts. Das sind Lightlin Linien, die man dem Modell beispielsweise ChatGBT gegeben hat, um die Antworten in dem Stil zu liefern, wie du ihn gewohnt bist. Also wäre es nicht genial zu sehen, wie Open AI, Google Fropic und so weiter ihre System Prompt schreiben und genau das kannst du tun. In diesem GitHub Repository findest du all die Promps der Big Player und kannst dich exakt dann Aufbau, Format, Struktur und Stil für deine Prompts orientieren. Den Link sowie eine Zusammenfassung dieser gesamten Roadmap findest du übrigens in unserer kostenfreien KI Champions Community. Kommen wir zum nächsten Schritt und zwar KI Automatisierungen. Diese laufen in der Regel über Lowcode Plattform wie Make, NateN oder eigene Skripte. Damit können sämtliche deiner lässigen Aufgaben automatisiert werden, wie beispielsweise Buchhaltung, Dartmanagement oder E-Mails. Aber woher weißt du, was ich wirklich lohnt zu automatisieren? Verwende dazu meinen schnellen vier Fragentest. Kann ich erklären, wie der Input aussieht und was ich als Output haben will? Zweitens passiert es jedes Mal auf die gleiche Art und Weise. Drittens könnte ich es jemanden in Schritten unter einer Minute erklären. Und viertens, wird mir das mindestens 30 Minuten pro Woche sparen, wenn ich es automatisere. Wenn alle Antworten ja sind, dann ist das eine perfekte Aufgabe für dich zu automatisieren. Fange mit einfachen wiederkehrenden Aufgaben in deinem Arbeitsalltag an und taste dich dann Schritt für Schritt an komplexere Szenarien ran. Aber was hat es nun noch mit diesen KI-Agenten auf sich? Also was sind KI-Agenten überhaupt? Stell dir vor, du hättest einen digitalen Mitarbeiter, der eigenständig Aufgaben für dich erledigt. Genau das ist ein KI Agent. Anders als normale KI Tools, die dir nur antworten, wenn du sie fragst, können Agenten selbstständig handeln und Entscheidung treffen. Ein Beispiel, du hast einen Kundenserviceagent einer Immobilienverwaltung, der bekommt eine E-Mail oder ein Anruf mit einer Taube, sitzt verdächtig auf meinem Balkon und ich weiß nicht, was ich tun soll. Der Agent versteht das dann, ohne dass sich ein Mensch um sowas kümmern muss und bearbeitet die Anfrage. Natürlich kann er heute noch nicht komplett alles, was ein Mensch kann, aber die Standardanfragen, die 80% des Alltags ausmachen, die kriegt er hin. Oder nimm ein Coding Agent, du sagst ihm, bau mir eine Website für mein Restaurant und er kommt tatsächlich mit einer funktionsfähigen ersten Version zurück. Ist die perfekt? Natürlich nicht. Du musst noch dran arbeiten, aber die Grundlage steht. Hier wird übrigens gerade richtig viel Geld reingepumpt und die Agenten werden jeden Monat besser. Der beste Tipp, den ich dazu mal gehört habe, für jede Software, die heute erfolgreich ist, wird es bald eine KI Agentenversion gehen. Stell dir also vor, jedes Million Dollar Unternehmen bekommt einen KI Zwilling, was dies für ein gigantischer Markt ist. Aber was steckt denn jetzt wirklich in so einem Agenten drin? OP AI hat das ziemlich gut aufgeschlüsselt und zwar sechs Hauptkomponenten. Erstens brauchst du natürlich ein KI Modell. Ist ja logisch, ohne Gehirn kein Agent. Das ist quasi der Motor, der die ganzen Entscheidungen trifft. Zweitens braucht der Agent Tools, das sind die Hände und Füße sozusagen. Damit kann er E-Mails verschicken, in Datenbanken schauen oder auf anderen Website irgendwas machen. Ohne Tools kann er nur reden, aber nichts anfassen. Drittens, Wissen und Gedächtnis. Du kannst ihm Zugang zu deinen Unternehmensdaten geben, damit er wirklich hilfreiche Antworten gibt. Und wichtig, er muss sich merken können, was ihr vorher besprochen habt. Stell dir vor, du redest mit einem Mitarbeiter und nächste Woche hat er schon wieder alles vergessen. Das wäre ziemlich ärgerlich. Genau deswegen braucht er ein Gedächtnis. Viertens, Sprache und Audio. Der Agent soll mit dir reden können wie ein echter Mensch, nicht nur Text hin und her schicken, am besten in verschiedenen Sprachen, falls gewünscht und natürlich klingend. Fünftens brauchst du Lightplanken, damit der Agent nicht durchdreht und plötzlich anfängt dein ganzes Geld irgendwohin zu überweisen. Du brauchst Grenzen, damit er nur das macht, was er soll. Und sechstens Orchestrierung. Das ist das Managementsystem drumherum. Damit kannst du den Agent überwachen, verbessern und sicherstellen, dass er langfristig funktioniert. Übrigens, hier ist Prompting wieder enorm wichtig, gerade wenn du mehrere Ergenten hast, die zusammenarbeiten sollen. Kommen wir nun zu Schritt 6 und das ist wahrscheinlich der wichtigste von allen. KI für den alltäglichen Gebrauch. Hier geht's darum, eine echte KI Routine aufzubauen und nichts mehr ohne KI Unterstützung zu machen. Das ist auch der Schritt, der für mich persönlich am längsten gedauert hat, da du dich hier wirklich umgewöhnen musst. Also egal, ob du Texte schreibst, Audios einsprichst, egal welche Fragen du hast, was du lernen willst, egal was du tust, du musst trainieren, all mit KI zu lösen und dafür brauchst du einen Grundstack an KI Tools. ChatGBT ist die Basis für alle möglichen dieser Alltagsuse Casases, von der Texterstellung über Analyse bis hin zu Bildgenerierung, aber wichtig dabei ist, das richtige Modell auszuwählen. Bei ChatGBT musst du primär die GBT Modelle kennen. Diese sind besonders gut fürs Texten für kurze und schnelle Anfragen. Und dann gibt es noch die OM-Modelle. Diese brauchst du für komplexere Anfragen, die von dem sogenannten Reasoning Modell tiefergehend durchdacht werden müssen, sodass du eine noch bessere Antwort bekommst. Falls du dazu übrigens noch mehr lernen willst, ich habe hier auf dem Kanal bereits ein 60 Minuten Video aufgenommen, indem du alles darüber lernst, wie du im Alltag mit Chat GBT arbeitest. Gut, du hast jetzt ein umfassendes Verständnis über KI entwickelt. Also lass uns nun im letzten Schritt noch mal in die Vogelperspektive gehen. Ein Schritt zurücktreten von all den Tools, Agents und aktuellen Themen und uns die Frage stellen, wir sind schon extrem weit gekommen, aber wo führt uns die Reise in den nächsten Jahren hin? Welche Entwicklung muss ich jetzt schon auf dem Radar haben? Und aus meiner Sicht haben wir bereits den Breaking Point in der Texterstellung erreicht. ChatGBT erstellt Texte, die nicht mehr von menschlich geschriebenen Texten zu unterscheinen sind. Bei Fotos und Bildern haben wir diesen Durchbruch auch schon erlebt. KI generierte Bilder sind von echten Fotos praktisch nicht mehr zu unterscheiden. Der nächste große Wendepunkt steht uns im Video und Audiobereich bevor, denn beide können die meisten von uns zum jetzigen Zeitpunkt noch als KI entlafen. Doch das wird nicht mehr lange so sein. Und besonders spannend wird die Kombination aus beidem. KI Avatare werden das nicht so große Ding sowie KI Sprachagenten, die am Telefon von echten Menschen nicht zu unterscheiden sind. Hinzuomen immer bessere KI Filme und Werbespots, die förmlich den Marktfloten und klassischen Film völlig obsolet machen werden. Konkret bedeutet das, wer als erster die neuesten Voice Modelle in seine Telefonagenten einbaut, überholt sofort die Konkurrenz. Wer schneller neue Video Tools wie zuletzt Google VO 3 nutzt, kann durch innovativere und günstigere Werbespots plötzlich sechs bis siebenstellige Auftragsvolumen zu einem Bruchteil der Kosten generiert. Deshalb ist es wichtig, dir eine tägliche Routine aufzubauen. Investiere jeden Tag mindestens 5 bis 10 Minuten in einem festen Blog, um dich über die neuesten Updates auf dem Laufenden zu halten. Es gibt viele gute KI Newsletter sowie diese hier oder KI YouTube-Kanäle, die laufend über die wichtigsten und aktuellsten Entwicklung berichten. Wähle dir davon jeweils zehn Stück aus und schaue dir das ein bis zwei Wochen an. Und dann deabonnierst du alle bis auf ein bis zwei Kanäle, die dir am besten gefallen und zu dir und deinen Zielen passen. Zusätzlich würde ich mir jeden Sonntag mindestens einen festen Blog von 2 d Stunden nehmen, indem du neue Use Cases oder KI Tools ausprobierst und implementierst, denn am Ende werden immer die gewinnen, die mit KI wirklich Geld verdienen, es in der Praxis einsetzen und nicht nur Informationen oder Zertifikate sammeln. Bin dich nun interessiert, was aktuell die besten Business Ideen sind, um mit KI Geld zu verdienen, dann schau mal in dieses Video hier rein. Und wenn du jetzt noch mehr über KI lernen willst, dann schau mal in diese ganze Playlist. Ich freue mich, dich dort wieder zu sehen. Mach's gut. Bis dahin de Leo.
+
+
+
+Liste der TikTok Hooks:
+
+75 TikTok Hooks - Englisch
+
+tiktok made me buy it (#tiktokmademebuyit)
+My top shopping find I can't live without
+Favorite online shopping finds
+3 Reasons You Need x For x
+Stop buy that buy this instead
+Here are the secrets to
+I am about to share with you
+I am about to share with you the secrets of
+Do you want traffic from
+The number one thing I’ve learned from
+Three simple steps to
+Do you get stuck when
+You are about to get more leads, sales and profit with
+How do you make sure your
+Here is how to become a
+The secret to using your
+Here is exactly how I
+How to get more
+This is how you can start getting results from  
+I'm about to give you
+You won’t believe this
+X reasons why
+Something you didn’t know
+Simple important tip
+10 (insert tip) I wish I knew earlier
+How I got x in 24 hours
+I don’t know who needs to hear this but
+Here are x tiny tips that can help you do
+This is why your x isn’t working
+Why is nobody talking about
+The #1 reason you’re not
+X reasons why you should
+Life Hack I wish I knew sooner
+Things I discovered on the internet
+Products that have changed my life
+Best affordable dupes for x
+Things I use everyday
+Extremely unpopular opinion x
+I can't believe i lived without x
+If you struggle with x try this x
+How to never be x again
+5 things that help my x
+Its just a friendly reminder x
+I finally found a way to quit immediately x
+5 Reason why i love x
+The perfect x doesn't exist
+3 Top TikTok shopping finds
+3 Tips to get rid of x
+Getting my daily x hits different with x
+Want x ? Check this out
+Want x ? You should watch this!
+3 Things i wish i knew sooner
+Stop immediately scrolling if you suffer from x
+How i x while on a budget
+This is the secret to getting x
+What i ordered & what i got
+My top shopping finds
+Why is nobody talking about this x
+This is the simple way to do x
+How i do x
+This the quickest way to solve x
+psst! Im sharing my secret about x
+How to get x in 24 hours
+Wtf is this? Reacting to x
+Here are 3 signs you're ready to x
+7 mistakes you are probably making with x
+You are probably doing x all wrong if x
+3 steps you need to take in order to x
+if you want to x make sure you x
+i just discovered the best x
+x trends that need to die in 2022
+5 red flags to look for in x
+Stuff you actually need
+Would you x this?
+Best x alternative
+(Du kannst die englischen Hooks natürlich auch übersetzt auf deutsch testen)
+
+49 TikTok Hooks - Deutsch
+
+Du wirst nicht glauben, dass
+Niemand redet über
+x Tipps, die dir helfen mit
+Dieser x hat mein Leben verändert
+Ich möchte dir den wahren Hintergrund erklären, warum wir
+Wolltest du schon immer wissen, wie x aussieht?
+Wolltest du schon immer wissen, wie x funktioniert?
+Wolltest du schon immer wissen, wie x gemacht wird?
+Ich darf das eigentlich nicht sagen, aber
+Das sind 3 Dinge, die du unbedingt wissen musst, wenn
+Dies ist die verrückte Geschichte, wie
+Dieses Video wird die Art und Weise verändern wie du
+x ist die größte Herausforderung, vor der du stehst und hier ist der Grund
+Diese Technik solltest du anwenden, wenn du
+Du hast nur x Minuten Zeit für x? Versuch das
+x Tipps, wie du ganz schnell
+Hat noch jemand genug von x? Lass mich helfen
+Versuch dies wenn du nur x Minuten Zeit hast
+Das wirst du zwar nicht hören wollen, aber
+Jemand hat mich gerade auf diese tolle Idee gebracht
+Das wirst du hören wollen
+x Tipps, die ich gerne früher gewusst hätte
+x Tipps, die dir helfen mit
+Das ist, warum x nicht funktioniert
+Hier etwas, das ich gerne früher gewusst hätte
+Du wirst nicht glauben, was ich dir jetzt sage
+Das haben mich die Leute in letzter Zeit immer wieder gefragt
+Etwas, worüber ich gerade nachgedacht habe, ist
+Diese Nachricht ist für all meine
+x Gründe für x, die du nicht wusstest/kanntest
+Etwas, dass du nicht wusstest
+Wie ich x in 24 Stunden bekommen habe
+Diese Technik solltest du anwenden, wenn du x
+Wenn ich zurückgehen und meinem jüngeren Ich eine Sache über x sagen könnte, wäre es x
+So haben wir fast x bevor wir x
+Wenn du das Geheimnis kennst, das ich dir jetzt verrate, wird sich alles verändern
+So wäre mein x vor dem Start fast gescheitert
+Das ist, warum x nicht funktioniert
+Diese Story ist die Wahrheit darüber, wo ich angefangen habe
+Du musst unbedingt wissen, was ich dir jetzt erzählen werde
+Dies ist einer meiner besten Tipps
+Das ist ein wirklich verrückter Tipp, den du lieben wirst
+Ich habe mich gerade an diese verrückte Sache erinnert
+Das ist das, worum mich meine Freunde immer wieder gebeten haben
+Dieses Video wird die Art und Weise verändern wie du
+Willst du etwas Seltsames wissen?
+Ehrlich gesagt, der beste Rat, den ich dir geben kann, ist
+Dies ist der/das einzige x, das ich jemals wieder benutzen werden
+Warum redet niemand über x
+
+
+50 TikTok Hook-Ideen – deutsch
+Um auf TikTok richtig durchzustarten, brauchst du eine Hook, die die Aufmerksamkeit deiner Zuschauer in den ersten Sekunden fesselt. Damit du direkt loslegen kannst, haben wir 50 kreative und effektive Hook-Ideen für dich zusammengestellt!
+Wusstest du, dass…?
+Du wirst nicht glauben, was passiert ist!
+XX macht fast jeder falsch…
+Ich hätte nie gedacht, dass XX funktioniert!
+3 Dinge, die du heute vermeiden solltest
+Ich habe XX getestet – das Ergebnis überrascht dich
+Dieser Trick spart dir jeden Tag Zeit
+Wenn du DAS tust, wirst du erfolgreicher
+Das erfährt kaum jemand im Internet
+Warum redet niemand darüber?
+Dieses Video wird dein Mindset ändern
+Du hast TikTok bisher völlig falsch genutzt
+Ich zeig dir etwas, das dein Leben vereinfacht
+So machst du XX in weniger als 10 Minuten
+Ich habe 30 Tage lang XX gemacht – das ist passiert
+Du brauchst XX, wenn du mit Y kämpfst
+Hätte ich XX früher gewusst, dann…
+Jeder sollte diesen Trick kennen
+So erkennst du sofort, ob…
+Wie ich mit einem Fehler viral gegangen bin
+Dieses Produkt hat mein Leben verändert
+Wenn du TikTok machst, dann sieh dir das an
+Nur 1 % kennen diesen Hack
+Dieses Video wird dich umhauen
+Das beste Tool, was einfach noch niemand nutzt
+Ich wünschte, mir hätte das jemand gesagt
+So bekommst du X in 5 einfachen Schritten
+Meine Top 3 Geheimtipps für…
+Das wird dein Game komplett verändern
+Ich habe XY gefragt – das kam dabei raus
+Was dir niemand über X erzählt
+So sparst du bei jedem Einkauf
+Ich hab diesen Fehler gemacht, damit du es nicht musst
+Das musst du 2026 wissen
+Ein ehrlicher Blick hinter die Kulissen von XX
+Das dachte ich auch… bis ich das sah
+Wie du durch XX sofort mehr Aufmerksamkeit bekommst
+Dieser Fehler kostet dich Reichweite
+So verpasst du nie wieder einen Trend
+Ein Tool, das ich täglich nutze
+Ich habe X mit Y verglichen – das ist der Unterschied
+Du brauchst nur DAS, um zu starten
+Mein bester Tipp für (XX-) Anfänger
+So steigert sich deine Engagement-Rate sofort
+1 Video – 100.000 Views. So hab ich es geschafft
+XX hat sich geändert – das musst du wissen
+Warum du heute mit XX anfangen solltest
+Dieser einfache Hack bringt dir Views
+So überzeugst du in den ersten Sekunden
+Vergiss alles, was du bisher über XX wusstest
+
+Here are 5 hooks that consistently stop the scroll for me:
+
+“Nobody is talking about THIS…”
+“You’re doing [something] wrong – here’s why”
+“3 secrets [industry] pros don’t want you to know”
+“This will save you HOURS…”
+“Here’s the fastest way to [desirable outcome]”

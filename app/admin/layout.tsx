@@ -46,7 +46,7 @@ export default async function AdminLayout({
           </Link>
           <Link href="/admin/applicants" className="flex items-center gap-3 px-4 py-3 text-sm text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-colors">
             <Users className="w-4 h-4" />
-            Bewerbungen
+            Registrierungen
           </Link>
         </nav>
 
