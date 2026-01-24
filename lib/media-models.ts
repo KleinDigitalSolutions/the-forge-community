@@ -57,14 +57,32 @@ export const IMAGE_MODELS: Record<string, ModelDefinition> = {
 };
 
 export const VIDEO_MODELS: Record<string, ModelDefinition> = {
-  'kling-v1.5-pro': {
-    id: 'kwaivgi/kling-v1.5-pro',
+  'kling-v2.6': {
+    id: 'kwaivgi/kling-v2.6',
     provider: 'replicate',
     tier: 'pro',
-    label: 'Kling 1.5 Pro (Cinema)',
-    cost: 50,
+    label: 'Kling 2.6 Pro (Cinema + Audio)',
+    cost: 55,
     type: 'video',
     aspectRatios: ['16:9', '9:16', '4:5'],
+  },
+  'sora-2': {
+    id: 'openai/sora-2',
+    provider: 'replicate',
+    tier: 'pro',
+    label: 'Sora 2 (Flagship + Synced Audio)',
+    cost: 60,
+    type: 'video',
+    aspectRatios: ['16:9', '9:16', '1:1'],
+  },
+  'veo-3.1': {
+    id: 'google/veo-3.1',
+    provider: 'replicate',
+    tier: 'pro',
+    label: 'Veo 3.1 (Context-Aware Audio)',
+    cost: 58,
+    type: 'video',
+    aspectRatios: ['16:9', '9:16'],
   },
   'minimax-video-01': {
     id: 'minimax/video-01',
@@ -84,10 +102,20 @@ export const VIDEO_MODELS: Record<string, ModelDefinition> = {
     type: 'video',
     aspectRatios: ['16:9', '9:16'],
   },
+  // Legacy (keep for backward compat)
+  'kling-v1.5-pro': {
+    id: 'kwaivgi/kling-v1.5-pro',
+    provider: 'replicate',
+    tier: 'pro',
+    label: 'Kling 1.5 Pro (Legacy)',
+    cost: 50,
+    type: 'video',
+    aspectRatios: ['16:9', '9:16', '4:5'],
+  },
 };
 
 export const DEFAULT_MODELS = {
   forum: IMAGE_MODELS['flux-schnell'],
   studio_image: IMAGE_MODELS['flux-2-pro'],
-  studio_video: VIDEO_MODELS['minimax-video-01'],
+  studio_video: VIDEO_MODELS['kling-v2.6'], // Updated to latest
 };

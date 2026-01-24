@@ -13,8 +13,11 @@ import {
   CheckCircle2,
   AlertTriangle,
   Download,
-  Zap
+  Zap,
+  BookOpen,
+  Copy
 } from 'lucide-react';
+import { PROMPT_TEMPLATES, getTemplatesByType, enrichPromptWithBrandDNA, type PromptTemplate } from '@/lib/prompt-templates';
 
 const MEDIA_MODES = [
   {
@@ -80,6 +83,27 @@ const MODEL_CONFIGS: ModelConfig[] = [
     disabledReason: 'Inaktiv · Top-up 20 EUR',
   },
   {
+    id: 'kwaivgi/kling-v2.6',
+    label: 'Kling 2.6 Pro · Cinema + Audio',
+    outputType: 'video',
+    modes: ['text-to-video', 'image-to-video'],
+    supportsImageInput: true,
+    supportsGuidance: true,
+    supportsDuration: true,
+  },
+  {
+    id: 'openai/sora-2',
+    label: 'Sora 2 · Flagship + Synced Audio',
+    outputType: 'video',
+    modes: ['text-to-video'],
+  },
+  {
+    id: 'google/veo-3.1',
+    label: 'Veo 3.1 · Context-Aware Audio',
+    outputType: 'video',
+    modes: ['text-to-video'],
+  },
+  {
     id: 'minimax/video-01',
     label: 'Minimax Video · Human Motion',
     outputType: 'video',
@@ -90,15 +114,6 @@ const MODEL_CONFIGS: ModelConfig[] = [
     label: 'Luma Dream Machine · Atmospheric',
     outputType: 'video',
     modes: ['text-to-video'],
-  },
-  {
-    id: 'kwaivgi/kling-v1.5-pro',
-    label: 'Kling 1.5 Pro · Cinema',
-    outputType: 'video',
-    modes: ['image-to-video'],
-    supportsImageInput: true,
-    supportsGuidance: true,
-    supportsDuration: true,
   },
 ];
 
@@ -194,6 +209,11 @@ export function MediaGeneratorModal({
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [predictionStatus, setPredictionStatus] = useState<string | null>(null);
+
+  // Prompt Templates State
+  const [selectedTemplate, setSelectedTemplate] = useState<PromptTemplate | null>(null);
+  const [placeholderValues, setPlaceholderValues] = useState<Record<string, string>>({});
+  const [showTemplates, setShowTemplates] = useState(false);
 
   const availableModels = useMemo(() => getModelsForMode(mode), [mode]);
   const enabledModels = useMemo(
@@ -344,6 +364,48 @@ export function MediaGeneratorModal({
   };
 
   if (!isOpen && !inline) return null;
+
+  // Template Handlers
+  const handleTemplateSelect = (template: PromptTemplate) => {
+    setSelectedTemplate(template);
+
+    // Initialize placeholder values
+    if (template.placeholders) {
+      const initialValues: Record<string, string> = {};
+      template.placeholders.forEach(ph => {
+        initialValues[ph] = '';
+      });
+      setPlaceholderValues(initialValues);
+    }
+  };
+
+  const handleApplyTemplate = () => {
+    if (!selectedTemplate) return;
+
+    let finalPrompt = selectedTemplate.prompt;
+
+    // Replace placeholders
+    if (selectedTemplate.placeholders) {
+      selectedTemplate.placeholders.forEach(ph => {
+        const value = placeholderValues[ph] || '';
+        finalPrompt = finalPrompt.replace(ph, value);
+      });
+    }
+
+    // Enrich with Brand DNA if available
+    if (brandDNA) {
+      finalPrompt = enrichPromptWithBrandDNA(finalPrompt, brandDNA);
+    }
+
+    setPrompt(finalPrompt);
+    setShowTemplates(false);
+    setSelectedTemplate(null);
+  };
+
+  const availableTemplates = useMemo(() => {
+    const type = isVideoMode ? 'video' : 'image';
+    return getTemplatesByType(type);
+  }, [isVideoMode]);
 
   const handleGenerate = async () => {
     setErrorMessage('');
@@ -506,18 +568,27 @@ export function MediaGeneratorModal({
           <div className="glass-card rounded-xl border border-white/10 p-5 space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h3 className="text-sm font-bold uppercase tracking-widest text-white/40">Prompt</h3>
-              {brandDNA && (
+              <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setUseBrandContext((prev) => !prev)}
-                  className={`text-[10px] uppercase tracking-widest px-3 py-1 rounded-full border transition-all ${
-                    useBrandContext
-                      ? 'border-[#D4AF37]/40 bg-[#D4AF37]/10 text-[#D4AF37]'
-                      : 'border-white/10 text-white/40'
-                  }`}
+                  onClick={() => setShowTemplates(true)}
+                  className="text-[10px] uppercase tracking-widest px-3 py-1 rounded-full border border-white/10 text-white/40 hover:text-white hover:border-[#D4AF37]/40 transition-all flex items-center gap-1.5"
                 >
-                  Brand DNA {useBrandContext ? 'aktiv' : 'aus'}
+                  <BookOpen className="w-3 h-3" />
+                  Templates
                 </button>
-              )}
+                {brandDNA && (
+                  <button
+                    onClick={() => setUseBrandContext((prev) => !prev)}
+                    className={`text-[10px] uppercase tracking-widest px-3 py-1 rounded-full border transition-all ${
+                      useBrandContext
+                        ? 'border-[#D4AF37]/40 bg-[#D4AF37]/10 text-[#D4AF37]'
+                        : 'border-white/10 text-white/40'
+                    }`}
+                  >
+                    Brand DNA {useBrandContext ? 'aktiv' : 'aus'}
+                  </button>
+                )}
+              </div>
             </div>
             <textarea
               rows={4}
@@ -823,15 +894,141 @@ export function MediaGeneratorModal({
     </div>
   );
 
+  // Template Modal Overlay
+  const TemplateModal = showTemplates && (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+      <div className="glass-card w-full max-w-3xl max-h-[90vh] rounded-2xl border border-white/10 flex flex-col overflow-hidden">
+        {/* Header - Fixed */}
+        <div className="flex-shrink-0 p-4 sm:p-6 border-b border-white/10 flex justify-between items-center bg-black/40 backdrop-blur-md">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#D4AF37]/10 rounded-xl flex items-center justify-center">
+              <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-[#D4AF37]" />
+            </div>
+            <div>
+              <h2 className="text-lg sm:text-xl font-instrument-serif text-white">Prompt Templates</h2>
+              <p className="text-[10px] sm:text-xs text-white/40 uppercase tracking-widest font-bold">
+                {isVideoMode ? 'Video' : 'Image'} · Best Practices 2025
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => { setShowTemplates(false); setSelectedTemplate(null); }}
+            className="p-2 hover:bg-white/5 rounded-full text-white/40 hover:text-white transition-colors flex-shrink-0"
+          >
+            <X className="w-5 h-5 sm:w-6 sm:h-6" />
+          </button>
+        </div>
+
+        {/* Template Selection - Scrollable */}
+        {!selectedTemplate && (
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+            <div className="grid gap-3">
+              {availableTemplates.map((template) => (
+                <button
+                  key={template.id}
+                  onClick={() => handleTemplateSelect(template)}
+                  className="text-left p-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-[#D4AF37]/40 transition-all group"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-sm font-bold text-white group-hover:text-[#D4AF37] transition-colors">
+                          {template.label}
+                        </span>
+                        <span className="text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-full bg-white/10 text-white/40">
+                          {template.category}
+                        </span>
+                      </div>
+                      {template.tips && (
+                        <p className="text-xs text-white/50">{template.tips}</p>
+                      )}
+                    </div>
+                    <Copy className="w-4 h-4 text-white/30 group-hover:text-[#D4AF37] transition-colors" />
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Template Configuration - Scrollable */}
+        {selectedTemplate && (
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+              <div className="text-xs font-bold uppercase tracking-widest text-white/40 mb-2">Template Preview</div>
+              <div className="text-sm text-white/70 font-mono leading-relaxed">
+                {selectedTemplate.prompt}
+              </div>
+            </div>
+
+            {selectedTemplate.placeholders && selectedTemplate.placeholders.length > 0 && (
+              <div className="space-y-3">
+                <div className="text-xs font-bold uppercase tracking-widest text-white/40">
+                  Fülle die Platzhalter aus
+                </div>
+                {selectedTemplate.placeholders.map((placeholder) => (
+                  <div key={placeholder}>
+                    <label className="block text-xs text-white/50 mb-1.5 font-mono">
+                      {placeholder}
+                    </label>
+                    <input
+                      type="text"
+                      value={placeholderValues[placeholder] || ''}
+                      onChange={(e) => setPlaceholderValues(prev => ({ ...prev, [placeholder]: e.target.value }))}
+                      placeholder={`z.B. ${placeholder === '[PRODUCT]' ? 'Premium Sneakers' : placeholder === '[BRAND]' ? 'Nike' : placeholder === '[COLOR1]' ? 'neon pink' : 'dein Text'}`}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white text-sm focus:border-[#D4AF37] outline-none"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {selectedTemplate.tips && (
+              <div className="p-3 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/20">
+                <div className="text-[10px] font-bold uppercase tracking-widest text-[#D4AF37] mb-1">
+                  💡 Pro Tip
+                </div>
+                <div className="text-xs text-white/70">{selectedTemplate.tips}</div>
+              </div>
+            )}
+
+            <div className="flex gap-2 sm:gap-3 pt-2 sticky bottom-0 bg-gradient-to-t from-black via-black to-transparent pt-4 -mx-4 sm:-mx-6 px-4 sm:px-6 pb-0">
+              <button
+                onClick={() => setSelectedTemplate(null)}
+                className="flex-1 px-3 sm:px-4 py-2 sm:py-3 rounded-xl border border-white/10 text-white/60 hover:text-white hover:bg-white/5 transition-all text-xs sm:text-sm font-bold"
+              >
+                Zurück
+              </button>
+              <button
+                onClick={handleApplyTemplate}
+                className="flex-1 px-3 sm:px-4 py-2 sm:py-3 rounded-xl bg-[#D4AF37] text-black hover:bg-[#D4AF37]/90 transition-all text-xs sm:text-sm font-bold"
+              >
+                Übernehmen
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   if (inline) {
-    return <div className="w-full h-full">{Content}</div>;
+    return (
+      <>
+        <div className="w-full h-full">{Content}</div>
+        {TemplateModal}
+      </>
+    );
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="glass-card w-full max-w-5xl rounded-2xl border border-white/10 flex flex-col max-h-[90vh] overflow-hidden">
-        {Content}
+    <>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div className="glass-card w-full max-w-5xl rounded-2xl border border-white/10 flex flex-col max-h-[90vh] overflow-hidden">
+          {Content}
+        </div>
       </div>
-    </div>
+      {TemplateModal}
+    </>
   );
 }
