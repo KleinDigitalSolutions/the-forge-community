@@ -20,11 +20,13 @@ import {
   CheckCircle2,
   AlertCircle,
   TrendingUp,
-  FileText
+  FileText,
+  Sparkles
 } from 'lucide-react';
 import { AddSupplierModal } from '@/app/components/sourcing/AddSupplierModal';
 import { AddSampleModal } from '@/app/components/sourcing/AddSampleModal';
 import { AddOrderModal } from '@/app/components/sourcing/AddOrderModal';
+import { AISourcingModal } from '@/app/components/sourcing/AISourcingModal';
 import { useAIContext } from '@/app/context/AIContext';
 
 type TabType = 'suppliers' | 'samples' | 'orders' | 'overview';
@@ -46,6 +48,7 @@ export default function SourcingPage() {
   const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
   const [isSampleModalOpen, setIsSampleModalOpen] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
   useEffect(() => {
     const tab = searchParams.get('tab') as TabType;
@@ -167,13 +170,22 @@ export default function SourcingPage() {
                         Filter
                       </button>
                     </div>
-                    <button 
-                      onClick={() => setIsSupplierModalOpen(true)}
-                      className="flex items-center gap-2 px-4 py-2 bg-[#D4AF37] text-black rounded-lg text-sm font-bold hover:opacity-90 transition-opacity"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Neuer Lieferant
-                    </button>
+                    <div className="flex gap-3">
+                      <button 
+                        onClick={() => setIsAIModalOpen(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#D4AF37] to-[#B8860B] text-black rounded-lg text-sm font-bold hover:opacity-90 transition-all shadow-lg shadow-[#D4AF37]/20 border border-[#D4AF37]/30"
+                      >
+                        <Sparkles className="w-4 h-4" />
+                        AI Discovery
+                      </button>
+                      <button 
+                        onClick={() => setIsSupplierModalOpen(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 text-white rounded-lg text-sm font-bold hover:bg-white/10 transition-all"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Manuell
+                      </button>
+                    </div>
                   </div>
 
                   {suppliers.length === 0 ? (
@@ -517,6 +529,12 @@ export default function SourcingPage() {
             <AddOrderModal
               isOpen={isOrderModalOpen}
               onClose={() => setIsOrderModalOpen(false)}
+              onSuccess={fetchData}
+              ventureId={ventureId}
+            />
+            <AISourcingModal
+              isOpen={isAIModalOpen}
+              onClose={() => setIsAIModalOpen(false)}
               onSuccess={fetchData}
               ventureId={ventureId}
             />
