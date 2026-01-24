@@ -94,7 +94,7 @@ interface ForumClientProps {
 
 const AI_AUTHORS = new Set(['@orion', '@forge-ai']);
 const INSIGHT_HEADER = /\*\*(?:Orion|AI) Insight · (.+?)\*\*\s*/i;
-const META_REGEX = /<!--metadata: ({.*}) -->$/s;
+const META_REGEX = /<!--metadata: ({[\s\S]*}) -->$/;
 
 function extractMetadata(content: string) {
   const match = content.match(META_REGEX);

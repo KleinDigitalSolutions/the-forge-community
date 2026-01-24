@@ -33,7 +33,7 @@ interface HeroSettings {
   size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
-const META_REGEX = /<!--metadata: ({.*}) -->$/s;
+const META_REGEX = /<!--metadata: ({[\s\S]*}) -->$/;
 
 export function ForumEditor({
   value,
@@ -306,7 +306,7 @@ export function ForumEditor({
                       className={`p-1.5 rounded-md transition-all ${heroSettings.align === a ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white'}`}
                     >
                       {a === 'left' && <AlignLeft className="w-3.5 h-3.5" />}
-                      {a === 'center' && <Center className="w-3.5 h-3.5" />}
+                      {a === 'center' && <AlignCenter className="w-3.5 h-3.5" />}
                       {a === 'right' && <AlignRight className="w-3.5 h-3.5" />}
                     </button>
                   ))}
