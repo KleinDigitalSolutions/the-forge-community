@@ -1661,6 +1661,8 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
                                             showCancel
                                             onCancel={cancelCommentEdit}
                                             minHeight="100px"
+                                            mediaVentureId={forumVentureId}
+                                            enableImageGenerator
                                             markdownComponents={MarkdownComponents}
                                           />
                                         ) : (
@@ -1780,6 +1782,8 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
                                 placeholder={replyTargets[post.id] ? 'Antwort schreiben...' : 'Antworte oder ergänze den Thread...'}
                                 submitLabel="Kommentar senden"
                                 minHeight="120px"
+                                mediaVentureId={forumVentureId}
+                                enableImageGenerator
                                 markdownComponents={MarkdownComponents}
                               />
                             </div>
