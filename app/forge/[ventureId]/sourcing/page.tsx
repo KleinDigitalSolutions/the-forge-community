@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { StudioShell } from '@/app/components/forge/StudioShell';
 import { 
   Factory, 
