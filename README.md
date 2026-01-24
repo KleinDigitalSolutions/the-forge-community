@@ -23,6 +23,11 @@ The Forge nutzt ein **Product-Led Growth** Modell für maximale Konvertierung vo
 
 ### Heute
 
+*   **AI Sourcing (DB-only):** "AI Discovery" liefert jetzt nur echte Treffer aus der `Resource`-Datenbank inklusive Matching-Erklaerung.
+*   **Sourcing Match UI:** Modaltexte angepasst (DB-Matching statt Gemini-Halluzinationen).
+*   **AI Communication Page:** Neue `/communication` Seite als zentrale Chat-UI (Gemini aktiv, eigene API disabled).
+*   **UI Sound FX:** GTA-Menu-Sound bei Forum-Post und Message-Send (nur bei Erfolg).
+*   **Static Asset:** Sound liegt jetzt unter `public/audio/gta-menu.mp3`.
 *   **Account Settings:** Neue `/settings`‑Seite mit Notification‑Prefs, Privacy‑Prefs und sofortiger Account‑Löschung (mit Sicherheitsarchiv).
 *   **Deletion Flow:** `AccountStatus` + Tombstone/Anonymisierung, Sign‑In Lockout, Retention in `UserDeletion`.
 *   **DM‑Moderation:** Nachrichten werden wie Forum‑Posts moderiert (Toxicity‑Check + Warnung), Fehler wird im UI gezeigt.
