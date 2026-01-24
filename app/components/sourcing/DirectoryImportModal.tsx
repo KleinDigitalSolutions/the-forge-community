@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, MapPin, Loader2, X, Plus, Package, Mail, Globe, ArrowLeft, Filter, SortAsc, LayoutGrid, Check, Phone } from 'lucide-react';
+import { Search, MapPin, Loader2, X, Plus, Package, Mail, Globe, ArrowLeft, Filter, SortAsc, LayoutGrid, Check, Phone, TrendingUp } from 'lucide-react';
 
 interface DirectoryImportModalProps {
   isOpen: boolean;
@@ -285,11 +285,29 @@ export function DirectoryImportModal({ isOpen, onClose, onImported, ventureId }:
 
                 {/* Description - FULL TEXT, NO CLAMP */}
                 <div className="flex-1 sm:px-6 space-y-3">
-                  <p className="text-sm text-white/60 leading-relaxed max-w-4xl">
-                    {res.description || 'Global B2B Partner für Stake & Scale Mitglieder.'}
-                  </p>
+                                  <p className="text-sm text-white/60 leading-relaxed max-w-4xl">
+                                    {res.description || 'Global B2B Partner für Stake & Scale Mitglieder.'}
+                                  </p>
                   
-                  {/* Enhanced Info Row */}
+                                  {/* PRO PRICING TABLE (NEW) */}
+                                  {res.contactInfo?.prices_2026 && (
+                                    <div className="mt-4 p-4 rounded-2xl bg-white/[0.03] border border-white/5 space-y-3">
+                                      <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-[#D4AF37]/80">
+                                        <TrendingUp className="w-3 h-3" /> Tarife & Konditionen 2026
+                                      </div>
+                                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                        {Object.entries(res.contactInfo.prices_2026).map(([label, price]: [string, any]) => (
+                                          <div key={label} className="flex items-center justify-between px-3 py-2 rounded-lg bg-black/40 border border-white/5">
+                                            <span className="text-[10px] text-white/40 truncate mr-2">{label}</span>
+                                            <span className="text-[11px] font-bold text-white whitespace-nowrap">{price}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                  
+                                  {/* Enhanced Info Row */}
+                  
                   <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
                     <div className="flex items-center gap-1.5 text-[10px] font-medium text-white/30">
                       <MapPin className="w-3.5 h-3.5 text-[#D4AF37]/50" />

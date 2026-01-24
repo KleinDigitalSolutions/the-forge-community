@@ -32,8 +32,8 @@ export default function MarketingPage() {
   const [brandDNA, setBrandDNA] = useState<BrandDNA | null>(null);
   const [loading, setLoading] = useState(true);
   
-  // Workspace Mode: 'copy' (Text) or 'media' (Images/Video)
-  const [workspace, setWorkspace] = useState<'copy' | 'media'>('copy');
+  // Workspace Mode: 'media' (Images/Video) or 'copy' (Text)
+  const [workspace, setWorkspace] = useState<'copy' | 'media'>('media');
 
   // Text Generation State
   const [contentType, setContentType] = useState(CONTENT_TYPES[0].id);
@@ -150,17 +150,6 @@ export default function MarketingPage() {
       <div className="flex justify-center mb-8">
         <div className="bg-white/5 rounded-full p-1 flex items-center border border-white/10">
           <button
-            onClick={() => setWorkspace('copy')}
-            className={`px-6 py-2 rounded-full text-sm font-bold flex items-center gap-2 transition-all ${
-              workspace === 'copy' 
-                ? 'bg-[#D4AF37] text-black shadow-lg shadow-[#D4AF37]/20' 
-                : 'text-white/40 hover:text-white'
-            }`}
-          >
-            <PenTool className="w-4 h-4" />
-            Copywriter
-          </button>
-          <button
             onClick={() => setWorkspace('media')}
             className={`px-6 py-2 rounded-full text-sm font-bold flex items-center gap-2 transition-all ${
               workspace === 'media' 
@@ -170,6 +159,17 @@ export default function MarketingPage() {
           >
             <ImageIcon className="w-4 h-4" />
             Media Studio
+          </button>
+          <button
+            onClick={() => setWorkspace('copy')}
+            className={`px-6 py-2 rounded-full text-sm font-bold flex items-center gap-2 transition-all ${
+              workspace === 'copy' 
+                ? 'bg-[#D4AF37] text-black shadow-lg shadow-[#D4AF37]/20' 
+                : 'text-white/40 hover:text-white'
+            }`}
+          >
+            <PenTool className="w-4 h-4" />
+            Copywriter
           </button>
         </div>
       </div>
