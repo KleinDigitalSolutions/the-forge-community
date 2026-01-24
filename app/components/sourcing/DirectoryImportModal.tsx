@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, MapPin, Loader2, X, Plus, Package, Mail, Globe, ArrowLeft } from 'lucide-react';
+import { Search, MapPin, Loader2, X, Plus, Package, Mail, Globe, ArrowLeft, Filter, SortAsc, LayoutGrid, Check, Phone } from 'lucide-react';
 
 interface DirectoryImportModalProps {
   isOpen: boolean;
@@ -18,6 +18,15 @@ export function DirectoryImportModal({ isOpen, onClose, onImported, ventureId }:
   const [hasMore, setHasMore] = useState(true);
   const [offset, setOffset] = useState(0);
   const [importingId, setImportingId] = useState<string | null>(null);
+  
+  // Advanced Filters
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState<'title' | 'location'>('title');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [availableFilters, setAvailableFilters] = useState<{types: string[], locations: string[]}>({ types: [], locations: [] });
+  const [showFilters, setShowFilters] = useState(false);
+
   const LIMIT = 25;
 
   const observer = useRef<IntersectionObserver | null>(null);
@@ -35,7 +44,12 @@ export function DirectoryImportModal({ isOpen, onClose, onImported, ventureId }:
   const fetchResources = async (currentOffset: number, query: string, isNewSearch = false) => {
     setLoading(true);
     try {
-      const url = `/api/resources?limit=${LIMIT}&offset=${currentOffset}${query ? `&search=${encodeURIComponent(query)}` : ''}`;
+      const typeParams = selectedTypes.length > 0 ? `&types=${encodeURIComponent(selectedTypes.join(','))}` : '';
+      const locParams = selectedLocations.length > 0 ? `&locations=${encodeURIComponent(selectedLocations.join(','))}` : '';
+      const sortParams = `&sortBy=${sortBy}&order=${sortOrder}`;
+      
+      const url = `/api/resources?limit=${LIMIT}&offset=${currentOffset}${query ? `&search=${encodeURIComponent(query)}` : ''}${typeParams}${locParams}${sortParams}`;
+      
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
@@ -43,8 +57,11 @@ export function DirectoryImportModal({ isOpen, onClose, onImported, ventureId }:
         const total = data.total || 0;
         
         setTotalCount(total);
+        if (data.availableFilters) setAvailableFilters(data.availableFilters);
+        
         if (isNewSearch) setResources(newItems);
         else setResources(prev => [...prev, ...newItems]);
+        
         setHasMore((isNewSearch ? newItems.length : resources.length + newItems.length) < total);
       }
     } catch (error) {
@@ -67,6 +84,14 @@ export function DirectoryImportModal({ isOpen, onClose, onImported, ventureId }:
     return () => { document.body.style.overflow = 'unset'; };
   }, [isOpen]);
 
+  // Trigger fetch on filter/sort change
+  useEffect(() => {
+    if (isOpen) {
+      setOffset(0);
+      fetchResources(0, searchQuery, true);
+    }
+  }, [selectedTypes, selectedLocations, sortBy, sortOrder]);
+
   useEffect(() => {
     if (offset > 0 && isOpen) fetchResources(offset, searchQuery);
   }, [offset, isOpen]);
@@ -80,6 +105,14 @@ export function DirectoryImportModal({ isOpen, onClose, onImported, ventureId }:
     }, 400);
     return () => clearTimeout(timer);
   }, [searchQuery, isOpen]);
+
+  const toggleType = (type: string) => {
+    setSelectedTypes(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]);
+  };
+
+  const toggleLocation = (loc: string) => {
+    setSelectedLocations(prev => prev.includes(loc) ? prev.filter(l => l !== loc) : [...prev, loc]);
+  };
 
   async function handleImport(resourceId: string) {
     setImportingId(resourceId);
@@ -102,7 +135,7 @@ export function DirectoryImportModal({ isOpen, onClose, onImported, ventureId }:
 
   return (
     <div className="fixed inset-0 bg-[#050505] flex flex-col z-[2147483647] overflow-hidden">
-      {/* 1. CLEAN PRO HEADER - Overrides EVERYTHING */}
+      {/* 1. SaaS HEADER */}
       <header className="flex-none h-20 bg-black border-b border-white/10 px-8 flex items-center justify-between shadow-2xl">
         <div className="flex items-center gap-8">
           <button 
@@ -115,20 +148,18 @@ export function DirectoryImportModal({ isOpen, onClose, onImported, ventureId }:
           
           <div className="flex flex-col">
             <h1 className="text-xl font-bold text-white tracking-tight">
-              Partner & B2B Großhändler
-              <span className="ml-3 px-2 py-0.5 rounded-md bg-[#D4AF37]/20 text-[#D4AF37] text-xs font-mono">
-                {totalCount}
-              </span>
+              Partner Netzwerk
+              <span className="ml-3 px-2 py-0.5 rounded-md bg-[#D4AF37]/20 text-[#D4AF37] text-xs font-mono">{totalCount}</span>
             </h1>
             <div className="flex items-center gap-2">
               <span className="h-1.5 w-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30">Live Database</span>
+              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30">Global B2B Directory</span>
             </div>
           </div>
         </div>
 
         {/* Search Bar - Center */}
-        <div className="flex-1 max-w-2xl px-12">
+        <div className="flex-1 max-w-xl px-8">
           <div className="relative group">
             <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-[#D4AF37] transition-colors" />
             <input
@@ -136,100 +167,190 @@ export function DirectoryImportModal({ isOpen, onClose, onImported, ventureId }:
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Händler, Produkte oder Kategorien durchsuchen..."
+              placeholder="Partner oder Leistungen suchen..."
               className="w-full bg-[#0A0A0A] border border-white/10 rounded-2xl pl-12 pr-6 py-3.5 text-sm text-white placeholder:text-white/10 focus:border-[#D4AF37]/50 outline-none transition-all shadow-inner"
             />
           </div>
         </div>
 
-        {/* Global Stats */}
-        <div className="hidden lg:flex items-center gap-6">
-          <div className="flex flex-col items-end">
-            <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Netzwerk Status</span>
-            <span className="text-xs font-bold text-[#D4AF37]">GLOBAL ACCESS</span>
+        {/* Filter Toggle & Sorting */}
+        <div className="flex items-center gap-4">
+          <div className="flex bg-white/5 rounded-xl p-1 border border-white/10">
+            <button 
+              onClick={() => { setSortBy('title'); setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc'); }}
+              className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all ${sortBy === 'title' ? 'bg-[#D4AF37] text-black' : 'text-white/40 hover:text-white'}`}
+            >
+              <SortAsc className="w-3.5 h-3.5" /> A-Z
+            </button>
+            <button 
+              onClick={() => { setSortBy('location'); setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc'); }}
+              className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all ${sortBy === 'location' ? 'bg-[#D4AF37] text-black' : 'text-white/40 hover:text-white'}`}
+            >
+              <MapPin className="w-3.5 h-3.5" /> Stadt
+            </button>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-[#D4AF37]/10 border border-[#D4AF37]/20 flex items-center justify-center">
-            <Globe className="w-5 h-5 text-[#D4AF37]" />
-          </div>
+
+          <button 
+            onClick={() => setShowFilters(!showFilters)}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl border transition-all text-xs font-black uppercase tracking-widest ${showFilters ? 'bg-[#D4AF37] border-[#D4AF37] text-black shadow-[0_0_20px_rgba(212,175,55,0.2)]' : 'bg-white/5 border-white/10 text-white hover:bg-white/10'}`}
+          >
+            <Filter className="w-4 h-4" />
+            Filter {(selectedTypes.length + selectedLocations.length) > 0 && `(${(selectedTypes.length + selectedLocations.length)})`}
+          </button>
         </div>
       </header>
 
-      {/* 2. TABLE HEADERS */}
-      <div className="flex-none bg-[#080808] border-b border-white/5 px-10 py-4 hidden sm:flex items-center text-[10px] font-black uppercase tracking-[0.3em] text-white/20">
-        <div className="w-1/4">Unternehmen / Branche</div>
-        <div className="flex-1 px-6">Beschreibung & Leistungen</div>
-        <div className="w-48">Region</div>
-        <div className="w-40 text-right">Aktion</div>
-      </div>
+      <div className="flex-1 flex overflow-hidden">
+        {/* 2. FILTER SIDEBAR (Multi-Choice) */}
+        {showFilters && (
+          <aside className="w-80 flex-none bg-black border-r border-white/10 overflow-y-auto custom-scrollbar p-8 space-y-10 animate-in slide-in-from-left duration-300">
+            {/* Types / Categories */}
+            <div className="space-y-4">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 flex items-center gap-2">
+                <LayoutGrid className="w-3 h-3" /> Branche / Art
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {availableFilters.types.map(type => (
+                  <button
+                    key={type}
+                    onClick={() => toggleType(type)}
+                    className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all ${selectedTypes.includes(type) ? 'bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37]' : 'bg-white/5 border-white/5 text-white/40 hover:border-white/20'}`}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-      {/* 3. SCROLLABLE LIST */}
-      <main className="flex-1 overflow-y-auto bg-[#050505] custom-scrollbar overscroll-contain">
-        <div className="max-w-[1800px] mx-auto divide-y divide-white/5">
-          {resources.map((res, index) => (
-            <div 
-              key={res.id} 
-              ref={index === resources.length - 1 ? lastElementRef : null}
-              className="flex flex-col sm:flex-row sm:items-center px-8 sm:px-10 py-6 hover:bg-white/[0.02] transition-all group gap-6 sm:gap-0"
-            >
-              {/* Company Info */}
-              <div className="w-full sm:w-1/4 flex items-start gap-5">
-                <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 text-[#D4AF37] group-hover:scale-110 transition-transform">
-                  <Package className="w-6 h-6" />
-                </div>
-                <div className="min-w-0">
-                  <h4 className="font-bold text-white text-lg truncate group-hover:text-[#D4AF37] transition-colors">{res.title}</h4>
-                  <div className="inline-block mt-1 px-2 py-0.5 rounded bg-[#D4AF37]/10 border border-[#D4AF37]/20">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-[#D4AF37]">{res.type || res.category}</span>
+            {/* Locations */}
+            <div className="space-y-4">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 flex items-center gap-2">
+                <MapPin className="w-3 h-3" /> Standort
+              </h3>
+              <div className="grid grid-cols-1 gap-2">
+                {availableFilters.locations.map(loc => (
+                  <button
+                    key={loc}
+                    onClick={() => toggleLocation(loc)}
+                    className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/20 transition-all text-left group"
+                  >
+                    <span className={`text-[11px] font-bold transition-colors ${selectedLocations.includes(loc) ? 'text-[#D4AF37]' : 'text-white/40 group-hover:text-white'}`}>{loc}</span>
+                    {selectedLocations.includes(loc) && <Check className="w-3.5 h-3.5 text-[#D4AF37]" />}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Clear All */}
+            {(selectedTypes.length > 0 || selectedLocations.length > 0) && (
+              <button 
+                onClick={() => { setSelectedTypes([]); setSelectedLocations([]); }}
+                className="w-full py-3 rounded-xl border border-red-500/20 text-red-400 text-[10px] font-black uppercase tracking-widest hover:bg-red-500/10 transition-all"
+              >
+                Filter zurücksetzen
+              </button>
+            )}
+          </aside>
+        )}
+
+        {/* 3. MAIN LIST AREA */}
+        <main className="flex-1 overflow-y-auto bg-[#050505] custom-scrollbar overscroll-contain">
+          {/* Table Header (Hidden on Mobile) */}
+          <div className="sticky top-0 z-10 bg-[#080808]/90 backdrop-blur-md border-b border-white/5 px-10 py-4 hidden sm:flex items-center text-[10px] font-black uppercase tracking-[0.3em] text-white/20">
+            <div className="w-1/4">Partner</div>
+            <div className="flex-1 px-6">Expertise & Leistungen</div>
+            <div className="w-48">Region</div>
+            <div className="w-40 text-right">Optionen</div>
+          </div>
+
+          <div className="divide-y divide-white/5">
+            {resources.map((res, index) => (
+              <div 
+                key={res.id} 
+                ref={index === resources.length - 1 ? lastElementRef : null}
+                className="flex flex-col sm:flex-row sm:items-start px-8 sm:px-10 py-4 hover:bg-white/[0.03] transition-all group gap-4 sm:gap-0 border-b border-white/5 last:border-0"
+              >
+                {/* Company Info */}
+                <div className="w-full sm:w-1/4 flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 text-[#D4AF37] group-hover:scale-110 transition-transform">
+                    <Package className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="font-bold text-white text-base truncate group-hover:text-[#D4AF37] transition-colors">{res.title}</h4>
+                    <div className="inline-block mt-0.5 px-2 py-0.5 rounded bg-[#D4AF37]/10 border border-[#D4AF37]/20">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-[#D4AF37]">{res.type || res.category}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Description */}
-              <div className="flex-1 sm:px-6">
-                <p className="text-sm text-white/40 line-clamp-2 leading-relaxed max-w-3xl">
-                  {res.description || 'Keine detaillierte Beschreibung verfügbar.'}
-                </p>
-              </div>
+                {/* Description - FULL TEXT, NO CLAMP */}
+                <div className="flex-1 sm:px-6 space-y-3">
+                  <p className="text-sm text-white/60 leading-relaxed max-w-4xl">
+                    {res.description || 'Global B2B Partner für Stake & Scale Mitglieder.'}
+                  </p>
+                  
+                  {/* Enhanced Info Row */}
+                  <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+                    <div className="flex items-center gap-1.5 text-[10px] font-medium text-white/30">
+                      <MapPin className="w-3.5 h-3.5 text-[#D4AF37]/50" />
+                      {res.location || 'EU'}
+                    </div>
+                    {res.contactInfo?.email && (
+                      <div className="flex items-center gap-1.5 text-[10px] font-medium text-white/30">
+                        <Mail className="w-3.5 h-3.5 text-blue-400/50" />
+                        {res.contactInfo.email}
+                      </div>
+                    )}
+                    {res.contactInfo?.phone && (
+                      <div className="flex items-center gap-1.5 text-[10px] font-medium text-white/30">
+                        <Phone className="w-3.5 h-3.5 text-green-400/50" />
+                        {res.contactInfo.phone}
+                      </div>
+                    )}
+                  </div>
+                </div>
 
-              {/* Location */}
-              <div className="w-full sm:w-48 flex items-center gap-2 text-xs font-medium text-white/30">
-                <MapPin className="w-4 h-4 text-white/10" />
-                <span>{res.location || 'Deutschland'}</span>
+                {/* Action */}
+                <div className="w-full sm:w-40 flex justify-end items-start pt-1">
+                  <button
+                    onClick={() => handleImport(res.id)}
+                    disabled={!!importingId}
+                    className="w-full sm:w-auto px-5 py-2.5 bg-white/5 hover:bg-[#D4AF37] hover:text-black border border-white/10 hover:border-[#D4AF37] rounded-xl text-[10px] font-black uppercase tracking-widest text-white/60 transition-all disabled:opacity-50 active:scale-95 shadow-lg hover:shadow-[#D4AF37]/10"
+                  >
+                    {importingId === res.id ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Importieren'}
+                  </button>
+                </div>
               </div>
+            ))}
 
-              {/* Action */}
-              <div className="w-full sm:w-40 flex justify-end">
-                <button
-                  onClick={() => handleImport(res.id)}
-                  disabled={!!importingId}
-                  className="w-full sm:w-auto px-6 py-3 bg-white/5 hover:bg-[#D4AF37] hover:text-black border border-white/10 hover:border-[#D4AF37] rounded-xl text-[11px] font-black uppercase tracking-widest text-white/60 transition-all disabled:opacity-50 active:scale-95"
-                >
-                  {importingId === res.id ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    'Hinzufügen'
-                  )}
-                </button>
+            {loading && (
+              <div className="p-20 flex flex-col items-center justify-center gap-4">
+                <Loader2 className="w-10 h-10 text-[#D4AF37] animate-spin" />
+                <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Lade Netzwerkdaten...</p>
               </div>
-            </div>
-          ))}
+            )}
 
-          {loading && (
-            <div className="p-20 flex flex-col items-center justify-center gap-4">
-              <Loader2 className="w-10 h-10 text-[#D4AF37] animate-spin" />
-              <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Synchronisiere Netzwerk-Daten...</p>
-            </div>
-          )}
-        </div>
-      </main>
+            {!loading && resources.length === 0 && (
+              <div className="py-40 flex flex-col items-center text-center">
+                <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-6">
+                  <Filter className="w-10 h-10 text-white/10" />
+                </div>
+                <h3 className="text-xl font-instrument-serif text-white/80 uppercase tracking-widest">Keine Treffer</h3>
+                <p className="text-sm text-white/20 mt-2">Versuche die Filter zurückzusetzen oder die Suche zu ändern.</p>
+              </div>
+            )}
+          </div>
+        </main>
+      </div>
 
       {/* 4. FOOTER */}
       <footer className="flex-none bg-black border-t border-white/10 px-8 py-4 flex items-center justify-between">
         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20">
-          {resources.length} Partner verfügbar
+          {resources.length} von {totalCount} Partnern in dieser Ansicht
         </p>
-        <div className="flex items-center gap-3">
-          <span className="text-[10px] font-black text-white/10 uppercase tracking-widest">Stake & Scale OS 2026</span>
+        <div className="flex items-center gap-6 text-[9px] font-black uppercase tracking-widest text-white/10">
+          <span className="flex items-center gap-2"><Globe className="w-3 h-3" /> Global Network active</span>
+          <span>Stake & Scale OS</span>
         </div>
       </footer>
     </div>

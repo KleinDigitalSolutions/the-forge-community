@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 
 export async function POST(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
   if (!session?.user) {
@@ -12,8 +12,9 @@ export async function POST(
   }
 
   try {
+    const { id } = await params;
     const { resourceId } = await request.json();
-    const ventureId = params.id;
+    const ventureId = id;
 
     // 1. Hole die globale Ressource
     const resource = await prisma.resource.findUnique({
