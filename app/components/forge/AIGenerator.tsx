@@ -5,7 +5,9 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Sparkles, Copy, Check } from 'lucide-react';
 
 interface AIGeneratorProps {
@@ -20,6 +22,32 @@ interface AIGeneratorProps {
   buttonText?: string;
 }
 
+type OutputMode = 'preview' | 'markdown' | 'plain';
+
+const OUTPUT_MODES: { id: OutputMode; label: string }[] = [
+  { id: 'preview', label: 'Vorschau' },
+  { id: 'markdown', label: 'Markdown' },
+  { id: 'plain', label: 'Klartext' },
+];
+
+const stripMarkdown = (value: string) => {
+  return value
+    .replace(/```[\s\S]*?```/g, (block) => block.replace(/```[a-z]*\n?|```/gi, ''))
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/__(.*?)__/g, '$1')
+    .replace(/\*(.*?)\*/g, '$1')
+    .replace(/_(.*?)_/g, '$1')
+    .replace(/~~(.*?)~~/g, '$1')
+    .replace(/^\s{0,3}#{1,6}\s+/gm, '')
+    .replace(/^\s{0,3}>\s?/gm, '')
+    .replace(/^\s{0,3}[-*+]\s+/gm, '- ')
+    .replace(/^\s{0,3}(\d+)\.\s+/gm, '$1. ')
+    .replace(/\[(.*?)\]\((.*?)\)/g, '$1')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+};
+
 export function AIGenerator({
   onGenerate,
   isGenerating,
@@ -28,14 +56,23 @@ export function AIGenerator({
   placeholder = 'KI-generierter Inhalt erscheint hier...',
   buttonText = 'Mit KI generieren',
 }: AIGeneratorProps) {
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<null | 'raw' | 'plain'>(null);
+  const [outputMode, setOutputMode] = useState<OutputMode>('preview');
+  const rawContent = generatedContent ?? '';
 
-  const handleCopy = async () => {
-    if (generatedContent) {
-      await navigator.clipboard.writeText(generatedContent);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
+  const plainContent = useMemo(() => stripMarkdown(rawContent), [rawContent]);
+  const stats = useMemo(() => {
+    const trimmed = rawContent.trim();
+    const words = trimmed ? trimmed.split(/\s+/).length : 0;
+    const lines = rawContent ? rawContent.split(/\r\n|\r|\n/).length : 0;
+    return { words, lines, chars: rawContent.length };
+  }, [rawContent]);
+
+  const handleCopy = async (value: string, mode: 'raw' | 'plain') => {
+    if (!value) return;
+    await navigator.clipboard.writeText(value);
+    setCopied(mode);
+    setTimeout(() => setCopied(null), 2000);
   };
 
   return (
@@ -76,25 +113,83 @@ export function AIGenerator({
 
       {/* Generated Output */}
       {generatedContent ? (
-        <div className="relative">
-          {/* Copy Button */}
-          <button
-            onClick={handleCopy}
-            className="absolute top-3 right-3 p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
-            title="In die Zwischenablage kopieren"
-          >
-            {copied ? (
-              <Check className="w-4 h-4 text-green-400" />
-            ) : (
-              <Copy className="w-4 h-4 text-white/60" />
-            )}
-          </button>
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-[0.35em] text-white/40">Ansicht</span>
+              <div className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1">
+                {OUTPUT_MODES.map((mode) => (
+                  <button
+                    key={mode.id}
+                    onClick={() => setOutputMode(mode.id)}
+                    className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.25em] transition-all ${
+                      outputMode === mode.id
+                        ? 'bg-[#D4AF37] text-black'
+                        : 'text-white/50 hover:text-white'
+                    }`}
+                  >
+                    {mode.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-          {/* Content */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handleCopy(rawContent, 'raw')}
+                className="px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 text-xs font-semibold transition-colors flex items-center gap-2"
+                title="Markdown kopieren"
+              >
+                {copied === 'raw' ? (
+                  <Check className="w-4 h-4 text-green-400" />
+                ) : (
+                  <Copy className="w-4 h-4 text-white/60" />
+                )}
+                Markdown
+              </button>
+              <button
+                onClick={() => handleCopy(plainContent, 'plain')}
+                className="px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 text-xs font-semibold transition-colors flex items-center gap-2"
+                title="Klartext kopieren"
+              >
+                {copied === 'plain' ? (
+                  <Check className="w-4 h-4 text-green-400" />
+                ) : (
+                  <Copy className="w-4 h-4 text-white/60" />
+                )}
+                Klartext
+              </button>
+            </div>
+          </div>
+
+          <div className="text-xs text-white/40 flex flex-wrap gap-3">
+            <span>{stats.words} Wörter</span>
+            <span>{stats.chars} Zeichen</span>
+            <span>{stats.lines} Zeilen</span>
+          </div>
+
           <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 max-h-[600px] overflow-y-auto">
-            <pre className="text-sm text-white/80 whitespace-pre-wrap font-mono leading-relaxed">
-              {generatedContent}
-            </pre>
+            {outputMode === 'preview' ? (
+              <div className="prose prose-invert prose-sm max-w-none whitespace-pre-wrap
+                prose-headings:text-white prose-headings:font-bold prose-headings:mb-2 prose-headings:mt-4
+                prose-p:text-white/80 prose-p:my-2
+                prose-strong:text-[#D4AF37] prose-strong:font-bold
+                prose-ul:list-disc prose-ul:pl-4 prose-ul:my-2
+                prose-ol:list-decimal prose-ol:pl-4 prose-ol:my-2
+                prose-li:text-white/70 prose-li:my-1
+                prose-a:text-[#D4AF37] prose-a:underline hover:prose-a:text-white transition-colors
+              ">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {rawContent}
+                </ReactMarkdown>
+              </div>
+            ) : (
+              <pre className={`text-sm text-white/80 whitespace-pre-wrap leading-relaxed ${
+                outputMode === 'markdown' ? 'font-mono' : 'font-sans'
+              }`}>
+                {outputMode === 'plain' ? plainContent : rawContent}
+              </pre>
+            )}
           </div>
         </div>
       ) : (
