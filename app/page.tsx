@@ -18,7 +18,11 @@ import {
   ChevronRight,
   Package,
   Cpu,
-  Truck
+  Truck,
+  Sparkles,
+  Image,
+  Film,
+  Scale
 } from 'lucide-react';
 import ResponsiveHeroBanner from '@/app/components/ui/ResponsiveHeroBanner';
 import AnimatedCardStack from '@/app/components/ui/AnimatedCardStack';
@@ -203,6 +207,7 @@ export default function Home() {
         secondaryButtonHref="#"
         navLinks={[
           { label: "Philosophie", href: "#philosophy" },
+          { label: "The Forge", href: "#forge" },
           { label: "Mission Log", href: "#projects" },
           { label: "Prinzipien", href: "#principles" },
           { label: "Preise", href: "#pricing" },
@@ -235,6 +240,95 @@ export default function Home() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* The Forge Section */}
+      <section id="forge" className="relative py-32 px-4 md:px-6 overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#1a1f2b_0%,#0b0c10_55%,#070809_100%)]" />
+        <div
+          className="absolute inset-0 bg-center bg-cover opacity-25"
+          style={{ backgroundImage: "url('/images/forge-hammer.jpg')" }}
+        />
+        <div className="absolute inset-0 bg-black/65" />
+
+        <div className="relative max-w-7xl mx-auto grid lg:grid-cols-[1.15fr_0.85fr] gap-14 items-center">
+          <div className="space-y-8">
+            <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">
+              The Forge
+            </div>
+            <h2 className="text-4xl md:text-6xl font-instrument-serif text-white leading-tight">
+              Dein Content-, Marketing- und Execution-HQ.
+            </h2>
+            <p className="text-sm text-white/60 leading-relaxed max-w-xl">
+              The Forge verbindet deine Brand DNA mit sofortigem Output. Texte, Bilder und Videos entstehen
+              in einem Flow und landen direkt in Kampagnen, Media und Forum. Kein Tool-Chaos, kein Copy/Paste.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="/ventures"
+                className="rounded-full border border-[#D4AF37]/40 bg-[#D4AF37] px-6 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-black hover:opacity-90 transition-opacity"
+              >
+                Forge betreten
+              </Link>
+              <Link
+                href="#transparency-preview"
+                className="rounded-full border border-white/10 bg-white/5 px-6 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-white/70 hover:text-white transition-colors"
+              >
+                Ablauf ansehen
+              </Link>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-4 text-xs text-white/60">
+              {[
+                { label: '1. Venture anlegen', desc: 'Brand DNA + Zielmarkt definieren' },
+                { label: '2. Forge Output', desc: 'Texte, Bilder, Videos generieren' },
+                { label: '3. Kampagne bauen', desc: 'Assets direkt strukturieren' },
+                { label: '4. Media Wall', desc: 'Ergebnisse sauber archivieren' }
+              ].map((step) => (
+                <div key={step.label} className="glass-card border border-white/10 rounded-2xl p-4">
+                  <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">
+                    {step.label}
+                  </div>
+                  <div className="text-sm text-white mt-1">{step.desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="glass-card border border-white/10 rounded-3xl p-6 sm:p-8 space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30">
+                  Forge Modules
+                </div>
+                <h3 className="text-2xl font-instrument-serif text-white">Was direkt drin ist</h3>
+              </div>
+              <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[9px] font-black uppercase tracking-[0.3em] text-white/50">
+                Live System
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {[
+                { icon: Sparkles, title: 'Marketing Studio', desc: 'Kopien, Ads, Posts, Hooks & Skripte.' },
+                { icon: Image, title: 'Media Studio', desc: 'Bilder generieren, veredeln und versionieren.' },
+                { icon: Film, title: 'Video Studio', desc: 'Clips, Creatives, Sequenzen (in Arbeit).' },
+                { icon: Layers, title: 'Chain Builder', desc: 'Mehrere Clips zu einem Flow verbinden.' },
+                { icon: Scale, title: 'Legal Studio', desc: 'Verträge, NDA & Compliance (bald live).' }
+              ].map((module) => (
+                <div key={module.title} className="flex gap-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                  <div className="h-10 w-10 rounded-xl border border-white/10 bg-black/40 flex items-center justify-center">
+                    <module.icon className="w-5 h-5 text-[#D4AF37]" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold text-white">{module.title}</div>
+                    <div className="text-xs text-white/50">{module.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
