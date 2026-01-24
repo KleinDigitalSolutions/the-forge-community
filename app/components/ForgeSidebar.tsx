@@ -29,44 +29,41 @@ const FORGE_MENU = [
   {
     section: 'OVERVIEW',
     items: [
-      { icon: LayoutDashboard, label: 'Dashboard', href: '/forge/[id]' },
+      { icon: LayoutDashboard, label: 'Dashboard', href: '/forge/[id]', tourId: 'menu-dashboard' },
     ]
   },
   {
     section: 'BUILD',
     items: [
-      { icon: Palette, label: 'Brand DNA', href: '/forge/[id]/brand' },
+      { icon: Palette, label: 'Brand DNA', href: '/forge/[id]/brand', tourId: 'menu-brand' },
     ]
   },
   {
     section: 'LEGAL',
     items: [
-      { icon: Scale, label: 'Documents', href: '/forge/[id]/legal' },
-      // { icon: FileText, label: 'Contracts', href: '/forge/[id]/legal/contracts' },
+      { icon: Scale, label: 'Documents', href: '/forge/[id]/legal', tourId: 'menu-legal' },
     ]
   },
   {
     section: 'MARKETING',
     items: [
-      { icon: Megaphone, label: 'Campaigns', href: '/forge/[id]/marketing' },
-      // { icon: BarChart3, label: 'Analytics', href: '/forge/[id]/analytics' },
+      { icon: Megaphone, label: 'Campaigns', href: '/forge/[id]/marketing', tourId: 'menu-marketing' },
     ]
   },
   {
     section: 'SOURCING',
     items: [
-      { icon: Factory, label: 'Suppliers', href: '/forge/[id]/sourcing' },
-      { icon: Box, label: 'Samples', href: '/forge/[id]/sourcing?tab=samples' },
-      { icon: TrendingUp, label: 'Orders', href: '/forge/[id]/sourcing?tab=orders' },
+      { icon: Factory, label: 'Suppliers', href: '/forge/[id]/sourcing', tourId: 'menu-suppliers' },
+      { icon: Box, label: 'Samples', href: '/forge/[id]/sourcing?tab=samples', tourId: 'menu-samples' },
+      { icon: TrendingUp, label: 'Orders', href: '/forge/[id]/sourcing?tab=orders', tourId: 'menu-orders' },
     ]
   },
   {
     section: 'ADMIN',
     items: [
-      { icon: Gavel, label: 'Abstimmungen', href: '/forge/[id]/decisions' },
-      { icon: Wallet, label: 'Budget', href: '/forge/[id]/admin' },
-      // { icon: Users, label: 'Team', href: '/forge/[id]/team' },
-      { icon: Settings, label: 'Settings', href: '/forge/[id]/settings' },
+      { icon: Gavel, label: 'Abstimmungen', href: '/forge/[id]/decisions', tourId: 'menu-decisions' },
+      { icon: Wallet, label: 'Budget', href: '/forge/[id]/admin', tourId: 'menu-budget' },
+      { icon: Settings, label: 'Settings', href: '/forge/[id]/settings', tourId: 'menu-settings' },
     ]
   }
 ];
@@ -77,7 +74,7 @@ export default function ForgeSidebar({ ventureId, ventureName }: ForgeSidebarPro
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-zinc-950 border-r border-white/5 flex flex-col">
       {/* Logo / Venture Name */}
-      <div className="p-6 border-b border-white/5">
+      <div className="p-6 border-b border-white/5" data-tour="venture-header">
         <div className="flex items-center gap-3 mb-2">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#D4AF37] to-[#FFD700] flex items-center justify-center">
             <Zap className="w-5 h-5 text-black" />
@@ -106,6 +103,7 @@ export default function ForgeSidebar({ ventureId, ventureName }: ForgeSidebarPro
                   <Link
                     key={href}
                     href={href}
+                    data-tour={item.tourId}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
                       isActive
                         ? 'bg-[#D4AF37]/10 text-[#D4AF37]'

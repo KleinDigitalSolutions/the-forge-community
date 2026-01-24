@@ -206,10 +206,14 @@ export default function SourcingPage() {
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {suppliers.map((supplier) => (
-                        <div key={supplier.id} className="glass-card p-6 rounded-2xl border border-white/10 space-y-4 hover:border-[#D4AF37]/30 transition-colors group">
+                        <Link 
+                          key={supplier.id} 
+                          href={`/forge/${ventureId}/sourcing/suppliers/${supplier.id}`}
+                          className="glass-card p-6 rounded-2xl border border-white/10 space-y-4 hover:border-[#D4AF37]/30 transition-colors group cursor-pointer"
+                        >
                           <div className="flex justify-between items-start">
                             <div>
-                              <span className="text-[10px] uppercase tracking-widest font-bold text-[#D4AF37] bg-[#D4AF37]/10 px-2 py-0.5 rounded">
+                              <span className="text-[10px] uppercase tracking-widest font-bold text-[#D4AF37] bg-[#D4AF37]/10 px-2 py-0.5 rounded border border-[#D4AF37]/20">
                                 {supplier.category}
                               </span>
                               <h3 className="text-xl font-instrument-serif text-white mt-2 group-hover:text-[#D4AF37] transition-colors">
@@ -237,24 +241,17 @@ export default function SourcingPage() {
                             </div>
                           </div>
 
-                          <div className="pt-4 border-t border-white/5 flex gap-3">
-                            {supplier.email && (
-                              <a href={`mailto:${supplier.email}`} className="p-2 bg-white/5 rounded-lg hover:bg-white/10 transition-colors">
-                                <Mail className="w-4 h-4" />
-                              </a>
-                            )}
-                            {supplier.phone && (
-                              <a href={`tel:${supplier.phone}`} className="p-2 bg-white/5 rounded-lg hover:bg-white/10 transition-colors">
-                                <Phone className="w-4 h-4" />
-                              </a>
-                            )}
-                            {supplier.website && (
-                              <a href={supplier.website} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 rounded-lg hover:bg-white/10 transition-colors">
-                                <ExternalLink className="w-4 h-4" />
-                              </a>
-                            )}
+                          <div className="pt-4 border-t border-white/5 flex items-center justify-between">
+                            <div className="flex gap-3">
+                              {supplier.email && <Mail className="w-4 h-4 text-white/20" />}
+                              {supplier.phone && <Phone className="w-4 h-4 text-white/20" />}
+                              {supplier.website && <ExternalLink className="w-4 h-4 text-white/20" />}
+                            </div>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-[#D4AF37]/60 group-hover:text-[#D4AF37] transition-colors">
+                              Details ansehen →
+                            </span>
                           </div>
-                        </div>
+                        </Link>
                       ))}
                     </div>
                   )}

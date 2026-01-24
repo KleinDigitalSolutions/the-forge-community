@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import { ArrowRight, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
 import ForgeAIContextSetter from '@/app/components/forge/ForgeAIContextSetter';
+import { VentureTour } from '@/app/components/onboarding/VentureTour';
 
 export default async function ForgeDashboardPage({
   params,
@@ -73,6 +74,7 @@ export default async function ForgeDashboardPage({
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
+      <VentureTour initialHasSeenTour={user.hasSeenTour} />
       <ForgeAIContextSetter
         context={`Forge Dashboard - ${venture.name}. Hilf dem Founder mit Priorisierung, Launch-Plan und Marketing.`}
       />
@@ -87,7 +89,7 @@ export default async function ForgeDashboardPage({
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4" data-tour="stats-grid">
         <div className="glass-card p-6 rounded-2xl border border-white/10">
           <p className="text-xs text-white/40 uppercase tracking-widest font-bold mb-2">
             Progress
@@ -142,6 +144,7 @@ export default async function ForgeDashboardPage({
         {/* Brand DNA */}
         <Link
           href={`/forge/${venture.id}/brand`}
+          data-tour="brand-dna-card"
           className="glass-card p-6 rounded-2xl border border-white/10 hover:border-[#D4AF37]/30 transition-all group"
         >
           <div className="flex items-start justify-between mb-4">
@@ -167,6 +170,7 @@ export default async function ForgeDashboardPage({
         {/* Marketing */}
         <Link
           href={`/forge/${venture.id}/marketing`}
+          data-tour="marketing-card"
           className="glass-card p-6 rounded-2xl border border-white/10 hover:border-[#D4AF37]/30 transition-all group"
         >
           <div className="flex items-start justify-between mb-4">
@@ -186,6 +190,7 @@ export default async function ForgeDashboardPage({
         {/* Sourcing */}
         <Link
           href={`/forge/${venture.id}/sourcing`}
+          data-tour="sourcing-card"
           className="glass-card p-6 rounded-2xl border border-white/10 hover:border-[#D4AF37]/30 transition-all group"
         >
           <div className="flex items-start justify-between mb-4">
