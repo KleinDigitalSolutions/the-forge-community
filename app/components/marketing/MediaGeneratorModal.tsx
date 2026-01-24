@@ -1000,14 +1000,15 @@ export function MediaGeneratorModal({
                             )}
                           </span>
                           <div className="flex items-center gap-2">
-                            {isVideo && chainPosition < 4 && (
+                            {isVideo && (chainId ? chainPosition < 4 : true) && (
                               <button
                                 onClick={() => handleContinueChain(asset.url, index)}
                                 disabled={isExtractingFrame}
                                 className="flex items-center gap-1.5 px-3 py-1.5 bg-[#D4AF37]/20 hover:bg-[#D4AF37]/30 border border-[#D4AF37]/40 rounded-lg text-[10px] font-bold text-[#D4AF37] transition-all disabled:opacity-50"
+                                title={chainId ? `Continue to ${chainPosition + 1}/4` : 'Start video chain (1/4)'}
                               >
                                 <Link2 className="w-3 h-3" />
-                                Continue Chain
+                                {chainId ? `Continue (${chainPosition + 1}/4)` : 'Start Chain'}
                               </button>
                             )}
                             <a
