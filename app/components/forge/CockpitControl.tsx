@@ -137,7 +137,7 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
         ref={parallaxRef}
         className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
       >
-         <div className={`transition-all duration-1000 absolute w-[300px] h-[300px] bg-[#D4AF37]/6 rounded-full ${isOpen ? 'scale-150 opacity-40' : 'scale-100 opacity-20'}`} />
+         <div className={`transition-all duration-1000 absolute w-[300px] h-[300px] bg-cyan-400/10 rounded-full ${isOpen ? 'scale-150 opacity-40' : 'scale-100 opacity-20'}`} />
          
          {/* Rotating Tech Rings (Subtle) */}
          <motion.div 
@@ -193,7 +193,7 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
           />
           
           {/* Orbit Ring Animation */}
-          <div className="absolute inset-[-8px] rounded-full border border-white/5 border-t-[#D4AF37]/50 animate-spin-slow pointer-events-none" />
+          <div className="absolute inset-[-8px] rounded-full border border-white/5 border-t-cyan-300/60 animate-spin-slow pointer-events-none" />
         </motion.button>
       </div>
 

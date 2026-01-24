@@ -172,6 +172,49 @@ const isParagraphImageOnly = (node: any) => {
   return Boolean(child && child.tagName === 'img');
   };
 
+function ForumImage({ src, alt }: { src?: string; alt?: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  if (!src) return null;
+
+  if (!isOpen) {
+    return (
+      <button
+        type="button"
+        onClick={() => setIsOpen(true)}
+        className="group w-full text-left"
+      >
+        <div className="flex items-center justify-between px-4 py-2 text-[10px] uppercase tracking-widest text-white/50 border-b border-white/10 bg-black/30">
+          <span>Bild</span>
+          <span className="text-white/30 group-hover:text-white/60 transition-colors">Zum Laden tippen</span>
+        </div>
+        <div className="h-40 sm:h-56 flex items-center justify-center bg-black/20">
+          <ImageIcon className="w-5 h-5 text-white/40" />
+        </div>
+      </button>
+    );
+  }
+
+  return (
+    <div className="relative">
+      {!isLoaded && (
+        <div className="absolute inset-0 flex items-center justify-center text-[10px] uppercase tracking-widest text-white/40 bg-black/40">
+          Lade Bild...
+        </div>
+      )}
+      <img
+        src={src}
+        alt={alt || ''}
+        className="block w-full h-auto object-cover max-h-150"
+        loading="lazy"
+        decoding="async"
+        onLoad={() => setIsLoaded(true)}
+      />
+    </div>
+  );
+}
+
 const MarkdownComponents = {
   p: ({ node, children }: any) => {
     const previewUrl = getParagraphLinkUrl(node);
@@ -205,14 +248,7 @@ const MarkdownComponents = {
     </a>
   ),
   // Bilder ohne Wrapper, damit Inline-Images valide bleiben
-  img: ({ src, alt }: any) => (
-    <img
-      src={src}
-      alt={alt || ''}
-      className="block w-full h-auto object-cover max-h-150"
-      loading="lazy"
-    />
-  ),
+  img: ({ src, alt }: any) => <ForumImage src={src} alt={alt} />,
   // Blockquotes stylen
   blockquote: ({ children }: any) => (
     <blockquote className="border-l-4 border-[#D4AF37] pl-4 italic text-white/60 my-4 bg-white/5 py-2 pr-4 rounded-r-lg">
