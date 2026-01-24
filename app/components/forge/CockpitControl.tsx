@@ -188,7 +188,6 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
             size={96}
             showText={false}
             disableBlur
-            variant="forge"
             className="pointer-events-none"
           />
           
