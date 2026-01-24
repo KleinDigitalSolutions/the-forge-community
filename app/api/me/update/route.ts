@@ -42,6 +42,56 @@ async function handleUpdate(req: NextRequest) {
   if (typeof goal === 'string') data.goal = goal;
   if (Array.isArray(skills)) data.skills = skills.filter((s: any) => typeof s === 'string');
 
+  if (onboardingComplete === true) {
+    let existing: {
+      name: string | null;
+      phone: string | null;
+      birthday: string | null;
+      addressStreet: string | null;
+      addressCity: string | null;
+      addressZip: string | null;
+      addressCountry: string | null;
+    } | null = null;
+
+    try {
+      existing = await prisma.user.findUnique({
+        where: { email: session.user.email },
+        select: {
+          name: true,
+          phone: true,
+          birthday: true,
+          addressStreet: true,
+          addressCity: true,
+          addressZip: true,
+          addressCountry: true,
+        },
+      });
+    } catch (error) {
+      console.warn('Onboarding validation skipped (user fetch failed):', error);
+    }
+
+    const effective = {
+      name: typeof data.name === 'string' ? data.name : existing?.name || '',
+      phone: typeof data.phone === 'string' ? data.phone : existing?.phone || '',
+      birthday: typeof data.birthday === 'string' ? data.birthday : existing?.birthday || '',
+      addressStreet: typeof data.addressStreet === 'string' ? data.addressStreet : existing?.addressStreet || '',
+      addressCity: typeof data.addressCity === 'string' ? data.addressCity : existing?.addressCity || '',
+      addressZip: typeof data.addressZip === 'string' ? data.addressZip : existing?.addressZip || '',
+      addressCountry: typeof data.addressCountry === 'string' ? data.addressCountry : existing?.addressCountry || '',
+    };
+
+    const missing = Object.entries(effective)
+      .filter(([, value]) => !String(value || '').trim())
+      .map(([key]) => key);
+
+    if (missing.length > 0) {
+      return NextResponse.json(
+        { error: 'Missing onboarding fields', fields: missing },
+        { status: 400 }
+      );
+    }
+  }
+
   try {
     const user = await prisma.user.update({
       where: { email: session.user.email },

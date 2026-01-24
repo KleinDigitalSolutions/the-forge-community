@@ -10,6 +10,12 @@ interface OnboardingWizardProps {
     id: string;
     name?: string | null;
     image?: string | null;
+    phone?: string | null;
+    birthday?: string | null;
+    addressStreet?: string | null;
+    addressCity?: string | null;
+    addressZip?: string | null;
+    addressCountry?: string | null;
   };
   onComplete: () => void;
 }
@@ -17,12 +23,33 @@ interface OnboardingWizardProps {
 export default function OnboardingWizard({ user, onComplete }: OnboardingWizardProps) {
   const [step, setStep] = useState(1);
   const [name, setName] = useState(user.name || '');
+  const [phone, setPhone] = useState(user.phone || '');
+  const [birthday, setBirthday] = useState(user.birthday || '');
+  const [addressStreet, setAddressStreet] = useState(user.addressStreet || '');
+  const [addressCity, setAddressCity] = useState(user.addressCity || '');
+  const [addressZip, setAddressZip] = useState(user.addressZip || '');
+  const [addressCountry, setAddressCountry] = useState(user.addressCountry || 'Germany');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  const totalSteps = 5;
+  const contactComplete = Boolean(
+    name.trim() &&
+    phone.trim() &&
+    birthday.trim() &&
+    addressStreet.trim() &&
+    addressCity.trim() &&
+    addressZip.trim() &&
+    addressCountry.trim()
+  );
 
   const handleNext = () => setStep(prev => prev + 1);
 
   const handleComplete = async () => {
+    if (!contactComplete) {
+      setStep(3);
+      return;
+    }
     setLoading(true);
     try {
       // Update user profile and set onboardingComplete = true
@@ -31,7 +58,13 @@ export default function OnboardingWizard({ user, onComplete }: OnboardingWizardP
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           name,
-          onboardingComplete: true
+          phone,
+          birthday,
+          address_street: addressStreet,
+          address_city: addressCity,
+          address_zip: addressZip,
+          address_country: addressCountry,
+          onboardingComplete: true,
         })
       });
 
@@ -54,7 +87,7 @@ export default function OnboardingWizard({ user, onComplete }: OnboardingWizardP
           <motion.div 
             className="h-full bg-[#D4AF37]" 
             initial={{ width: 0 }}
-            animate={{ width: `${(step / 4) * 100}%` }}
+            animate={{ width: `${(step / totalSteps) * 100}%` }}
           />
         </div>
 
@@ -133,6 +166,93 @@ export default function OnboardingWizard({ user, onComplete }: OnboardingWizardP
                 exit={{ opacity: 0, x: -50 }}
                 className="space-y-8"
               >
+                <div className="text-center">
+                  <h3 className="text-3xl font-instrument-serif text-white mb-2">Kontakt & Adresse</h3>
+                  <p className="text-white/50">Pflichtdaten, damit wir dich sauber im System führen.</p>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="block text-xs uppercase tracking-widest text-white/40 font-bold mb-2">Telefon *</label>
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:border-[#D4AF37] outline-none transition-colors"
+                      placeholder="+49..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs uppercase tracking-widest text-white/40 font-bold mb-2">Geburtstag *</label>
+                    <input
+                      type="date"
+                      value={birthday}
+                      onChange={(e) => setBirthday(e.target.value)}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:border-[#D4AF37] outline-none transition-colors"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-xs uppercase tracking-widest text-white/40 font-bold mb-2">Straße & Nr. *</label>
+                    <input
+                      type="text"
+                      value={addressStreet}
+                      onChange={(e) => setAddressStreet(e.target.value)}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:border-[#D4AF37] outline-none transition-colors"
+                      placeholder="Musterstraße 12"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs uppercase tracking-widest text-white/40 font-bold mb-2">PLZ *</label>
+                    <input
+                      type="text"
+                      value={addressZip}
+                      onChange={(e) => setAddressZip(e.target.value)}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:border-[#D4AF37] outline-none transition-colors"
+                      placeholder="10115"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs uppercase tracking-widest text-white/40 font-bold mb-2">Stadt *</label>
+                    <input
+                      type="text"
+                      value={addressCity}
+                      onChange={(e) => setAddressCity(e.target.value)}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:border-[#D4AF37] outline-none transition-colors"
+                      placeholder="Berlin"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-xs uppercase tracking-widest text-white/40 font-bold mb-2">Land *</label>
+                    <input
+                      type="text"
+                      value={addressCountry}
+                      onChange={(e) => setAddressCountry(e.target.value)}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:border-[#D4AF37] outline-none transition-colors"
+                      placeholder="Germany"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-center pt-4">
+                  <button 
+                    onClick={handleNext}
+                    disabled={!contactComplete}
+                    className="px-8 py-4 bg-white text-black font-bold rounded-xl hover:bg-white/90 transition-colors disabled:opacity-50"
+                  >
+                    Weiter
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {step === 4 && (
+              <motion.div 
+                key="step4"
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -50 }}
+                className="space-y-8"
+              >
                 <div className="text-center mb-8">
                   <h3 className="text-3xl font-instrument-serif text-white mb-2">Dein Arsenal</h3>
                   <p className="text-white/50">Du hast Zugriff auf Enterprise-Grade Tools.</p>
@@ -167,9 +287,9 @@ export default function OnboardingWizard({ user, onComplete }: OnboardingWizardP
               </motion.div>
             )}
 
-            {step === 4 && (
+            {step === 5 && (
               <motion.div 
-                key="step4"
+                key="step5"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="text-center space-y-8"

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import PageShell from '@/app/components/PageShell';
-import { BookOpen, Search, Sparkles, Target, Zap, ArrowRight, Play, Clock, Layers } from 'lucide-react';
+import { BookOpen, Search, Sparkles, Target, Zap, ArrowRight, Play, Clock, Layers, Scale } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface TrainingCourse {
@@ -34,6 +34,11 @@ const categoryStyles: Record<string, { gradient: string; icon: typeof Sparkles; 
     gradient: 'from-[#1a1a1a] via-[#2c2410] to-[#0b0b0b]', 
     icon: Sparkles,
     color: 'text-[#D4AF37]'
+  },
+  Legal: {
+    gradient: 'from-[#141414] via-[#1e1a14] to-[#0b0b0b]',
+    icon: Scale,
+    color: 'text-emerald-300'
   },
 };
 

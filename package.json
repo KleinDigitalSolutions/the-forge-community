@@ -7,7 +7,8 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "seed:academy": "node scripts/seed-academy-local.mjs"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.10",

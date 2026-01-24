@@ -67,9 +67,10 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
       if (!token.sub) return token;
       const account = await prisma.user.findUnique({
         where: { id: token.sub },
-        select: { accountStatus: true }
+        select: { accountStatus: true, onboardingComplete: true }
       });
       token.accountStatus = account?.accountStatus ?? 'ACTIVE';
+      token.onboardingComplete = account?.onboardingComplete ?? false;
       return token;
     },
     async session({ session, token }) {
@@ -80,6 +81,8 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         const accountStatus =
           (token as { accountStatus?: 'ACTIVE' | 'DELETED' }).accountStatus ?? 'ACTIVE';
         session.user.accountStatus = accountStatus;
+        session.user.onboardingComplete =
+          (token as { onboardingComplete?: boolean }).onboardingComplete ?? false;
       }
       return session;
     }
