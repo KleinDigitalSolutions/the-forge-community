@@ -10,6 +10,7 @@ import {
   Settings, UserPlus, Target, Zap, MessageSquare, FileText,
   ArrowUpRight, Sparkles, Shield, Lock, Globe, X
 } from 'lucide-react';
+import Link from 'next/link';
 import { SquadWalletView } from '@/app/components/squads/SquadWalletView';
 
 // ... (rest of imports)
@@ -19,12 +20,12 @@ interface Squad {
   name: string;
   mission?: string;
   status: string;
-  squad_type: string;
-  current_members: number;
-  max_members: number;
+  squadType: string;
+  currentMembers: number;
+  maxMembers: number;
   lead_id: string;
   lead_name?: string;
-  created_at: string;
+  createdAt: string;
   is_public: boolean;
   is_accepting_members: boolean;
   is_member: boolean;
@@ -189,7 +190,7 @@ export default function SquadDetailPage() {
 
               <div className="flex flex-wrap items-center gap-3">
                 <StatusBadge status={squad.status} />
-                <TypeBadge type={squad.squad_type} />
+                <TypeBadge type={squad.squadType} />
                 {squad.is_public ? (
                   <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-bold uppercase tracking-widest">
                     <Globe className="w-3 h-3" />
@@ -234,14 +235,14 @@ export default function SquadDetailPage() {
           <StatCard
             icon={Users}
             label="Team Größe"
-            value={`${squad.current_members}/${squad.max_members}`}
-            trend={`${Math.round((squad.current_members / squad.max_members) * 100)}% besetzt`}
+            value={`${squad.currentMembers}/${squad.maxMembers}`}
+            trend={`${Math.round((squad.currentMembers / squad.maxMembers) * 100)}% besetzt`}
           />
           <StatCard
             icon={Wallet}
             label="Budget"
             value={wallet?.balance ? `€${wallet.balance.toLocaleString()}` : '€0'}
-            trend={wallet?.budget_total ? `von €${wallet.budget_total.toLocaleString()}` : 'Kein Budget'}
+            trend={wallet?.budgetTotal ? `von €${wallet.budgetTotal.toLocaleString()}` : 'Kein Budget'}
           />
           <StatCard
             icon={Target}
@@ -382,9 +383,9 @@ export default function SquadDetailPage() {
             <div className="glass-card rounded-[2rem] border border-white/10 p-8">
               <h3 className="text-lg font-bold text-white mb-6">Squad Info</h3>
               <div className="space-y-4 text-sm">
-                <InfoRow label="Gegründet" value={new Date(squad.created_at).toLocaleDateString('de-DE')} />
+                <InfoRow label="Gegründet" value={new Date(squad.createdAt).toLocaleDateString('de-DE')} />
                 <InfoRow label="Lead" value={squad.lead_name || 'Unbekannt'} />
-                <InfoRow label="Typ" value={squad.squad_type} />
+                <InfoRow label="Typ" value={squad.squadType} />
                 <InfoRow label="Status" value={squad.status} />
               </div>
             </div>
@@ -595,10 +596,10 @@ function TransactionRow({ transaction }: { transaction: Transaction }) {
           <p className="text-sm text-white font-medium mb-1">{transaction.description}</p>
           <div className="flex items-center gap-2">
             <span className="text-xs text-white/40 capitalize">{transaction.category}</span>
-            {transaction.created_by_name && (
+            {transaction.createdBy?.name && (
               <>
                 <span className="w-1 h-1 rounded-full bg-white/20" />
-                <span className="text-xs text-white/40">{transaction.created_by_name}</span>
+                <span className="text-xs text-white/40">{transaction.createdBy.name}</span>
               </>
             )}
 
@@ -621,7 +622,7 @@ function TransactionRow({ transaction }: { transaction: Transaction }) {
           {isExpense ? '−' : '+'}€{transaction.amount.toLocaleString()}
         </span>
         <span className="text-[10px] text-white/30 uppercase tracking-widest">
-          {new Date(transaction.created_at).toLocaleDateString('de-DE')}
+          {new Date(transaction.createdAt).toLocaleDateString('de-DE')}
         </span>
       </div>
     </div>
@@ -656,7 +657,7 @@ function JoinModal({ squad, onClose, onJoin, joining }: any) {
           <div className="p-4 rounded-xl bg-white/[0.03] border border-white/5">
             <div className="text-xs text-white/40 mb-1">Equity Share</div>
             <div className="text-2xl font-bold text-white">
-              {Number((100 / (squad.current_members + 1))).toFixed(1)}%
+              {Number((100 / (squad.currentMembers + 1))).toFixed(1)}%
             </div>
           </div>
 

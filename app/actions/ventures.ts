@@ -135,7 +135,7 @@ export async function updateVentureStep(
   await prisma.ventureStep.updateMany({
     where: {
       ventureId,
-      stepNumber: nextStep
+      stepNumber: nextPhase
     },
     data: {
       status: 'IN_PROGRESS'

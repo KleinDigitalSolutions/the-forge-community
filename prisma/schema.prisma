@@ -317,11 +317,16 @@ model Squad {
   id          String   @id @default(cuid())
   name        String
   description String?
-  mission     String?  @db.Text
-  slug        String   @unique
-  status      String   @default("forming") // forming, planning, building, launched
-
-  // Stripe Connect (Squad erhält Zahlungen)
+    mission     String?  @db.Text
+    slug        String   @unique
+    status      String   @default("forming") // forming, planning, building, launched
+  
+    squadType   String   @default("venture") // venture, project, experiment
+    minMembers  Int      @default(2)
+    maxMembers  Int      @default(5)
+  
+    // Stripe Connect
+  // (Squad erhält Zahlungen)
   stripeConnectedAccountId String?  @unique
   stripeAccountStatus      String?  // pending, enabled, disabled, rejected
   stripeOnboardingComplete Boolean  @default(false)
