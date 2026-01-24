@@ -71,7 +71,9 @@ export async function POST(req: NextRequest) {
           id: true,
           name: true,
           status: true,
-          currentStep: true,
+        currentPhase: true,
+        type: true,
+
           productType: true,
           targetMarket: true,
           marketingBudget: true,
@@ -160,7 +162,7 @@ export async function POST(req: NextRequest) {
         ventureContext = `
 VENTURE-KONTEXT:
 Name: ${venture.name}
-Status: ${venture.status} (Step ${venture.currentStep})
+Status: ${venture.status} (Phase ${venture.currentPhase})
 Produkt: ${venture.productType || 'n/a'} • Markt: ${venture.targetMarket || 'n/a'}
 Budget: ${budgetParts.length > 0 ? budgetParts.join(' | ') : 'nicht gesetzt'}
 Kosten bisher: €${(costsSum._sum.amount || 0).toLocaleString()}

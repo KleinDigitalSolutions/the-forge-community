@@ -174,7 +174,7 @@ export default function Dashboard() {
                                 </div>
                                 <div className="text-right">
                                   <div className="text-xl font-mono text-white/80">
-                                    {Math.round(((v.completedSteps?.length || 0) / (v._count?.steps || 6)) * 100)}%
+                                    {Math.round((v.currentPhase / 6) * 100)}%
                                   </div>
                                 </div>
                               </div>
@@ -182,7 +182,7 @@ export default function Dashboard() {
                               <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
                                 <div 
                                   className="h-full bg-gradient-to-r from-[#D4AF37] to-[#FCD34D]" 
-                                  style={{ width: `${((v.completedSteps?.length || 0) / (v._count?.steps || 6)) * 100}%` }}
+                                  style={{ width: `${(v.currentPhase / 6) * 100}%` }}
                                 />
                               </div>
                             </div>

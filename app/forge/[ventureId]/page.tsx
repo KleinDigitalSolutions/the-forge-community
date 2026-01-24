@@ -108,7 +108,7 @@ export default async function ForgeDashboardPage({
             {venture.status.toLowerCase().replace('_', ' ')}
           </p>
           <p className="text-xs text-white/60">
-            Step {venture.currentStep} / 6
+            Phase {venture.currentPhase} / 6
           </p>
         </div>
 

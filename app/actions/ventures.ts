@@ -37,7 +37,7 @@ export async function createVenture(data: {
       description: data.description,
       type: data.type as any,
       ownerId: user.id,
-      currentStep: 1
+      currentPhase: 1
     }
   });
 
@@ -121,14 +121,12 @@ export async function updateVentureStep(
   });
 
   // Update venture progress
-  const completedSteps = [...(venture.completedSteps || []), stepNumber];
-  const nextStep = stepNumber + 1;
+  const nextPhase = stepNumber + 1;
 
   await prisma.venture.update({
     where: { id: ventureId },
     data: {
-      currentStep: nextStep,
-      completedSteps,
+      currentPhase: nextPhase <= 6 ? nextPhase : venture.currentPhase,
       lastActivityAt: new Date()
     }
   });

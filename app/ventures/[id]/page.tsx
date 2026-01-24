@@ -135,7 +135,7 @@ export default function VentureDetailPage() {
                 {venture.name}
               </h1>
               <p className="text-white/40 uppercase tracking-[0.2em] text-xs font-bold">
-                {venture.type} • Schritt {venture.currentStep}/6
+                {venture.type} • Phase {venture.currentPhase}/6
               </p>
             </div>
             <div className="flex items-center gap-4">
@@ -163,13 +163,13 @@ export default function VentureDetailPage() {
                 Venture Fortschritt
               </span>
               <span className="text-xs text-[#D4AF37] font-bold">
-                {Math.round((venture.currentStep / 6) * 100)}%
+                {Math.round((venture.currentPhase / 6) * 100)}%
               </span>
             </div>
             <div className="h-3 bg-white/5 rounded-full overflow-hidden">
               <div
                 className="h-full bg-linear-to-r from-[#D4AF37] to-[#FF5500] rounded-full transition-all duration-500"
-                style={{ width: `${(venture.currentStep / 6) * 100}%` }}
+                style={{ width: `${(venture.currentPhase / 6) * 100}%` }}
               />
             </div>
           </div>

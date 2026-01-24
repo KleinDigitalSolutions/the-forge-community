@@ -158,13 +158,13 @@ export default function VenturesPage() {
                         Fortschritt
                       </span>
                       <span className="text-xs text-[#D4AF37] font-bold">
-                        {venture.currentStep}/6
+                        {venture.currentPhase}/6
                       </span>
                     </div>
                     <div className="h-2 bg-white/5 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-[#D4AF37] rounded-full transition-all duration-500"
-                        style={{ width: `${(venture.currentStep / 6) * 100}%` }}
+                        style={{ width: `${(venture.currentPhase / 6) * 100}%` }}
                       />
                     </div>
                   </div>
