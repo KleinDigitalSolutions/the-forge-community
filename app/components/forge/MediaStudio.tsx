@@ -23,7 +23,7 @@ interface MediaStudioProps {
 type Tab = 'library' | 'generate' | 'chain';
 
 export function MediaStudio({ ventureId, brandDNA }: MediaStudioProps) {
-  const [activeTab, setActiveTab] = useState<Tab>('library');
+  const [activeTab, setActiveTab] = useState<Tab>('generate');
   const [assets, setAssets] = useState<MediaAsset[]>([]);
   const [loading, setLoading] = useState(true);
 

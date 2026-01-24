@@ -29,6 +29,7 @@ import { AddSampleModal } from '@/app/components/sourcing/AddSampleModal';
 import { AddOrderModal } from '@/app/components/sourcing/AddOrderModal';
 import { AISourcingModal } from '@/app/components/sourcing/AISourcingModal';
 import { DirectoryImportModal } from '@/app/components/sourcing/DirectoryImportModal';
+import { SourcingTour } from '@/app/components/onboarding/SourcingTour';
 import { useAIContext } from '@/app/context/AIContext';
 
 type TabType = 'suppliers' | 'samples' | 'orders' | 'overview';
@@ -112,6 +113,7 @@ export default function SourcingPage() {
       description="Lieferanten-Management & Produktions-Tracking"
       icon={<Factory className="w-6 h-6 text-[#D4AF37]" />}
     >
+      <SourcingTour />
       <div className="space-y-6">
         {/* Tabs Navigation */}
         <div className="flex gap-2 p-1 bg-white/5 rounded-xl border border-white/10 w-fit">
@@ -172,6 +174,7 @@ export default function SourcingPage() {
                       </button>
                       <button 
                         onClick={() => setIsDirectoryModalOpen(true)}
+                        data-tour="sourcing-network-btn"
                         className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 text-[#D4AF37] rounded-lg text-sm font-bold hover:bg-[#D4AF37]/10 transition-all"
                       >
                         <Globe className="w-4 h-4" />

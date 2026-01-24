@@ -25,10 +25,12 @@ export function AISourcingModal({ isOpen, onClose, ventureId, onSuccess }: AISou
   const [suggestions, setSuggestions] = useState<AISuggestion[]>([]);
   const [saving, setSaving] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [explanation, setExplanation] = useState<string | null>(null);
 
   const startAISearch = async () => {
     setLoading(true);
     setError(null);
+    setExplanation(null);
     try {
       const res = await fetch(`/api/ventures/${ventureId}/sourcing/ai-search`, {
         method: 'POST',
@@ -36,6 +38,7 @@ export function AISourcingModal({ isOpen, onClose, ventureId, onSuccess }: AISou
       const data = await res.json();
       if (res.ok) {
         setSuggestions(data.suppliers);
+        setExplanation(data.explanation || null);
       } else {
         setError(data.error || 'KI-Recherche fehlgeschlagen');
       }
@@ -100,8 +103,8 @@ export function AISourcingModal({ isOpen, onClose, ventureId, onSuccess }: AISou
                 <Sparkles className="w-6 h-6 text-black" />
               </div>
               <div>
-                <h2 className="text-2xl font-instrument-serif text-white">AI Sourcing Agent</h2>
-                <p className="text-sm text-white/40">KI-gestützte Lieferanten-Recherche basierend auf deiner Brand DNA</p>
+                <h2 className="text-2xl font-instrument-serif text-white">Sourcing Match</h2>
+                <p className="text-sm text-white/40">Matcht echte Lieferanten aus deiner Datenbank auf Basis deiner Brand DNA</p>
               </div>
             </div>
             <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full transition-colors">
@@ -162,7 +165,7 @@ export function AISourcingModal({ isOpen, onClose, ventureId, onSuccess }: AISou
                 <div className="max-w-md mx-auto">
                   <h3 className="text-xl font-medium text-white mb-2">Bereit für die KI-Suche?</h3>
                   <p className="text-white/40 text-sm">
-                    Unsere KI nutzt deine Brand DNA (Kategorie, Zielmarkt, Werte), um die passendsten Lieferanten weltweit zu identifizieren.
+                    Wir matchen deine Brand DNA (Kategorie, Zielmarkt, Werte) mit echten Lieferanten aus deinem Netzwerk.
                   </p>
                 </div>
                 {error && (
@@ -175,7 +178,7 @@ export function AISourcingModal({ isOpen, onClose, ventureId, onSuccess }: AISou
                   className="px-10 py-4 bg-[#D4AF37] text-black rounded-2xl font-bold text-lg hover:shadow-lg hover:shadow-[#D4AF37]/20 transition-all flex items-center gap-3 mx-auto group"
                 >
                   <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                  KI-Recherche starten
+                  Matching starten
                 </button>
               </div>
             )}
@@ -185,7 +188,7 @@ export function AISourcingModal({ isOpen, onClose, ventureId, onSuccess }: AISou
           {suggestions.length > 0 && (
             <div className="p-6 bg-white/[0.02] border-t border-white/5 text-center">
               <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/20">
-                Ergebnisse basieren auf KI-Daten von Gemini Flash 2.0
+                {explanation || 'Ergebnisse basieren auf deinem Forge Lieferanten-Directory.'}
               </p>
             </div>
           )}
