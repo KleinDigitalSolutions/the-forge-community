@@ -1,5 +1,6 @@
 import PageShell from '@/app/components/PageShell';
 import CommunicationClient from './CommunicationClient';
+import ContractScanner from './ContractScanner';
 
 export default function CommunicationPage() {
   return (
@@ -19,6 +20,7 @@ export default function CommunicationPage() {
           </header>
 
           <CommunicationClient />
+          <ContractScanner />
         </div>
       </div>
     </PageShell>

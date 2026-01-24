@@ -47,6 +47,7 @@ export function VideoPreview({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [active, setActive] = useState(false);
   const [hoverEnabled, setHoverEnabled] = useState(enableHover);
+  const previewSrc = poster ? null : (src.includes('#') ? src : `${src}#t=0.001`);
 
   useEffect(() => {
     setHoverEnabled(enableHover && !onOpen && canAutoplayOnHover());
@@ -133,6 +134,15 @@ export function VideoPreview({
           className={mediaClassName}
           loading="lazy"
           decoding="async"
+        />
+      ) : previewSrc ? (
+        <video
+          src={previewSrc}
+          className={mediaClassName}
+          muted
+          playsInline
+          preload="metadata"
+          aria-hidden="true"
         />
       ) : (
         <div className={`flex h-full w-full items-center justify-center bg-gradient-to-br from-black/40 to-black/80 ${mediaClassName}`}>

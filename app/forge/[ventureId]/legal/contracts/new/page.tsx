@@ -6,7 +6,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, useParams } from 'next/navigation';
 import { StudioShell } from '@/app/components/forge/StudioShell';
 import { AIGenerator } from '@/app/components/forge/AIGenerator';
 import { DocumentExport } from '@/app/components/forge/DocumentExport';
@@ -14,13 +14,11 @@ import { Scale, ArrowLeft, Save, Send, Loader2 } from 'lucide-react';
 import { LEGAL_DOCUMENT_TEMPLATES, type LegalDocumentType } from '@/types/legal';
 import { LegalContextInjector } from '@/app/components/forge/LegalContextInjector';
 
-export default function ContractGeneratorPage({
-  params,
-}: {
-  params: { ventureId: string };
-}) {
+export default function ContractGeneratorPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const routeParams = useParams<{ ventureId: string }>();
+  const ventureId = routeParams?.ventureId ?? '';
   const templateId = searchParams.get('template');
 
   const [selectedTemplate, setSelectedTemplate] = useState<LegalDocumentType | null>(null);
@@ -64,16 +62,16 @@ export default function ContractGeneratorPage({
   }, [templateId]);
 
   const handleGenerate = async () => {
-    if (!selectedTemplate) return;
+    if (!selectedTemplate || !ventureId) return;
 
     setIsGenerating(true);
 
     try {
-      const response = await fetch(`/api/ventures/${params.ventureId}/legal`, {
+      const response = await fetch(`/api/ventures/${ventureId}/legal`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ventureId: params.ventureId,
+          ventureId,
           documentType: selectedTemplate,
           documentTitle: formData.documentTitle,
           partnerInfo: {
@@ -145,7 +143,7 @@ export default function ContractGeneratorPage({
 
       {/* NEW: Context Injector */}
       <LegalContextInjector 
-        ventureId={params.ventureId} 
+        ventureId={ventureId} 
         templateName={templateName}
       />
 

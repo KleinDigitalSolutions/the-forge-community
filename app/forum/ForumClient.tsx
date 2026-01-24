@@ -23,7 +23,6 @@ import { de } from 'date-fns/locale';
 import EmojiPicker, { EmojiClickData, EmojiStyle, Theme } from 'emoji-picker-react';
 import { PostSkeleton } from '@/app/components/PostSkeleton';
 import { ForumEditor } from '@/app/components/ForumEditor';
-import { playGtaMenuSound, primeGtaMenuSound } from '@/lib/ui-sound';
 
 export interface Comment {
   id: string;
@@ -889,7 +888,6 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
 
   const handleSubmit = async (event?: FormEvent) => {
     if (event && event.preventDefault) event.preventDefault();
-    primeGtaMenuSound();
     const isEditing = editingPost && editingPost !== 'NEW';
     const draft = (isEditing ? editContent : content).trim();
     if (!draft) return;
@@ -934,7 +932,6 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
         setContent('');
         setEditingPost(null);
         fetchPosts({ reset: true });
-        playGtaMenuSound();
       }
     } catch (error) {
       console.error(error);

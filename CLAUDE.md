@@ -17,12 +17,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm run dev              # Start dev server (localhost:3000)
 npm run build            # Prisma generate + Next.js build
 npm start                # Production server
+npm run lint             # Run ESLint
 ```
 
 ### Database
 ```bash
 npx prisma generate      # Generate Prisma Client after schema changes
-npx prisma db push       # Push schema changes to database
+npx prisma db push       # Push schema changes to database (dev only)
+npx prisma studio        # Open Prisma Studio GUI for database inspection
 ```
 
 **Important:** This project uses **manual SQL migrations** stored in `/migrations/`. Do NOT use `prisma migrate` as it will conflict with the RLS policies.
@@ -35,21 +37,24 @@ npx prisma db push       # Push schema changes to database
 - **Framework:** Next.js 16.1.2 (App Router, React Server Components)
 - **Language:** TypeScript (strict mode)
 - **Database:** PostgreSQL (Vercel Postgres) + Prisma 7.2
-- **Auth:** NextAuth v5 (JWT, Magic Links via Resend)
+- **Auth:** NextAuth v5 (JWT, Magic Links via Resend - Open Registration)
 - **Payments:** Stripe (Subscriptions + Connect)
 - **AI:** Gemini Flash 2.0 (primary), Groq (fallback)
+- **Energy System:** Custom AI credit management (50 credits initial)
 - **Storage:** Vercel Blob
 - **Styling:** Tailwind CSS v4
 
 ### System Design Philosophy
 
-**Multi-Tenant Venture Studio with AI-First Operations**
+**Multi-Tenant Venture Studio with AI-First Operations & Freemium Model**
 
-1. **Users** join as founders (€69-99/mo subscription)
-2. **Squads** form to build ventures together (2-5 members)
-3. **Ventures** are created via guided wizard (E-Commerce, SaaS, Service)
-4. **The Forge** is the venture workspace (dashboard, brand DNA, tools)
-5. **AI** powers content generation, moderation, advisor chatbot
+1. **Open Registration** - Anyone can sign up via magic link (no approval needed)
+2. **Energy System** - Users start with 50 AI credits; core workflows are free, AI features cost credits
+3. **Squads** form to build ventures together (2-5 members)
+4. **Ventures** are created via guided wizard (E-Commerce, SaaS, Service)
+5. **The Forge** is the venture workspace (dashboard, brand DNA, tools)
+6. **AI** powers content generation, moderation, advisor chatbot (credit-based)
+7. **Product-Led Growth** - Freemium model optimized for TikTok/social media traffic conversion
 
 ---
 
@@ -155,8 +160,10 @@ const paymentIntent = await stripe.paymentIntents.create({
 
 **User**
 - `squadMemberships: SquadMember[]` (many-to-many, NOT `squadId`)
-- `stripeCustomerId`, `stripeSubscriptionId` (platform subscription)
+- `stripeCustomerId`, `stripeSubscriptionId` (platform subscription - legacy)
+- `credits`, `totalCredits`, `creditsUsed` (Energy System for AI features)
 - `toxicityWarnings`, `isBanned` (moderation system)
+- `accountStatus` (ACTIVE, SUSPENDED, DELETED - for account deletion flow)
 
 **Venture**
 - `ownerId` (creator)
@@ -192,18 +199,18 @@ const paymentIntent = await stripe.paymentIntents.create({
 
 ## Authentication Flow
 
-### NextAuth v5 (Magic Link)
+### NextAuth v5 (Magic Link - Open Registration)
 
 **Flow:**
 1. User enters email at `/login`
-2. `signIn` callback in `auth.ts` checks Notion database
-3. If founder exists AND status ≠ 'inactive' → Magic link sent
-4. User clicks link → JWT session created
+2. Magic link sent via Resend (no approval needed)
+3. User clicks link → JWT session created
+4. New users automatically created with 50 AI credits (Energy System)
 5. Protected routes check session via middleware
 
-**Gatekeeper Pattern:**
+**Legacy Notion Check (Being Phased Out):**
 ```typescript
-// auth.ts - signIn callback
+// auth.ts - signIn callback (old pattern, transitioning to open registration)
 async signIn({ user }) {
   const founder = await getFounderByEmail(user.email);
   if (!founder || founder.status === 'inactive') {
@@ -212,6 +219,8 @@ async signIn({ user }) {
   return true;
 }
 ```
+
+**Important:** The platform is transitioning from a gated community (Notion-based approval) to **open registration** with a freemium model. New code should not depend on Notion checks.
 
 **Protected Route Config:**
 ```typescript
@@ -253,27 +262,37 @@ const result = await streamText({
 
 ### AI Integration Points
 
-1. **Chatbot** (`/api/chat`)
+1. **Chatbot - "Orion"** (`/api/chat`)
+   - Gemini-powered AI advisor with personality
    - Knowledge base injection (platform info, pricing)
-   - User context (role, ventures)
-   - German personality, direct communication
+   - User context (name, role, ventures)
+   - German language, witty/slightly sarcastic tone ("Grok-style")
+   - Gender-aware addressing based on username
 
 2. **Forum AI Actions** (`lib/ai.ts`)
-   - `summarize`: 2-sentence TL;DR
-   - `feedback`: Constructive critique
-   - `expand`: Brainstorming ideas
-   - `factCheck`: Plausibility assessment
-   - `mentionReply`: Answer @ai mentions
+   - `summarize`: 2-sentence TL;DR (2-3 credits)
+   - `feedback`: Constructive critique (3-5 credits)
+   - `expand`: Brainstorming ideas (3-5 credits)
+   - `factCheck`: Plausibility assessment (2-3 credits)
+   - `mentionReply`: Answer @ai mentions (2-5 credits)
 
 3. **Content Moderation** (`lib/moderation.ts`)
    - Toxicity detection (HARASSMENT, HATE_SPEECH, VIOLENCE, SPAM)
+   - Applied to forum posts AND direct messages
    - 3-strike warning system
    - 4th strike = auto-ban
+   - **Free operation** (no credits deducted - platform safety)
 
 4. **Brand DNA Context**
    - Fetch `BrandDNA` for venture
    - Inject into content generation prompts
    - Ensures brand-consistent output
+
+5. **AI Sourcing Discovery** (`/app/forge/[ventureId]/sourcing`)
+   - Database-based supplier matching (no hallucinations)
+   - Uses Brand DNA (category, market, values) for context
+   - Returns real `Resource` entries with matching explanation
+   - 10-15 credits per discovery session
 
 **Example:**
 ```typescript
@@ -293,6 +312,85 @@ const prompt = `
 
 ---
 
+## Energy System (AI Credits)
+
+### Overview
+
+The Energy System is a **freemium credit-based model** for AI feature access, designed for product-led growth from social media traffic.
+
+**Key Principles:**
+- New users receive **50 credits** on signup (configurable via `INITIAL_CREDITS` env var)
+- Core workflows (Venture Creation, Brand DNA, Roadmap) are **free**
+- AI-powered features consume credits:
+  - Content generation (marketing, legal): 5-10 credits
+  - Forum AI actions (summarize, feedback, expand): 2-5 credits
+  - AI Chatbot interactions: 1-3 credits per message
+  - AI Sourcing Discovery: 10-15 credits
+
+### Database Schema
+
+**User Fields:**
+```typescript
+{
+  credits: number;        // Current balance (default: 50)
+  totalCredits: number;   // Lifetime credits received
+  creditsUsed: number;    // Lifetime credits spent
+}
+```
+
+### Usage Pattern
+
+**Server-side credit check:**
+```typescript
+// Before AI operation
+const user = await prisma.user.findUnique({ where: { id: userId } });
+if (!user || user.credits < REQUIRED_CREDITS) {
+  throw new Error('Insufficient credits');
+}
+
+// Perform AI operation
+const result = await generateContent(prompt);
+
+// Deduct credits
+await prisma.user.update({
+  where: { id: userId },
+  data: {
+    credits: { decrement: REQUIRED_CREDITS },
+    creditsUsed: { increment: REQUIRED_CREDITS }
+  }
+});
+```
+
+**Client-side display:**
+```typescript
+import { Zap } from 'lucide-react';
+
+// Show credit balance in UI
+<div className="flex items-center gap-1">
+  <Zap className="w-4 h-4 text-yellow-500" />
+  <span>{user.credits}</span>
+</div>
+```
+
+### Credit Pricing
+
+**Feature Cost Table:**
+| Feature | Cost | Notes |
+|---------|------|-------|
+| Marketing Content (Instagram, LinkedIn, Email) | 5-10 | Depends on length |
+| Legal Document Generation | 10-15 | Contract complexity |
+| Forum AI (Summarize, Feedback, Expand) | 2-5 | Per action |
+| AI Chatbot Message | 1-3 | Per message |
+| AI Sourcing Discovery | 10-15 | Bulk supplier search |
+| Content Moderation | 0 | Free (platform safety) |
+
+**Future Monetization:**
+- Credit top-ups via Stripe (€9.99 for 100 credits)
+- Premium subscriptions with higher credit allowances
+- Squad shared credit pools
+
+---
+
 ## File Structure Guide
 
 ### Key Directories
@@ -301,16 +399,22 @@ const prompt = `
 app/
 ├── (routes)/              # Public pages (landing, login, legal)
 ├── api/                   # API routes
-│   ├── chat/             # AI chatbot
+│   ├── chat/             # AI chatbot (Orion)
 │   ├── ventures/[id]/    # Venture management
 │   │   └── brand-dna/   # BrandDNA CRUD
 │   ├── webhooks/stripe/  # Stripe events
+│   ├── forum/            # Forum AI actions
 │   └── cron/             # Scheduled jobs
 ├── components/           # React components
 │   ├── AuthGuard.tsx    # Session wrapper
 │   ├── PageShell.tsx    # Main layout
 │   ├── ForgeSidebar.tsx # Forge navigation
-│   └── ForgeTopBar.tsx  # Venture context bar
+│   ├── ForgeTopBar.tsx  # Venture context bar
+│   ├── ForumEditor.tsx  # Rich text editor with markdown
+│   ├── LinkPreview.tsx  # URL preview cards
+│   └── ui/              # Reusable UI components
+├── context/              # React Context providers
+│   └── AIContext.tsx    # Context-aware AI sidebar state
 ├── actions/              # Server Actions
 │   └── ventures.ts      # Venture mutations
 ├── forge/[ventureId]/    # Venture workspace
@@ -319,11 +423,20 @@ app/
 │   ├── brand/           # Brand DNA editor
 │   ├── marketing/       # AI campaigns
 │   ├── sourcing/        # Supplier database
+│   ├── communication/   # AI communication center
+│   ├── legal/           # Legal document generation
+│   ├── decisions/       # Decision Hall (voting)
 │   └── admin/           # Budget, team, settings
 ├── ventures/
 │   ├── new/             # Venture wizard
 │   └── [id]/            # Venture detail
-└── squads/              # Squad marketplace
+├── squads/              # Squad marketplace
+├── forum/               # Community forum
+│   └── ForumClient.tsx # Main forum UI with AI features
+├── settings/            # User account settings
+│   ├── notifications/  # Notification preferences
+│   └── privacy/        # Privacy controls
+└── messages/            # Direct messaging (DM)
 
 lib/
 ├── prisma.ts            # Database client (singleton)
@@ -349,6 +462,69 @@ migrations/              # Manual SQL migrations
 - **API Routes:** `route.ts` (Next.js standard)
 - **Server Actions:** `actions.ts` or `actions/` directory
 - **Client Components:** `'use client'` directive at top
+
+### UX Enhancements
+
+**Sound Effects:**
+- GTA-menu-style sound on successful forum posts and messages
+- Audio file: `public/audio/gta-menu.mp3`
+- Only plays on successful operations (not on errors)
+
+**Mobile Optimization:**
+- Reddit-style card layout for forum posts
+- Compact action buttons with icons
+- Mobile-responsive navigation (hamburger menu + bottom tab bar)
+- Rich text editor with emoji picker optimized for mobile
+- Context-aware AI sidebar adapts to screen size
+
+---
+
+## Context-Aware AI Sidebar
+
+### Overview
+
+The platform includes a **persistent AI assistant** ("Orion") that adapts to what the user is currently doing.
+
+**Key Features:**
+- Always visible in the UI (right sidebar or bottom sheet on mobile)
+- Dynamically updates based on current page/modal
+- Maintains conversation context across page navigation
+- Powered by Gemini Flash 2.0 with personality (witty, German, direct)
+
+### Implementation Pattern
+
+**For any new feature that needs AI support:**
+
+1. **Import the Context:**
+```typescript
+import { useAIContext } from '@/app/context/AIContext';
+```
+
+2. **Set the Context:**
+```typescript
+const { setContext } = useAIContext();
+
+useEffect(() => {
+  setContext("Erstelle gerade ein Sourcing-Sample. Hilf dem User bei Qualitätsmerkmalen.");
+
+  // Optional: reset when leaving
+  return () => setContext("Forge Dashboard");
+}, []);
+```
+
+3. **Result:**
+The AI Sidebar instantly adapts and provides relevant advice based on your context description.
+
+**Example Use Cases:**
+- Brand DNA Editor: "Editing brand identity. Help with tone of voice options."
+- Marketing Studio: "Creating Instagram campaign. Suggest hashtags and hooks."
+- Legal Studio: "Drafting NDA. Explain key clauses in simple terms."
+- Sourcing Discovery: "Finding suppliers. Recommend quality criteria."
+
+**Files:**
+- Context Provider: `app/context/AIContext.tsx`
+- AI API: `/app/api/chat/route.ts`
+- Knowledge Base: `lib/knowledge-base.ts`
 
 ---
 
@@ -523,12 +699,36 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 **Notion is legacy. For new features, use Prisma only.**
 
 Notion is still used for:
-- Founder access control (gatekeeper in `auth.ts`)
+- Founder access control (gatekeeper in `auth.ts` - being removed)
 - Financial transaction logging (being migrated)
 
 **Do NOT:**
 - Write new features that depend on Notion
 - Sync data bidirectionally (race conditions)
+
+### 7. Content Moderation Everywhere
+
+**Apply moderation to ALL user-generated content, not just public posts.**
+
+**Critical Rule:** Direct messages (DMs) must also be moderated for toxicity.
+
+**Pattern:**
+```typescript
+// Before saving ANY user content (forum, DM, comments, etc.)
+import { moderateContent } from '@/lib/moderation';
+
+const { isToxic, category, severity } = await moderateContent(message);
+
+if (isToxic) {
+  // Update user warnings
+  await incrementToxicityWarnings(userId);
+
+  // Reject the message
+  throw new Error(`Content rejected: ${category}`);
+}
+```
+
+**Why?** Prevents platform abuse and protects users from harassment in private communications.
 
 ---
 
@@ -544,9 +744,10 @@ AUTH_SECRET=xxx               # Generate: npx auth secret
 AUTH_RESEND_KEY=re_xxx
 AUTH_URL=http://localhost:3000
 
-# AI
+# AI & Energy System
 GEMINI_API_KEY=xxx
-GROQ_API_KEY=xxx
+GROQ_API_KEY=xxx             # Optional, fallback provider
+INITIAL_CREDITS=50           # Starting credits for new users (default: 50)
 
 # Stripe
 STRIPE_SECRET_KEY=sk_test_xxx
@@ -556,7 +757,7 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_xxx
 # Admin
 ADMIN_EMAIL=admin@example.com
 
-# Notion (Legacy)
+# Notion (Legacy - being phased out)
 NOTION_API_KEY=secret_xxx
 NOTION_DATABASE_ID=xxx
 ```
@@ -630,6 +831,30 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 2. Update `ForumAIActions` type
 3. Add UI trigger in forum components
 4. Update API route `/app/api/forum/ai-action/route.ts`
+
+### Implement Account Deletion Flow
+
+1. Update User model with `accountStatus` enum (ACTIVE, SUSPENDED, DELETED)
+2. Create `UserDeletion` table for retention (audit trail)
+3. Implement anonymization logic:
+   - Set `accountStatus = 'DELETED'`
+   - Store deletion metadata in `UserDeletion`
+   - Create tombstone records for forum posts (author = "Deleted User")
+4. Block sign-in for deleted accounts in `auth.ts` callback
+5. Add UI in `/app/settings/page.tsx` with confirmation modal
+
+### Add Privacy Controls
+
+**User Preferences:**
+- Profile visibility (PUBLIC, FRIENDS_ONLY, PRIVATE)
+- Show follower counts (boolean)
+- DM permissions (EVERYONE, SQUAD_ONLY, NOBODY)
+
+**Implementation:**
+1. Add fields to User model
+2. Enforce in API routes (check preferences before showing data)
+3. Add UI toggles in `/app/settings/privacy/page.tsx`
+4. Update middleware to respect privacy settings
 
 ---
 

@@ -7,7 +7,8 @@ import { notFound, redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { StudioShell } from '@/app/components/forge/StudioShell';
-import { TemplateSelector, type Template } from '@/app/components/forge/TemplateSelector';
+import type { Template } from '@/app/components/forge/TemplateSelector';
+import TemplateSelectorClient from './TemplateSelectorClient';
 import { Scale, FileText, Shield, Briefcase, Users2, Factory, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { LEGAL_DOCUMENT_TEMPLATES } from '@/types/legal';
@@ -153,13 +154,7 @@ export default async function LegalStudioPage({
           </div>
         </div>
 
-        <TemplateSelector
-          templates={templates}
-          onSelect={(templateId) => {
-            // Navigate to contract generator
-            window.location.href = `/forge/${ventureId}/legal/contracts/new?template=${templateId}`;
-          }}
-        />
+        <TemplateSelectorClient templates={templates} ventureId={ventureId} />
       </div>
 
       {/* Recent Documents */}
