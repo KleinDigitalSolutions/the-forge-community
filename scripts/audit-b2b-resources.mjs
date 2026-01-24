@@ -35,6 +35,8 @@ const SOURCE_FILES = [
   'B2B_Lager',
 ];
 
+const PARSED_INPUT = path.resolve(process.cwd(), 'data', 'b2b-import.json');
+
 const COMPANY_TOKENS = [
   'gmbh', 'ag', 'kg', 'ug', 'se', 's.a', 'b.v', 'inc', 'ltd', 'llc', 'group',
   'logistik', 'logistics', 'fulfillment', 'company', 'ohg', 'e.v', 's.r.o', 'srl'
@@ -89,19 +91,26 @@ const extractCandidates = (content) => {
 };
 
 async function main() {
-  const allCandidates = [];
+  let candidateTitles = [];
 
-  for (const file of SOURCE_FILES) {
-    const filePath = path.resolve(process.cwd(), file);
-    if (!fs.existsSync(filePath)) {
-      console.warn(`Missing file: ${filePath}`);
-      continue;
+  if (fs.existsSync(PARSED_INPUT)) {
+    const parsed = JSON.parse(fs.readFileSync(PARSED_INPUT, 'utf8'));
+    candidateTitles = parsed.map((entry) => entry.title).filter(Boolean);
+  } else {
+    const allCandidates = [];
+    for (const file of SOURCE_FILES) {
+      const filePath = path.resolve(process.cwd(), file);
+      if (!fs.existsSync(filePath)) {
+        console.warn(`Missing file: ${filePath}`);
+        continue;
+      }
+      const content = fs.readFileSync(filePath, 'utf8');
+      allCandidates.push(...extractCandidates(content));
     }
-    const content = fs.readFileSync(filePath, 'utf8');
-    allCandidates.push(...extractCandidates(content));
+    candidateTitles = allCandidates;
   }
 
-  const uniqueCandidates = Array.from(new Set(allCandidates.map(name => name.trim()))).filter(Boolean);
+  const uniqueCandidates = Array.from(new Set(candidateTitles.map(name => name.trim()))).filter(Boolean);
   const dbResources = await prisma.resource.findMany({ select: { title: true } });
   const dbTitles = new Set(dbResources.map(resource => normalize(resource.title)));
 
