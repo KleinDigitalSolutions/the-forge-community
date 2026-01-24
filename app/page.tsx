@@ -249,7 +249,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#1a1f2b_0%,#0b0c10_55%,#070809_100%)]" />
         <div
           className="absolute inset-0 bg-center bg-cover opacity-25"
-          style={{ backgroundImage: "url('/images/forge-hammer.jpg')" }}
+          style={{ backgroundImage: "url('/ruslan-bardash-stuhl-unsplash.jpg')" }}
         />
         <div className="absolute inset-0 bg-black/65" />
 

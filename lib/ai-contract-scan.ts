@@ -102,7 +102,7 @@ export async function analyzeContractPdf(params: {
               generationConfig: {
                 temperature: 0.2,
                 maxOutputTokens: 1400,
-                response_mime_type: 'application/json',
+                responseMimeType: 'application/json',
               },
             }),
           }

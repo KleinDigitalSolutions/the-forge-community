@@ -21,21 +21,25 @@ export async function POST(req: NextRequest) {
     const file = formData.get('file');
     const context = String(formData.get('context') || '');
 
-    if (!file || !(file instanceof File)) {
+    if (!file || typeof file !== 'object' || !('arrayBuffer' in file)) {
       return NextResponse.json({ error: 'PDF fehlt' }, { status: 400 });
     }
 
-    if (file.type !== 'application/pdf') {
+    const blob = file as Blob & { name?: string; size?: number; type?: string };
+    const contentType = blob.type || '';
+    const size = typeof blob.size === 'number' ? blob.size : 0;
+
+    if (contentType !== 'application/pdf') {
       return NextResponse.json({ error: 'Nur PDF-Dateien sind erlaubt' }, { status: 400 });
     }
 
-    if (file.size > MAX_PDF_BYTES) {
+    if (size > MAX_PDF_BYTES) {
       return NextResponse.json({ error: 'PDF ist zu gross (max 8MB)' }, { status: 400 });
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const buffer = Buffer.from(await blob.arrayBuffer());
     const result = await analyzeContractPdf({
-      fileName: file.name,
+      fileName: blob.name || 'contract.pdf',
       buffer,
       context,
     });
@@ -43,6 +47,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ result });
   } catch (error) {
     console.error('Contract scan failed', error);
-    return NextResponse.json({ error: 'Analyse fehlgeschlagen' }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Analyse fehlgeschlagen';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
