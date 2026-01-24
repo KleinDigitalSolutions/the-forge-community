@@ -47,7 +47,7 @@ const SKIP_TOKENS = [
   'versanddienstleister', 'paketdienste', 'tabellen', 'uebersicht', 'übersicht'
 ];
 
-const normalize = (value: string) =>
+const normalize = (value) =>
   value
     .toLowerCase()
     .replace(/&/g, 'und')
@@ -55,14 +55,14 @@ const normalize = (value: string) =>
     .replace(/\s+/g, ' ')
     .trim();
 
-const isLikelyCompany = (value: string) => {
+const isLikelyCompany = (value) => {
   const lower = value.toLowerCase();
   if (SKIP_TOKENS.some(token => lower.includes(token))) return false;
   return COMPANY_TOKENS.some(token => lower.includes(token)) || value.split(' ').length >= 2;
 };
 
-const extractCandidates = (content: string) => {
-  const candidates: string[] = [];
+const extractCandidates = (content) => {
+  const candidates = [];
   const lines = content.split('\n').map(line => line.trim()).filter(Boolean);
 
   for (const line of lines) {
@@ -89,7 +89,7 @@ const extractCandidates = (content: string) => {
 };
 
 async function main() {
-  const allCandidates: string[] = [];
+  const allCandidates = [];
 
   for (const file of SOURCE_FILES) {
     const filePath = path.resolve(process.cwd(), file);

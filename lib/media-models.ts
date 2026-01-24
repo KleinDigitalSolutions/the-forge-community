@@ -57,20 +57,20 @@ export const IMAGE_MODELS: Record<string, ModelDefinition> = {
 };
 
 export const VIDEO_MODELS: Record<string, ModelDefinition> = {
-  'kling-2.6-pro': {
-    id: 'kwaivgi/kling-v2.6-pro',
+  'kling-v1.5-pro': {
+    id: 'kwaivgi/kling-v1.5-pro',
     provider: 'replicate',
     tier: 'pro',
-    label: 'Kling 2.6 Pro (Cinema)',
+    label: 'Kling 1.5 Pro (Cinema)',
     cost: 50,
     type: 'video',
     aspectRatios: ['16:9', '9:16', '4:5'],
   },
-  'minimax-hailuo-02': {
+  'minimax-video-01': {
     id: 'minimax/video-01',
     provider: 'replicate',
     tier: 'pro',
-    label: 'Minimax Hailuo 02 (Human Motion)',
+    label: 'Minimax Video (Human Motion)',
     cost: 45,
     type: 'video',
     aspectRatios: ['16:9', '9:16'],
@@ -89,5 +89,5 @@ export const VIDEO_MODELS: Record<string, ModelDefinition> = {
 export const DEFAULT_MODELS = {
   forum: IMAGE_MODELS['flux-schnell'],
   studio_image: IMAGE_MODELS['flux-2-pro'],
-  studio_video: VIDEO_MODELS['minimax-hailuo-02'],
+  studio_video: VIDEO_MODELS['minimax-video-01'],
 };

@@ -81,7 +81,7 @@ const MODEL_CONFIGS: ModelConfig[] = [
   },
   {
     id: 'minimax/video-01',
-    label: 'Minimax Hailuo 02 · Human Motion',
+    label: 'Minimax Video · Human Motion',
     outputType: 'video',
     modes: ['text-to-video'],
   },
@@ -92,8 +92,8 @@ const MODEL_CONFIGS: ModelConfig[] = [
     modes: ['text-to-video'],
   },
   {
-    id: 'kwaivgi/kling-v2.6-pro',
-    label: 'Kling 2.6 Pro · Cinema',
+    id: 'kwaivgi/kling-v1.5-pro',
+    label: 'Kling 1.5 Pro · Cinema',
     outputType: 'video',
     modes: ['image-to-video'],
     supportsImageInput: true,
@@ -779,7 +779,15 @@ export function MediaGeneratorModal({
                 {assets.map((asset, index) => (
                   <div key={`${asset.url}-${index}`} className="rounded-xl border border-white/10 bg-black/40 overflow-hidden">
                     {asset.type === 'video' ? (
-                      <video src={asset.url} controls className="w-full h-auto" />
+                      <video 
+                        src={asset.url} 
+                        controls 
+                        autoPlay 
+                        muted 
+                        loop 
+                        playsInline 
+                        className="w-full h-auto" 
+                      />
                     ) : (
                       <img src={asset.url} alt="Generated" className="w-full h-auto" />
                     )}
