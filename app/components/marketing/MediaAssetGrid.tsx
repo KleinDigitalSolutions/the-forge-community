@@ -30,11 +30,34 @@ export function MediaAssetGrid({
     );
   }
 
+  const handleDownload = async (e: React.MouseEvent, url: string, filename: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename || 'video.mp4';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error('Download failed:', error);
+      window.open(url, '_blank'); // Fallback
+    }
+  };
+
   return (
     <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 ${className}`}>
       {assets.map((asset) => {
         const isSelected = selectedIds.includes(asset.id);
         const isVideo = asset.type.toLowerCase() === 'video';
+        // Add #t=0.001 to force browser to render the first frame
+        const displayUrl = isVideo ? `${asset.url}#t=0.001` : asset.url;
 
         return (
           <div
@@ -51,10 +74,11 @@ export function MediaAssetGrid({
             {/* Thumbnail / Content */}
             {isVideo ? (
               <video 
-                src={asset.url} 
+                src={displayUrl} 
                 className="w-full h-full object-cover"
                 muted
                 playsInline
+                preload="metadata"
                 onMouseOver={(e) => e.currentTarget.play().catch(() => {})}
                 onMouseOut={(e) => {
                   e.currentTarget.pause();
@@ -82,14 +106,12 @@ export function MediaAssetGrid({
             <div className={`absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/90 to-transparent transition-opacity flex justify-between items-end ${
               hoveredId === asset.id ? 'opacity-100' : 'opacity-0'
             }`}>
-              <a 
-                href={asset.url} 
-                download 
-                onClick={(e) => e.stopPropagation()}
+              <button 
+                onClick={(e) => handleDownload(e, asset.url, asset.filename || 'asset.mp4')}
                 className="p-2 hover:bg-white/10 rounded-lg text-white/70 hover:text-white transition-colors"
               >
                 <Download className="w-4 h-4" />
-              </a>
+              </button>
               
               {onDelete && (
                 <button
