@@ -94,6 +94,20 @@ interface ForumClientProps {
 
 const AI_AUTHORS = new Set(['@orion', '@forge-ai']);
 const INSIGHT_HEADER = /\*\*(?:Orion|AI) Insight · (.+?)\*\*\s*/i;
+const META_REGEX = /<!--metadata: ({.*}) -->$/s;
+
+function extractMetadata(content: string) {
+  const match = content.match(META_REGEX);
+  if (!match) return { content, meta: null };
+  try {
+    return {
+      content: content.replace(META_REGEX, '').trim(),
+      meta: JSON.parse(match[1])
+    };
+  } catch (e) {
+    return { content, meta: null };
+  }
+}
 
 function extractAiInsight(comments?: Comment[]) {
   if (!comments || comments.length === 0) return null;
@@ -1342,12 +1356,38 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                         </div>
 
                         <div className="prose prose-invert prose-sm max-w-none mb-4 group-hover:text-white transition-colors">
-                          <ReactMarkdown 
-                            remarkPlugins={[remarkGfm]}
-                            components={MarkdownComponents}
-                          >
-                            {post.content}
-                          </ReactMarkdown>
+                          {(() => {
+                            const { content: cleanContent, meta } = extractMetadata(post.content);
+                            if (!meta || (!meta.bg && !meta.color && meta.align === 'left')) {
+                              return (
+                                <ReactMarkdown remarkPlugins={[remarkGfm]} components={MarkdownComponents}>
+                                  {post.content}
+                                </ReactMarkdown>
+                              );
+                            }
+                            return (
+                              <div 
+                                className="rounded-2xl overflow-hidden relative min-h-[260px] flex flex-col justify-center p-6 sm:p-10 shadow-2xl border border-white/5 my-2"
+                                style={{ textAlign: meta.align, color: meta.color }}
+                              >
+                                {meta.bg && (
+                                  <div className="absolute inset-0 z-0">
+                                    <img src={meta.bg} className="w-full h-full object-cover opacity-60 blur-[1px]" alt="Background" />
+                                    <div className="absolute inset-0 bg-black/40" />
+                                  </div>
+                                )}
+                                <div className={`relative z-10 prose prose-invert max-w-none !text-[inherit] ${
+                                  meta.size === 'sm' ? 'prose-sm' : 
+                                  meta.size === 'lg' ? 'prose-xl' : 
+                                  meta.size === 'xl' ? 'prose-2xl' : 'prose-base'
+                                }`}>
+                                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={MarkdownComponents}>
+                                    {cleanContent}
+                                  </ReactMarkdown>
+                                </div>
+                              </div>
+                            );
+                          })()}
                         </div>
 
                         <div className="hidden sm:flex flex-wrap items-center gap-3 pt-3 border-t border-white/5">
