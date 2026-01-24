@@ -134,6 +134,7 @@ interface MediaGeneratorModalProps {
   inline?: boolean;
   onAssetCreated?: (asset: any) => void;
   allowedModes?: MediaMode[];
+  originTag?: string;
 }
 
 const getModelsForMode = (mode: MediaMode) =>
@@ -162,7 +163,8 @@ export function MediaGeneratorModal({
   brandDNA,
   inline = false,
   onAssetCreated,
-  allowedModes
+  allowedModes,
+  originTag
 }: MediaGeneratorModalProps) {
   const modeOptions = useMemo(() => resolveModeOptions(allowedModes), [allowedModes]);
   const [mode, setMode] = useState<MediaMode>(() => getDefaultMode(allowedModes));
@@ -394,6 +396,7 @@ export function MediaGeneratorModal({
       }
       if (useBrandContext && brandDNA) formData.append('useBrandContext', 'true');
       if (campaignId) formData.append('campaignId', campaignId);
+      if (originTag?.trim()) formData.append('originTag', originTag.trim());
 
       const res = await fetch(`/api/ventures/${ventureId}/marketing/media`, {
         method: 'POST',

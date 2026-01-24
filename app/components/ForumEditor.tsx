@@ -11,6 +11,7 @@ import remarkGfm from 'remark-gfm';
 import EmojiPicker, { EmojiClickData, EmojiStyle, Theme } from 'emoji-picker-react';
 import { VoiceInput } from '@/app/components/VoiceInput';
 import { MediaGeneratorModal } from '@/app/components/marketing/MediaGeneratorModal';
+import { FORUM_MEDIA_TAG } from '@/lib/forum-venture';
 
 interface ForumEditorProps {
   value: string;
@@ -231,6 +232,7 @@ export function ForumEditor({
           onClose={() => setShowImageGenerator(false)}
           ventureId={mediaVentureId}
           allowedModes={['text-to-image']}
+          originTag={FORUM_MEDIA_TAG}
           onAssetCreated={handleAssetCreated}
         />
       )}
@@ -262,7 +264,7 @@ export function ForumEditor({
             </div>
             <button onClick={() => fileInputRef.current?.click()} className="p-1.5 hover:bg-white/10 rounded-lg text-white/60 hover:text-[#D4AF37] transition-all"><ImageIcon className="w-4 h-4" /></button>
             <input type="file" ref={fileInputRef} onChange={(e) => handleUpload(e, false)} className="hidden" accept="image/*" />
-            {enableImageGenerator && (
+            {enableImageGenerator && mediaVentureId && (
               <button
                 type="button"
                 onClick={handleOpenGenerator}

@@ -63,6 +63,7 @@ type ReplicateJobCache = {
   aspectRatio: string;
   cost: number;
   reservationId: string | null;
+  originTag?: string;
   outputType: 'image' | 'video';
   creditsRemaining?: number;
   assets?: CachedAsset[];
@@ -138,6 +139,13 @@ const parseOptionalNumber = (value: FormDataEntryValue | null) => {
 const parseLimit = (value: string | undefined, fallback: number) => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? Math.max(0, Math.floor(parsed)) : fallback;
+};
+
+const normalizeTag = (value: string) => {
+  const trimmed = value.trim().toLowerCase();
+  if (!trimmed) return null;
+  if (!/^[a-z0-9-]+$/.test(trimmed)) return null;
+  return trimmed;
 };
 
 const HOURLY_LIMITS = {
@@ -394,6 +402,8 @@ export async function POST(
   const negativePrompt = String(formData.get('negativePrompt') || '').trim();
   const renderingSpeed = String(formData.get('renderingSpeed') || '').trim();
   const stylePreset = String(formData.get('stylePreset') || '').trim();
+  const originTag = normalizeTag(String(formData.get('originTag') || ''));
+  const extraTags = originTag ? [originTag] : [];
 
   if (!modeValue || !prompt || !isValidMode(modeValue)) {
     return NextResponse.json({ error: 'Fehlende Parameter' }, { status: 400 });
@@ -566,7 +576,7 @@ export async function POST(
               model: modelConfig.id,
               width: dimensions.width,
               height: dimensions.height,
-              tags: [mode, 'ideogram']
+              tags: [mode, 'ideogram', ...extraTags]
             }
           });
 
@@ -626,6 +636,7 @@ export async function POST(
       aspectRatio,
       cost,
       reservationId,
+      originTag,
       outputType: modelConfig.outputType,
       createdAt: new Date().toISOString(),
     });
@@ -741,7 +752,7 @@ export async function GET(
               model: job.model,
               width: dimensions.width,
               height: dimensions.height,
-              tags: [job.mode, 'replicate']
+              tags: [job.mode, 'replicate', ...(job.originTag ? [job.originTag] : [])]
             }
           });
 

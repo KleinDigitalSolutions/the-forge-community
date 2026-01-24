@@ -3,6 +3,7 @@
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { getTemplateByType } from '@/lib/venture-templates';
+import { isForumVenture } from '@/lib/forum-venture';
 import { revalidatePath } from 'next/cache';
 
 export async function createVenture(data: {
@@ -207,7 +208,7 @@ export async function getUserVentures() {
     orderBy: { createdAt: 'desc' }
   });
 
-  return ventures;
+  return ventures.filter((venture) => !isForumVenture(venture));
 }
 
 export async function deleteVenture(ventureId: string) {

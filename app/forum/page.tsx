@@ -1,14 +1,12 @@
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { assignFounderNumberIfMissing } from '@/lib/founder-number';
+import { FORUM_VENTURE_DESCRIPTION, FORUM_VENTURE_NAME } from '@/lib/forum-venture';
 import ForumClient from './ForumClient';
 import type { ForumPost, UserProfile } from './ForumClient';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-
-const FORUM_VENTURE_NAME = 'Forum Images';
-const FORUM_VENTURE_DESCRIPTION = '[system] forum images';
 
 async function getInitialUser(email: string): Promise<UserProfile | null> {
   const user = await prisma.user.findUnique({

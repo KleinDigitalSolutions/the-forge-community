@@ -238,7 +238,7 @@ export async function POST(req: NextRequest) {
               model: cachedJob.model,
               width: dimensions.width,
               height: dimensions.height,
-              tags: [cachedJob.mode, 'replicate']
+              tags: [cachedJob.mode, 'replicate', ...(cachedJob.originTag ? [cachedJob.originTag] : [])]
             }
           });
 
