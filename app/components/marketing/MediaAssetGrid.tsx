@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { MediaAsset } from '@prisma/client';
 import { Play, Image as ImageIcon, CheckCircle2, Trash2, Download } from 'lucide-react';
+import { VideoPreview } from '@/app/components/media/VideoPreview';
 
 interface MediaAssetGridProps {
   assets: MediaAsset[];
@@ -57,7 +58,6 @@ export function MediaAssetGrid({
         const isSelected = selectedIds.includes(asset.id);
         const isVideo = asset.type.toLowerCase() === 'video';
         // Add #t=0.001 to force browser to render the first frame
-        const displayUrl = isVideo ? (asset.url.includes('#') ? asset.url : `${asset.url}#t=0.001`) : asset.url;
 
         return (
           <div
@@ -73,37 +73,24 @@ export function MediaAssetGrid({
           >
             {/* Thumbnail / Content */}
             {isVideo ? (
-              <div className="relative h-full w-full">
-                <video 
-                  src={displayUrl} 
-                  className="w-full h-full object-cover"
-                  muted
-                  playsInline
-                  preload="metadata"
-                  poster={asset.thumbnailUrl || undefined}
-                  onClick={(event) => {
-                    const video = event.currentTarget;
-                    if (video.paused) {
-                      video.play().catch(() => {});
-                    } else {
-                      video.pause();
-                      video.currentTime = 0;
-                    }
-                  }}
-                  onMouseOver={(e) => e.currentTarget.play().catch(() => {})}
-                  onMouseOut={(e) => {
-                    e.currentTarget.pause();
-                    e.currentTarget.currentTime = 0;
-                  }}
-                />
-                <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/10 opacity-70 transition-opacity group-hover:opacity-0">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/40 bg-black/50">
-                    <Play className="w-5 h-5 text-white" />
-                  </div>
-                </div>
-              </div>
+              <VideoPreview
+                src={asset.url}
+                poster={asset.thumbnailUrl}
+                className="h-full w-full"
+                mediaClassName="h-full w-full object-cover"
+                enableHover={false}
+                allowClick={false}
+                stopClickPropagation={true}
+                loop={false}
+              />
             ) : (
-              <img src={asset.url} alt="Asset" className="w-full h-full object-cover" />
+              <img
+                src={asset.url}
+                alt="Asset"
+                className="w-full h-full object-cover"
+                loading="lazy"
+                decoding="async"
+              />
             )}
 
             {/* Type Indicator */}

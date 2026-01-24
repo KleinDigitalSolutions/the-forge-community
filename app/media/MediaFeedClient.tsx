@@ -5,10 +5,12 @@ import Link from 'next/link';
 import AuthGuard from '@/app/components/AuthGuard';
 import PageShell from '@/app/components/PageShell';
 import { Heart, Image as ImageIcon, Loader2, Play, Share2 } from 'lucide-react';
+import { VideoPreview } from '@/app/components/media/VideoPreview';
 
 export type MediaFeedItem = {
   id: string;
   url: string;
+  thumbnailUrl?: string | null;
   type: 'IMAGE' | 'VIDEO';
   prompt: string | null;
   model: string | null;
@@ -287,7 +289,6 @@ export default function MediaFeedClient({ initialItems, initialCursor }: MediaFe
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
               {items.map((item) => {
                 const isVideo = item.type === 'VIDEO';
-                const displayUrl = isVideo ? (item.url.includes('#') ? item.url : `${item.url}#t=0.001`) : item.url;
                 const isPending = Boolean(pendingLikes[item.id]);
                 const profileHref = item.owner.profileSlug ? `/profile/${item.owner.profileSlug}` : null;
                 const ownerInitial = item.owner.name?.trim()?.[0]?.toUpperCase() || 'F';
@@ -299,36 +300,23 @@ export default function MediaFeedClient({ initialItems, initialCursor }: MediaFe
                   >
                     <div className="relative aspect-[4/5] w-full overflow-hidden">
                       {isVideo ? (
-                        <div className="relative h-full w-full">
-                          <video
-                            src={displayUrl}
-                            className="h-full w-full object-cover"
-                            muted
-                            playsInline
-                            preload="metadata"
-                            onClick={(event) => {
-                              const video = event.currentTarget;
-                              if (video.paused) {
-                                video.play().catch(() => {});
-                              } else {
-                                video.pause();
-                                video.currentTime = 0;
-                              }
-                            }}
-                            onMouseOver={(event) => event.currentTarget.play().catch(() => {})}
-                            onMouseOut={(event) => {
-                              event.currentTarget.pause();
-                              event.currentTarget.currentTime = 0;
-                            }}
-                          />
-                          <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/10 opacity-70 transition-opacity group-hover:opacity-0">
-                            <div className="flex h-14 w-14 items-center justify-center rounded-full border border-white/40 bg-black/50">
-                              <Play className="h-6 w-6 text-white" />
-                            </div>
-                          </div>
-                        </div>
+                        <VideoPreview
+                          src={item.url}
+                          poster={item.thumbnailUrl}
+                          className="h-full w-full"
+                          mediaClassName="h-full w-full object-cover"
+                          enableHover={true}
+                          allowClick={true}
+                          showOverlay={true}
+                        />
                       ) : (
-                        <img src={displayUrl} alt={item.prompt || 'Generated asset'} className="h-full w-full object-cover" />
+                        <img
+                          src={item.url}
+                          alt={item.prompt || 'Generated asset'}
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                          decoding="async"
+                        />
                       )}
                     </div>
 

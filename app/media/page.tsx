@@ -58,6 +58,7 @@ async function getInitialFeed(email: string | null): Promise<{ items: MediaFeedI
     .map((asset) => ({
       id: asset.id,
       url: asset.url,
+      thumbnailUrl: asset.thumbnailUrl,
       type: asset.type,
       prompt: asset.prompt,
       model: asset.model,

@@ -73,6 +73,7 @@ export async function GET(request: Request) {
     const items = assets.map((asset) => ({
       id: asset.id,
       url: asset.url,
+      thumbnailUrl: asset.thumbnailUrl,
       type: asset.type,
       prompt: asset.prompt,
       model: asset.model,
