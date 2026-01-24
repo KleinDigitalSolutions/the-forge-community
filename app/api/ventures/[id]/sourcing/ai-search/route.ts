@@ -132,7 +132,8 @@ export async function POST(
       return NextResponse.json({ error: 'Venture nicht gefunden' }, { status: 404 });
     }
 
-    const targetMarket = venture.targetMarket || venture.brandDNA?.targetAudience?.location || null;
+    const targetAudience = venture.brandDNA?.targetAudience as { location?: string } | null;
+    const targetMarket = venture.targetMarket || targetAudience?.location || null;
     const keywords = buildKeywords(venture);
 
     const searchFilters = keywords.flatMap(keyword => ([
