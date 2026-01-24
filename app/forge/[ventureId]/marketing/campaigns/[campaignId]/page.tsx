@@ -99,7 +99,7 @@ export default function CampaignDetailPage() {
                        <p className="text-white/80 leading-relaxed">{campaign.description || 'Keine Beschreibung vorhanden.'}</p>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-8 pt-6 border-t border-white/5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-6 border-t border-white/5">
                        <div>
                           <h3 className="text-sm font-bold text-white/40 uppercase tracking-widest mb-1">Zielsetzung</h3>
                           <div className="flex items-center gap-2 text-white text-lg">

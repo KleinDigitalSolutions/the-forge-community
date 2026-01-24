@@ -194,7 +194,7 @@ export default function MarketingPage() {
               <label className="block text-xs text-white/40 uppercase tracking-widest font-bold mb-3">
                 Format
               </label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {CONTENT_TYPES.map((type) => (
                   <button
                     key={type.id}

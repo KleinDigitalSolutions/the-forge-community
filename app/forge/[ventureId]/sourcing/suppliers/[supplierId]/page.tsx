@@ -146,7 +146,7 @@ export default function SupplierDetailPage() {
 
             <div className="pt-8 border-t border-white/5 space-y-6">
               <h3 className="text-xs font-black uppercase tracking-[0.3em] text-white/20">Konditionen</h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 rounded-2xl bg-white/2 border border-white/5">
                   <p className="text-[9px] font-black text-white/20 uppercase tracking-widest mb-1">MOQ</p>
                   <p className="text-sm font-bold text-[#D4AF37]">{supplier.moq || 'Verhandelbar'}</p>

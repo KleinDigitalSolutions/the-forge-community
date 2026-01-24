@@ -261,7 +261,7 @@ export default function BrandDNAPage() {
       <section className="glass-card p-8 rounded-2xl border border-white/10 space-y-6">
         <h2 className="text-xl font-instrument-serif text-white">Zielgruppe</h2>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs text-white/40 uppercase tracking-widest font-bold mb-2">
               Altersgruppe

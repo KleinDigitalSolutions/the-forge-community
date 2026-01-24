@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import ForgeSidebar from '@/app/components/ForgeSidebar';
-import ForgeTopBar from '@/app/components/ForgeTopBar';
+import ForgeMobileNav from '@/app/components/forge/ForgeMobileNav';
 import { AIContextProvider } from '@/app/context/AIContext';
 import ContextAwareAiSidebar from '@/app/components/ContextAwareAiSidebar';
 
@@ -72,9 +72,10 @@ export default async function ForgeLayout({
         <ForgeSidebar ventureId={ventureId} ventureName={venture.name} />
 
         {/* Main Content */}
-        <div className="ml-64">
+        <div className="ml-0 md:ml-64">
+          <ForgeMobileNav ventureId={ventureId} ventureName={venture.name} />
           {/* Content */}
-          <main className="p-8 pb-32">
+          <main className="px-4 pb-32 pt-6 sm:px-6 md:p-8">
             {children}
           </main>
         </div>

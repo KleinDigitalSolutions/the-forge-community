@@ -405,7 +405,7 @@ export default function SourcingPage() {
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                             <div>
                               <p className="text-[10px] uppercase tracking-widest text-white/40 font-bold mb-1">Menge</p>
                               <p className="text-white font-semibold">{order.quantity} Stk.</p>

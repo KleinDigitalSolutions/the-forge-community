@@ -191,7 +191,7 @@ export default function ContractGeneratorPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
                     Kontaktperson *
@@ -244,7 +244,7 @@ export default function ContractGeneratorPage() {
             </h3>
 
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
                     Laufzeit
