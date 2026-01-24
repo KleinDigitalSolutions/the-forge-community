@@ -133,16 +133,23 @@ interface MediaGeneratorModalProps {
   brandDNA?: BrandDNA | null;
   inline?: boolean;
   onAssetCreated?: (asset: any) => void;
+  allowedModes?: MediaMode[];
 }
 
 const getModelsForMode = (mode: MediaMode) =>
   MODEL_CONFIGS.filter((config) => config.modes.includes(mode));
 
+const resolveModeOptions = (allowedModes?: MediaMode[]) => {
+  if (!allowedModes || allowedModes.length === 0) return MEDIA_MODES;
+  return MEDIA_MODES.filter((item) => allowedModes.includes(item.id));
+};
+
 const isModelEnabled = (config: ModelConfig) => config.isEnabled !== false;
 
-const getDefaultMode = () => {
-  const first = MEDIA_MODES.find((item) => getModelsForMode(item.id).length > 0);
-  return (first?.id ?? 'text-to-image') as MediaMode;
+const getDefaultMode = (allowedModes?: MediaMode[]) => {
+  const modeOptions = resolveModeOptions(allowedModes);
+  const first = modeOptions.find((item) => getModelsForMode(item.id).length > 0);
+  return (first?.id ?? modeOptions[0]?.id ?? 'text-to-image') as MediaMode;
 };
 
 const getDefaultModelForMode = (mode: MediaMode) => getModelsForMode(mode)[0]?.id ?? '';
@@ -154,9 +161,11 @@ export function MediaGeneratorModal({
   campaignId,
   brandDNA,
   inline = false,
-  onAssetCreated
+  onAssetCreated,
+  allowedModes
 }: MediaGeneratorModalProps) {
-  const [mode, setMode] = useState<MediaMode>(getDefaultMode());
+  const modeOptions = useMemo(() => resolveModeOptions(allowedModes), [allowedModes]);
+  const [mode, setMode] = useState<MediaMode>(() => getDefaultMode(allowedModes));
   const [model, setModel] = useState(getDefaultModelForMode(mode));
   const [prompt, setPrompt] = useState('');
   const [negativePrompt, setNegativePrompt] = useState('');
@@ -206,6 +215,13 @@ export function MediaGeneratorModal({
     setSuccessMessage('');
     setPredictionStatus(null);
   }, [isOpen, inline]);
+
+  useEffect(() => {
+    if (!modeOptions.length) return;
+    if (!modeOptions.some((item) => item.id === mode)) {
+      setMode(getDefaultMode(allowedModes));
+    }
+  }, [modeOptions, mode, allowedModes]);
 
   useEffect(() => {
     if (!availableModels.length || !enabledModels.length) {
@@ -454,7 +470,7 @@ export function MediaGeneratorModal({
       <div className={`grid grid-cols-1 ${inline ? 'lg:grid-cols-2' : 'lg:grid-cols-[1.1fr_1fr]'} gap-6 p-6 overflow-y-auto`}>
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {MEDIA_MODES.map((item) => {
+            {modeOptions.map((item) => {
               const modeModels = getModelsForMode(item.id);
               const isAvailable = modeModels.length > 0;
 

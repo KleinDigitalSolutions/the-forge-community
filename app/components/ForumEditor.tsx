@@ -3,13 +3,14 @@
 import { useRef, useState, useEffect } from 'react';
 import {
   Send, Image as ImageIcon, Eye, Code, Smile, Bold, Italic, List, Link as LinkIcon, X,
-  Palette, Layout, Type, AlignLeft, AlignCenter, AlignRight, Maximize2, Minimize2
+  Palette, Layout, Type, AlignLeft, AlignCenter, AlignRight, Maximize2, Minimize2, Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import EmojiPicker, { EmojiClickData, EmojiStyle, Theme } from 'emoji-picker-react';
 import { VoiceInput } from '@/app/components/VoiceInput';
+import { MediaGeneratorModal } from '@/app/components/marketing/MediaGeneratorModal';
 
 interface ForumEditorProps {
   value: string;
@@ -24,6 +25,8 @@ interface ForumEditorProps {
   showCancel?: boolean;
   className?: string;
   markdownComponents?: any;
+  mediaVentureId?: string | null;
+  enableImageGenerator?: boolean;
 }
 
 interface HeroSettings {
@@ -47,13 +50,16 @@ export function ForumEditor({
   submitLabel = "Posten",
   showCancel = false,
   className = "",
-  markdownComponents
+  markdownComponents,
+  mediaVentureId = null,
+  enableImageGenerator = false
 }: ForumEditorProps) {
   const [isPreview, setIsPreview] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showVisualTools, setShowVisualTools] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
   const [emojiPickerSize, setEmojiPickerSize] = useState({ width: 320, height: 400 });
+  const [showImageGenerator, setShowImageGenerator] = useState(false);
   const [heroSettings, setHeroSettings] = useState<HeroSettings>({
     color: '#ffffff',
     align: 'left',
@@ -201,8 +207,33 @@ export function ForumEditor({
     }
   };
 
+  const handleOpenGenerator = () => {
+    if (!mediaVentureId) {
+      setStatusMessage('❌ Forum-Workspace fehlt.');
+      setTimeout(() => setStatusMessage(''), 2500);
+      return;
+    }
+    setShowImageGenerator(true);
+  };
+
+  const handleAssetCreated = (asset: { url?: string; type?: string }) => {
+    if (!asset?.url || asset.type === 'video') return;
+    insertText(`\n![Forum Image](${asset.url})\n`);
+    setStatusMessage('✅ Bild eingefügt.');
+    setTimeout(() => setStatusMessage(''), 2500);
+  };
+
   return (
     <div className={`flex flex-col gap-3 ${className}`}>
+      {enableImageGenerator && mediaVentureId && (
+        <MediaGeneratorModal
+          isOpen={showImageGenerator}
+          onClose={() => setShowImageGenerator(false)}
+          ventureId={mediaVentureId}
+          allowedModes={['text-to-image']}
+          onAssetCreated={handleAssetCreated}
+        />
+      )}
       {/* Main Toolbar */}
       <div className="bg-white/5 p-2 rounded-xl border border-white/10 space-y-2">
         <div className="flex flex-wrap items-center gap-2">
@@ -231,6 +262,16 @@ export function ForumEditor({
             </div>
             <button onClick={() => fileInputRef.current?.click()} className="p-1.5 hover:bg-white/10 rounded-lg text-white/60 hover:text-[#D4AF37] transition-all"><ImageIcon className="w-4 h-4" /></button>
             <input type="file" ref={fileInputRef} onChange={(e) => handleUpload(e, false)} className="hidden" accept="image/*" />
+            {enableImageGenerator && (
+              <button
+                type="button"
+                onClick={handleOpenGenerator}
+                className="p-1.5 hover:bg-white/10 rounded-lg text-white/60 hover:text-[#D4AF37] transition-all"
+                title="AI Bild generieren"
+              >
+                <Sparkles className="w-4 h-4" />
+              </button>
+            )}
             <VoiceInput variant="icon" onTranscript={insertText} />
           </div>
 

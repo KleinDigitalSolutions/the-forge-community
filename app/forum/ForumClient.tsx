@@ -90,6 +90,7 @@ export interface UserProfile {
 interface ForumClientProps {
   initialPosts: ForumPost[];
   initialUser: UserProfile | null;
+  forumVentureId?: string | null;
 }
 
 const AI_AUTHORS = new Set(['@orion', '@forge-ai']);
@@ -240,7 +241,7 @@ const MarkdownComponents = {
   }
 };
 
-export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
+export default function Forum({ initialPosts, initialUser, forumVentureId }: ForumClientProps) {
   // Infinite Scroll State
   const [posts, setPosts] = useState<ForumPost[]>(initialPosts);
   const [isLoadingInitial, setIsLoadingInitial] = useState(initialPosts.length === 0);
@@ -646,7 +647,11 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
       if (!response.ok) throw new Error('Vote failed');
       const data = await response.json();
       setPosts(prev => prev.map(p => p.id === id ? { ...p, likes: data.likes, userVote: data.userVote } : p));
-    } catch (e) { fetchPosts({ silent: true }); }
+    } catch (e) { 
+      console.error('Vote failed:', e);
+      pushToast('Verbindung fehlgeschlagen. Bitte erneut versuchen.');
+      fetchPosts({ silent: true }); 
+    }
   };
 
   const toggleComments = (postId: string) => {
@@ -718,7 +723,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
       } : post));
     } catch (error) {
       console.error('Comment vote error:', error);
-      setCommentStatus(prev => ({ ...prev, [postId]: 'Kommentar-Like fehlgeschlagen.' }));
+      pushToast('Verbindung fehlgeschlagen. Bitte erneut versuchen.');
       fetchPosts({ silent: true });
     }
   };
@@ -1875,6 +1880,8 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                     submitLabel={editingPost === 'NEW' ? 'Beitrag posten' : 'Update speichern'}
                     minHeight="400px"
                     autoFocus
+                    mediaVentureId={forumVentureId}
+                    enableImageGenerator
                     markdownComponents={MarkdownComponents}
                   />
                 </div>

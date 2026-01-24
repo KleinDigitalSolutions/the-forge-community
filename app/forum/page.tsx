@@ -7,6 +7,9 @@ import type { ForumPost, UserProfile } from './ForumClient';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+const FORUM_VENTURE_NAME = 'Forum Images';
+const FORUM_VENTURE_DESCRIPTION = '[system] forum images';
+
 async function getInitialUser(email: string): Promise<UserProfile | null> {
   const user = await prisma.user.findUnique({
     where: { email },
@@ -34,6 +37,39 @@ async function getInitialUser(email: string): Promise<UserProfile | null> {
 
   const founderNumber = await assignFounderNumberIfMissing(user.id);
   return { ...user, founderNumber };
+}
+
+async function getOrCreateForumVentureId(email: string | null): Promise<string | null> {
+  if (!email) return null;
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true }
+  });
+  if (!user) return null;
+
+  const existing = await prisma.venture.findFirst({
+    where: {
+      ownerId: user.id,
+      description: FORUM_VENTURE_DESCRIPTION
+    },
+    select: { id: true }
+  });
+
+  if (existing) return existing.id;
+
+  const created = await prisma.venture.create({
+    data: {
+      ownerId: user.id,
+      name: FORUM_VENTURE_NAME,
+      description: FORUM_VENTURE_DESCRIPTION,
+      type: 'OTHER',
+      status: 'PAUSED',
+      currentPhase: 1
+    },
+    select: { id: true }
+  });
+
+  return created.id;
 }
 
 async function getInitialPosts(email: string | null): Promise<ForumPost[]> {
@@ -121,10 +157,17 @@ export default async function ForumPage() {
   const session = await auth();
   const email = session?.user?.email || null;
 
-  const [initialPosts, initialUser] = await Promise.all([
+  const [initialPosts, initialUser, forumVentureId] = await Promise.all([
     getInitialPosts(email),
     email ? getInitialUser(email) : Promise.resolve(null),
+    getOrCreateForumVentureId(email),
   ]);
 
-  return <ForumClient initialPosts={initialPosts} initialUser={initialUser} />;
+  return (
+    <ForumClient
+      initialPosts={initialPosts}
+      initialUser={initialUser}
+      forumVentureId={forumVentureId}
+    />
+  );
 }
