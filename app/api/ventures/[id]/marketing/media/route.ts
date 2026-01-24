@@ -100,9 +100,9 @@ const MODEL_CONFIGS: Record<string, ModelConfig> = {
     supportsRenderingSpeed: true,
     supportsStylePreset: true,
   },
-  'kwaivgi/kling-v2.6-pro': {
-    id: 'kwaivgi/kling-v2.6-pro',
-    label: 'Kling 2.6 Pro',
+  'kwaivgi/kling-v1.5-pro': {
+    id: 'kwaivgi/kling-v1.5-pro',
+    label: 'Kling 1.5 Pro',
     modes: ['image-to-video'],
     outputType: 'video',
     supportsImageInput: true,
@@ -110,7 +110,7 @@ const MODEL_CONFIGS: Record<string, ModelConfig> = {
   },
   'minimax/video-01': {
     id: 'minimax/video-01',
-    label: 'Minimax Hailuo 02',
+    label: 'Minimax Video',
     modes: ['text-to-video'],
     outputType: 'video',
     provider: 'replicate',
@@ -129,7 +129,7 @@ const MEDIA_MODES: MediaMode[] = ['text-to-image', 'text-to-video', 'image-to-vi
 const DEFAULT_MODEL_BY_MODE: Record<MediaMode, string> = {
   'text-to-image': 'black-forest-labs/flux-2-pro',
   'text-to-video': 'minimax/video-01',
-  'image-to-video': 'kwaivgi/kling-v2.6-pro',
+  'image-to-video': 'kwaivgi/kling-v1.5-pro',
 };
 
 const JOB_TTL_MS = 1000 * 60 * 60 * 6;
@@ -217,6 +217,12 @@ const buildBrandContext = (brandDNA: any) => {
 };
 
 const buildReplicateInput = (modelId: string, options: ReplicateInputOptions) => {
+  // Video models safety: ensure supported aspect ratios
+  const isVideoModel = ['kwaivgi/kling-v1.5-pro', 'minimax/video-01', 'lumaai/dream-machine'].includes(modelId);
+  const safeAspectRatio = isVideoModel && !['16:9', '9:16'].includes(options.aspectRatio) 
+    ? '16:9' 
+    : options.aspectRatio;
+
   switch (modelId) {
     case 'black-forest-labs/flux-1.1-pro':
     case 'black-forest-labs/flux-2-pro': {
@@ -228,12 +234,12 @@ const buildReplicateInput = (modelId: string, options: ReplicateInputOptions) =>
       };
       return input;
     }
-    case 'kwaivgi/kling-v2.6-pro': {
+    case 'kwaivgi/kling-v1.5-pro': {
       if (!options.imageUrl) throw new Error('Referenzbild fehlt.');
       const input: Record<string, unknown> = {
         image: options.imageUrl,
         prompt: options.prompt,
-        aspect_ratio: options.aspectRatio,
+        aspect_ratio: safeAspectRatio,
       };
       if (typeof options.duration === 'number') input.duration = options.duration;
       if (typeof options.guidance === 'number') input.guidance_scale = options.guidance;
@@ -243,7 +249,7 @@ const buildReplicateInput = (modelId: string, options: ReplicateInputOptions) =>
     case 'lumaai/dream-machine': {
       const input: Record<string, unknown> = {
         prompt: options.prompt,
-        aspect_ratio: options.aspectRatio,
+        aspect_ratio: safeAspectRatio,
       };
       return input;
     }
@@ -294,20 +300,18 @@ const normalizePredictionError = (value: unknown) => {
 };
 
 const getContentInfo = (contentType: string | null, fallbackType: 'image' | 'video') => {
-  if (contentType?.includes('image/jpeg') || contentType?.includes('image/jpg')) {
+  const ct = contentType?.toLowerCase() || '';
+  if (ct.includes('image/jpeg') || ct.includes('image/jpg')) {
     return { contentType: 'image/jpeg', ext: 'jpg' };
   }
-  if (contentType?.includes('image/webp')) {
+  if (ct.includes('image/webp')) {
     return { contentType: 'image/webp', ext: 'webp' };
   }
-  if (contentType?.includes('image/png')) {
+  if (ct.includes('image/png')) {
     return { contentType: 'image/png', ext: 'png' };
   }
-  if (contentType?.includes('video/mp4')) {
+  if (ct.includes('video/mp4') || ct.includes('video/quicktime') || fallbackType === 'video') {
     return { contentType: 'video/mp4', ext: 'mp4' };
-  }
-  if (fallbackType === 'video') {
-    return { contentType: 'video/mp4', ext: 'mp4' }; 
   }
   return { contentType: 'image/png', ext: 'png' };
 };

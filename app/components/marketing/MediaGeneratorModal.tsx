@@ -776,35 +776,45 @@ export function MediaGeneratorModal({
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {assets.map((asset, index) => (
-                  <div key={`${asset.url}-${index}`} className="rounded-xl border border-white/10 bg-black/40 overflow-hidden">
-                    {asset.type === 'video' ? (
-                      <video 
-                        src={asset.url} 
-                        controls 
-                        autoPlay 
-                        muted 
-                        loop 
-                        playsInline 
-                        className="w-full h-auto" 
-                      />
-                    ) : (
-                      <img src={asset.url} alt="Generated" className="w-full h-auto" />
-                    )}
-                    <div className="flex items-center justify-between px-3 py-2 text-[10px] uppercase tracking-widest text-white/40 border-t border-white/10">
-                      <span>{asset.type === 'video' ? 'Video' : 'Image'} #{index + 1}</span>
-                      <a
-                        href={asset.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center gap-1 text-white/60 hover:text-white"
-                      >
-                        <Download className="w-3 h-3" />
-                        Download
-                      </a>
+                {assets.map((asset, index) => {
+                  const isVideo = asset.type.toLowerCase() === 'video';
+                  return (
+                    <div key={`${asset.url}-${index}`} className="relative rounded-xl border border-white/10 bg-black/60 overflow-hidden group">
+                      {isVideo ? (
+                        <div className="aspect-[16/9] sm:aspect-video w-full bg-zinc-900 flex items-center justify-center">
+                          <video 
+                            key={asset.url}
+                            src={asset.url} 
+                            controls 
+                            autoPlay 
+                            muted 
+                            loop 
+                            playsInline 
+                            className="w-full h-full object-contain"
+                          >
+                            Dein Browser unterstützt dieses Videoformat nicht.
+                          </video>
+                        </div>
+                      ) : (
+                        <img src={asset.url} alt="Generated" className="w-full h-auto" />
+                      )}
+                      <div className="absolute inset-x-0 bottom-0 bg-black/80 backdrop-blur-md p-3 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity border-t border-white/10">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-white/40">
+                          {isVideo ? 'Video' : 'Image'} Output
+                        </span>
+                        <a
+                          href={asset.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-[10px] font-bold text-white transition-all"
+                        >
+                          <Download className="w-3 h-3" />
+                          Download
+                        </a>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

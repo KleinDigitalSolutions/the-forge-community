@@ -34,7 +34,7 @@ export function MediaAssetGrid({
     <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 ${className}`}>
       {assets.map((asset) => {
         const isSelected = selectedIds.includes(asset.id);
-        const isVideo = asset.type === 'VIDEO';
+        const isVideo = asset.type.toLowerCase() === 'video';
 
         return (
           <div
@@ -54,6 +54,7 @@ export function MediaAssetGrid({
                 src={asset.url} 
                 className="w-full h-full object-cover"
                 muted
+                playsInline
                 onMouseOver={(e) => e.currentTarget.play().catch(() => {})}
                 onMouseOut={(e) => {
                   e.currentTarget.pause();
