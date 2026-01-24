@@ -1598,11 +1598,11 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
                                   );
 
                                   return (
-                                    <div key={comment.id} className={`relative ${depth > 0 ? 'pl-6' : ''}`}>
+                                    <div key={comment.id} className={`relative ${depth > 0 ? 'pl-0 sm:pl-6' : ''}`}>
                                       {depth > 0 && (
                                         <>
-                                          <span className="absolute left-2 top-0 bottom-0 w-px bg-white/10" />
-                                          <span className="absolute left-1.5 top-5 w-2 h-2 rounded-full bg-white/20" />
+                                          <span className="hidden sm:block absolute left-2 top-0 bottom-0 w-px bg-white/10" />
+                                          <span className="hidden sm:block absolute left-1.5 top-5 w-2 h-2 rounded-full bg-white/20" />
                                         </>
                                       )}
                                       <div
@@ -1610,7 +1610,7 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
                                           isAI
                                             ? 'bg-[#D4AF37]/10 border-[#D4AF37]/30'
                                             : 'bg-white/5 border-white/10'
-                                        }`}
+                                        } ${depth > 0 ? `border-l-2 sm:border-l-0 ${isAI ? 'border-l-[#D4AF37]/40' : 'border-l-white/10'}` : ''}`}
                                       >
                                         <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-white/40 mb-2">
                                           {commentProfileHref ? (
