@@ -841,11 +841,70 @@ export function MediaGeneratorModal({
         <div className="space-y-4">
           <div className="glass-card rounded-xl border border-white/10 p-5">
             <h3 className="text-sm font-bold uppercase tracking-widest text-white/40 mb-4">Outputs</h3>
-            {assets.length === 0 ? (
+
+            {/* Generating Skeleton */}
+            {isGenerating && assets.length === 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="relative rounded-xl border border-[#D4AF37]/20 bg-gradient-to-br from-[#D4AF37]/5 to-black/60 overflow-hidden">
+                  <div className={`${isVideoMode ? 'aspect-video' : 'aspect-square'} w-full relative`}>
+                    {/* Shimmer Animation */}
+                    <div className="absolute inset-0">
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-[shimmer_3s_ease-in-out_infinite]" />
+                    </div>
+                    {/* Scanline Effect */}
+                    <div className="absolute inset-0 opacity-30">
+                      <div className="absolute inset-0 w-full h-24 bg-gradient-to-b from-transparent via-[#D4AF37]/40 to-transparent animate-[scan_3s_ease-in-out_infinite]" />
+                    </div>
+                    {/* Center Icon */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                      <div className="relative">
+                        <Sparkles className="w-8 h-8 text-[#D4AF37] animate-pulse" />
+                        <div className="absolute inset-0 animate-ping">
+                          <Sparkles className="w-8 h-8 text-[#D4AF37] opacity-30" />
+                        </div>
+                      </div>
+                      <div className="text-center space-y-1">
+                        <div className="text-xs font-bold text-white">
+                          {isVideoMode ? 'Video' : 'Bild'} wird generiert...
+                        </div>
+                        {predictionStatus && (
+                          <div className="text-[10px] text-white/50 uppercase tracking-wider">
+                            {predictionStatus}
+                          </div>
+                        )}
+                        {/* Progress Dots */}
+                        <div className="flex items-center justify-center gap-1.5 pt-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-[bounce_1s_ease-in-out_0s_infinite]" />
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-[bounce_1s_ease-in-out_0.2s_infinite]" />
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-[bounce_1s_ease-in-out_0.4s_infinite]" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Bottom Bar with ETA */}
+                  <div className="p-3 bg-black/80 backdrop-blur-sm border-t border-white/10">
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="text-white/40 uppercase tracking-widest font-bold">
+                        {selectedModel?.label || 'Processing'}
+                      </span>
+                      <span className="text-[#D4AF37]/70">
+                        {isVideoMode ? '~60-120s' : '~15-30s'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Empty State */}
+            {!isGenerating && assets.length === 0 ? (
               <div className="rounded-xl border border-white/10 bg-white/[0.02] p-8 text-center text-white/40 text-sm">
                 Keine Ergebnisse. Starte eine Generierung, um Visuals zu sehen.
               </div>
-            ) : (
+            ) : null}
+
+            {/* Results */}
+            {assets.length > 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {assets.map((asset, index) => {
                   const isVideo = asset.type.toLowerCase() === 'video';

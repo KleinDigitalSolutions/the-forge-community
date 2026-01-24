@@ -1055,3 +1055,12 @@
     @apply bg-background text-foreground;
   }
 }
+/* Media Generation Skeleton Animations */
+@keyframes scan {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(400%);
+  }
+}
