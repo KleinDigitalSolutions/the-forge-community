@@ -1304,9 +1304,9 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
                     const profileHref = buildProfileHref(post);
 
                     return (
-                    <div key={post.id} id={post.id} className="bg-transparent sm:bg-[#121212] border-b border-white/10 sm:border sm:rounded-xl flex flex-col sm:flex-row sm:hover:border-white/20 transition-all group overflow-hidden">
+                    <div key={post.id} id={post.id} className="bg-transparent sm:bg-[#121212] border-b border-white/10 sm:border sm:rounded-xl flex flex-col sm:flex-row sm:hover:border-white/20 transition-all group">
                       {/* Vote Sidebar */}
-                      <div className="hidden sm:flex w-12 bg-black/20 flex-col items-center py-4 gap-1 shrink-0">
+                      <div className="hidden sm:flex w-12 bg-black/20 flex-col items-center py-4 gap-1 shrink-0 sm:rounded-l-xl">
                         <button 
                           onClick={() => handleVote(post.id, 1)}
                           className={`p-1.5 rounded-md transition-all ${post.userVote === 1 ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-white/20 hover:text-white hover:bg-white/5'}`}
