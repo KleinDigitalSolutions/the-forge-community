@@ -15,9 +15,12 @@ import {
   Download,
   Zap,
   BookOpen,
-  Copy
+  Copy,
+  Play,
+  Link2
 } from 'lucide-react';
 import { PROMPT_TEMPLATES, getTemplatesByType, enrichPromptWithBrandDNA, type PromptTemplate } from '@/lib/prompt-templates';
+import { extractLastFrame, uploadFrameToBlob, generateChainId } from '@/lib/video-utils';
 
 const MEDIA_MODES = [
   {
@@ -152,6 +155,10 @@ interface MediaGeneratorModalProps {
   onAssetCreated?: (asset: any) => void;
   allowedModes?: MediaMode[];
   originTag?: string;
+  // Chain State
+  chainId?: string;
+  chainPosition?: number;
+  startImageUrl?: string; // For continuing chains
 }
 
 const getModelsForMode = (mode: MediaMode) =>
@@ -181,7 +188,10 @@ export function MediaGeneratorModal({
   inline = false,
   onAssetCreated,
   allowedModes,
-  originTag
+  originTag,
+  chainId: initialChainId,
+  chainPosition: initialChainPosition,
+  startImageUrl: initialStartImageUrl,
 }: MediaGeneratorModalProps) {
   const modeOptions = useMemo(() => resolveModeOptions(allowedModes), [allowedModes]);
   const [mode, setMode] = useState<MediaMode>(() => getDefaultMode(allowedModes));
@@ -200,7 +210,7 @@ export function MediaGeneratorModal({
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(initialStartImageUrl || null);
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [assets, setAssets] = useState<MediaAsset[]>([]);
@@ -214,6 +224,11 @@ export function MediaGeneratorModal({
   const [selectedTemplate, setSelectedTemplate] = useState<PromptTemplate | null>(null);
   const [placeholderValues, setPlaceholderValues] = useState<Record<string, string>>({});
   const [showTemplates, setShowTemplates] = useState(false);
+
+  // Chain State
+  const [chainId, setChainId] = useState<string | undefined>(initialChainId);
+  const [chainPosition, setChainPosition] = useState<number>(initialChainPosition || 1);
+  const [isExtractingFrame, setIsExtractingFrame] = useState(false);
 
   const availableModels = useMemo(() => getModelsForMode(mode), [mode]);
   const enabledModels = useMemo(
@@ -313,13 +328,16 @@ export function MediaGeneratorModal({
 
   useEffect(() => {
     if (!imageFile) {
-      setImagePreview(null);
+      // Keep initialStartImageUrl if no file
+      if (!initialStartImageUrl) {
+        setImagePreview(null);
+      }
       return;
     }
     const url = URL.createObjectURL(imageFile);
     setImagePreview(url);
     return () => URL.revokeObjectURL(url);
-  }, [imageFile]);
+  }, [imageFile, initialStartImageUrl]);
 
   const promptPlaceholder = useMemo(() => {
     if (mode === 'text-to-video') return 'z.B. Minimalistisches Produkt-Teasing mit weichen Lichtfahrten';
@@ -364,6 +382,44 @@ export function MediaGeneratorModal({
   };
 
   if (!isOpen && !inline) return null;
+
+  // Chain Handler - Continue from last frame
+  const handleContinueChain = async (videoUrl: string, assetIndex: number) => {
+    setIsExtractingFrame(true);
+    setErrorMessage('');
+
+    try {
+      // Extract last frame
+      const frameDataUrl = await extractLastFrame(videoUrl);
+
+      // Upload frame
+      const frameUrl = await uploadFrameToBlob(
+        frameDataUrl,
+        `frame_chain_${chainPosition + 1}.jpg`
+      );
+
+      // Set up for next video in chain
+      const newChainId = chainId || generateChainId();
+      const newPosition = chainPosition + 1;
+
+      // Upload image file for image-to-video mode
+      const blob = await fetch(frameDataUrl).then(r => r.blob());
+      const file = new File([blob], 'chain_frame.jpg', { type: 'image/jpeg' });
+
+      setImageFile(file);
+      setMode('image-to-video');
+      setChainId(newChainId);
+      setChainPosition(newPosition);
+      setPrompt(`Continue the story from the previous scene. Maintain visual continuity and flow.`);
+      setSuccessMessage(`Chain ${newPosition}/4 ready - adjust prompt and generate!`);
+
+    } catch (error: any) {
+      console.error('Chain continuation failed:', error);
+      setErrorMessage(error.message || 'Frame extraction failed');
+    } finally {
+      setIsExtractingFrame(false);
+    }
+  };
 
   // Template Handlers
   const handleTemplateSelect = (template: PromptTemplate) => {
@@ -522,9 +578,16 @@ export function MediaGeneratorModal({
               <Sparkles className="w-5 h-5 text-[#D4AF37]" />
             </div>
             <div>
-              <h2 className="text-xl font-instrument-serif text-white">AI Media Studio</h2>
+              <h2 className="text-xl font-instrument-serif text-white flex items-center gap-2">
+                AI Media Studio
+                {chainId && (
+                  <span className="text-sm px-2 py-0.5 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#D4AF37]">
+                    Chain {chainPosition}/4
+                  </span>
+                )}
+              </h2>
               <p className="text-xs text-white/40 uppercase tracking-widest font-bold">
-                Visuals & Video für Marketing
+                {chainId ? 'Continuing video chain from last frame' : 'Visuals & Video für Marketing'}
               </p>
             </div>
           </div>
@@ -928,19 +991,36 @@ export function MediaGeneratorModal({
                       ) : (
                         <img src={asset.url} alt="Generated" className="w-full h-auto" />
                       )}
-                      <div className="absolute inset-x-0 bottom-0 bg-black/80 backdrop-blur-md p-3 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity border-t border-white/10">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-white/40">
-                          {isVideo ? 'Video' : 'Image'} Output
-                        </span>
-                        <a
-                          href={asset.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-[10px] font-bold text-white transition-all"
-                        >
-                          <Download className="w-3 h-3" />
-                          Download
-                        </a>
+                      <div className="absolute inset-x-0 bottom-0 bg-black/80 backdrop-blur-md p-3 opacity-0 group-hover:opacity-100 transition-opacity border-t border-white/10">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-white/40">
+                            {isVideo ? 'Video' : 'Image'} Output
+                            {chainId && (
+                              <span className="ml-2 text-[#D4AF37]">Chain {chainPosition}/4</span>
+                            )}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            {isVideo && chainPosition < 4 && (
+                              <button
+                                onClick={() => handleContinueChain(asset.url, index)}
+                                disabled={isExtractingFrame}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#D4AF37]/20 hover:bg-[#D4AF37]/30 border border-[#D4AF37]/40 rounded-lg text-[10px] font-bold text-[#D4AF37] transition-all disabled:opacity-50"
+                              >
+                                <Link2 className="w-3 h-3" />
+                                Continue Chain
+                              </button>
+                            )}
+                            <a
+                              href={asset.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-[10px] font-bold text-white transition-all"
+                            >
+                              <Download className="w-3 h-3" />
+                              Download
+                            </a>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   );
