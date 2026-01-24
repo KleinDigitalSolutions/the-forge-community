@@ -15,7 +15,7 @@ import { FORUM_MEDIA_TAG } from '@/lib/forum-venture';
 
 interface ForumEditorProps {
   value: string;
-  onChange: (value: string) => void;
+  onChange: (value: string | ((prev: string) => string)) => void;
   onSubmit: () => void;
   isSubmitting: boolean;
   placeholder?: string;
@@ -77,7 +77,6 @@ export function ForumEditor({
     setIsGeneratingImage(true);
     setStatusMessage('🎨 KI generiert Bild...');
 
-    // Platzhalter im Text einfügen
     const placeholder = `\n![Generating: ${prompt}...](loading)\n`;
     const newValue = value.replace(fullMatch, placeholder);
     onChange(newValue);
@@ -94,7 +93,6 @@ export function ForumEditor({
 
       let finalUrl = "";
       if (data.predictionId) {
-        // Kurzes Polling (max 45 sek)
         for (let i = 0; i < 22; i++) {
           const pollRes = await fetch(`/api/ventures/global/marketing/media?predictionId=${data.predictionId}`);
           const pollData = await pollRes.json();
@@ -109,7 +107,7 @@ export function ForumEditor({
 
       if (finalUrl) {
         const finalMarkdown = `\n![AI Image: ${prompt}](${finalUrl})\n`;
-        onChange(prev => prev.replace(placeholder, finalMarkdown));
+        onChange(prev => (typeof prev === 'string' ? prev.replace(placeholder, finalMarkdown) : prev));
         setStatusMessage('✅ Bild bereit!');
       } else {
         throw new Error('Timeout');
@@ -117,7 +115,7 @@ export function ForumEditor({
     } catch (error) {
       console.error('Image Gen Error:', error);
       setStatusMessage('❌ KI-Bild fehlgeschlagen');
-      onChange(prev => prev.replace(placeholder, `\n@image ${prompt}\n`));
+      onChange(prev => (typeof prev === 'string' ? prev.replace(placeholder, `\n@image ${prompt}\n`) : prev));
     } finally {
       setIsGeneratingImage(false);
       setTimeout(() => setStatusMessage(''), 3000);
@@ -137,7 +135,6 @@ export function ForumEditor({
     }
   };
 
-  // Extract metadata on init
   useEffect(() => {
     const match = value.match(META_REGEX);
     if (match && match[1]) {
@@ -149,31 +146,9 @@ export function ForumEditor({
     }
   }, []);
 
-  // Update value with metadata when settings change
-  useEffect(() => {
-    if (!showVisualTools && !heroSettings.bg) return; // Don't add meta if not active
-
-    const cleanValue = value.replace(META_REGEX, '').trimEnd();
-    
-    // If tools are closed and no BG is set, we might want to strip metadata. 
-    // But let's keep it if tools are just hidden but settings exist.
-    // Only strip if user explicitly wants "Plain Text" - for now we assume toggle means "show tools" not "enable mode".
-    // Actually, let's treat `showVisualTools` as the toggle for "Visual Mode".
-    
-    if (showVisualTools) {
-      const metaString = `\n\n<!--metadata: ${JSON.stringify(heroSettings)} -->`;
-      if (value !== cleanValue + metaString) {
-        // Avoid infinite loop if value creates new effect
-        // We need to call onChange, but this is an effect... carefully.
-        // Better: Don't update value in effect. Update value when settings change via handler.
-      }
-    }
-  }, [heroSettings, showVisualTools]);
-
   const updateMetadata = (newSettings: Partial<HeroSettings>) => {
     const nextSettings = { ...heroSettings, ...newSettings };
     setHeroSettings(nextSettings);
-    
     const cleanValue = value.replace(META_REGEX, '').trimEnd();
     const metaString = `\n\n<!--metadata: ${JSON.stringify(nextSettings)} -->`;
     onChange(cleanValue + metaString);
@@ -181,12 +156,10 @@ export function ForumEditor({
 
   const toggleVisualMode = () => {
     if (showVisualTools) {
-      // Turn off: remove metadata
       const cleanValue = value.replace(META_REGEX, '').trimEnd();
       onChange(cleanValue);
       setShowVisualTools(false);
     } else {
-      // Turn on: add default metadata
       const metaString = `\n\n<!--metadata: ${JSON.stringify(heroSettings)} -->`;
       onChange(value.trimEnd() + metaString);
       setShowVisualTools(true);
@@ -201,8 +174,7 @@ export function ForumEditor({
     }
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-    const currentVal = value; // Use local ref or prop
-    const newText = currentVal.substring(0, start) + text + currentVal.substring(end);
+    const newText = value.substring(0, start) + text + value.substring(end);
     onChange(newText);
     setTimeout(() => {
       textarea.focus();
@@ -290,6 +262,21 @@ export function ForumEditor({
     setTimeout(() => setStatusMessage(''), 2500);
   };
 
+  const extendedMarkdownComponents = {
+    ...markdownComponents,
+    img: ({ src, alt }: any) => {
+      if (src === 'loading') {
+        return (
+          <div className="w-full aspect-square sm:aspect-video bg-white/5 animate-pulse rounded-xl flex flex-col items-center justify-center border border-white/10 gap-3 my-4">
+            <Sparkles className="w-8 h-8 text-[#D4AF37] animate-bounce" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">{alt}</span>
+          </div>
+        );
+      }
+      return <img src={src} alt={alt} className="rounded-xl border border-white/10 w-full h-auto my-4 shadow-xl" />;
+    }
+  };
+
   return (
     <div className={`flex flex-col gap-3 ${className}`}>
       {enableImageGenerator && mediaVentureId && (
@@ -302,21 +289,20 @@ export function ForumEditor({
           onAssetCreated={handleAssetCreated}
         />
       )}
-      {/* Main Toolbar */}
+      
       <div className="bg-white/5 p-2 rounded-xl border border-white/10 space-y-2">
         <div className="flex flex-wrap items-center gap-2">
-          {/* Formatting */}
           <div className="flex items-center gap-1 border-r border-white/10 pr-2 mr-1">
-            <button onClick={() => formatText('bold')} className="p-1.5 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-all"><Bold className="w-4 h-4" /></button>
-            <button onClick={() => formatText('italic')} className="p-1.5 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-all"><Italic className="w-4 h-4" /></button>
-            <button onClick={() => formatText('list')} className="p-1.5 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-all"><List className="w-4 h-4" /></button>
-            <button onClick={() => formatText('link')} className="p-1.5 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-all"><LinkIcon className="w-4 h-4" /></button>
+            <button type="button" onClick={() => formatText('bold')} className="p-1.5 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-all"><Bold className="w-4 h-4" /></button>
+            <button type="button" onClick={() => formatText('italic')} className="p-1.5 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-all"><Italic className="w-4 h-4" /></button>
+            <button type="button" onClick={() => formatText('list')} className="p-1.5 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-all"><List className="w-4 h-4" /></button>
+            <button type="button" onClick={() => formatText('link')} className="p-1.5 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-all"><LinkIcon className="w-4 h-4" /></button>
           </div>
           
-          {/* Insert Tools */}
           <div className="flex items-center gap-1.5 border-r border-white/10 pr-2 mr-1">
             <div className="relative">
               <button 
+                type="button"
                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                 className={`p-1.5 hover:bg-white/10 rounded-lg transition-all ${showEmojiPicker ? 'text-[#D4AF37] bg-white/10' : 'text-white/60 hover:text-white'}`}
               >
@@ -328,7 +314,7 @@ export function ForumEditor({
                 </div>
               )}
             </div>
-            <button onClick={() => fileInputRef.current?.click()} className="p-1.5 hover:bg-white/10 rounded-lg text-white/60 hover:text-[#D4AF37] transition-all"><ImageIcon className="w-4 h-4" /></button>
+            <button type="button" onClick={() => fileInputRef.current?.click()} className="p-1.5 hover:bg-white/10 rounded-lg text-white/60 hover:text-[#D4AF37] transition-all"><ImageIcon className="w-4 h-4" /></button>
             <input type="file" ref={fileInputRef} onChange={(e) => handleUpload(e, false)} className="hidden" accept="image/*" />
             {enableImageGenerator && mediaVentureId && (
               <button
@@ -343,8 +329,8 @@ export function ForumEditor({
             <VoiceInput variant="icon" onTranscript={insertText} />
           </div>
 
-          {/* Visual Mode Toggle */}
           <button 
+            type="button"
             onClick={toggleVisualMode}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${ 
               showVisualTools ? 'bg-linear-to-r from-purple-500 to-pink-500 text-white shadow-lg' : 'text-white/40 hover:text-white hover:bg-white/5' 
@@ -356,8 +342,8 @@ export function ForumEditor({
 
           <div className="flex-1" />
 
-          {/* Preview Toggle */}
           <button 
+            type="button"
             onClick={() => setIsPreview(!isPreview)}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${ 
               isPreview ? 'bg-[#D4AF37] text-black' : 'text-white/40 hover:text-white hover:bg-white/5' 
@@ -368,7 +354,6 @@ export function ForumEditor({
           </button>
         </div>
 
-        {/* Visual Tools Panel */}
         <AnimatePresence>
           {showVisualTools && (
             <motion.div
@@ -378,26 +363,25 @@ export function ForumEditor({
               className="overflow-hidden"
             >
               <div className="pt-2 border-t border-white/10 flex flex-wrap items-center gap-4 text-xs">
-                {/* Background */}
                 <div className="flex items-center gap-2">
                   <span className="text-white/40 uppercase text-[9px] font-bold tracking-widest">Hintergrund</span>
-                  <button onClick={() => bgInputRef.current?.click()} className="flex items-center gap-2 bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg text-white transition-all border border-white/10">
+                  <button type="button" onClick={() => bgInputRef.current?.click()} className="flex items-center gap-2 bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg text-white transition-all border border-white/10">
                     <ImageIcon className="w-3.5 h-3.5" />
                     {heroSettings.bg ? 'Ändern' : 'Bild wählen'}
                   </button>
                   {heroSettings.bg && (
-                    <button onClick={() => updateMetadata({ bg: undefined })} className="text-white/40 hover:text-red-400"><X className="w-3.5 h-3.5" /></button>
+                    <button type="button" onClick={() => updateMetadata({ bg: undefined })} className="text-white/40 hover:text-red-400"><X className="w-3.5 h-3.5" /></button>
                   )}
                   <input type="file" ref={bgInputRef} onChange={(e) => handleUpload(e, true)} className="hidden" accept="image/*" />
                 </div>
 
-                {/* Color */}
                 <div className="flex items-center gap-2">
                   <span className="text-white/40 uppercase text-[9px] font-bold tracking-widest">Text</span>
                   <div className="flex gap-1">
                     {['#ffffff', '#000000', '#D4AF37', '#ff0055', '#00ff99'].map(c => (
                       <button
                         key={c}
+                        type="button"
                         onClick={() => updateMetadata({ color: c })}
                         className={`w-5 h-5 rounded-full border ${heroSettings.color === c ? 'border-white scale-110' : 'border-transparent opacity-50 hover:opacity-100'}`}
                         style={{ backgroundColor: c }}
@@ -406,11 +390,11 @@ export function ForumEditor({
                   </div>
                 </div>
 
-                {/* Align */}
                 <div className="flex bg-white/5 rounded-lg border border-white/10 p-0.5">
                   {['left', 'center', 'right'].map((a) => (
                     <button
                       key={a}
+                      type="button"
                       onClick={() => updateMetadata({ align: a as any })}
                       className={`p-1.5 rounded-md transition-all ${heroSettings.align === a ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white'}`}
                     >
@@ -421,11 +405,11 @@ export function ForumEditor({
                   ))}
                 </div>
 
-                {/* Size */}
                 <div className="flex bg-white/5 rounded-lg border border-white/10 p-0.5">
                   {['sm', 'md', 'lg', 'xl'].map((s) => (
                     <button
                       key={s}
+                      type="button"
                       onClick={() => updateMetadata({ size: s as any })}
                       className={`px-2 py-1 rounded-md text-[9px] font-bold uppercase transition-all ${heroSettings.size === s ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white'}`}
                     >
@@ -439,24 +423,6 @@ export function ForumEditor({
         </AnimatePresence>
       </div>
 
-  const extendedMarkdownComponents = {
-    ...markdownComponents,
-    img: ({ src, alt }: any) => {
-      if (src === 'loading') {
-        return (
-          <div className="w-full aspect-square sm:aspect-video bg-white/5 animate-pulse rounded-xl flex flex-col items-center justify-center border border-white/10 gap-3">
-            <Sparkles className="w-8 h-8 text-[#D4AF37] animate-bounce" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">{alt}</span>
-          </div>
-        );
-      }
-      return <img src={src} alt={alt} className="rounded-xl border border-white/10 w-full h-auto" />;
-    }
-  };
-
-  return (
-    <div className={`flex flex-col gap-3 ${className}`}>
-      {/* ... previous code ... */}
       <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-white/3 transition-all min-h-[inherit]" style={{ minHeight }}>
         {showVisualTools && heroSettings.bg && (
           <div className="absolute inset-0 z-0">
@@ -486,7 +452,7 @@ export function ForumEditor({
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             className={`relative z-10 w-full h-full bg-transparent px-6 py-4 text-sm outline-none resize-none placeholder:text-white/20 ${showVisualTools ? 'font-bold shadow-black drop-shadow-md' : ''}`}
-            style={{ 
+            style={{
               minHeight,
               textAlign: showVisualTools ? heroSettings.align : 'left',
               color: showVisualTools ? heroSettings.color : 'white',
@@ -496,7 +462,6 @@ export function ForumEditor({
         )}
       </div>
 
-      {/* Footer */}
       <div className="flex items-center justify-end gap-3">
         {statusMessage && <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">{statusMessage}</span>}
         {showCancel && onCancel && (
@@ -505,10 +470,10 @@ export function ForumEditor({
         <button 
           type="button"
           onClick={onSubmit} 
-          disabled={isSubmitting || !value.trim()}
+          disabled={isSubmitting || !value.trim() || isGeneratingImage}
           className="bg-[#D4AF37] text-black px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] disabled:opacity-20 hover:brightness-110 transition-all flex items-center gap-2"
         >
-          {isSubmitting ? '...' : submitLabel}
+          {isSubmitting || isGeneratingImage ? '...' : submitLabel}
         </button>
       </div>
     </div>
