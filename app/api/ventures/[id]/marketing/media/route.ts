@@ -141,10 +141,10 @@ const parseLimit = (value: string | undefined, fallback: number) => {
   return Number.isFinite(parsed) ? Math.max(0, Math.floor(parsed)) : fallback;
 };
 
-const normalizeTag = (value: string) => {
+const normalizeTag = (value: string): string | undefined => {
   const trimmed = value.trim().toLowerCase();
-  if (!trimmed) return null;
-  if (!/^[a-z0-9-]+$/.test(trimmed)) return null;
+  if (!trimmed) return undefined;
+  if (!/^[a-z0-9-]+$/.test(trimmed)) return undefined;
   return trimmed;
 };
 
