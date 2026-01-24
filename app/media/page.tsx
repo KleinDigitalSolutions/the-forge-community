@@ -50,25 +50,30 @@ async function getInitialFeed(email: string | null): Promise<{ items: MediaFeedI
     likedIds = new Set((user?.mediaAssetLikes || []).map((like) => like.assetId));
   }
 
-  const items = assets.map((asset) => ({
-    id: asset.id,
-    url: asset.url,
-    type: asset.type,
-    prompt: asset.prompt,
-    model: asset.model,
-    width: asset.width,
-    height: asset.height,
-    createdAt: asset.createdAt.toISOString(),
-    likes: asset.likes,
-    owner: {
-      id: asset.owner?.id || null,
-      name: asset.owner?.name || 'Unknown',
-      image: asset.owner?.image || null,
-      profileSlug: asset.owner?.profileSlug || null,
-      founderNumber: asset.owner?.founderNumber ?? 0,
-    },
-    userLiked: likedIds.has(asset.id),
-  }));
+  const items = assets
+    .filter(
+      (asset): asset is (typeof assets)[number] & { type: MediaFeedItem['type'] } =>
+        asset.type === 'IMAGE' || asset.type === 'VIDEO'
+    )
+    .map((asset) => ({
+      id: asset.id,
+      url: asset.url,
+      type: asset.type,
+      prompt: asset.prompt,
+      model: asset.model,
+      width: asset.width,
+      height: asset.height,
+      createdAt: asset.createdAt.toISOString(),
+      likes: asset.likes,
+      owner: {
+        id: asset.owner?.id || null,
+        name: asset.owner?.name || 'Unknown',
+        image: asset.owner?.image || null,
+        profileSlug: asset.owner?.profileSlug || null,
+        founderNumber: asset.owner?.founderNumber ?? 0,
+      },
+      userLiked: likedIds.has(asset.id),
+    }));
 
   return { items, nextCursor };
 }

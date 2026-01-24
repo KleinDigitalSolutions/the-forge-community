@@ -80,7 +80,7 @@ Das fertige Bild wird nun in ein Video verwandelt (**VO3.1**).
 | Phase | Beschreibung | Visual (Beispiel) |
 | :--- | :--- | :--- |
 | **Input 1** | Quell-Produkt (Gucci) | ![Produkt](/glases.jpg.webp) |
-| **Input 2** | Avatar/Model (Julian) | ![Model](/man.png) |
+| **Input 2** | Avatar/Model (Julian) | ![Model](/man.avif) |
 | **Output Image** | Surreale Komposition | ![Final](/man_glases.png) |
 
 ---
