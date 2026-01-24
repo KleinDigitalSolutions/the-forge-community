@@ -22,6 +22,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { de } from 'date-fns/locale';
 import EmojiPicker, { EmojiClickData, EmojiStyle, Theme } from 'emoji-picker-react';
 import { PostSkeleton } from '@/app/components/PostSkeleton';
+import { ForumEditor } from '@/app/components/ForumEditor';
 
 export interface Comment {
   id: string;
@@ -795,19 +796,27 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
     }
   };
 
-  const handleAIAction = async (post: ForumPost, action: string) => {
+  const handleAIAction = async (post: ForumPost, action: string, commentId?: string, commentContent?: string) => {
     setAiLoading(true);
     setAiResult(null);
-    setAiMenuOpen(post.id);
+    setAiMenuOpen(commentId || post.id);
     try {
       const res = await fetch('/api/forum/ai-action', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ postId: post.id, action, postContent: post.content, category: post.category })
+        body: JSON.stringify({ 
+          postId: post.id, 
+          parentId: commentId,
+          action, 
+          postContent: commentContent || post.content, 
+          category: post.category 
+        })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Orion fehlgeschlagen');
-      setAiResult({ postId: post.id, content: data.content, action: data.action });
+      
+      setAiResult({ postId: commentId || post.id, content: data.content, action: data.action });
+      
       if (data.comment) {
         setPosts(prev => prev.map(p => p.id === post.id ? {
           ...p,
@@ -816,7 +825,7 @@ export default function Forum({ initialPosts, initialUser }: ForumClientProps) {
       }
     } catch (error) {
       console.error('AI action error:', error);
-      setAiResult({ postId: post.id, content: 'Orion konnte keine Antwort liefern.', action });
+      setAiResult({ postId: commentId || post.id, content: 'Orion konnte keine Antwort liefern.', action });
     } finally {
       setAiLoading(false);
     }

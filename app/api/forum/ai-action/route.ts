@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { action, postContent, category, postId } = await request.json();
+    const { action, postContent, category, postId, parentId } = await request.json();
 
     if (!action || !postId) {
       return NextResponse.json(
@@ -26,16 +26,21 @@ export async function POST(request: Request) {
       );
     }
 
+    // Determine content to analyze: if replying to a comment (parentId exists), we might want to analyze that comment specifically
+    // But usually the action is based on the provided "postContent" (which the client sends).
+    // The client should send the comment content as postContent if the action is on a comment.
+
     const post = await prisma.forumPost.findUnique({
       where: { id: postId },
       select: { content: true, category: true },
     });
 
-    const resolvedContent = post?.content || postContent;
+    // If postContent is provided (e.g. from a specific comment), use it. Otherwise fallback to main post.
+    const resolvedContent = postContent || post?.content;
     const resolvedCategory = post?.category || category || 'General';
 
     if (!resolvedContent) {
-      return NextResponse.json({ error: 'Post content not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Content not found' }, { status: 404 });
     }
 
     let result;
@@ -74,6 +79,7 @@ export async function POST(request: Request) {
     const comment = await prisma.forumComment.create({
       data: {
         postId,
+        parentId: parentId || null, // Support threading
         authorName: '@orion',
         content: aiContent,
       },
