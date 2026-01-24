@@ -16,7 +16,7 @@ export interface ModelDefinition {
 }
 
 export const IMAGE_MODELS: Record<string, ModelDefinition> = {
-  // FORUM / FAST USE
+  // FORUM / FAST USE (nur Forum)
   'flux-schnell': {
     id: 'black-forest-labs/flux-schnell',
     provider: 'replicate',
@@ -25,15 +25,6 @@ export const IMAGE_MODELS: Record<string, ModelDefinition> = {
     cost: 2,
     type: 'image',
     aspectRatios: ['1:1', '16:9', '9:16'],
-  },
-  'z-image-turbo': {
-    id: 'prunaai/z-image-turbo',
-    provider: 'replicate',
-    tier: 'turbo',
-    label: 'Z-Image Turbo',
-    cost: 1,
-    type: 'image',
-    aspectRatios: ['1:1'],
   },
   // STUDIO / MARKETING PRO
   'flux-1.1-pro': {
@@ -46,10 +37,10 @@ export const IMAGE_MODELS: Record<string, ModelDefinition> = {
     aspectRatios: ['1:1', '16:9', '9:16', '4:5', '3:2'],
   },
   'flux-2-pro': {
-    id: 'black-forest-labs/flux-2-pro', // Hypothetical for 2026 context
+    id: 'black-forest-labs/flux-2-pro',
     provider: 'replicate',
     tier: 'pro',
-    label: 'Flux 2.0 Ultra (Max Quality)',
+    label: 'Flux 2 Pro (Photorealism)',
     cost: 25,
     type: 'image',
     aspectRatios: ['1:1', '16:9', '9:16', '21:9'],
@@ -66,15 +57,6 @@ export const IMAGE_MODELS: Record<string, ModelDefinition> = {
 };
 
 export const VIDEO_MODELS: Record<string, ModelDefinition> = {
-  'wan-2.1-turbo': {
-    id: 'wan-video/wan-2.1-1.3b',
-    provider: 'replicate',
-    tier: 'turbo',
-    label: 'Wan 2.1 Turbo',
-    cost: 10,
-    type: 'video',
-    aspectRatios: ['16:9', '9:16'],
-  },
   'kling-2.6-pro': {
     id: 'kwaivgi/kling-v2.6-pro',
     provider: 'replicate',
@@ -88,15 +70,24 @@ export const VIDEO_MODELS: Record<string, ModelDefinition> = {
     id: 'minimax/video-01',
     provider: 'replicate',
     tier: 'pro',
-    label: 'Minimax Hailuo (Hyper-Real)',
+    label: 'Minimax Hailuo 02 (Human Motion)',
     cost: 45,
     type: 'video',
     aspectRatios: ['16:9', '9:16'],
-  }
+  },
+  'luma-dream-machine': {
+    id: 'lumaai/dream-machine',
+    provider: 'replicate',
+    tier: 'pro',
+    label: 'Luma Dream Machine (Atmospheric)',
+    cost: 40,
+    type: 'video',
+    aspectRatios: ['16:9', '9:16'],
+  },
 };
 
 export const DEFAULT_MODELS = {
   forum: IMAGE_MODELS['flux-schnell'],
-  studio_image: IMAGE_MODELS['flux-1.1-pro'],
-  studio_video: VIDEO_MODELS['kling-2.6-pro'],
+  studio_image: IMAGE_MODELS['flux-2-pro'],
+  studio_video: VIDEO_MODELS['minimax-hailuo-02'],
 };

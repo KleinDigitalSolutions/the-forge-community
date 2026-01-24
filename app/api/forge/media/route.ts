@@ -39,6 +39,10 @@ export async function POST(request: NextRequest) {
       if (customModel) modelDef = customModel;
     }
 
+    if (modelDef.provider !== 'replicate') {
+      return NextResponse.json({ error: 'Model nicht verfuegbar.' }, { status: 400 });
+    }
+
     // 2. Pricing & User
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
@@ -69,7 +73,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Specific model adjustments
-    if (modelDef.id.includes('flux-1.1-pro')) {
+    if (modelDef.id.includes('flux-1.1-pro') || modelDef.id.includes('flux-2-pro')) {
       replicateInput.output_format = "jpg";
       replicateInput.output_quality = 100;
     }

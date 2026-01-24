@@ -77,42 +77,49 @@ type ReplicateJobCache = {
 };
 
 const MODEL_CONFIGS: Record<string, ModelConfig> = {
-  'prunaai/z-image-turbo': {
-    id: 'prunaai/z-image-turbo',
-    label: 'Z-Image Turbo',
+  'black-forest-labs/flux-2-pro': {
+    id: 'black-forest-labs/flux-2-pro',
+    label: 'Flux 2 Pro',
     modes: ['text-to-image'],
     outputType: 'image',
     provider: 'replicate',
   },
-  'black-forest-labs/flux-schnell': {
-    id: 'black-forest-labs/flux-schnell',
-    label: 'Flux Schnell',
+  'black-forest-labs/flux-1.1-pro': {
+    id: 'black-forest-labs/flux-1.1-pro',
+    label: 'Flux 1.1 Pro',
     modes: ['text-to-image'],
     outputType: 'image',
     provider: 'replicate',
   },
   'ideogram-v3': {
     id: 'ideogram-v3',
-    label: 'Ideogram 3.0',
+    label: 'Ideogram 3.0 Pro',
     modes: ['text-to-image'],
     outputType: 'image',
     provider: 'ideogram',
     supportsRenderingSpeed: true,
     supportsStylePreset: true,
   },
-  'wan-video/wan-2.1-1.3b': {
-    id: 'wan-video/wan-2.1-1.3b',
-    label: 'Wan 2.1',
+  'kwaivgi/kling-v2.6-pro': {
+    id: 'kwaivgi/kling-v2.6-pro',
+    label: 'Kling 2.6 Pro',
+    modes: ['image-to-video'],
+    outputType: 'video',
+    supportsImageInput: true,
+    provider: 'replicate',
+  },
+  'minimax/video-01': {
+    id: 'minimax/video-01',
+    label: 'Minimax Hailuo 02',
     modes: ['text-to-video'],
     outputType: 'video',
     provider: 'replicate',
   },
-  'kwaivgi/kling-v2.5-turbo-pro': {
-    id: 'kwaivgi/kling-v2.5-turbo-pro',
-    label: 'Kling 2.5 Turbo Pro',
-    modes: ['image-to-video'],
+  'lumaai/dream-machine': {
+    id: 'lumaai/dream-machine',
+    label: 'Luma Dream Machine',
+    modes: ['text-to-video'],
     outputType: 'video',
-    supportsImageInput: true,
     provider: 'replicate',
   },
 };
@@ -120,9 +127,9 @@ const MODEL_CONFIGS: Record<string, ModelConfig> = {
 const MEDIA_MODES: MediaMode[] = ['text-to-image', 'text-to-video', 'image-to-video'];
 
 const DEFAULT_MODEL_BY_MODE: Record<MediaMode, string> = {
-  'text-to-image': 'prunaai/z-image-turbo',
-  'text-to-video': 'wan-video/wan-2.1-1.3b',
-  'image-to-video': 'kwaivgi/kling-v2.5-turbo-pro',
+  'text-to-image': 'black-forest-labs/flux-2-pro',
+  'text-to-video': 'minimax/video-01',
+  'image-to-video': 'kwaivgi/kling-v2.6-pro',
 };
 
 const JOB_TTL_MS = 1000 * 60 * 60 * 6;
@@ -211,19 +218,17 @@ const buildBrandContext = (brandDNA: any) => {
 
 const buildReplicateInput = (modelId: string, options: ReplicateInputOptions) => {
   switch (modelId) {
-    case 'prunaai/z-image-turbo': {
+    case 'black-forest-labs/flux-1.1-pro':
+    case 'black-forest-labs/flux-2-pro': {
       const input: Record<string, unknown> = {
         prompt: options.prompt,
-        width: options.width,
-        height: options.height,
+        aspect_ratio: options.aspectRatio,
         output_format: 'jpg',
-        output_quality: 80,
+        output_quality: 100,
       };
-      if (typeof options.guidance === 'number') input.guidance_scale = options.guidance;
-      if (typeof options.steps === 'number') input.num_inference_steps = Math.max(1, Math.round(options.steps));
       return input;
     }
-    case 'kwaivgi/kling-v2.5-turbo-pro': {
+    case 'kwaivgi/kling-v2.6-pro': {
       if (!options.imageUrl) throw new Error('Referenzbild fehlt.');
       const input: Record<string, unknown> = {
         image: options.imageUrl,
@@ -234,15 +239,14 @@ const buildReplicateInput = (modelId: string, options: ReplicateInputOptions) =>
       if (typeof options.guidance === 'number') input.guidance_scale = options.guidance;
       return input;
     }
-    case 'wan-video/wan-2.1-1.3b': {
+    case 'minimax/video-01':
+    case 'lumaai/dream-machine': {
       const input: Record<string, unknown> = {
         prompt: options.prompt,
         aspect_ratio: options.aspectRatio,
       };
-      if (options.negativePrompt) input.negative_prompt = options.negativePrompt;
       return input;
     }
-    case 'black-forest-labs/flux-schnell':
     default: {
       const input: Record<string, unknown> = {
         prompt: options.prompt,
