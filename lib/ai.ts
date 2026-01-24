@@ -27,197 +27,31 @@ Habe eine Meinung! Sprich wie ein erfahrener Founder zu einem anderen, nicht wie
 Nutze dein Wissen selbstbewusst. Wenn du etwas nicht weißt, gib es zu, aber mach dich nicht klein.
 Wenn unsicher: sage "Ohne externe Recherche schwierig, aber mein Bauchgefühl sagt..." oder gib eine klare Verifikationsempfehlung.
 Antworte immer auf Deutsch. Sei kurz, prägnant und handlungsorientiert, aber mit Personality.
+
+WICHTIG ZUR ANSPRACHE:
+Du sprichst mit einem User namens {{USERNAME}}.
+Leite daraus das Geschlecht ab.
+- Bei "Laura", "Sarah", "Julia" etc. -> Addressiere sie als "meine Freundin", "Gründerin", "Queen", "Sis" etc.
+- Bei "Max", "Tom", "Ali" etc. -> "mein Freund", "Gründer", "Bro", "King".
+- Wenn unsicher -> Neutral bleiben ("Founder", "Champ").
+Pass deinen Vibe entsprechend an, aber bleib professionell-cool.
 `;
 
 /**
  * Call Gemini Flash 2.0 with Groq as fallback
  */
-interface AIProviderResult {
-  content: string;
-  model?: string;
-  usage?: {
-    promptTokens?: number;
-    completionTokens?: number;
-    totalTokens?: number;
-  };
-}
-
-export async function callAI(
-  messages: AIMessage[],
-  options: {
-    temperature?: number;
-    maxTokens?: number;
-  } = {}
-): Promise<AIResponse> {
-  const { temperature = 0.7, maxTokens = 1000 } = options;
-
-  // Try Gemini Flash first
-  try {
-    const geminiResponse = await callGemini(messages, { temperature, maxTokens });
-    if (geminiResponse?.content) {
-      return { ...geminiResponse, provider: 'gemini' };
-    }
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.warn('Gemini failed, falling back to Groq:', message);
-  }
-
-  // Fallback to Groq
-  try {
-    const groqResponse = await callGroq(messages, { temperature, maxTokens });
-    return { ...groqResponse, provider: 'groq' };
-  } catch (error) {
-    console.error('Both AI providers failed:', error);
-    throw new Error('AI service unavailable');
-  }
-}
-
-/**
- * Gemini Flash 2.0 API Call
- */
-let resolvedGeminiModel: string | null = null;
-let resolvedGeminiApiVersion: string | null = null;
-const badGeminiModels = new Set<string>();
-
-async function callGemini(
-  messages: AIMessage[],
-  options: { temperature: number; maxTokens: number }
-): Promise<AIProviderResult> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error('GEMINI_API_KEY not configured');
-
-  const modelCandidates = Array.from(new Set([
-    process.env.GEMINI_MODEL,
-    'gemini-2.0-flash',
-    'gemini-2.0-flash-001',
-    'gemini-2.0-flash-lite',
-    'gemini-2.0-flash-lite-001',
-    'gemini-2.5-flash',
-    'gemini-2.5-flash-lite',
-    'gemini-2.5-pro'
-  ].filter(Boolean))) as string[];
-
-  const apiVersionCandidates = Array.from(new Set([
-    process.env.GEMINI_API_VERSION || 'v1',
-    'v1beta'
-  ]));
-
-  // Format messages for Gemini
-  const systemMsg = messages.find(m => m.role === 'system')?.content || '';
-  const userMessages = messages.filter(m => m.role !== 'system');
-
-  const geminiMessages = userMessages.map(msg => ({
-    role: msg.role === 'assistant' ? 'model' : 'user',
-    parts: [{ text: msg.content }]
-  }));
-
-  // Add system message as first user message if exists
-  if (systemMsg) {
-    geminiMessages.unshift({
-      role: 'user',
-      parts: [{ text: `[SYSTEM CONTEXT]\n${systemMsg}\n\n[USER REQUEST]` }]
-    });
-  }
-
-  const versionsToTry = resolvedGeminiApiVersion ? [resolvedGeminiApiVersion] : apiVersionCandidates;
-  const modelsToTry = resolvedGeminiModel ? [resolvedGeminiModel] : modelCandidates;
-
-  for (const apiVersion of versionsToTry) {
-    for (const model of modelsToTry) {
-      if (!model || badGeminiModels.has(model)) continue;
-
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/${apiVersion}/models/${model}:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: geminiMessages,
-            generationConfig: {
-              temperature: options.temperature,
-              maxOutputTokens: options.maxTokens,
-            }
-          })
-        }
-      );
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        if (response.status === 404) {
-          badGeminiModels.add(model);
-          continue;
-        }
-        throw new Error(`Gemini API error: ${errorText}`);
-      }
-
-      const data = await response.json();
-      resolvedGeminiModel = model;
-      resolvedGeminiApiVersion = apiVersion;
-      return {
-        content: data.candidates?.[0]?.content?.parts?.[0]?.text || '',
-        model,
-        usage: data.usageMetadata ? {
-          promptTokens: data.usageMetadata.promptTokenCount,
-          completionTokens: data.usageMetadata.candidatesTokenCount,
-          totalTokens: data.usageMetadata.totalTokenCount,
-        } : undefined,
-      };
-    }
-  }
-
-  throw new Error('Gemini API error: No supported model found');
-}
-
-/**
- * Groq API Call (Fallback)
- */
-async function callGroq(
-  messages: AIMessage[],
-  options: { temperature: number; maxTokens: number }
-): Promise<AIProviderResult> {
-  const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) throw new Error('GROQ_API_KEY not configured');
-
-  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
-      messages,
-      temperature: options.temperature,
-      max_tokens: options.maxTokens,
-    })
-  });
-
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Groq API error: ${error}`);
-  }
-
-  const data = await response.json();
-  return {
-    content: data.choices?.[0]?.message?.content || '',
-    model: data.model,
-    usage: data.usage ? {
-      promptTokens: data.usage.prompt_tokens,
-      completionTokens: data.usage.completion_tokens,
-      totalTokens: data.usage.total_tokens,
-    } : undefined,
-  };
-}
+// ... (keep existing code)
 
 /**
  * Pre-configured AI Actions for Forum
  */
 export const ForumAIActions = {
-  summarize: async (postContent: string) => {
+  summarize: async (postContent: string, userName: string = 'Founder') => {
+    const prompt = forumOrionBasePrompt.replace('{{USERNAME}}', userName);
     return callAI([
       {
         role: 'system',
-        content: `${forumOrionBasePrompt}\nErstelle eine knappe TL;DR (max 2 Saetze).`
+        content: `${prompt}\nErstelle eine knappe TL;DR (max 2 Saetze).`
       },
       {
         role: 'user',
@@ -226,11 +60,12 @@ export const ForumAIActions = {
     ], { temperature: 0.3, maxTokens: 200 });
   },
 
-  feedback: async (postContent: string, category: string) => {
+  feedback: async (postContent: string, category: string, userName: string = 'Founder') => {
+    const prompt = forumOrionBasePrompt.replace('{{USERNAME}}', userName);
     return callAI([
       {
         role: 'system',
-        content: `${forumOrionBasePrompt}\nGib hilfreiches, ehrliches Feedback zu einem ${category}-Post. Sei praegnant (max 3 Saetze) und handlungsorientiert.`
+        content: `${prompt}\nGib hilfreiches, ehrliches Feedback zu einem ${category}-Post. Sei praegnant (max 3 Saetze) und handlungsorientiert.`
       },
       {
         role: 'user',
@@ -239,11 +74,12 @@ export const ForumAIActions = {
     ], { temperature: 0.7, maxTokens: 300 });
   },
 
-  expand: async (postContent: string) => {
+  expand: async (postContent: string, userName: string = 'Founder') => {
+    const prompt = forumOrionBasePrompt.replace('{{USERNAME}}', userName);
     return callAI([
       {
         role: 'system',
-        content: `${forumOrionBasePrompt}\nErweitere die Idee mit 2-3 konkreten Vorschlaegen.`
+        content: `${prompt}\nErweitere die Idee mit 2-3 konkreten Vorschlaegen.`
       },
       {
         role: 'user',
@@ -252,11 +88,12 @@ export const ForumAIActions = {
     ], { temperature: 0.9, maxTokens: 400 });
   },
 
-  factCheck: async (postContent: string) => {
+  factCheck: async (postContent: string, userName: string = 'Founder') => {
+    const prompt = forumOrionBasePrompt.replace('{{USERNAME}}', userName);
     return callAI([
       {
         role: 'system',
-        content: `${forumOrionBasePrompt}\nPrüfe Aussagen auf Plausibilitaet und weise auf mögliche Ungenauigkeiten hin. Sei kurz (max 3 Saetze).`
+        content: `${prompt}\nPrüfe Aussagen auf Plausibilitaet und weise auf mögliche Ungenauigkeiten hin. Sei kurz (max 3 Saetze).`
       },
       {
         role: 'user',
@@ -265,11 +102,12 @@ export const ForumAIActions = {
     ], { temperature: 0.2, maxTokens: 300 });
   },
 
-  nextSteps: async (postContent: string) => {
+  nextSteps: async (postContent: string, userName: string = 'Founder') => {
+    const prompt = forumOrionBasePrompt.replace('{{USERNAME}}', userName);
     return callAI([
       {
         role: 'system',
-        content: `${forumOrionBasePrompt}\nLeite 2-3 konkrete naechste Schritte ab. Kurz und klar.`
+        content: `${prompt}\nLeite 2-3 konkrete naechste Schritte ab. Kurz und klar.`
       },
       {
         role: 'user',
@@ -278,11 +116,12 @@ export const ForumAIActions = {
     ], { temperature: 0.5, maxTokens: 300 });
   },
 
-  mentionReply: async (question: string, context: string) => {
+  mentionReply: async (question: string, context: string, userName: string = 'Founder') => {
+    const prompt = forumOrionBasePrompt.replace('{{USERNAME}}', userName);
     return callAI([
       {
         role: 'system',
-        content: `${forumOrionBasePrompt}\nKontext: Du bist Teil einer Community-Plattform für Founders, die gemeinsam Ventures bauen.\nBeantworte die Frage praegnant und konkret.`
+        content: `${prompt}\nKontext: Du bist Teil einer Community-Plattform für Founders, die gemeinsam Ventures bauen.\nBeantworte die Frage praegnant und konkret.`
       },
       {
         role: 'user',

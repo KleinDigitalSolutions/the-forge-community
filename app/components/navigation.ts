@@ -25,7 +25,7 @@ export const navigation: NavItem[] = [
   { name: 'Forum', href: '/forum', icon: MessageSquare },
   { name: 'Messages', href: '/messages', icon: MessageCircle },
   { name: 'Squad Markt', href: '/squads', icon: Users },
-  { name: 'Mission Control', href: '/tasks', icon: CheckSquare },
+  { name: 'Mission Control', href: '/tasks', icon: CheckSquare, status: 'WIP' },
   { name: 'Finanzen', href: '/transparency', icon: PieChart, status: 'WIP' },
   { name: 'Academy', href: '/resources', icon: BookOpen, status: 'WIP' },
 ];

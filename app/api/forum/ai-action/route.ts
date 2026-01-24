@@ -43,23 +43,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Content not found' }, { status: 404 });
     }
 
+    const userName = session.user.name || 'Founder';
     let result;
 
     switch (action) {
       case 'summarize':
-        result = await ForumAIActions.summarize(resolvedContent);
+        result = await ForumAIActions.summarize(resolvedContent, userName);
         break;
       case 'feedback':
-        result = await ForumAIActions.feedback(resolvedContent, resolvedCategory);
+        result = await ForumAIActions.feedback(resolvedContent, resolvedCategory, userName);
         break;
       case 'expand':
-        result = await ForumAIActions.expand(resolvedContent);
+        result = await ForumAIActions.expand(resolvedContent, userName);
         break;
       case 'factCheck':
-        result = await ForumAIActions.factCheck(resolvedContent);
+        result = await ForumAIActions.factCheck(resolvedContent, userName);
         break;
       case 'nextSteps':
-        result = await ForumAIActions.nextSteps(resolvedContent);
+        result = await ForumAIActions.nextSteps(resolvedContent, userName);
         break;
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
