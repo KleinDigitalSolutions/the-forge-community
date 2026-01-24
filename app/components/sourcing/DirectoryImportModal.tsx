@@ -13,6 +13,7 @@ interface DirectoryImportModalProps {
 export function DirectoryImportModal({ isOpen, onClose, onImported, ventureId }: DirectoryImportModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [resources, setResources] = useState<any[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [offset, setOffset] = useState(0);
@@ -40,6 +41,8 @@ export function DirectoryImportModal({ isOpen, onClose, onImported, ventureId }:
         const data = await res.json();
         const newItems = data.resources || [];
         const total = data.total || 0;
+        
+        setTotalCount(total);
         if (isNewSearch) setResources(newItems);
         else setResources(prev => [...prev, ...newItems]);
         setHasMore((isNewSearch ? newItems.length : resources.length + newItems.length) < total);
@@ -111,7 +114,12 @@ export function DirectoryImportModal({ isOpen, onClose, onImported, ventureId }:
           </button>
           
           <div className="flex flex-col">
-            <h1 className="text-xl font-bold text-white tracking-tight">Partner & B2B Großhändler</h1>
+            <h1 className="text-xl font-bold text-white tracking-tight">
+              Partner & B2B Großhändler
+              <span className="ml-3 px-2 py-0.5 rounded-md bg-[#D4AF37]/20 text-[#D4AF37] text-xs font-mono">
+                {totalCount}
+              </span>
+            </h1>
             <div className="flex items-center gap-2">
               <span className="h-1.5 w-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
               <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30">Live Database</span>
