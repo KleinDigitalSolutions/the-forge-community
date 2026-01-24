@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
+import { updateVentureProgress } from '@/lib/ventures';
 
 export async function GET(
   req: NextRequest,
@@ -114,6 +115,8 @@ export async function POST(
         ventureId: id,
       }
     });
+
+    await updateVentureProgress(id);
 
     return NextResponse.json(supplier);
   } catch (error) {
