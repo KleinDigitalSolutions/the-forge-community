@@ -27,6 +27,7 @@ import { AddSupplierModal } from '@/app/components/sourcing/AddSupplierModal';
 import { AddSampleModal } from '@/app/components/sourcing/AddSampleModal';
 import { AddOrderModal } from '@/app/components/sourcing/AddOrderModal';
 import { AISourcingModal } from '@/app/components/sourcing/AISourcingModal';
+import { DirectoryImportModal } from '@/app/components/sourcing/DirectoryImportModal';
 import { useAIContext } from '@/app/context/AIContext';
 
 type TabType = 'suppliers' | 'samples' | 'orders' | 'overview';
@@ -49,17 +50,7 @@ export default function SourcingPage() {
   const [isSampleModalOpen, setIsSampleModalOpen] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
-
-  useEffect(() => {
-    const tab = searchParams.get('tab') as TabType;
-    if (tab && ['suppliers', 'samples', 'orders', 'overview'].includes(tab)) {
-      setActiveTab(tab);
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
-    setContext(`Sourcing Studio - ${activeTab}. Hilf bei Lieferantensuche, Samples und Bestellungen.`);
-  }, [activeTab]);
+  const [isDirectoryModalOpen, setIsDirectoryModalOpen] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -177,6 +168,13 @@ export default function SourcingPage() {
                       >
                         <Sparkles className="w-4 h-4" />
                         AI Discovery
+                      </button>
+                      <button 
+                        onClick={() => setIsDirectoryModalOpen(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 text-[#D4AF37] rounded-lg text-sm font-bold hover:bg-[#D4AF37]/10 transition-all"
+                      >
+                        <Globe className="w-4 h-4" />
+                        Aus Netzwerk
                       </button>
                       <button 
                         onClick={() => setIsSupplierModalOpen(true)}
@@ -536,6 +534,12 @@ export default function SourcingPage() {
               isOpen={isAIModalOpen}
               onClose={() => setIsAIModalOpen(false)}
               onSuccess={fetchData}
+              ventureId={ventureId}
+            />
+            <DirectoryImportModal
+              isOpen={isDirectoryModalOpen}
+              onClose={() => setIsDirectoryModalOpen(false)}
+              onImported={fetchData}
               ventureId={ventureId}
             />
           </StudioShell>

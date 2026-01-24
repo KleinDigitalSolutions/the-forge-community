@@ -73,9 +73,6 @@ export default async function ForgeLayout({
 
         {/* Main Content */}
         <div className="ml-64">
-          {/* Top Bar */}
-          <ForgeTopBar venture={venture} />
-
           {/* Content */}
           <main className="p-8 pb-32">
             {children}
