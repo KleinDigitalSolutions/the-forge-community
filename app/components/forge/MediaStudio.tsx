@@ -197,7 +197,13 @@ export function MediaStudio({ ventureId, brandDNA }: MediaStudioProps) {
                     >
                       {slot ? (
                         <>
-                          <video src={slot.url} className="w-full h-full object-cover" />
+                          <video
+                            src={slot.url.includes('#') ? slot.url : `${slot.url}#t=0.001`}
+                            className="w-full h-full object-cover"
+                            muted
+                            playsInline
+                            preload="metadata"
+                          />
                           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                             <span className="text-xs font-bold text-white">Ändern</span>
                           </div>
