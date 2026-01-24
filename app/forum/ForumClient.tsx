@@ -1818,7 +1818,13 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
                               )}
                               <ForumEditor
                                 value={commentDrafts[post.id] || ''}
-                                onChange={(val) => setCommentDrafts(prev => ({ ...prev, [post.id]: val }))}
+                                onChange={(val) =>
+                                  setCommentDrafts((prev) => {
+                                    const current = prev[post.id] || '';
+                                    const nextValue = typeof val === 'function' ? val(current) : val;
+                                    return { ...prev, [post.id]: nextValue };
+                                  })
+                                }
                                 onSubmit={() => handleCommentSubmit(post.id)}
                                 isSubmitting={commentSubmitting === post.id}
                                 placeholder={replyTargets[post.id] ? 'Antwort schreiben...' : 'Antworte oder ergänze den Thread...'}
