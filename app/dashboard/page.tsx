@@ -39,6 +39,14 @@ export default function Dashboard() {
   
   const [activeView, setActiveView] = useState<string>('idle');
 
+  const handleToggleView = (view: string) => {
+    if (view === 'music') {
+      window.dispatchEvent(new CustomEvent('forge-toggle-music', { detail: { open: true } }));
+      return;
+    }
+    setActiveView(activeView === view ? 'idle' : view);
+  };
+
   const fetchDashboard = async () => {
     try {
       const res = await fetch('/api/dashboard');
@@ -152,7 +160,7 @@ export default function Dashboard() {
                   userImage={user.image}
                   userName={user.name}
                   stats={{ ventures: ventures.length, tasks: allTasks.length }}
-                  onToggleView={(view) => setActiveView(activeView === view ? 'idle' : view)}
+                  onToggleView={handleToggleView}
                   minimal
                />
             </div>
