@@ -290,23 +290,23 @@ export default function OnboardingWizard({ user, onComplete }: OnboardingWizardP
             )}
 
             {step === 5 && (
-              <motion.div 
+              <motion.div
                 key="step5"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="text-center space-y-8"
+                className="text-center space-y-6 sm:space-y-8 py-4"
               >
-                <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-500/20">
-                  <Check className="w-12 h-12 text-green-500" />
+                <div className="w-20 h-20 sm:w-24 sm:h-24 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 border border-green-500/20">
+                  <Check className="w-10 h-10 sm:w-12 sm:h-12 text-green-500" />
                 </div>
-                <h2 className="text-4xl font-instrument-serif text-white">Ready to Forge.</h2>
-                <p className="text-lg text-white/50 max-w-md mx-auto">
+                <h2 className="text-3xl sm:text-4xl font-instrument-serif text-white">Ready to Forge.</h2>
+                <p className="text-base sm:text-lg text-white/50 max-w-md mx-auto px-4">
                   Dein Dashboard ist bereit. Starte deine erste Mission oder schließe dich einem Squad an.
                 </p>
-                <button 
+                <button
                   onClick={handleComplete}
                   disabled={loading}
-                  className="px-8 py-4 bg-[#D4AF37] text-black font-bold rounded-xl hover:bg-[#FFD700] transition-colors w-full md:w-auto"
+                  className="w-full sm:w-auto px-8 py-4 bg-[#D4AF37] text-black font-bold rounded-xl hover:bg-[#FFD700] active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {loading ? 'Lade Dashboard...' : 'Zum Dashboard'}
                 </button>
