@@ -96,23 +96,23 @@ export default function OnboardingWizard({ user, onComplete }: OnboardingWizardP
           <div className="min-h-full flex flex-col justify-center">
             <AnimatePresence mode="wait">
             {step === 1 && (
-              <motion.div 
+              <motion.div
                 key="step1"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="text-center space-y-8"
+                className="text-center space-y-6 sm:space-y-8 py-4"
               >
-                <div className="w-20 h-20 bg-[#D4AF37]/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Rocket className="w-10 h-10 text-[#D4AF37]" />
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-[#D4AF37]/10 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                  <Rocket className="w-8 h-8 sm:w-10 sm:h-10 text-[#D4AF37]" />
                 </div>
-                <h2 className="text-4xl font-instrument-serif text-white">Willkommen in der Forge.</h2>
-                <p className="text-lg text-white/50 max-w-md mx-auto">
+                <h2 className="text-3xl sm:text-4xl font-instrument-serif text-white">Willkommen in der Forge.</h2>
+                <p className="text-base sm:text-lg text-white/50 max-w-md mx-auto px-4">
                   Du bist jetzt Teil eines elitären Netzwerks. Hier bauen wir keine Spielzeuge, sondern skalierbare Assets.
                 </p>
-                <button 
+                <button
                   onClick={handleNext}
-                  className="px-8 py-4 bg-[#D4AF37] text-black font-bold rounded-xl hover:bg-[#FFD700] transition-colors"
+                  className="w-full sm:w-auto px-8 py-4 bg-[#D4AF37] text-black font-bold rounded-xl hover:bg-[#FFD700] active:scale-95 transition-all"
                 >
                   System Initialisieren
                 </button>
@@ -120,16 +120,16 @@ export default function OnboardingWizard({ user, onComplete }: OnboardingWizardP
             )}
 
             {step === 2 && (
-              <motion.div 
+              <motion.div
                 key="step2"
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -50 }}
-                className="space-y-8"
+                className="space-y-6 sm:space-y-8 py-4"
               >
                 <div className="text-center">
-                  <h3 className="text-3xl font-instrument-serif text-white mb-2">Identität Bestätigen</h3>
-                  <p className="text-white/50">Wie sollen wir dich im Netzwerk nennen?</p>
+                  <h3 className="text-2xl sm:text-3xl font-instrument-serif text-white mb-2">Identität Bestätigen</h3>
+                  <p className="text-sm sm:text-base text-white/50">Wie sollen wir dich im Netzwerk nennen?</p>
                 </div>
 
                 <div className="max-w-sm mx-auto space-y-4">
@@ -137,22 +137,22 @@ export default function OnboardingWizard({ user, onComplete }: OnboardingWizardP
                     <label className="block text-xs uppercase tracking-widest text-white/40 font-bold mb-2">Display Name</label>
                     <div className="relative">
                       <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20" />
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white focus:border-[#D4AF37] outline-none transition-colors"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white text-base focus:border-[#D4AF37] outline-none transition-colors"
                         placeholder="Dein Name"
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="flex justify-center pt-8">
-                  <button 
+                <div className="flex justify-center pt-4 sm:pt-8">
+                  <button
                     onClick={handleNext}
                     disabled={!name.trim()}
-                    className="px-8 py-4 bg-white text-black font-bold rounded-xl hover:bg-white/90 transition-colors disabled:opacity-50"
+                    className="w-full sm:w-auto px-8 py-4 bg-white text-black font-bold rounded-xl hover:bg-white/90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Weiter
                   </button>
@@ -248,40 +248,40 @@ export default function OnboardingWizard({ user, onComplete }: OnboardingWizardP
             )}
 
             {step === 4 && (
-              <motion.div 
+              <motion.div
                 key="step4"
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -50 }}
-                className="space-y-8"
+                className="space-y-6 sm:space-y-8 py-4"
               >
-                <div className="text-center mb-8">
-                  <h3 className="text-3xl font-instrument-serif text-white mb-2">Dein Arsenal</h3>
-                  <p className="text-white/50">Du hast Zugriff auf Enterprise-Grade Tools.</p>
+                <div className="text-center mb-6 sm:mb-8">
+                  <h3 className="text-2xl sm:text-3xl font-instrument-serif text-white mb-2">Dein Arsenal</h3>
+                  <p className="text-sm sm:text-base text-white/50">Du hast Zugriff auf Enterprise-Grade Tools.</p>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div className="p-6 bg-white/5 border border-white/10 rounded-2xl">
-                    <Shield className="w-8 h-8 text-blue-400 mb-4" />
-                    <h4 className="text-white font-bold mb-2">Admin Shield</h4>
+                <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+                  <div className="p-5 sm:p-6 bg-white/5 border border-white/10 rounded-2xl">
+                    <Shield className="w-7 h-7 sm:w-8 sm:h-8 text-blue-400 mb-3 sm:mb-4" />
+                    <h4 className="text-white font-bold mb-2 text-sm sm:text-base">Admin Shield</h4>
                     <p className="text-xs text-white/50">Automatisierte Verträge & Rechtssicherheit.</p>
                   </div>
-                  <div className="p-6 bg-white/5 border border-white/10 rounded-2xl">
-                    <Zap className="w-8 h-8 text-[#D4AF37] mb-4" />
-                    <h4 className="text-white font-bold mb-2">Orion AI</h4>
+                  <div className="p-5 sm:p-6 bg-white/5 border border-white/10 rounded-2xl">
+                    <Zap className="w-7 h-7 sm:w-8 sm:h-8 text-[#D4AF37] mb-3 sm:mb-4" />
+                    <h4 className="text-white font-bold mb-2 text-sm sm:text-base">Orion AI</h4>
                     <p className="text-xs text-white/50">Dein 24/7 Co-Founder für Strategie & Ops.</p>
                   </div>
-                  <div className="p-6 bg-white/5 border border-white/10 rounded-2xl">
-                    <Rocket className="w-8 h-8 text-purple-400 mb-4" />
-                    <h4 className="text-white font-bold mb-2">Launch Pad</h4>
+                  <div className="p-5 sm:p-6 bg-white/5 border border-white/10 rounded-2xl sm:col-span-2 md:col-span-1">
+                    <Rocket className="w-7 h-7 sm:w-8 sm:h-8 text-purple-400 mb-3 sm:mb-4" />
+                    <h4 className="text-white font-bold mb-2 text-sm sm:text-base">Launch Pad</h4>
                     <p className="text-xs text-white/50">Deployment & Skalierungsinfrastruktur.</p>
                   </div>
                 </div>
 
-                <div className="flex justify-center pt-8">
-                  <button 
+                <div className="flex justify-center pt-4 sm:pt-8">
+                  <button
                     onClick={handleNext}
-                    className="px-8 py-4 bg-white text-black font-bold rounded-xl hover:bg-white/90 transition-colors"
+                    className="w-full sm:w-auto px-8 py-4 bg-white text-black font-bold rounded-xl hover:bg-white/90 active:scale-95 transition-all"
                   >
                     Alles Klar
                   </button>
