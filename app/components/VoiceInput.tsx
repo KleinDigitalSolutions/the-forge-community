@@ -15,6 +15,7 @@ export function VoiceInput({ onTranscript, variant = 'full' }: VoiceInputProps) 
   const [transcript, setTranscript] = useState('');
   const [supported, setSupported] = useState(true);
   const recognitionRef = useRef<any>(null);
+  const shouldListenRef = useRef(false);
   const isIconOnly = variant === 'icon';
 
   useEffect(() => {
@@ -50,15 +51,29 @@ export function VoiceInput({ onTranscript, variant = 'full' }: VoiceInputProps) 
     };
 
     recognition.onerror = (event: any) => {
+      if (event.error === 'aborted') {
+        return;
+      }
       console.error('Speech recognition error:', event.error);
       setIsListening(false);
+      shouldListenRef.current = false;
       if (event.error === 'not-allowed') {
         alert('Mikrofon-Zugriff wurde verweigert. Bitte in den Browser-Einstellungen erlauben.');
       }
     };
 
     recognition.onend = () => {
-      // Don't auto-restart to avoid loops, let the user toggle
+      if (shouldListenRef.current) {
+        try {
+          recognition.start();
+          setIsListening(true);
+        } catch (error) {
+          console.error('Failed to restart recognition', error);
+          setIsListening(false);
+          shouldListenRef.current = false;
+        }
+        return;
+      }
       setIsListening(false);
     };
 
@@ -66,6 +81,7 @@ export function VoiceInput({ onTranscript, variant = 'full' }: VoiceInputProps) 
 
     return () => {
       if (recognitionRef.current) {
+        shouldListenRef.current = false;
         recognitionRef.current.stop();
       }
     };
@@ -78,6 +94,7 @@ export function VoiceInput({ onTranscript, variant = 'full' }: VoiceInputProps) 
     }
 
     if (isListening) {
+      shouldListenRef.current = false;
       recognitionRef.current.stop();
       setIsListening(false);
       // Processing will happen via onresult/onend if we wanted, 
@@ -88,10 +105,12 @@ export function VoiceInput({ onTranscript, variant = 'full' }: VoiceInputProps) 
     } else {
       setTranscript('');
       try {
+        shouldListenRef.current = true;
         recognitionRef.current.start();
         setIsListening(true);
       } catch (e) {
         console.error('Failed to start recognition', e);
+        shouldListenRef.current = false;
       }
     }
   }

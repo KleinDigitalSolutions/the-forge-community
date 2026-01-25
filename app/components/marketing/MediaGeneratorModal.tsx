@@ -382,8 +382,6 @@ export function MediaGeneratorModal({
     throw new Error('Timeout: Bitte später erneut prüfen.');
   };
 
-  if (!isOpen && !inline) return null;
-
   // Chain Handler - Continue from last frame
   const handleContinueChain = async (videoUrl: string, assetIndex: number) => {
     setIsExtractingFrame(true);
@@ -463,6 +461,8 @@ export function MediaGeneratorModal({
     const type = isVideoMode ? 'video' : 'image';
     return getTemplatesByType(type);
   }, [isVideoMode]);
+
+  if (!isOpen && !inline) return null;
 
   const handleGenerate = async () => {
     setErrorMessage('');
