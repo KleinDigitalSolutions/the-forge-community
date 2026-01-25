@@ -11,7 +11,9 @@ import {
   MessageSquare,
   X,
   Zap,
-  ChevronRight
+  ChevronRight,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import Link from 'next/link';
 import { useUnreadMessages } from '@/app/hooks/useUnreadMessages';
@@ -181,6 +183,43 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
 
       {/* --- CENTRAL CONTROL --- */}
       <div className="relative z-50">
+        <AnimatePresence>
+          {!isOpen && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.2 }}
+              className="absolute inset-0 z-[-1] pointer-events-none"
+            >
+              <motion.div
+                animate={{ 
+                  scale: [1, 1.4, 1],
+                  opacity: [0.3, 0, 0.3]
+                }}
+                transition={{ 
+                  duration: 2, 
+                  repeat: Infinity, 
+                  ease: "easeInOut" 
+                }}
+                className="absolute inset-[-20px] rounded-full border-2 border-[#D4AF37]/40 shadow-[0_0_30px_rgba(212,175,55,0.2)]"
+              />
+              <motion.div
+                animate={{ 
+                  scale: [1, 1.2, 1],
+                  opacity: [0.2, 0.5, 0.2]
+                }}
+                transition={{ 
+                  duration: 2, 
+                  repeat: Infinity, 
+                  ease: "easeInOut",
+                  delay: 0.5
+                }}
+                className="absolute inset-[-10px] rounded-full bg-[#D4AF37]/5 border border-[#D4AF37]/20"
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -201,6 +240,30 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
             <div className="absolute inset-[-8px] rounded-full border border-white/5 border-t-cyan-300/60 animate-spin-slow pointer-events-none" />
           )}
         </motion.button>
+
+        {!isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="absolute left-1/2 bottom-full mb-4 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none select-none"
+            aria-hidden="true"
+          >
+            <div className="rounded-full border border-[#D4AF37]/30 bg-black/80 px-5 py-2 text-[10px] font-black uppercase tracking-[0.4em] text-[#D4AF37] shadow-[0_0_20px_rgba(0,0,0,0.5)] whitespace-nowrap animate-pulse">
+              Click
+            </div>
+            <motion.div
+              animate={{ 
+                y: [0, 5, 0],
+                scale: [1, 1.2, 1]
+              }}
+              transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
+              className="text-[#D4AF37] drop-shadow-[0_0_8px_rgba(212,175,55,0.5)]"
+            >
+              <ChevronDown className="w-6 h-6" />
+            </motion.div>
+          </motion.div>
+        )}
       </div>
 
       {/* --- SATELLITES --- */}
