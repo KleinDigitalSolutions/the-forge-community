@@ -136,45 +136,44 @@ export function DirectoryImportModal({ isOpen, onClose, onImported, ventureId }:
   return (
     <div className="fixed inset-0 bg-[#050505] flex flex-col z-[2147483647] overflow-hidden">
       {/* 1. SaaS HEADER */}
-      <header className="flex-none h-20 bg-black border-b border-white/10 px-8 flex items-center justify-between shadow-2xl">
-        <div className="flex items-center gap-8">
-          <button 
+      <header className="flex-none min-h-[64px] sm:h-20 bg-black border-b border-white/10 px-4 sm:px-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-0 py-3 sm:py-0 shadow-2xl">
+        <div className="flex items-center justify-between sm:justify-start gap-3 sm:gap-8">
+          <button
             onClick={onClose}
-            className="flex items-center gap-3 px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white transition-all group active:scale-95"
+            className="flex items-center gap-2 sm:gap-3 px-3 sm:px-5 py-2 sm:py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white transition-all group active:scale-95"
           >
-            <ArrowLeft className="w-5 h-5 text-white/40 group-hover:text-white" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-white/40 group-hover:text-white" />
             <span className="text-xs font-black uppercase tracking-widest">Zurück</span>
           </button>
-          
-          <div className="flex flex-col">
-            <h1 className="text-xl font-bold text-white tracking-tight">
-              Partner Netzwerk
-              <span className="ml-3 px-2 py-0.5 rounded-md bg-[#D4AF37]/20 text-[#D4AF37] text-xs font-mono">{totalCount}</span>
+
+          <div className="flex flex-col min-w-0">
+            <h1 className="text-base sm:text-xl font-bold text-white tracking-tight flex items-center gap-2">
+              <span className="truncate">Partner Netzwerk</span>
+              <span className="flex-shrink-0 px-2 py-0.5 rounded-md bg-[#D4AF37]/20 text-[#D4AF37] text-xs font-mono">{totalCount}</span>
             </h1>
             <div className="flex items-center gap-2">
               <span className="h-1.5 w-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30">Global B2B Directory</span>
+              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 truncate">Global B2B Directory</span>
             </div>
           </div>
         </div>
 
         {/* Search Bar - Center */}
-        <div className="flex-1 max-w-xl px-8">
+        <div className="flex-1 sm:max-w-xl sm:px-8">
           <div className="relative group">
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-[#D4AF37] transition-colors" />
+            <Search className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-[#D4AF37] transition-colors" />
             <input
-              autoFocus
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Partner oder Leistungen suchen..."
-              className="w-full bg-[#0A0A0A] border border-white/10 rounded-2xl pl-12 pr-6 py-3.5 text-sm text-white placeholder:text-white/10 focus:border-[#D4AF37]/50 outline-none transition-all shadow-inner"
+              className="w-full bg-[#0A0A0A] border border-white/10 rounded-xl sm:rounded-2xl pl-11 sm:pl-12 pr-4 sm:pr-6 py-2.5 sm:py-3.5 text-sm text-white placeholder:text-white/10 focus:border-[#D4AF37]/50 outline-none transition-all shadow-inner"
             />
           </div>
         </div>
 
         {/* Filter Toggle & Sorting */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <div className="flex bg-white/5 rounded-xl p-1 border border-white/10">
             <button 
               onClick={() => { setSortBy('title'); setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc'); }}

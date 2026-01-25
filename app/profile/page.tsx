@@ -25,6 +25,9 @@ export default function ProfilePage() {
   const [uploadError, setUploadError] = useState('');
   const [activeTab, setActiveTab] = useState<Tab>('identity');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
+  const MAX_AVATAR_DIMENSION = 1400;
   
   const [formData, setFormData] = useState({
     name: '',
@@ -72,6 +75,47 @@ export default function ProfilePage() {
     loadProfile();
   }, []);
 
+  const loadImage = (file: File) =>
+    new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+        resolve(img);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error('Image load failed'));
+      };
+      img.src = objectUrl;
+    });
+
+  const compressImage = async (file: File) => {
+    const img = await loadImage(file);
+    const scale = Math.min(
+      1,
+      MAX_AVATAR_DIMENSION / Math.max(img.width || 1, img.height || 1)
+    );
+    const width = Math.max(1, Math.round(img.width * scale));
+    const height = Math.max(1, Math.round(img.height * scale));
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Canvas not supported');
+    ctx.drawImage(img, 0, 0, width, height);
+
+    const blob = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(
+        (b) => (b ? resolve(b) : reject(new Error('Image export failed'))),
+        'image/jpeg',
+        0.82
+      );
+    });
+    const nextName = file.name.replace(/\.[^.]+$/, '.jpg');
+    return new File([blob], nextName, { type: 'image/jpeg' });
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -79,9 +123,11 @@ export default function ProfilePage() {
     setUploading(true);
     setUploadError('');
     try {
-      const response = await fetch(`/api/me/update-image?filename=${encodeURIComponent(file.name)}`, {
+      const preparedFile =
+        file.size > MAX_AVATAR_BYTES ? await compressImage(file) : file;
+      const response = await fetch(`/api/me/update-image?filename=${encodeURIComponent(preparedFile.name)}`, {
         method: 'POST',
-        body: file,
+        body: preparedFile,
       });
 
       const payload = await response.json();

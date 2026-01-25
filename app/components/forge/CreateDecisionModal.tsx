@@ -81,26 +81,32 @@ export function CreateDecisionModal({ isOpen, onClose, onSuccess, ventureId }: C
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="glass-card w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-white/10 flex flex-col">
-        {/* Header */}
-        <div className="p-6 border-b border-white/10 flex justify-between items-center sticky top-0 bg-black/40 backdrop-blur-md z-10">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm">
+      <div className="glass-card w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] rounded-2xl border border-white/10 flex flex-col">
+        {/* Header - Fixed */}
+        <div className="flex-shrink-0 p-4 sm:p-6 border-b border-white/10 flex justify-between items-center bg-black/40 backdrop-blur-md rounded-t-2xl">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-[#D4AF37]/10 rounded-xl flex items-center justify-center">
               <Gavel className="w-5 h-5 text-[#D4AF37]" />
             </div>
             <div>
-              <h2 className="text-xl font-instrument-serif text-white">Neue Abstimmung</h2>
-              <p className="text-xs text-white/40 uppercase tracking-widest font-bold">Squad Entscheidung treffen</p>
+              <h2 className="text-lg sm:text-xl font-instrument-serif text-white">Neue Abstimmung</h2>
+              <p className="text-xs text-white/40 uppercase tracking-widest font-bold hidden sm:block">Squad Entscheidung treffen</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full text-white/40 hover:text-white transition-colors">
-            <X className="w-6 h-6" />
+          <button
+            onClick={onClose}
+            type="button"
+            className="flex-shrink-0 p-2 sm:p-2.5 hover:bg-white/10 rounded-full text-white/60 hover:text-white transition-colors active:scale-95"
+            aria-label="Modal schließen"
+          >
+            <X className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-8 space-y-8">
+        {/* Form - Scrollable */}
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto modal-scroll-container custom-scrollbar">
+          <div className="p-6 sm:p-8 space-y-6 sm:space-y-8">
           
           {/* Question & Description */}
           <div className="space-y-4">
@@ -187,26 +193,28 @@ export function CreateDecisionModal({ isOpen, onClose, onSuccess, ventureId }: C
                </button>
             </div>
           )}
-
-          {/* Footer Actions */}
-          <div className="pt-6 border-t border-white/10 flex justify-end gap-4 sticky bottom-0 bg-black/40 backdrop-blur-md">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-6 py-3 rounded-xl text-white/60 hover:text-white transition-colors"
-            >
-              Abbrechen
-            </button>
-            <button
-              disabled={loading}
-              type="submit"
-              className="px-8 py-3 bg-[#D4AF37] text-black font-bold rounded-xl hover:opacity-90 transition-all disabled:opacity-50 flex items-center gap-2"
-            >
-              {loading && <Clock className="w-4 h-4 animate-spin" />}
-              Abstimmung Starten
-            </button>
           </div>
         </form>
+
+        {/* Footer Actions - Fixed */}
+        <div className="flex-shrink-0 p-4 sm:p-6 border-t border-white/10 flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4 bg-black/40 backdrop-blur-md rounded-b-2xl">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-6 py-3 rounded-xl text-white/60 hover:text-white transition-colors active:scale-95"
+          >
+            Abbrechen
+          </button>
+          <button
+            disabled={loading}
+            onClick={handleSubmit}
+            type="button"
+            className="px-8 py-3 bg-[#D4AF37] text-black font-bold rounded-xl hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {loading && <Clock className="w-4 h-4 animate-spin" />}
+            Abstimmung Starten
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -81,7 +81,7 @@ export function AISourcingModal({ isOpen, onClose, ventureId, onSuccess }: AISou
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -89,31 +89,36 @@ export function AISourcingModal({ isOpen, onClose, ventureId, onSuccess }: AISou
           onClick={onClose}
           className="absolute inset-0 bg-black/80 backdrop-blur-md"
         />
-        
+
         <motion.div
           initial={{ scale: 0.95, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.95, opacity: 0, y: 20 }}
-          className="relative w-full max-w-3xl bg-[#0A0A0A] border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden"
+          className="relative w-full max-w-3xl max-h-[95vh] sm:max-h-[85vh] bg-[#0A0A0A] border border-white/10 rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl flex flex-col"
         >
-          {/* Header */}
-          <div className="p-8 border-b border-white/5 flex justify-between items-center bg-gradient-to-r from-[#D4AF37]/10 to-transparent">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-[#D4AF37] rounded-2xl flex items-center justify-center shadow-lg shadow-[#D4AF37]/20">
-                <Sparkles className="w-6 h-6 text-black" />
+          {/* Header - Fixed */}
+          <div className="flex-shrink-0 p-5 sm:p-8 border-b border-white/5 flex justify-between items-center bg-gradient-to-r from-[#D4AF37]/10 to-transparent rounded-t-[2rem] sm:rounded-t-[2.5rem]">
+            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#D4AF37] rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-[#D4AF37]/20 flex-shrink-0">
+                <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-black" />
               </div>
-              <div>
-                <h2 className="text-2xl font-instrument-serif text-white">Sourcing Match</h2>
-                <p className="text-sm text-white/40">Matcht echte Lieferanten aus deiner Datenbank auf Basis deiner Brand DNA</p>
+              <div className="min-w-0">
+                <h2 className="text-xl sm:text-2xl font-instrument-serif text-white truncate">Sourcing Match</h2>
+                <p className="text-xs sm:text-sm text-white/40 truncate">Matcht echte Lieferanten aus deiner Datenbank</p>
               </div>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full transition-colors">
-              <X className="w-6 h-6 text-white/40" />
+            <button
+              onClick={onClose}
+              type="button"
+              className="flex-shrink-0 p-2 sm:p-2.5 hover:bg-white/10 rounded-full transition-colors active:scale-95"
+              aria-label="Modal schließen"
+            >
+              <X className="w-5 h-5 sm:w-6 sm:h-6 text-white/60 hover:text-white" />
             </button>
           </div>
 
-          {/* Content */}
-          <div className="p-8 max-h-[60vh] overflow-y-auto custom-scrollbar">
+          {/* Content - Scrollable */}
+          <div className="flex-1 overflow-y-auto modal-scroll-container custom-scrollbar p-5 sm:p-8">
             {loading ? (
               <div className="py-20 flex flex-col items-center justify-center space-y-6">
                 <div className="relative">
@@ -149,10 +154,11 @@ export function AISourcingModal({ isOpen, onClose, ventureId, onSuccess }: AISou
                     <button
                       onClick={() => saveSupplier(s)}
                       disabled={saving === s.companyName}
-                      className="ml-6 px-6 py-3 bg-white text-black rounded-xl font-bold text-sm hover:bg-[#D4AF37] transition-all flex items-center gap-2 disabled:opacity-50"
+                      className="ml-4 sm:ml-6 px-4 sm:px-6 py-2 sm:py-3 bg-white text-black rounded-xl font-bold text-xs sm:text-sm hover:bg-[#D4AF37] active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {saving === s.companyName ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                      Übernehmen
+                      <span className="hidden sm:inline">Übernehmen</span>
+                      <span className="sm:hidden">+</span>
                     </button>
                   </motion.div>
                 ))}
@@ -169,13 +175,14 @@ export function AISourcingModal({ isOpen, onClose, ventureId, onSuccess }: AISou
                   </p>
                 </div>
                 {error && (
-                  <div className="flex items-center gap-2 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm justify-center">
-                    <AlertCircle className="w-4 h-4" /> {error}
+                  <div className="flex items-center gap-2 p-3 sm:p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs sm:text-sm justify-center mx-4">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    <span>{error}</span>
                   </div>
                 )}
                 <button
                   onClick={startAISearch}
-                  className="px-10 py-4 bg-[#D4AF37] text-black rounded-2xl font-bold text-lg hover:shadow-lg hover:shadow-[#D4AF37]/20 transition-all flex items-center gap-3 mx-auto group"
+                  className="px-8 sm:px-10 py-3 sm:py-4 bg-[#D4AF37] text-black rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg hover:shadow-lg hover:shadow-[#D4AF37]/20 active:scale-95 transition-all flex items-center gap-3 mx-auto group"
                 >
                   <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
                   Matching starten
@@ -184,9 +191,9 @@ export function AISourcingModal({ isOpen, onClose, ventureId, onSuccess }: AISou
             )}
           </div>
 
-          {/* Footer Info */}
+          {/* Footer Info - Fixed */}
           {suggestions.length > 0 && (
-            <div className="p-6 bg-white/[0.02] border-t border-white/5 text-center">
+            <div className="flex-shrink-0 p-4 sm:p-6 bg-white/[0.02] border-t border-white/5 text-center rounded-b-[2rem] sm:rounded-b-[2.5rem]">
               <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/20">
                 {explanation || 'Ergebnisse basieren auf deinem Forge Lieferanten-Directory.'}
               </p>

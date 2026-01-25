@@ -80,26 +80,32 @@ export function AddSampleModal({ isOpen, onClose, onSuccess, ventureId }: AddSam
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="glass-card w-full max-w-lg rounded-2xl border border-white/10 flex flex-col">
-        {/* Header */}
-        <div className="p-6 border-b border-white/10 flex justify-between items-center bg-black/40 backdrop-blur-md rounded-t-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm">
+      <div className="glass-card w-full max-w-lg max-h-[95vh] sm:max-h-[90vh] rounded-2xl border border-white/10 flex flex-col">
+        {/* Header - Fixed */}
+        <div className="flex-shrink-0 p-4 sm:p-6 border-b border-white/10 flex justify-between items-center bg-black/40 backdrop-blur-md rounded-t-2xl">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-[#D4AF37]/10 rounded-xl flex items-center justify-center">
               <Package className="w-5 h-5 text-[#D4AF37]" />
             </div>
             <div>
-              <h2 className="text-xl font-instrument-serif text-white">Sample anfordern</h2>
-              <p className="text-xs text-white/40 uppercase tracking-widest font-bold">Musterbestellung tracken</p>
+              <h2 className="text-lg sm:text-xl font-instrument-serif text-white">Sample anfordern</h2>
+              <p className="text-xs text-white/40 uppercase tracking-widest font-bold hidden sm:block">Musterbestellung tracken</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full text-white/40 hover:text-white transition-colors">
-            <X className="w-6 h-6" />
+          <button
+            onClick={onClose}
+            type="button"
+            className="flex-shrink-0 p-2 sm:p-2.5 hover:bg-white/10 rounded-full text-white/60 hover:text-white transition-colors active:scale-95"
+            aria-label="Modal schließen"
+          >
+            <X className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-8 space-y-6">
+        {/* Form - Scrollable */}
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto modal-scroll-container custom-scrollbar">
+          <div className="p-6 sm:p-8 space-y-6">
           <div className="space-y-4">
             <div className="space-y-1">
               <label className="text-xs text-white/60 ml-1">Lieferant *</label>
@@ -185,7 +191,7 @@ export function AddSampleModal({ isOpen, onClose, onSuccess, ventureId }: AddSam
                     value={formData.imageUrl}
                     onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
                     placeholder="https://..."
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-[#D4AF37] outline-none"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm sm:text-base focus:border-[#D4AF37] outline-none"
                   />
                </div>
                <div className="space-y-1">
@@ -195,30 +201,33 @@ export function AddSampleModal({ isOpen, onClose, onSuccess, ventureId }: AddSam
                     value={formData.specFileUrl}
                     onChange={(e) => setFormData({ ...formData, specFileUrl: e.target.value })}
                     placeholder="https://..."
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-[#D4AF37] outline-none"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm sm:text-base focus:border-[#D4AF37] outline-none"
                   />
                </div>
             </div>
           </div>
-
-          <div className="pt-6 border-t border-white/10 flex justify-end gap-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-6 py-3 rounded-xl text-white/60 hover:text-white transition-colors"
-            >
-              Abbrechen
-            </button>
-            <button
-              disabled={loading || !formData.supplierId}
-              type="submit"
-              className="px-8 py-3 bg-[#D4AF37] text-black font-bold rounded-xl hover:opacity-90 transition-all disabled:opacity-50 flex items-center gap-2"
-            >
-              {loading && <Clock className="w-4 h-4 animate-spin" />}
-              Anfrage Speichern
-            </button>
           </div>
         </form>
+
+        {/* Footer Actions - Fixed */}
+        <div className="flex-shrink-0 p-4 sm:p-6 border-t border-white/10 flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4 bg-black/40 backdrop-blur-md rounded-b-2xl">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-6 py-3 rounded-xl text-white/60 hover:text-white transition-colors active:scale-95"
+          >
+            Abbrechen
+          </button>
+          <button
+            disabled={loading || !formData.supplierId}
+            onClick={handleSubmit}
+            type="button"
+            className="px-8 py-3 bg-[#D4AF37] text-black font-bold rounded-xl hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {loading && <Clock className="w-4 h-4 animate-spin" />}
+            Anfrage Speichern
+          </button>
+        </div>
       </div>
     </div>
   );

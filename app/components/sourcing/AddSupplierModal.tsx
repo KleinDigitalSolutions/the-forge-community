@@ -63,26 +63,32 @@ export function AddSupplierModal({ isOpen, onClose, onSuccess, ventureId }: AddS
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="glass-card w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-white/10 flex flex-col">
-        {/* Header */}
-        <div className="p-6 border-b border-white/10 flex justify-between items-center sticky top-0 bg-black/40 backdrop-blur-md z-10">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm">
+      <div className="glass-card w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] rounded-2xl border border-white/10 flex flex-col">
+        {/* Header - Fixed */}
+        <div className="flex-shrink-0 p-4 sm:p-6 border-b border-white/10 flex justify-between items-center bg-black/40 backdrop-blur-md rounded-t-2xl">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-[#D4AF37]/10 rounded-xl flex items-center justify-center">
               <Factory className="w-5 h-5 text-[#D4AF37]" />
             </div>
             <div>
-              <h2 className="text-xl font-instrument-serif text-white">Neuer Lieferant</h2>
-              <p className="text-xs text-white/40 uppercase tracking-widest font-bold">Stammdaten erfassen</p>
+              <h2 className="text-lg sm:text-xl font-instrument-serif text-white">Neuer Lieferant</h2>
+              <p className="text-xs text-white/40 uppercase tracking-widest font-bold hidden sm:block">Stammdaten erfassen</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full text-white/40 hover:text-white transition-colors">
-            <X className="w-6 h-6" />
+          <button
+            onClick={onClose}
+            type="button"
+            className="flex-shrink-0 p-2 sm:p-2.5 hover:bg-white/10 rounded-full text-white/60 hover:text-white transition-colors active:scale-95"
+            aria-label="Modal schließen"
+          >
+            <X className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-8 space-y-8">
+        {/* Form - Scrollable */}
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto modal-scroll-container custom-scrollbar">
+          <div className="p-6 sm:p-8 space-y-6 sm:space-y-8">
           {/* Basic Info */}
           <div className="space-y-4">
             <h3 className="text-sm font-bold text-white/40 uppercase tracking-widest border-l-2 border-[#D4AF37] pl-3">Allgemeine Infos</h3>
@@ -233,7 +239,7 @@ export function AddSupplierModal({ isOpen, onClose, onSuccess, ventureId }: AddS
           <div className="space-y-4">
              <div className="flex justify-between items-center">
                 <h3 className="text-sm font-bold text-white/40 uppercase tracking-widest border-l-2 border-[#D4AF37] pl-3">Bewertung & Notizen</h3>
-                <div className="flex gap-2">
+                <div className="flex gap-1 sm:gap-2">
                    {[1, 2, 3, 4, 5].map((star) => (
                       <button
                         key={star}
@@ -241,7 +247,7 @@ export function AddSupplierModal({ isOpen, onClose, onSuccess, ventureId }: AddS
                         onClick={() => setFormData({ ...formData, rating: star })}
                         className={`p-1 transition-colors ${formData.rating >= star ? 'text-yellow-500' : 'text-white/10'}`}
                       >
-                         <Star className={`w-5 h-5 ${formData.rating >= star ? 'fill-current' : ''}`} />
+                         <Star className={`w-4 h-4 sm:w-5 sm:h-5 ${formData.rating >= star ? 'fill-current' : ''}`} />
                       </button>
                    ))}
                 </div>
@@ -251,29 +257,31 @@ export function AddSupplierModal({ isOpen, onClose, onSuccess, ventureId }: AddS
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 placeholder="Zusätzliche Notizen zum Lieferanten..."
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-[#D4AF37] outline-none resize-none"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm sm:text-base focus:border-[#D4AF37] outline-none resize-none"
              />
           </div>
-
-          {/* Footer Actions */}
-          <div className="pt-6 border-t border-white/10 flex justify-end gap-4 sticky bottom-0 bg-black/40 backdrop-blur-md">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-6 py-3 rounded-xl text-white/60 hover:text-white transition-colors"
-            >
-              Abbrechen
-            </button>
-            <button
-              disabled={loading}
-              type="submit"
-              className="px-8 py-3 bg-[#D4AF37] text-black font-bold rounded-xl hover:opacity-90 transition-all disabled:opacity-50 flex items-center gap-2"
-            >
-              {loading && <Clock className="w-4 h-4 animate-spin" />}
-              Lieferant Speichern
-            </button>
           </div>
         </form>
+
+        {/* Footer Actions - Fixed */}
+        <div className="flex-shrink-0 p-4 sm:p-6 border-t border-white/10 flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4 bg-black/40 backdrop-blur-md rounded-b-2xl">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-6 py-3 rounded-xl text-white/60 hover:text-white transition-colors active:scale-95"
+          >
+            Abbrechen
+          </button>
+          <button
+            disabled={loading}
+            onClick={handleSubmit}
+            type="button"
+            className="px-8 py-3 bg-[#D4AF37] text-black font-bold rounded-xl hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {loading && <Clock className="w-4 h-4 animate-spin" />}
+            Lieferant Speichern
+          </button>
+        </div>
       </div>
     </div>
   );
