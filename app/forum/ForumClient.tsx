@@ -7,7 +7,7 @@ import {
   MessageSquare, Send, ArrowUp, ArrowDown, Users,
   Quote, Reply, MessageCircle, Edit2, Trash2, Image as ImageIcon, Eye, Code, X,
   Sparkles, Lightbulb, CheckCircle, Search, Target,
-  TrendingUp, Trophy, Home, Hash, Zap, Bell, Info, Filter, Plus, Heart, Smile, Bold, Italic, List, Link as LinkIcon, ChevronDown, Share2
+  TrendingUp, Trophy, Home, Hash, Zap, Bell, Info, Filter, Plus, Heart, Smile, Bold, Italic, List, Link as LinkIcon, ChevronDown, Share2, Music
 } from 'lucide-react';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
@@ -321,12 +321,27 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
   const [notifications, setNotifications] = useState<ForumNotification[]>([]);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
   const [notificationsUnread, setNotificationsUnread] = useState(0);
+  const [audioState, setAudioState] = useState<{ isPlaying: boolean; track: any; hasStarted: boolean }>({
+    isPlaying: false,
+    track: null,
+    hasStarted: false
+  });
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [emojiPickerSize, setEmojiPickerSize] = useState({ width: 320, height: 400 });
   const editorRef = useRef<HTMLTextAreaElement>(null);
   const toastTimeoutRef = useRef<number | null>(null);
   const loadMoreRef = useRef(null);
   const isInView = useInView(loadMoreRef);
+  
+  useEffect(() => {
+    const saved = localStorage.getItem('forge-audio-started');
+    if (saved === 'true') {
+      setAudioState(prev => ({ ...prev, hasStarted: true }));
+    }
+    const handleState = (e: any) => setAudioState(e.detail);
+    window.addEventListener('forge-audio-state', handleState);
+    return () => window.removeEventListener('forge-audio-state', handleState);
+  }, []);
 
   const FEEDS = [
     { id: 'All', name: 'Home Feed', icon: Home },
@@ -1236,7 +1251,28 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
             {/* Mobile Filters */}
             <div className="lg:hidden space-y-3 bg-[#121212] border border-white/10 rounded-xl p-3">
               <div className="flex items-center justify-between">
-                <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Feeds</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Feeds</p>
+                  <button
+                    onClick={() => {
+                      if (audioState.hasStarted) {
+                        window.dispatchEvent(new CustomEvent('forge-toggle-play'));
+                      } else {
+                        window.dispatchEvent(new CustomEvent('forge-toggle-music', { detail: { open: true } }));
+                        window.dispatchEvent(new CustomEvent('forge-play-music'));
+                      }
+                    }}
+                    className={`relative flex h-8 w-8 items-center justify-center rounded-full border border-white/10 transition-all ${
+                      audioState.isPlaying ? 'bg-[#D4AF37]/20 text-[#D4AF37]' : 'bg-white/5 text-white/60'
+                    }`}
+                    aria-label={audioState.isPlaying ? 'Audio pausieren' : 'Audio starten'}
+                  >
+                    <Music className="w-3.5 h-3.5" />
+                    {audioState.isPlaying && (
+                      <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-[#D4AF37] shadow-[0_0_6px_rgba(212,175,55,0.8)]" />
+                    )}
+                  </button>
+                </div>
                 <button
                   onClick={handleToggleNotifications}
                   className="relative flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60"

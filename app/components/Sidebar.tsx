@@ -2,16 +2,37 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Settings, Sliders } from 'lucide-react';
+import { Settings, Sliders, Music, Play, Pause, SkipForward, Maximize2 } from 'lucide-react';
 import { SignOutButton } from './SignOutButton';
 import { CreditsDisplay } from './CreditsDisplay';
 import { useUnreadMessages } from '@/app/hooks/useUnreadMessages';
 import { navigation } from './navigation';
+import { useState, useEffect } from 'react';
 
 export default function Sidebar() {
   const pathname = usePathname();
   const { unreadCount } = useUnreadMessages();
+  const [audioState, setAudioState] = useState<{ isPlaying: boolean; track: any; hasStarted: boolean }>({
+    isPlaying: false,
+    track: null,
+    hasStarted: false
+  });
+
+  useEffect(() => {
+    // Check if audio was started in previous session
+    const saved = localStorage.getItem('forge-audio-started');
+    if (saved === 'true') {
+      setAudioState(prev => ({ ...prev, hasStarted: true }));
+    }
+
+    const handleState = (e: any) => setAudioState(e.detail);
+    window.addEventListener('forge-audio-state', handleState);
+    return () => window.removeEventListener('forge-audio-state', handleState);
+  }, []);
+
   const messageBadge = unreadCount > 99 ? '99+' : String(unreadCount);
+  const openAudioModal = () =>
+    window.dispatchEvent(new CustomEvent('forge-toggle-music', { detail: { open: true } }));
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-[#08090A] border-r border-white/5 flex flex-col z-50 overflow-hidden">
@@ -80,6 +101,54 @@ export default function Sidebar() {
           Founder Dossier
         </Link>
       </nav>
+
+      {/* Audio System Sidebar Widget */}
+      <div className="px-4 mb-4 relative z-20">
+        <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-3 shadow-lg backdrop-blur-md">
+          <div className="flex items-center gap-3 mb-3">
+            <div className={`w-8 h-8 rounded-lg bg-[#D4AF37]/10 flex items-center justify-center ${audioState.isPlaying ? 'animate-pulse' : ''}`}>
+              <Music className="w-4 h-4 text-[#D4AF37]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[8px] font-black text-[#D4AF37] uppercase tracking-widest leading-none mb-1">Audio Link</p>
+              <p className="text-[10px] text-white/60 font-medium truncate">
+                {audioState.track?.title || (audioState.hasStarted ? 'System Stream' : 'Stream bereit')}
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-between gap-2">
+            <button 
+              onClick={() => {
+                if (audioState.hasStarted) {
+                  window.dispatchEvent(new CustomEvent('forge-toggle-play'));
+                } else {
+                  openAudioModal();
+                  window.dispatchEvent(new CustomEvent('forge-play-music'));
+                }
+              }}
+              className="flex-1 h-8 rounded-xl bg-[#D4AF37] text-black flex items-center justify-center hover:brightness-110 active:scale-95 transition-all"
+            >
+              {audioState.isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
+            </button>
+            <button 
+              onClick={() => window.dispatchEvent(new CustomEvent('forge-skip-music'))}
+              className={`w-10 h-8 rounded-xl flex items-center justify-center transition-colors ${
+                audioState.hasStarted ? 'bg-white/5 text-white/40 hover:text-white' : 'bg-white/5 text-white/20 cursor-not-allowed'
+              }`}
+              disabled={!audioState.hasStarted}
+            >
+              <SkipForward className="w-4 h-4" />
+            </button>
+            <button 
+              onClick={openAudioModal}
+              className="w-10 h-8 rounded-xl bg-white/5 flex items-center justify-center text-white/40 hover:text-[#D4AF37] transition-colors"
+            >
+              <Maximize2 className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Footer */}
       <div className="border-t border-white/5 relative z-10 bg-black/20 pb-6 pt-4">
