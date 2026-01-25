@@ -21,7 +21,7 @@ export default function MobileTabBar() {
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-30 border-t border-white/10 bg-[#08090A]/95 backdrop-blur-xl lg:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-[140] border-t border-white/10 bg-[#08090A]/95 backdrop-blur-xl lg:hidden">
       <div className="flex items-center justify-around px-2 sm:px-4 py-2 pb-[calc(env(safe-area-inset-bottom)+8px)]">
         {tabs.map((tab) => {
           const Icon = tab.icon;

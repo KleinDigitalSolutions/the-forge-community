@@ -29,7 +29,7 @@ export default function MobileNav() {
 
   return (
     <>
-      <div className="fixed left-0 right-0 top-0 z-40 flex items-center justify-between border-b border-white/10 bg-[#08090A]/90 px-4 py-3 backdrop-blur-xl lg:hidden">
+      <div className="fixed left-0 right-0 top-0 z-[140] flex items-center justify-between border-b border-white/10 bg-[#08090A]/90 px-4 py-3 backdrop-blur-xl lg:hidden">
         <button
           onClick={() => setOpen(true)}
           className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70 transition hover:text-white"
@@ -52,16 +52,16 @@ export default function MobileNav() {
 
       <div
         id="mobile-navigation"
-        className={`fixed inset-0 z-50 lg:hidden ${open ? 'pointer-events-auto' : 'pointer-events-none'}`}
+        className={`fixed inset-0 z-[150] lg:hidden ${open ? 'pointer-events-auto' : 'pointer-events-none'}`}
         aria-hidden={!open}
       >
         <button
           onClick={() => setOpen(false)}
-          className={`absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity ${open ? 'opacity-100' : 'opacity-0'}`}
+          className={`absolute inset-0 z-0 bg-black/70 backdrop-blur-sm transition-opacity ${open ? 'opacity-100' : 'opacity-0'}`}
           aria-label="Navigation schließen"
         />
         <div
-          className={`absolute left-0 top-0 h-full w-[86%] max-w-xs border-r border-white/10 bg-[#08090A] transition-transform duration-300 ${
+          className={`absolute left-0 top-0 h-full w-[86%] max-w-xs border-r border-white/10 bg-[#08090A] transition-transform duration-300 z-10 ${
             open ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
