@@ -1064,3 +1064,44 @@
     transform: translateY(400%);
   }
 }
+
+/* Mobile Onboarding Modal - Prevent Pull-to-Refresh */
+@layer utilities {
+  .modal-scroll-container {
+    /* Prevent overscroll/bounce effects on mobile */
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+
+    /* Smooth scrolling */
+    scroll-behavior: smooth;
+
+    /* Disable pull-to-refresh on mobile browsers */
+    touch-action: pan-y;
+  }
+
+  /* Custom scrollbar for modal content */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(212, 175, 55, 0.3) rgba(255, 255, 255, 0.05);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(212, 175, 55, 0.3);
+    border-radius: 3px;
+    transition: background 0.2s;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(212, 175, 55, 0.5);
+  }
+}

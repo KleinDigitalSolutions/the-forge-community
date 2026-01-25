@@ -92,7 +92,7 @@ export default function OnboardingWizard({ user, onComplete }: OnboardingWizardP
         </div>
 
         {/* Scrollable Content Container */}
-        <div className="flex-1 overflow-y-auto overscroll-contain p-6 sm:p-8 md:p-12 pt-8 sm:pt-10 md:pt-14" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <div className="flex-1 overflow-y-auto modal-scroll-container custom-scrollbar p-6 sm:p-8 md:p-12 pt-8 sm:pt-10 md:pt-14">
           <div className="min-h-full flex flex-col justify-center">
             <AnimatePresence mode="wait">
             {step === 1 && (
@@ -161,26 +161,26 @@ export default function OnboardingWizard({ user, onComplete }: OnboardingWizardP
             )}
 
             {step === 3 && (
-              <motion.div 
+              <motion.div
                 key="step3"
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -50 }}
-                className="space-y-8"
+                className="space-y-6 sm:space-y-8 py-2"
               >
                 <div className="text-center">
-                  <h3 className="text-3xl font-instrument-serif text-white mb-2">Kontakt & Adresse</h3>
-                  <p className="text-white/50">Pflichtdaten, damit wir dich sauber im System führen.</p>
+                  <h3 className="text-2xl sm:text-3xl font-instrument-serif text-white mb-2">Kontakt & Adresse</h3>
+                  <p className="text-sm sm:text-base text-white/50">Pflichtdaten, damit wir dich sauber im System führen.</p>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
                   <div>
                     <label className="block text-xs uppercase tracking-widest text-white/40 font-bold mb-2">Telefon *</label>
                     <input
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:border-[#D4AF37] outline-none transition-colors"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-base focus:border-[#D4AF37] outline-none transition-colors"
                       placeholder="+49..."
                     />
                   </div>
@@ -190,7 +190,7 @@ export default function OnboardingWizard({ user, onComplete }: OnboardingWizardP
                       type="date"
                       value={birthday}
                       onChange={(e) => setBirthday(e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:border-[#D4AF37] outline-none transition-colors"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-base focus:border-[#D4AF37] outline-none transition-colors"
                     />
                   </div>
                   <div className="md:col-span-2">
@@ -199,7 +199,7 @@ export default function OnboardingWizard({ user, onComplete }: OnboardingWizardP
                       type="text"
                       value={addressStreet}
                       onChange={(e) => setAddressStreet(e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:border-[#D4AF37] outline-none transition-colors"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-base focus:border-[#D4AF37] outline-none transition-colors"
                       placeholder="Musterstraße 12"
                     />
                   </div>
@@ -209,7 +209,7 @@ export default function OnboardingWizard({ user, onComplete }: OnboardingWizardP
                       type="text"
                       value={addressZip}
                       onChange={(e) => setAddressZip(e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:border-[#D4AF37] outline-none transition-colors"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-base focus:border-[#D4AF37] outline-none transition-colors"
                       placeholder="10115"
                     />
                   </div>
@@ -219,7 +219,7 @@ export default function OnboardingWizard({ user, onComplete }: OnboardingWizardP
                       type="text"
                       value={addressCity}
                       onChange={(e) => setAddressCity(e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:border-[#D4AF37] outline-none transition-colors"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-base focus:border-[#D4AF37] outline-none transition-colors"
                       placeholder="Berlin"
                     />
                   </div>
@@ -229,17 +229,17 @@ export default function OnboardingWizard({ user, onComplete }: OnboardingWizardP
                       type="text"
                       value={addressCountry}
                       onChange={(e) => setAddressCountry(e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:border-[#D4AF37] outline-none transition-colors"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-base focus:border-[#D4AF37] outline-none transition-colors"
                       placeholder="Germany"
                     />
                   </div>
                 </div>
 
-                <div className="flex justify-center pt-4">
-                  <button 
+                <div className="flex justify-center pt-2 sm:pt-4 pb-2">
+                  <button
                     onClick={handleNext}
                     disabled={!contactComplete}
-                    className="px-8 py-4 bg-white text-black font-bold rounded-xl hover:bg-white/90 transition-colors disabled:opacity-50"
+                    className="w-full sm:w-auto px-8 py-4 bg-white text-black font-bold rounded-xl hover:bg-white/90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Weiter
                   </button>
