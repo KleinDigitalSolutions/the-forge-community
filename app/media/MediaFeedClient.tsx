@@ -387,8 +387,16 @@ export default function MediaFeedClient({ initialItems, initialCursor }: MediaFe
                         </div>
                       </div>
 
-                      <p className="mt-3 text-xs text-white/60">
-                        {item.prompt || item.model || 'No prompt provided.'}
+                      {item.model && (
+                        <div className="mt-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-white/50">
+                          <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[9px] text-white/40">
+                            Model
+                          </span>
+                          <span className="truncate text-white/70">{item.model}</span>
+                        </div>
+                      )}
+                      <p className="mt-2 text-xs text-white/60">
+                        {item.prompt || 'No prompt provided.'}
                       </p>
                     </div>
                   </div>

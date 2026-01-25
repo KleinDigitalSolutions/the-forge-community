@@ -91,8 +91,22 @@ export function MediaLightbox({ open, asset, onClose }: MediaLightboxProps) {
 
         {(asset.prompt || asset.model) && (
           <div className="border-t border-white/10 px-4 py-3 text-xs text-white/50 sm:px-6">
-            <span className="font-bold uppercase tracking-[0.2em] text-white/40">Prompt</span>
-            <span className="ml-3 text-white/70">{asset.prompt || asset.model}</span>
+            {asset.model && (
+              <div className="mb-2 flex items-center gap-3">
+                <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-white/40">
+                  Model
+                </span>
+                <span className="text-white/70">{asset.model}</span>
+              </div>
+            )}
+            {asset.prompt && (
+              <div className="flex items-center gap-3">
+                <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-white/40">
+                  Prompt
+                </span>
+                <span className="text-white/70">{asset.prompt}</span>
+              </div>
+            )}
           </div>
         )}
       </div>
