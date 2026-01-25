@@ -343,11 +343,6 @@ function SatelliteContent({ item }: { item: any }) {
           </span>
         )}
       </div>
-
-      <div className="mt-3 flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.25em] text-white/50">
-        <span>{item.label}</span>
-        <ChevronRight className="w-3 h-3 text-[#D4AF37]/80" />
-      </div>
     </div>
   );
 }

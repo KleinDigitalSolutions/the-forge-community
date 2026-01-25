@@ -109,6 +109,21 @@ export default function Dashboard() {
         {/* UI OVERLAY */}
         <div className="relative z-10 w-full h-full">
           
+          {/* BACKGROUND TEXT LAYER */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center z-0 pointer-events-none select-none overflow-hidden">
+            <h1 
+              className="text-[22vw] font-black uppercase tracking-tighter opacity-[0.12] leading-[0.8]"
+              style={{
+                WebkitTextStroke: '2px rgba(255,255,255,0.5)',
+                color: 'transparent',
+                fontFamily: 'var(--font-instrument-serif), serif',
+                filter: 'blur(0.5px)'
+              }}
+            >
+              The<br/>Forge
+            </h1>
+          </div>
+
           {/* BACKGROUND LIGHT PILLAR EFFECT */}
           <div className="absolute inset-0 z-0 pointer-events-none opacity-50">
             <LightPillar
