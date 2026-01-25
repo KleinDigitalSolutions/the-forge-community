@@ -89,11 +89,6 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                 />
             ) : null}
             
-            {/* Cinematic Noise Layer */}
-            <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.15]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.8\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }} />
-            
-            {/* 70s Vintage Grade & Blur */}
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-[3px] sepia-[0.3] contrast-[1.1] z-0" />
             <div className="pointer-events-none absolute inset-0 ring-1 ring-white/10 z-10" />
 
             <header className="z-20 xl:top-4 relative">
@@ -197,9 +192,14 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                             {" "}{titleLine2}
                         </h1>
 
-                        <p className="sm:text-lg animate-fade-slide-in-3 text-sm sm:text-base text-white/60 max-w-xl mt-6 mx-auto leading-relaxed px-4 sm:px-0">
-                            {description}
-                        </p>
+                        <div className="animate-fade-slide-in-3 mt-6 mx-auto max-w-xl sm:max-w-2xl px-4 sm:px-0">
+                            <div className="group relative overflow-hidden rounded-2xl border border-white/20 bg-white/10 px-5 py-7 sm:px-7 sm:py-10 backdrop-blur-xl shadow-[0_20px_80px_rgba(0,0,0,0.55)] transition-transform duration-500 hover:scale-[1.03]">
+                                <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-white/25 via-white/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                                <p className="relative text-base sm:text-lg text-white/70 leading-relaxed">
+                                    {description}
+                                </p>
+                            </div>
+                        </div>
 
                         <div className="flex flex-col sm:flex-row sm:gap-4 mt-10 gap-4 items-center justify-center animate-fade-slide-in-4 px-4 sm:px-0">
                             <Link
