@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Providers } from "@/app/components/Providers";
 import StructuredData from "@/app/components/StructuredData";
 import Script from "next/script";
+import GlobalAudioPlayer from "@/app/components/visual/GlobalAudioPlayer";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -114,6 +115,11 @@ export default function RootLayout({
             `,
           }}
         />
+        {/* SoundCloud API */}
+        <Script 
+          src="https://w.soundcloud.com/player/api.js"
+          strategy="beforeInteractive"
+        />
       </head>
       <body
         className="antialiased"
@@ -129,6 +135,7 @@ export default function RootLayout({
         </noscript>
         <StructuredData />
         <Providers>
+          <GlobalAudioPlayer />
           {children}
         </Providers>
       </body>
