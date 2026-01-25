@@ -14,6 +14,7 @@ import { formatDistanceToNow, isPast, isToday } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
 import { playGtaWelcomeTrack } from '@/lib/ui-sound';
+import LightPillar from '@/app/components/visual/LightPillar';
 
 // Forge OS Components
 import CockpitControl from '@/app/components/forge/CockpitControl';
@@ -107,6 +108,24 @@ export default function Dashboard() {
 
         {/* UI OVERLAY */}
         <div className="relative z-10 w-full h-full">
+          
+          {/* BACKGROUND LIGHT PILLAR EFFECT */}
+          <div className="absolute inset-0 z-0 pointer-events-none opacity-50">
+            <LightPillar
+              topColor="#ff6a00"
+              bottomColor="#fec700"
+              intensity={0.8}
+              rotationSpeed={0.2}
+              glowAmount={0.0015}
+              pillarWidth={2.5}
+              pillarHeight={0.3}
+              noiseIntensity={0.4}
+              pillarRotation={15}
+              interactive={false}
+              mixBlendMode="screen"
+              quality="medium"
+            />
+          </div>
           
           {/* MAIN STAGE (Absolute Center) */}
           <main className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full flex items-center justify-center">

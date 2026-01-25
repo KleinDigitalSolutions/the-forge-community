@@ -42,18 +42,18 @@ export function CoreSpinLoader({
   const palette =
     variant === 'forge'
       ? {
-          baseGlow: 'bg-[#D4AF37]/10',
-          outerRing: 'border-[#D4AF37]/40',
-          mainArc: 'border-t-[#D4AF37]',
-          mainShadow: 'shadow-[0_0_6px_rgba(212,175,55,0.45)]',
-          reverseArc: 'border-b-[#D4AF37]/70',
-          reverseShadow: 'shadow-[0_0_6px_rgba(212,175,55,0.35)]',
-          innerRing: 'border-l-[#D4AF37]/60',
-          dot: 'bg-[#D4AF37]',
-          dotShadow: 'shadow-[0_0_4px_rgba(212,175,55,0.9)]',
-          core: 'bg-[#D4AF37]',
-          coreShadow: 'shadow-[0_0_6px_rgba(212,175,55,0.6)]',
-          text: 'text-[#D4AF37]'
+          baseGlow: 'bg-[#ff6a00]/20',
+          outerRing: 'border-[#fec700]/40',
+          mainArc: 'border-t-[#ff6a00]',
+          mainShadow: 'shadow-[0_0_12px_rgba(255,106,0,0.6)]',
+          reverseArc: 'border-b-[#fec700]/80',
+          reverseShadow: 'shadow-[0_0_10px_rgba(254,199,0,0.4)]',
+          innerRing: 'border-l-[#ff6a00]/70',
+          dot: 'bg-[#fec700]',
+          dotShadow: 'shadow-[0_0_8px_rgba(254,199,0,0.9)]',
+          core: 'bg-[#ff6a00]',
+          coreShadow: 'shadow-[0_0_15px_rgba(255,106,0,0.8)]',
+          text: 'text-[#fec700]'
         }
       : variant === 'alien'
       ? {
@@ -131,11 +131,21 @@ export function CoreSpinLoader({
           animate-[spin_1s_ease-in-out_infinite]
         `} />
 
-        {/* Orbital Dot */}
+        {/* Orbital Dot 1 */}
         <div className="absolute inset-0 animate-[spin_4s_linear_infinite]">
           <div className={`
             absolute top-0 left-1/2 -translate-x-1/2
             w-1 h-1 rounded-full
+            ${palette.dot}
+            ${palette.dotShadow}
+          `} />
+        </div>
+
+        {/* Orbital Dot 2 (Faster and different angle) */}
+        <div className="absolute inset-2 animate-[spin_2.5s_linear_infinite_reverse]">
+          <div className={`
+            absolute bottom-0 left-1/2 -translate-x-1/2
+            w-1 h-1 rounded-full opacity-60
             ${palette.dot}
             ${palette.dotShadow}
           `} />

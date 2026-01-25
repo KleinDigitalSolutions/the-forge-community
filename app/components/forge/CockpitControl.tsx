@@ -231,7 +231,7 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
             size={96}
             showText={false}
             disableBlur
-            variant="alien"
+            variant="forge"
             className="pointer-events-none"
           />
           
@@ -242,27 +242,45 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
         </motion.button>
 
         {!isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="absolute left-1/2 bottom-full mb-4 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none select-none"
-            aria-hidden="true"
-          >
-            <div className="rounded-full border border-[#D4AF37]/30 bg-black/80 px-5 py-2 text-[10px] font-black uppercase tracking-[0.4em] text-[#D4AF37] shadow-[0_0_20px_rgba(0,0,0,0.5)] whitespace-nowrap animate-pulse">
-              Click
-            </div>
+          <>
+            {/* Top Arrow pointing down */}
             <motion.div
-              animate={{ 
-                y: [0, 5, 0],
-                scale: [1, 1.2, 1]
-              }}
-              transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
-              className="text-[#D4AF37] drop-shadow-[0_0_8px_rgba(212,175,55,0.5)]"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="absolute left-1/2 bottom-full mb-6 -translate-x-1/2 pointer-events-none select-none z-50"
             >
-              <ChevronDown className="w-6 h-6" />
+              <motion.div
+                animate={{ 
+                  y: [0, 10, 0],
+                  scale: [1, 1.2, 1]
+                }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                className="text-[#D4AF37] drop-shadow-[0_0_12px_rgba(212,175,55,0.6)]"
+              >
+                <ChevronDown className="w-10 h-10" />
+              </motion.div>
             </motion.div>
-          </motion.div>
+
+            {/* Bottom Arrow pointing up */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="absolute left-1/2 top-full mt-6 -translate-x-1/2 pointer-events-none select-none z-50"
+            >
+              <motion.div
+                animate={{ 
+                  y: [0, -10, 0],
+                  scale: [1, 1.2, 1]
+                }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                className="text-[#D4AF37] drop-shadow-[0_0_12px_rgba(212,175,55,0.6)]"
+              >
+                <ChevronUp className="w-10 h-10" />
+              </motion.div>
+            </motion.div>
+          </>
         )}
       </div>
 
