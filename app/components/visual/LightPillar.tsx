@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, type CSSProperties } from 'react';
 import * as THREE from 'three';
 import './LightPillar.css';
 
@@ -15,7 +15,7 @@ interface LightPillarProps {
   pillarWidth?: number;
   pillarHeight?: number;
   noiseIntensity?: number;
-  mixBlendMode?: string;
+  mixBlendMode?: CSSProperties['mixBlendMode'];
   pillarRotation?: number;
   quality?: 'low' | 'medium' | 'high';
 }
@@ -31,18 +31,18 @@ const LightPillar = ({
   pillarWidth = 3.0,
   pillarHeight = 0.4,
   noiseIntensity = 0.5,
-  mixBlendMode = 'screen' as any,
+  mixBlendMode = 'screen',
   pillarRotation = 0,
   quality = 'high'
 }: LightPillarProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
-  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
-  const materialRef = useRef<THREE.ShaderMaterial | null>(null);
-  const sceneRef = useRef<THREE.Scene | null>(null);
-  const cameraRef = useRef<THREE.OrthographicCamera | null>(null);
-  const geometryRef = useRef<THREE.PlaneGeometry | null>(null);
-  const mouseRef = useRef(new THREE.Vector2(0, 0));
+  const rendererRef = useRef<any | null>(null);
+  const materialRef = useRef<any | null>(null);
+  const sceneRef = useRef<any | null>(null);
+  const cameraRef = useRef<any | null>(null);
+  const geometryRef = useRef<any | null>(null);
+  const mouseRef = useRef<any>(new THREE.Vector2(0, 0));
   const timeRef = useRef(0);
   const [webGLSupported, setWebGLSupported] = useState(true);
 
@@ -87,7 +87,7 @@ const LightPillar = ({
 
     const settings = qualitySettings[effectiveQuality] || qualitySettings.medium;
 
-    let renderer: THREE.WebGLRenderer;
+    let renderer: any;
     try {
       renderer = new THREE.WebGLRenderer({
         antialias: false,

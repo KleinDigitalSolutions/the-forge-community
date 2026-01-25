@@ -800,7 +800,7 @@ export default function Hyperspeed({
       }
     `;
 
-    const resizeRendererToDisplaySize = (renderer: THREE.WebGLRenderer, setSize: (w: number, h: number, u: boolean) => void) => {
+    const resizeRendererToDisplaySize = (renderer: any, setSize: (w: number, h: number, u: boolean) => void) => {
       const canvas = renderer.domElement;
       const width = canvas.clientWidth;
       const height = canvas.clientHeight;
@@ -814,12 +814,12 @@ export default function Hyperspeed({
     class App {
       options: any;
       container: HTMLDivElement;
-      renderer: THREE.WebGLRenderer;
+      renderer: any;
       composer: EffectComposer;
-      camera: THREE.PerspectiveCamera;
-      scene: THREE.Scene;
+      camera: any;
+      scene: any;
       fogUniforms: any;
-      clock: THREE.Clock;
+      clock: any;
       assets: Record<string, any>;
       disposed: boolean;
       road: any;
@@ -943,10 +943,8 @@ export default function Hyperspeed({
         const smaaPass = new EffectPass(
           this.camera,
           new SMAAEffect({
-            preset: SMAAPreset.MEDIUM,
-            searchImage: SMAAEffect.searchImageDataURL,
-            areaImage: SMAAEffect.areaImageDataURL
-          })
+            preset: SMAAPreset.MEDIUM
+          } as any)
         );
         this.renderPass.renderToScreen = false;
         this.bloomPass.renderToScreen = false;
@@ -1114,10 +1112,10 @@ export default function Hyperspeed({
       options: any;
       colors: any;
       speed: any;
-      fade: THREE.Vector2;
-      mesh: THREE.Mesh<THREE.InstancedBufferGeometry, THREE.ShaderMaterial> | null;
+      fade: any;
+      mesh: any;
 
-      constructor(webgl: App, options: any, colors: any, speed: any, fade: THREE.Vector2) {
+      constructor(webgl: App, options: any, colors: any, speed: any, fade: any) {
         this.webgl = webgl;
         this.options = options;
         this.colors = colors;
@@ -1193,7 +1191,7 @@ export default function Hyperspeed({
           )
         });
 
-        material.onBeforeCompile = (shader) => {
+        material.onBeforeCompile = (shader: any) => {
           shader.vertexShader = shader.vertexShader.replace(
             '#include <getDistortion_vertex>',
             options.distortion.getDistortion
@@ -1216,7 +1214,7 @@ export default function Hyperspeed({
     class LightsSticks {
       webgl: App;
       options: any;
-      mesh: THREE.Mesh<THREE.InstancedBufferGeometry, THREE.ShaderMaterial> | null;
+      mesh: any;
 
       constructor(webgl: App, options: any) {
         this.webgl = webgl;
@@ -1271,7 +1269,7 @@ export default function Hyperspeed({
           )
         });
 
-        material.onBeforeCompile = (shader) => {
+        material.onBeforeCompile = (shader: any) => {
           shader.vertexShader = shader.vertexShader.replace(
             '#include <getDistortion_vertex>',
             options.distortion.getDistortion
@@ -1295,9 +1293,9 @@ export default function Hyperspeed({
       webgl: App;
       options: any;
       uTime: { value: number };
-      leftRoadWay: THREE.Mesh | null;
-      rightRoadWay: THREE.Mesh | null;
-      island: THREE.Mesh | null;
+      leftRoadWay: any;
+      rightRoadWay: any;
+      island: any;
 
       constructor(webgl: App, options: any) {
         this.webgl = webgl;
@@ -1341,7 +1339,7 @@ export default function Hyperspeed({
           uniforms: Object.assign(uniforms, this.webgl.fogUniforms, options.distortion.uniforms)
         });
 
-        material.onBeforeCompile = (shader) => {
+        material.onBeforeCompile = (shader: any) => {
           shader.vertexShader = shader.vertexShader.replace(
             '#include <getDistortion_vertex>',
             options.distortion.getDistortion

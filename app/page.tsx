@@ -30,7 +30,6 @@ import ForgeOSShowcase from '@/app/components/landing/ForgeOSShowcase';
 import MissionLogCarousel from '@/app/components/landing/MissionLogCarousel';
 import { BorderBeam } from '@/components/ui/border-beam';
 import { Hero195 } from '@/components/ui/hero-195';
-import LightPillar from '@/app/components/visual/LightPillar';
 
 // --------------------------------------------------------
 
@@ -196,31 +195,9 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-black text-(--foreground) selection:bg-[#D4AF37] selection:text-black overflow-x-hidden relative">
       
-      {/* Global Pinned Background */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <LightPillar
-          topColor="#000000"
-          bottomColor="#D4AF37"
-          intensity={0.6}
-          rotationSpeed={0.2}
-          glowAmount={0.003}
-          pillarWidth={3.0}
-          pillarHeight={0.6}
-          noiseIntensity={0.25}
-          pillarRotation={15}
-          interactive={false}
-          mixBlendMode="screen"
-          quality="high"
-        />
-        {/* Unified Overlay for readability */}
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px]" />
-      </div>
-
       <div className="relative z-10">
         {/* Integrated Hero & Header */}
         <ResponsiveHeroBanner 
-          useLightPillar={false} /* Disabled here to use global background */
-          backgroundImageUrl="" /* No image, fallback to transparency */
           badgeText="BATCH #001 — REKRUTIERUNG LÄUFT"
           title="Viele Founder. 1 Brand."
           titleLine2="Volle Transparenz."
