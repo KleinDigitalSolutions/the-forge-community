@@ -13,7 +13,8 @@ import {
   Zap,
   ChevronRight,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Music
 } from 'lucide-react';
 import Link from 'next/link';
 import { useUnreadMessages } from '@/app/hooks/useUnreadMessages';
@@ -44,12 +45,13 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
   const accent = '#D4AF37';
   const menuItems = [
     { icon: Rocket, label: 'Ventures', action: () => onToggleView('ventures'), color: accent, angle: 270 },
-    { icon: Users, label: 'Squads', href: '/squads', color: accent, angle: 321 },
-    { icon: Layout, label: 'Academy', href: '/resources', color: accent, angle: 12 },
-    { icon: UserIcon, label: 'Profile', href: '/profile', color: accent, angle: 63 },
-    { icon: MessageCircle, label: 'Messages', href: '/messages', color: accent, angle: 114, badgeCount: unreadCount },
-    { icon: MessageSquare, label: 'Forum', href: '/forum', color: accent, angle: 165 },
-    { icon: Zap, label: 'Missions', action: () => onToggleView('missions'), color: accent, angle: 216 },
+    { icon: Users, label: 'Squads', href: '/squads', color: accent, angle: 310 },
+    { icon: Music, label: 'Music', action: () => onToggleView('music'), color: accent, angle: 350 },
+    { icon: Layout, label: 'Academy', href: '/resources', color: accent, angle: 30 },
+    { icon: UserIcon, label: 'Profile', href: '/profile', color: accent, angle: 70 },
+    { icon: MessageCircle, label: 'Messages', href: '/messages', color: accent, angle: 110, badgeCount: unreadCount },
+    { icon: MessageSquare, label: 'Forum', href: '/forum', color: accent, angle: 150 },
+    { icon: Zap, label: 'Missions', action: () => onToggleView('missions'), color: accent, angle: 210 },
   ];
 
   useEffect(() => {
@@ -341,17 +343,38 @@ function SatelliteContent({ item }: { item: any }) {
   const badgeText = badge > 99 ? '99+' : String(badge);
 
   return (
-    <div className="flex flex-col items-center gap-3">
-      {/* Icon Circle */}
-      <div 
-        className="relative w-16 h-16 rounded-2xl bg-[#0b0c0f] border border-white/10 flex items-center justify-center shadow-[0_0_24px_rgba(0,0,0,0.6)] transition-all duration-300 group-hover:scale-110 group-hover:border-[#D4AF37]/60 group-hover:shadow-[0_0_40px_rgba(212,175,55,0.25)]"
-      >
-        <item.icon className="w-6 h-6 text-white/70 transition-colors group-hover:text-white" />
-        {badge > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1.5 rounded-full bg-[#D4AF37] text-[9px] font-bold text-black flex items-center justify-center shadow-[0_0_12px_rgba(212,175,55,0.4)]">
-            {badgeText}
-          </span>
-        )}
+    <div className="flex flex-col items-center gap-3 group">
+      {/* Icon Circle - PREMIUM TECH LOOK */}
+      <div className="relative w-16 h-16 transition-all duration-500 group-hover:scale-110">
+        {/* Outer Rotating Ring (Only visible on hover) */}
+        <div className="absolute -inset-2 border border-[#D4AF37]/0 group-hover:border-[#D4AF37]/40 rounded-full transition-all duration-700 animate-[spin_8s_linear_infinite] opacity-0 group-hover:opacity-100" />
+        
+        {/* Main Button Body */}
+        <div 
+          className="relative w-full h-full rounded-2xl bg-linear-to-br from-white/10 to-transparent border border-white/10 flex items-center justify-center shadow-[0_0_30px_rgba(0,0,0,0.8)] overflow-hidden"
+          style={{ backdropFilter: 'blur(8px)' }}
+        >
+          {/* Inner Glow */}
+          <div className="absolute inset-0 bg-[#D4AF37]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          
+          {/* Scanlines Overlay */}
+          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 pointer-events-none" />
+          
+          {/* Top Shine */}
+          <div className="absolute top-0 left-0 right-0 h-[1px] bg-linear-to-r from-transparent via-white/20 to-transparent" />
+
+          <item.icon className="w-6 h-6 text-white/60 transition-all duration-300 group-hover:text-white group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
+          
+          {badge > 0 && (
+            <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1.5 rounded-full bg-linear-to-br from-[#D4AF37] to-amber-600 text-[9px] font-black text-black flex items-center justify-center shadow-[0_0_15px_rgba(212,175,55,0.6)] z-10">
+              {badgeText}
+            </span>
+          )}
+        </div>
+
+        {/* Decorative Corner Brackets (Tech Detail) */}
+        <div className="absolute -top-1 -left-1 w-2 h-2 border-t border-l border-[#D4AF37]/0 group-hover:border-[#D4AF37]/60 transition-all duration-500" />
+        <div className="absolute -bottom-1 -right-1 w-2 h-2 border-b border-r border-[#D4AF37]/0 group-hover:border-[#D4AF37]/60 transition-all duration-500" />
       </div>
     </div>
   );

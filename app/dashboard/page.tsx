@@ -15,6 +15,7 @@ import { de } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
 import { playGtaWelcomeTrack } from '@/lib/ui-sound';
 import LightPillar from '@/app/components/visual/LightPillar';
+import { Music as MusicIcon, Play } from 'lucide-react';
 
 // Forge OS Components
 import CockpitControl from '@/app/components/forge/CockpitControl';
@@ -229,6 +230,7 @@ export default function Dashboard() {
             {/* RIGHT PANEL: MISSIONS */}
             <AnimatePresence>
               {(activeView === 'missions') && (
+                // ... (Missions code remains unchanged)
                 <motion.div 
                   initial={{ x: 100, opacity: 0, scale: 0.9 }}
                   animate={{ x: 0, opacity: 1, scale: 1 }}
@@ -272,6 +274,105 @@ export default function Dashboard() {
                            );
                         })
                       )}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* AUDIO CORE: MUSIC PLAYER - PREMIUM OVERHAUL */}
+            <AnimatePresence>
+              {(activeView === 'music') && (
+                <motion.div 
+                  initial={{ y: 50, opacity: 0, scale: 0.9, filter: 'blur(10px)' }}
+                  animate={{ y: 0, opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                  exit={{ y: 50, opacity: 0, scale: 0.9, filter: 'blur(10px)' }}
+                  className="pointer-events-auto absolute bottom-12 left-1/2 -translate-x-1/2 w-[min(540px,95vw)] z-[70]"
+                >
+                  <div className="relative group">
+                    {/* Multi-Layer Glow */}
+                    <div className="absolute -inset-1 bg-gradient-to-r from-[#D4AF37] via-orange-600 to-amber-900 rounded-[2.5rem] opacity-20 group-hover:opacity-40 blur-xl transition duration-1000 animate-pulse"></div>
+                    
+                    {/* Main Console Body */}
+                    <div className="relative bg-black/85 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] shadow-[0_0_80px_rgba(0,0,0,1)] overflow-hidden pointer-events-auto">
+                      
+                      {/* Holographic Texture Overlay */}
+                      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20 pointer-events-none" />
+                      <div className="absolute inset-0 bg-linear-to-b from-white/5 to-transparent pointer-events-none" />
+
+                      {/* Tech Brackets - MATCHING RADIUS */}
+                      <div className="absolute top-0 left-0 w-16 h-16 border-t-2 border-l-2 border-[#D4AF37]/60 rounded-tl-[2.5rem] pointer-events-none" />
+                      <div className="absolute top-0 right-0 w-16 h-16 border-t-2 border-r-2 border-[#D4AF37]/60 rounded-tr-[2.5rem] pointer-events-none" />
+                      <div className="absolute bottom-0 left-0 w-16 h-16 border-b-2 border-l-2 border-[#D4AF37]/60 rounded-bl-[2.5rem] pointer-events-none" />
+                      <div className="absolute bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-[#D4AF37]/60 rounded-br-[2.5rem] pointer-events-none" />
+
+                      {/* Header Area */}
+                      <div className="px-8 pt-7 pb-5 flex justify-between items-center relative z-10">
+                        <div className="flex items-center gap-4">
+                          <div className="relative">
+                            <div className="absolute inset-0 bg-[#D4AF37] blur-md opacity-20 animate-pulse" />
+                            <div className="w-10 h-10 rounded-xl bg-linear-to-br from-[#D4AF37]/20 to-transparent border border-[#D4AF37]/30 flex items-center justify-center">
+                              <MusicIcon className="w-5 h-5 text-[#D4AF37] animate-[spin_4s_linear_infinite]" />
+                            </div>
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h2 className="text-sm font-black uppercase tracking-[0.3em] text-white text-shadow-sm">Audio Core</h2>
+                              <span className="px-1.5 py-0.5 rounded bg-green-500/10 border border-green-500/20 text-[7px] text-green-400 font-bold animate-pulse">LIVE</span>
+                            </div>
+                            <p className="text-[9px] text-[#D4AF37]/50 uppercase tracking-[0.2em] font-mono">FRG-OS // SIGNAL_V2.23</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-3">
+                          <div className="hidden sm:flex flex-col items-end mr-4 opacity-40">
+                            <span className="text-[7px] font-mono uppercase tracking-widest text-white/60">Decibel // -12.4dB</span>
+                            <span className="text-[7px] font-mono uppercase tracking-widest text-white/60">Buffer // 100%</span>
+                          </div>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); setActiveView('idle'); }} 
+                            className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-all text-white/40 hover:text-[#D4AF37] group/close relative overflow-hidden"
+                          >
+                            <div className="absolute inset-0 bg-[#D4AF37]/0 group-hover/close:bg-[#D4AF37]/10 transition-colors" />
+                            <X className="w-5 h-5 relative z-10"/>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Player Stage */}
+                      <div className="px-6 pb-6 relative z-10">
+                        <div className="relative rounded-[1.5rem] overflow-hidden bg-black/60 border border-white/5 shadow-inner group/player">
+                          {/* Inner Shadow Mask (to blend the iframe) */}
+                          <div className="absolute inset-0 z-20 pointer-events-none shadow-[inset_0_0_40px_rgba(0,0,0,0.8)] border border-white/10 rounded-[1.5rem]" />
+                          
+                          <div className="p-4 flex items-center justify-center min-h-[180px]">
+                            <iframe 
+                              width="100%" 
+                              height="166" 
+                              scrolling="no" 
+                              frameBorder="no" 
+                              allow="autoplay" 
+                              className="rounded-xl relative z-10 opacity-90 group-hover/player:opacity-100 transition-opacity duration-500"
+                              src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/soundcloud%253Atracks%253A2233330283&color=%23ffb800&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Sub-Footer System Data - NOW SEAMLESS */}
+                      <div className="px-8 py-4 bg-white/[0.05] border-t border-white/10 flex justify-between items-center relative z-10">
+                        <div className="flex gap-6">
+                          <div className="flex items-center gap-2">
+                            <div className="w-1 h-1 rounded-full bg-[#D4AF37] animate-ping" />
+                            <span className="text-[7px] font-bold text-[#D4AF37]/80 uppercase tracking-widest">Mastering Active</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-1 h-1 rounded-full bg-white/20" />
+                            <span className="text-[7px] font-bold text-white/40 uppercase tracking-widest">Neural Link</span>
+                          </div>
+                        </div>
+                        <span className="text-[7px] font-mono text-white/30 uppercase tracking-[0.3em]">Sector 7-G // Audio Stream</span>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
