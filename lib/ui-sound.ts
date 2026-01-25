@@ -1,5 +1,6 @@
 let gtaMenuAudio: HTMLAudioElement | null = null;
 let gtaMenuReady = false;
+let gtaWelcomeAudio: HTMLAudioElement | null = null;
 
 const ensureAudio = () => {
   if (!gtaMenuAudio) {
@@ -35,4 +36,20 @@ export function playGtaMenuSound() {
   gtaMenuAudio.volume = 0.35;
   gtaMenuAudio.currentTime = 0;
   gtaMenuAudio.play().catch(() => {});
+}
+
+const ensureWelcomeAudio = () => {
+  if (!gtaWelcomeAudio) {
+    gtaWelcomeAudio = new Audio('/audio/gta-welcome.mp3');
+    gtaWelcomeAudio.preload = 'auto';
+    gtaWelcomeAudio.volume = 0.4;
+  }
+};
+
+export function playGtaWelcomeTrack() {
+  if (typeof window === 'undefined') return;
+  ensureWelcomeAudio();
+  if (!gtaWelcomeAudio) return;
+  gtaWelcomeAudio.currentTime = 0;
+  gtaWelcomeAudio.play().catch(() => {});
 }

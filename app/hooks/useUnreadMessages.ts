@@ -7,8 +7,9 @@ let globalUnreadCount: number | null = null;
 let lastNotifyAt = 0;
 let primeBound = false;
 
-export function useUnreadMessages(pollMs = 30000) {
+export function useUnreadMessages(pollMs = 30000, options?: { enableSound?: boolean }) {
   const [unreadCount, setUnreadCount] = useState(0);
+  const enableSound = options?.enableSound ?? false;
 
   const fetchUnread = useCallback(async () => {
     try {
@@ -19,7 +20,7 @@ export function useUnreadMessages(pollMs = 30000) {
       const safeTotal = Number.isFinite(total) ? total : 0;
       setUnreadCount(safeTotal);
 
-      if (globalUnreadCount !== null && safeTotal > globalUnreadCount) {
+      if (enableSound && globalUnreadCount !== null && safeTotal > globalUnreadCount) {
         const now = Date.now();
         if (now - lastNotifyAt > 1500) {
           playGtaMenuSound();
@@ -35,7 +36,7 @@ export function useUnreadMessages(pollMs = 30000) {
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
 
-    if (!primeBound && typeof window !== 'undefined') {
+    if (enableSound && !primeBound && typeof window !== 'undefined') {
       primeBound = true;
       window.addEventListener('pointerdown', primeGtaMenuSound, { once: true });
     }
@@ -55,7 +56,7 @@ export function useUnreadMessages(pollMs = 30000) {
       if (interval) clearInterval(interval);
       window.removeEventListener('focus', handleFocus);
     };
-  }, [fetchUnread, pollMs]);
+  }, [fetchUnread, pollMs, enableSound]);
 
   return { unreadCount, refresh: fetchUnread };
 }

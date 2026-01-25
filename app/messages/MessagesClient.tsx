@@ -5,7 +5,6 @@ import PageShell from '@/app/components/PageShell';
 import AuthGuard from '@/app/components/AuthGuard';
 import { MessageCircle, Search, Send, Loader2, UserPlus } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { playGtaMenuSound, primeGtaMenuSound } from '@/lib/ui-sound';
 
 interface ThreadParticipant {
   id: string;
@@ -223,7 +222,6 @@ export default function MessagesClient() {
   const handleSend = async () => {
     if (!activeThreadId || !composer.trim()) return;
 
-    primeGtaMenuSound();
     setSending(true);
     setSendError('');
     try {
@@ -240,7 +238,6 @@ export default function MessagesClient() {
       }
       setMessages(prev => [...prev, payload]);
       setComposer('');
-      playGtaMenuSound();
       await loadThreads(false);
     } catch (error) {
       console.error(error);

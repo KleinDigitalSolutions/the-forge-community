@@ -13,6 +13,7 @@ import OnboardingWizard from '@/app/components/onboarding/OnboardingWizard';
 import { formatDistanceToNow, isPast, isToday } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
+import { playGtaWelcomeTrack } from '@/lib/ui-sound';
 
 // Forge OS Components
 import CockpitControl from '@/app/components/forge/CockpitControl';
@@ -56,6 +57,21 @@ export default function Dashboard() {
   useEffect(() => {
     fetchDashboard();
   }, []);
+
+  useEffect(() => {
+    if (!data?.user) return;
+    const storageKey = 'gta-welcome-track-played';
+    if (typeof window === 'undefined') return;
+    if (localStorage.getItem(storageKey)) return;
+
+    const handleFirstInteraction = () => {
+      playGtaWelcomeTrack();
+      localStorage.setItem(storageKey, '1');
+    };
+
+    window.addEventListener('pointerdown', handleFirstInteraction, { once: true });
+    return () => window.removeEventListener('pointerdown', handleFirstInteraction);
+  }, [data?.user?.id]);
 
   if (loading) {
     return (

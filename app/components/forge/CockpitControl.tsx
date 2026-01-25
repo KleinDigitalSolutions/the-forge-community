@@ -37,7 +37,7 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
   const parallaxCurrent = useRef({ x: 0, y: 0 });
   const [orbitSize, setOrbitSize] = useState(720);
   const [orbitRadius, setOrbitRadius] = useState(220);
-  const { unreadCount } = useUnreadMessages();
+  const { unreadCount } = useUnreadMessages(30000, { enableSound: true });
 
   const accent = '#D4AF37';
   const menuItems = [
