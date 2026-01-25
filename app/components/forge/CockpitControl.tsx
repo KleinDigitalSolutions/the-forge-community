@@ -44,15 +44,17 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
 
   const accent = '#D4AF37';
   const menuItems = [
-    { icon: Rocket, label: 'Ventures', action: () => onToggleView('ventures'), color: accent, angle: 270 },
-    { icon: Users, label: 'Squads', href: '/squads', color: accent, angle: 310 },
-    { icon: Music, label: 'Music', action: () => onToggleView('music'), color: accent, angle: 350 },
-    { icon: Layout, label: 'Academy', href: '/resources', color: accent, angle: 30 },
-    { icon: UserIcon, label: 'Profile', href: '/profile', color: accent, angle: 70 },
-    { icon: MessageCircle, label: 'Messages', href: '/messages', color: accent, angle: 110, badgeCount: unreadCount },
-    { icon: MessageSquare, label: 'Forum', href: '/forum', color: accent, angle: 150 },
-    { icon: Zap, label: 'Missions', action: () => onToggleView('missions'), color: accent, angle: 210 },
+    { icon: Rocket, label: 'Ventures', action: () => onToggleView('ventures'), color: accent },
+    { icon: Users, label: 'Squads', href: '/squads', color: accent },
+    { icon: Music, label: 'Music', action: () => onToggleView('music'), color: accent },
+    { icon: Layout, label: 'Academy', href: '/resources', color: accent },
+    { icon: UserIcon, label: 'Profile', href: '/profile', color: accent },
+    { icon: MessageCircle, label: 'Messages', href: '/messages', color: accent, badgeCount: unreadCount },
+    { icon: MessageSquare, label: 'Forum', href: '/forum', color: accent },
+    { icon: Zap, label: 'Missions', action: () => onToggleView('missions'), color: accent },
   ];
+  const angleStep = 360 / menuItems.length;
+  const startAngle = -90;
 
   useEffect(() => {
     const update = () => {
@@ -162,7 +164,8 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
       >
         <AnimatePresence>
           {isOpen && menuItems.map((item, index) => {
-            const radian = (item.angle * Math.PI) / 180;
+            const angle = startAngle + index * angleStep;
+            const radian = (angle * Math.PI) / 180;
             const cx = orbitSize / 2;
             const cy = orbitSize / 2;
             
@@ -299,7 +302,8 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
       {/* --- SATELLITES --- */}
       <AnimatePresence>
         {isOpen && menuItems.map((item, index) => {
-          const radian = (item.angle * Math.PI) / 180;
+          const angle = startAngle + index * angleStep;
+          const radian = (angle * Math.PI) / 180;
           const x = Math.cos(radian) * orbitRadius;
           const y = Math.sin(radian) * orbitRadius;
 
