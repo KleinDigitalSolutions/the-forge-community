@@ -95,7 +95,6 @@ interface ForumClientProps {
 }
 
 const AI_AUTHORS = new Set(['@orion', '@forge-ai']);
-const INSIGHT_HEADER = /\*\*(?:Orion|AI) Insight · (.+?)\*\*\s*/i;
 const META_REGEX = /<!--metadata: ({[\s\S]*}) -->$/;
 
 function extractMetadata(content: string) {
@@ -109,20 +108,6 @@ function extractMetadata(content: string) {
   } catch (e) {
     return { content, meta: null };
   }
-}
-
-function extractAiInsight(comments?: Comment[]) {
-  if (!comments || comments.length === 0) return null;
-  const aiComments = comments.filter(comment =>
-    AI_AUTHORS.has(comment.author) &&
-    INSIGHT_HEADER.test(comment.content)
-  );
-  if (aiComments.length === 0) return null;
-  const latest = aiComments[aiComments.length - 1];
-  const match = latest.content.match(INSIGHT_HEADER);
-  const label = match?.[1]?.trim() || 'Orion Insight';
-  const content = match ? latest.content.replace(match[0], '').trim() : latest.content.trim();
-  return { label, content };
 }
 
 function buildProfileHref(post: ForumPost) {
@@ -1210,8 +1195,8 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
 
   return (
     <AuthGuard>
-      <PageShell>
-        <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-[240px_1fr_320px] gap-8">
+      <PageShell contentClassName="flex-1 px-4 pb-24 pt-20 sm:px-6 lg:ml-64 lg:px-6 lg:py-8 transition-all relative overflow-hidden">
+        <div className="max-w-[1600px] grid grid-cols-1 lg:grid-cols-[240px_1fr_320px] gap-8">
           
           {/* LEFT SIDEBAR - Reddit Style Navigation */}
           <aside className="hidden lg:block sticky top-8 h-fit space-y-8">
@@ -1603,43 +1588,6 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
                           )}
                         </div>
 
-                        {(() => {
-                          const liveInsight = aiResult?.postId === post.id
-                            ? {
-                                label: AI_ACTIONS.find(a => a.id === aiResult.action)?.label || 'Orion Insight',
-                                content: aiResult.content
-                              }
-                            : null;
-                          const persistedInsight = liveInsight ? null : extractAiInsight(post.comments);
-                          const insight = liveInsight || persistedInsight;
-
-                          if (!insight) return null;
-
-                          return (
-                            <div className="mt-3 p-4 rounded-xl bg-white/5 border border-white/10 text-sm text-white/80">
-                              <div className="text-[10px] uppercase tracking-widest text-white/40 mb-1">
-                                Orion · {insight.label}
-                              </div>
-                              <div className="prose prose-invert prose-sm max-w-none 
-                                prose-headings:text-white prose-headings:font-bold prose-headings:text-sm prose-headings:mb-2 prose-headings:mt-4
-                                prose-p:text-white/80 prose-p:my-2
-                                prose-strong:text-[#D4AF37] prose-strong:font-bold
-                                prose-ul:list-disc prose-ul:pl-4 prose-ul:my-2
-                                prose-ol:list-decimal prose-ol:pl-4 prose-ol:my-2
-                                prose-li:text-white/70 prose-li:my-1
-                                prose-a:text-[#D4AF37] prose-a:underline hover:prose-a:text-white transition-colors
-                              ">
-                                <ReactMarkdown 
-                                  remarkPlugins={[remarkGfm]}
-                                  components={MarkdownComponents}
-                                >
-                                  {insight.content}
-                                </ReactMarkdown>
-                              </div>
-                            </div>
-                          );
-                        })()}
-
                         {expandedPosts[post.id] && (
                           <div className="mt-4 rounded-xl border border-white/10 bg-black/20 p-4 space-y-4">
                             <div className="space-y-3">
@@ -1707,7 +1655,7 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
 
                                         {parent && (
                                           <div className="text-[10px] uppercase tracking-widest text-white/30 mb-2">
-                                            Antwort auf <span className="text-white/60">@{parent.author}</span>
+                                            Antwort auf <span className="text-white/60">{parent.author.startsWith('@') ? '' : '@'}{parent.author}</span>
                                           </div>
                                         )}
 
@@ -1831,7 +1779,7 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
                               )}
                               {replyTargets[post.id] && (
                                 <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/2 px-3 py-2 text-[10px] uppercase tracking-widest text-white/50">
-                                  <span>Antwort an @{replyTargets[post.id]?.author}</span>
+                                  <span>Antwort an {replyTargets[post.id]?.author?.startsWith('@') ? '' : '@'}{replyTargets[post.id]?.author}</span>
                                   <button
                                     onClick={() => setReplyTargets(prev => ({ ...prev, [post.id]: null }))}
                                     className="text-white/40 hover:text-white transition-all"
