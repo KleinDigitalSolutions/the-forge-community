@@ -18,6 +18,7 @@ interface Partner {
 interface ResponsiveHeroBannerProps {
     logoUrl?: string;
     backgroundImageUrl?: string;
+    backgroundVideoUrl?: string;
     navLinks?: NavLink[];
     ctaButtonText?: string;
     ctaButtonHref?: string;
@@ -37,6 +38,7 @@ interface ResponsiveHeroBannerProps {
 const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
     logoUrl = "https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/febf2421-4a9a-42d6-871d-ff4f9518021c_1600w.png",
     backgroundImageUrl,
+    backgroundVideoUrl,
     navLinks = [
         { label: "Home", href: "/", isActive: true },
         { label: "Dashboard", href: "/dashboard" },
@@ -69,20 +71,34 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
 
     return (
         <section className="w-full isolate min-h-screen overflow-hidden relative">
-            {backgroundImageUrl ? (
+            {backgroundVideoUrl ? (
+                <video
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="w-full h-full object-cover absolute top-0 right-0 bottom-0 left-0 z-0"
+                >
+                    <source src={backgroundVideoUrl} type="video/mp4" />
+                </video>
+            ) : backgroundImageUrl ? (
                 <img
                     src={backgroundImageUrl}
                     alt=""
-                    className="w-full h-full object-cover absolute top-0 right-0 bottom-0 left-0"
+                    className="w-full h-full object-cover absolute top-0 right-0 bottom-0 left-0 z-0"
                 />
             ) : null}
             
-            <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px] z-0" />
+            {/* Cinematic Noise Layer */}
+            <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.15]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.8\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }} />
+            
+            {/* 70s Vintage Grade & Blur */}
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-[3px] sepia-[0.3] contrast-[1.1] z-0" />
             <div className="pointer-events-none absolute inset-0 ring-1 ring-white/10 z-10" />
 
             <header className="z-20 xl:top-4 relative">
                 <div className="mx-6">
-                    <div className="flex items-center justify-between pt-4">
+                    <div className="relative flex items-center justify-between pt-4">
                         <Link href="/" className="flex items-center gap-3 group">
                           <img
                             src="/Logo.JPEG"
@@ -91,7 +107,7 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                           />
                         </Link>
 
-                        <nav className="hidden md:flex items-center gap-2">
+                        <nav className="hidden md:flex items-center gap-2 absolute left-1/2 -translate-x-1/2 max-w-[calc(100%-10rem)] justify-center">
                             <div className="flex items-center gap-1 rounded-full bg-white/5 px-1 py-1 ring-1 ring-white/10 backdrop-blur">
                                 {navLinks?.map((link, index) => (
                                     <Link

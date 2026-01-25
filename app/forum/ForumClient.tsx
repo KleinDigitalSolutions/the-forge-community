@@ -987,7 +987,7 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
     return { roots, nodes };
   };
 
-  const NavItem = ({ item, active, onClick }: any) => {
+  const NavItem = ({ item, active, onClick, className = '' }: any) => {
     const Icon = item.icon;
     return (
       <button
@@ -996,7 +996,7 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
           active 
             ? 'bg-white/10 text-white font-bold' 
             : 'text-white/50 hover:text-white hover:bg-white/5'
-        }`}
+        } ${className}`}
       >
         <Icon className={`w-4 h-4 ${active ? 'text-[#D4AF37]' : ''}`} />
         {item.name}
@@ -1216,8 +1216,15 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
           {/* LEFT SIDEBAR - Reddit Style Navigation */}
           <aside className="hidden lg:block sticky top-8 h-fit space-y-8">
             <div className="space-y-1">
-              <p className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] px-3 mb-2">Feeds</p>
-              {FEEDS.map(f => <NavItem key={f.id} item={f} active={activeChannel === f.id} onClick={handleChannelClick} />)}
+              {FEEDS.map(f => (
+                <NavItem
+                  key={f.id}
+                  item={f}
+                  active={activeChannel === f.id}
+                  onClick={handleChannelClick}
+                  className="ml-auto w-[210px]"
+                />
+              ))}
             </div>
 
             <div className="space-y-1">
