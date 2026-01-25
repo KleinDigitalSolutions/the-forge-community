@@ -6,11 +6,11 @@ import { CheckSquare, Image as ImageIcon, LayoutDashboard, MessageCircle, Messag
 import { useUnreadMessages } from '@/app/hooks/useUnreadMessages';
 
 const tabs = [
-  { href: '/dashboard', label: 'Cockpit', icon: LayoutDashboard },
-  { href: '/media', label: 'Media', icon: ImageIcon },
-  { href: '/forum', label: 'Forum', icon: MessageSquare },
-  { href: '/messages', label: 'Messages', icon: MessageCircle },
-  { href: '/tasks', label: 'Tasks', icon: CheckSquare },
+  { href: '/dashboard', label: 'Cockpit', shortLabel: 'Home', icon: LayoutDashboard },
+  { href: '/media', label: 'Media', shortLabel: 'Media', icon: ImageIcon },
+  { href: '/forum', label: 'Forum', shortLabel: 'Forum', icon: MessageSquare },
+  { href: '/messages', label: 'Messages', shortLabel: 'Chat', icon: MessageCircle },
+  { href: '/tasks', label: 'Tasks', shortLabel: 'Tasks', icon: CheckSquare },
 ];
 
 export default function MobileTabBar() {
@@ -22,7 +22,7 @@ export default function MobileTabBar() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-30 border-t border-white/10 bg-[#08090A]/95 backdrop-blur-xl lg:hidden">
-      <div className="flex items-center justify-around px-4 py-2 pb-[calc(env(safe-area-inset-bottom)+8px)]">
+      <div className="flex items-center justify-around px-2 sm:px-4 py-2 pb-[calc(env(safe-area-inset-bottom)+8px)]">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const active = isActive(tab.href);
@@ -32,16 +32,17 @@ export default function MobileTabBar() {
               key={tab.href}
               href={tab.href}
               aria-current={active ? 'page' : undefined}
-              className={`relative flex flex-col items-center gap-1 rounded-xl px-3 py-2 text-[10px] font-bold uppercase tracking-[0.2em] transition ${
+              className={`relative flex flex-col items-center gap-1 rounded-xl px-1.5 xs:px-2 sm:px-3 py-2 text-[8px] xs:text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.05em] xs:tracking-[0.1em] sm:tracking-[0.15em] transition ${
                 active
                   ? 'text-[var(--accent)] bg-white/5'
                   : 'text-white/40 hover:text-white'
               }`}
             >
-              <Icon className="h-4 w-4" />
-              <span>{tab.label}</span>
+              <Icon className="h-4 w-4 flex-shrink-0" />
+              <span className="hidden xs:inline">{tab.label}</span>
+              <span className="xs:hidden">{tab.shortLabel}</span>
               {showBadge && (
-                <span className="absolute right-2 top-1 h-4 min-w-[16px] rounded-full bg-[#D4AF37] px-1 text-[9px] font-bold text-black flex items-center justify-center">
+                <span className="absolute -right-0.5 top-0.5 sm:right-1 sm:top-1 h-4 min-w-[16px] rounded-full bg-[#D4AF37] px-1 text-[9px] font-bold text-black flex items-center justify-center">
                   {messageBadge}
                 </span>
               )}

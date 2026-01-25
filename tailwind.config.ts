@@ -3,7 +3,11 @@ import type { Config } from "tailwindcss";
 const config: Config = {
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
   theme: {
-    extend: {},
+    extend: {
+      screens: {
+        'xs': '375px',  // Extra small devices (iPhone SE, small phones)
+      },
+    },
   },
   plugins: [],
 };

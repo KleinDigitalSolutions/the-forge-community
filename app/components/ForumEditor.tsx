@@ -71,6 +71,15 @@ export function ForumEditor({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bgInputRef = useRef<HTMLInputElement>(null);
 
+  // Prevent body scroll when emoji picker is open on mobile
+  useEffect(() => {
+    if (showEmojiPicker && window.innerWidth < 640) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = '';
+      };
+    }
+  }, [showEmojiPicker]);
 
   useEffect(() => {
     const match = value.match(META_REGEX);
@@ -223,17 +232,50 @@ export function ForumEditor({
           
           <div className="flex items-center gap-1.5 border-r border-white/10 pr-2 mr-1">
             <div className="relative">
-              <button 
+              <button
                 type="button"
                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                 className={`p-1.5 hover:bg-white/10 rounded-lg transition-all ${showEmojiPicker ? 'text-[#D4AF37] bg-white/10' : 'text-white/60 hover:text-white'}`}
               >
                 <Smile className="w-4 h-4" />
               </button>
+
+              {/* Emoji Picker - Mobile Fullscreen */}
               {showEmojiPicker && (
-                <div className="absolute left-0 bottom-full mb-2 z-50 shadow-2xl rounded-2xl overflow-hidden border border-white/10" style={{ width: 300 }}>
-                  <EmojiPicker theme={Theme.DARK} onEmojiClick={(d) => { insertText(d.emoji); setShowEmojiPicker(false); }} emojiStyle={EmojiStyle.NATIVE} width={300} height={350} />
-                </div>
+                <>
+                  {/* Mobile: Fullscreen Overlay */}
+                  <div className="sm:hidden fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowEmojiPicker(false)}>
+                    <div className="bg-[#1a1a1a] rounded-2xl overflow-hidden border border-white/10 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-between p-3 border-b border-white/10 bg-black/40">
+                        <span className="text-xs font-bold uppercase tracking-widest text-white/60">Emoji wählen</span>
+                        <button
+                          onClick={() => setShowEmojiPicker(false)}
+                          className="p-1.5 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-all"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <EmojiPicker
+                        theme={Theme.DARK}
+                        onEmojiClick={(d) => { insertText(d.emoji); setShowEmojiPicker(false); }}
+                        emojiStyle={EmojiStyle.NATIVE}
+                        width="min(340px, calc(100vw - 32px))"
+                        height={400}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Desktop: Positioned Popover */}
+                  <div className="hidden sm:block absolute left-0 bottom-full mb-2 z-50 shadow-2xl rounded-2xl overflow-hidden border border-white/10">
+                    <EmojiPicker
+                      theme={Theme.DARK}
+                      onEmojiClick={(d) => { insertText(d.emoji); setShowEmojiPicker(false); }}
+                      emojiStyle={EmojiStyle.NATIVE}
+                      width={320}
+                      height={380}
+                    />
+                  </div>
+                </>
               )}
             </div>
             <button type="button" onClick={() => fileInputRef.current?.click()} className="p-1.5 hover:bg-white/10 rounded-lg text-white/60 hover:text-[#D4AF37] transition-all"><ImageIcon className="w-4 h-4" /></button>
