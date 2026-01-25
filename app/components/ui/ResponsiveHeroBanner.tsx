@@ -192,14 +192,9 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                             {" "}{titleLine2}
                         </h1>
 
-                        <div className="animate-fade-slide-in-3 mt-6 mx-auto max-w-xl sm:max-w-2xl px-4 sm:px-0">
-                            <div className="group relative overflow-hidden rounded-2xl border border-white/20 bg-white/10 px-5 py-7 sm:px-7 sm:py-10 backdrop-blur-xl shadow-[0_20px_80px_rgba(0,0,0,0.55)] transition-transform duration-500 hover:scale-[1.03]">
-                                <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-white/25 via-white/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                                <p className="relative text-base sm:text-lg text-white/70 leading-relaxed">
-                                    {description}
-                                </p>
-                            </div>
-                        </div>
+                        <p className="sm:text-lg animate-fade-slide-in-3 text-sm sm:text-base text-white/60 max-w-xl mt-6 mx-auto leading-relaxed px-4 sm:px-0 text-left sm:text-center">
+                            {description}
+                        </p>
 
                         <div className="flex flex-col sm:flex-row sm:gap-4 mt-10 gap-4 items-center justify-center animate-fade-slide-in-4 px-4 sm:px-0">
                             <Link
