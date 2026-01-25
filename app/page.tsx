@@ -30,6 +30,7 @@ import ForgeOSShowcase from '@/app/components/landing/ForgeOSShowcase';
 import MissionLogCarousel from '@/app/components/landing/MissionLogCarousel';
 import { BorderBeam } from '@/components/ui/border-beam';
 import { Hero195 } from '@/components/ui/hero-195';
+import { VideoPreview } from '@/app/components/media/VideoPreview';
 
 // --------------------------------------------------------
 
@@ -37,6 +38,15 @@ type ChatMessage = {
 
   role: 'assistant' | 'user';
   content: string;
+};
+
+type MediaPreviewItem = {
+  id: string;
+  url: string;
+  thumbnailUrl?: string | null;
+  type: 'IMAGE' | 'VIDEO';
+  prompt: string | null;
+  model: string | null;
 };
 
 export default function Home() {
@@ -69,6 +79,9 @@ export default function Home() {
   const [formStatus, setFormStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [formMessage, setFormMessage] = useState('');
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [mediaPreview, setMediaPreview] = useState<MediaPreviewItem[]>([]);
+  const [mediaLoading, setMediaLoading] = useState(true);
+  const [mediaError, setMediaError] = useState(false);
 
   const refreshFoundersCount = useCallback(async () => {
     try {
@@ -191,6 +204,28 @@ export default function Home() {
       setFormMessage('Fehler beim Senden.');
     }
   };
+
+  useEffect(() => {
+    let active = true;
+    const loadMedia = async () => {
+      try {
+        const res = await fetch('/api/media?limit=6&sort=new');
+        if (!res.ok) throw new Error('Media load failed');
+        const data = await res.json();
+        if (active) {
+          setMediaPreview(Array.isArray(data?.items) ? data.items.slice(0, 6) : []);
+        }
+      } catch (error) {
+        if (active) setMediaError(true);
+      } finally {
+        if (active) setMediaLoading(false);
+      }
+    };
+    loadMedia();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-black text-(--foreground) selection:bg-[#D4AF37] selection:text-black overflow-x-hidden relative">
@@ -441,6 +476,98 @@ export default function Home() {
             {/* --- NEW: THE FOUNDER OS (Feature Stack) --- */}
             <div className="mt-40 border-t border-white/5 pt-20">
                <ForgeOSShowcase />
+            </div>
+          </div>
+        </section>
+
+        {/* Media Wall Preview */}
+        <section id="media-preview" className="relative py-24 px-4 md:px-6">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex flex-wrap items-end justify-between gap-6">
+              <div className="space-y-3">
+                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">
+                  Media Wall
+                </div>
+                <h2 className="text-3xl md:text-5xl font-instrument-serif text-white">
+                  Live Output aus The Forge.
+                </h2>
+                <p className="text-sm text-white/60 max-w-xl">
+                  Echte Generierungen aus dem System. Klick dich durch die letzten Bilder und Videos.
+                </p>
+              </div>
+              <Link
+                href="/media"
+                className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-2 text-[10px] font-bold uppercase tracking-[0.3em] text-white/70 transition hover:text-white hover:border-white/30"
+              >
+                Media Wall öffnen
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+            </div>
+
+            <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {mediaLoading && (
+                Array.from({ length: 6 }).map((_, index) => (
+                  <div
+                    key={`media-skeleton-${index}`}
+                    className="h-[420px] rounded-3xl border border-white/10 bg-white/[0.03] animate-pulse"
+                  />
+                ))
+              )}
+
+              {!mediaLoading && mediaPreview.map((item) => {
+                const isVideo = item.type === 'VIDEO';
+                return (
+                  <Link
+                    key={item.id}
+                    href={`/media#${item.id}`}
+                    className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.02] shadow-[0_0_40px_rgba(0,0,0,0.25)] transition-all hover:border-white/30"
+                  >
+                    <div className="relative aspect-[4/5] w-full overflow-hidden">
+                      {isVideo ? (
+                        <VideoPreview
+                          src={item.url}
+                          poster={item.thumbnailUrl}
+                          className="h-full w-full"
+                          mediaClassName="h-full w-full object-cover"
+                          enableHover={false}
+                          allowClick={false}
+                          showOverlay={false}
+                        />
+                      ) : (
+                        <img
+                          src={item.url}
+                          alt={item.prompt || 'Generated asset'}
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      )}
+                    </div>
+
+                    <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full border border-white/20 bg-black/60 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white/80 backdrop-blur">
+                      {isVideo ? <Film className="h-3 w-3" /> : <Image className="h-3 w-3" />}
+                      {isVideo ? 'Video' : 'Image'}
+                    </div>
+
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent px-4 pb-4 pt-10">
+                      {item.model && (
+                        <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.25em] text-white/60">
+                          {item.model}
+                        </div>
+                      )}
+                      <p className="text-xs text-white/60">
+                        {item.prompt || 'Ohne Prompt.'}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
+
+              {!mediaLoading && mediaPreview.length === 0 && (
+                <div className="col-span-full flex items-center justify-center rounded-3xl border border-white/10 bg-white/[0.03] p-10 text-sm text-white/50">
+                  {mediaError ? 'Media Preview konnte nicht geladen werden.' : 'Noch keine Media Assets.'}
+                </div>
+              )}
             </div>
           </div>
         </section>
