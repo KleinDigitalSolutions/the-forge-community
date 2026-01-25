@@ -8,7 +8,7 @@ const allowedPaths = ['/dashboard', '/login', '/legal'];
 const { auth } = NextAuth(authConfig);
 
 export default auth((req: NextRequest) => {
-  const session = req.auth;
+  const session = (req as any).auth;
   if (!session?.user) return NextResponse.next();
 
   const pathname = req.nextUrl.pathname;
