@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, Zap } from 'lucide-react';
+import { Menu, Music, X, Zap } from 'lucide-react';
 import { FORGE_MENU } from '@/app/components/forge/forge-menu';
 
 interface ForgeMobileNavProps {
@@ -58,7 +58,7 @@ export default function ForgeMobileNav({ ventureId, ventureName }: ForgeMobileNa
         />
 
         <aside
-          className={`absolute left-0 top-0 h-full w-[78vw] max-w-[320px] border-r border-white/10 bg-zinc-950 p-4 transition-transform ${
+          className={`absolute left-0 top-0 flex h-full w-[78vw] max-w-[320px] flex-col border-r border-white/10 bg-zinc-950 p-4 transition-transform ${
             open ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
@@ -82,7 +82,7 @@ export default function ForgeMobileNav({ ventureId, ventureName }: ForgeMobileNa
             </button>
           </div>
 
-          <nav className="mt-6 space-y-5">
+          <nav className="mt-6 flex-1 min-h-0 space-y-5 overflow-y-auto pr-1">
             {FORGE_MENU.map((section) => (
               <div key={section.section}>
                 <div className="px-2 text-[9px] font-black uppercase tracking-[0.3em] text-white/30">
@@ -113,6 +113,23 @@ export default function ForgeMobileNav({ ventureId, ventureName }: ForgeMobileNa
                 </div>
               </div>
             ))}
+
+            <div>
+              <div className="px-2 text-[9px] font-black uppercase tracking-[0.3em] text-white/30">
+                System
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent('forge-toggle-music', { detail: { open: true } }));
+                  setOpen(false);
+                }}
+                className="mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-white/70 hover:bg-white/5 hover:text-white transition-all"
+              >
+                <Music className="h-4 w-4" />
+                Audio Player
+              </button>
+            </div>
           </nav>
 
           <div className="mt-8 border-t border-white/10 pt-4">

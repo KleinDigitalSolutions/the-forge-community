@@ -1,8 +1,9 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Zap } from 'lucide-react';
+import { Music, Zap } from 'lucide-react';
 import { FORGE_MENU } from '@/app/components/forge/forge-menu';
 
 interface ForgeSidebarProps {
@@ -12,6 +13,21 @@ interface ForgeSidebarProps {
 
 export default function ForgeSidebar({ ventureId, ventureName }: ForgeSidebarProps) {
   const pathname = usePathname();
+  const [audioState, setAudioState] = useState<{ isPlaying: boolean; track: any; hasStarted: boolean }>({
+    isPlaying: false,
+    track: null,
+    hasStarted: false
+  });
+
+  useEffect(() => {
+    const saved = localStorage.getItem('forge-audio-started');
+    if (saved === 'true') {
+      setAudioState(prev => ({ ...prev, hasStarted: true }));
+    }
+    const handleState = (e: any) => setAudioState(e.detail);
+    window.addEventListener('forge-audio-state', handleState);
+    return () => window.removeEventListener('forge-audio-state', handleState);
+  }, []);
 
   return (
     <aside className="fixed left-0 top-0 hidden h-screen w-64 flex-col border-r border-white/5 bg-zinc-950 md:flex">
@@ -29,7 +45,7 @@ export default function ForgeSidebar({ ventureId, ventureName }: ForgeSidebarPro
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto p-4 space-y-6">
+      <nav className="flex-1 min-h-0 overflow-y-auto p-4 space-y-6">
         {FORGE_MENU.map((section) => (
           <div key={section.section}>
             <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-3">
@@ -60,6 +76,25 @@ export default function ForgeSidebar({ ventureId, ventureName }: ForgeSidebarPro
             </div>
           </div>
         ))}
+
+        <div>
+          <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-3">
+            System
+          </p>
+          <button
+            type="button"
+            onClick={() =>
+              window.dispatchEvent(new CustomEvent('forge-toggle-music', { detail: { open: true } }))
+            }
+            className="flex w-full items-center gap-3 px-3 py-2.5 rounded-lg text-white/60 hover:text-white hover:bg-white/5 transition-all"
+          >
+            <Music className="w-4 h-4 flex-shrink-0" />
+            <span className="text-sm font-medium">Audio Player</span>
+            {audioState.isPlaying && (
+              <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[#D4AF37] shadow-[0_0_6px_rgba(212,175,55,0.8)]" />
+            )}
+          </button>
+        </div>
       </nav>
 
       {/* Back to Main */}
