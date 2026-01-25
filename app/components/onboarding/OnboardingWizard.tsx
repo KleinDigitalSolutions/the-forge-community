@@ -80,19 +80,21 @@ export default function OnboardingWizard({ user, onComplete }: OnboardingWizardP
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl bg-[#0B0C0E] border border-white/10 rounded-3xl overflow-hidden shadow-2xl relative">
+    <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 sm:p-6 md:p-8 touch-pan-y overscroll-none">
+      <div className="w-full max-w-2xl bg-[#0B0C0E] border border-white/10 rounded-3xl shadow-2xl relative flex flex-col max-h-[95vh] sm:max-h-[90vh]">
         {/* Progress Bar */}
-        <div className="absolute top-0 left-0 w-full h-1 bg-white/5">
-          <motion.div 
-            className="h-full bg-[#D4AF37]" 
+        <div className="absolute top-0 left-0 w-full h-1 bg-white/5 z-10 rounded-t-3xl overflow-hidden">
+          <motion.div
+            className="h-full bg-[#D4AF37]"
             initial={{ width: 0 }}
             animate={{ width: `${(step / totalSteps) * 100}%` }}
           />
         </div>
 
-        <div className="p-8 md:p-12 min-h-[500px] flex flex-col justify-center">
-          <AnimatePresence mode="wait">
+        {/* Scrollable Content Container */}
+        <div className="flex-1 overflow-y-auto overscroll-contain p-6 sm:p-8 md:p-12 pt-8 sm:pt-10 md:pt-14" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <div className="min-h-full flex flex-col justify-center">
+            <AnimatePresence mode="wait">
             {step === 1 && (
               <motion.div 
                 key="step1"
@@ -311,6 +313,7 @@ export default function OnboardingWizard({ user, onComplete }: OnboardingWizardP
               </motion.div>
             )}
           </AnimatePresence>
+          </div>
         </div>
       </div>
     </div>
