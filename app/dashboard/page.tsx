@@ -15,7 +15,6 @@ import { de } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Forge OS Components
-import HolographicGrid from '@/app/components/forge/HolographicGrid';
 import CockpitControl from '@/app/components/forge/CockpitControl';
 
 interface DashboardData {
@@ -88,36 +87,11 @@ export default function Dashboard() {
       <div className="fixed inset-0 bg-black overflow-hidden font-sans text-white selection:bg-[#D4AF37]/30">
         
         {/* BACKGROUND SYSTEM */}
-        <HolographicGrid />
+        <div className="absolute inset-0 bg-black" />
 
         {/* UI OVERLAY */}
         <div className="relative z-10 w-full h-full">
           
-          {/* HEADER (Top Bar HUD) */}
-          <motion.header 
-            initial={{ y: -50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="absolute top-0 left-0 w-full p-8 flex justify-between items-start pointer-events-none"
-          >
-            <div>
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_#22c55e]" />
-                <span className="text-[10px] uppercase tracking-[0.2em] text-white/60 font-medium">Forge OS <span className="text-[#D4AF37]">v2.4</span></span>
-              </div>
-              <h1 className="text-2xl font-instrument-serif text-white mt-2 tracking-tight">
-                Operator {user.name?.split(' ')[0]}
-              </h1>
-            </div>
-            
-            <div className="flex gap-8 text-right">
-              <div className="hidden md:block">
-                <div className="text-xl font-mono text-[#D4AF37]">{data.stats.karma}</div>
-                <div className="text-[9px] uppercase tracking-[0.2em] text-white/30">Karma Level</div>
-              </div>
-            </div>
-          </motion.header>
-
           {/* MAIN STAGE (Absolute Center) */}
           <main className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full flex items-center justify-center">
             
@@ -128,6 +102,7 @@ export default function Dashboard() {
                   userName={user.name}
                   stats={{ ventures: ventures.length, tasks: allTasks.length }}
                   onToggleView={(view) => setActiveView(activeView === view ? 'idle' : view)}
+                  minimal
                />
             </div>
 

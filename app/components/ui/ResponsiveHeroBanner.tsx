@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
@@ -38,7 +36,7 @@ interface ResponsiveHeroBannerProps {
 
 const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
     logoUrl = "https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/febf2421-4a9a-42d6-871d-ff4f9518021c_1600w.png",
-    backgroundImageUrl = "https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/0e2dbea0-c0a9-413f-a57b-af279633c0df_3840w.jpg",
+    backgroundImageUrl,
     navLinks = [
         { label: "Home", href: "/", isActive: true },
         { label: "Dashboard", href: "/dashboard" },
@@ -71,13 +69,16 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
 
     return (
         <section className="w-full isolate min-h-screen overflow-hidden relative">
-            <img
-                src={backgroundImageUrl}
-                alt=""
-                className="w-full h-full object-cover absolute top-0 right-0 bottom-0 left-0"
-            />
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px]" />
-            <div className="pointer-events-none absolute inset-0 ring-1 ring-white/10" />
+            {backgroundImageUrl ? (
+                <img
+                    src={backgroundImageUrl}
+                    alt=""
+                    className="w-full h-full object-cover absolute top-0 right-0 bottom-0 left-0"
+                />
+            ) : null}
+            
+            <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px] z-0" />
+            <div className="pointer-events-none absolute inset-0 ring-1 ring-white/10 z-10" />
 
             <header className="z-20 xl:top-4 relative">
                 <div className="mx-6">

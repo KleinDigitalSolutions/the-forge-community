@@ -80,14 +80,14 @@ export default function MissionLogCarousel() {
   const Icon = activeProject.icon;
 
   return (
-    <div className="relative w-full min-h-[900px] flex flex-col justify-center py-24 overflow-hidden bg-black">
+    <div className="relative w-full min-h-[900px] flex flex-col justify-center py-24 overflow-hidden bg-transparent">
       
       {/* Immersiver Hintergrund-Raum */}
       <div 
         className="absolute inset-0 transition-all duration-1000 ease-in-out pointer-events-none"
         style={{ 
           background: activeProject.bgStyle,
-          opacity: 1
+          opacity: 0.2
         }}
       />
       

@@ -1,5 +1,25 @@
 import AppShell from './AppShell';
 
-export default function PageShell({ children }: { children: React.ReactNode }) {
-  return <AppShell>{children}</AppShell>;
+type PageShellProps = {
+  children: React.ReactNode;
+  contentClassName?: string;
+  containerClassName?: string;
+  showGlow?: boolean;
+};
+
+export default function PageShell({
+  children,
+  contentClassName,
+  containerClassName,
+  showGlow,
+}: PageShellProps) {
+  return (
+    <AppShell
+      contentClassName={contentClassName}
+      containerClassName={containerClassName}
+      showGlow={showGlow}
+    >
+      {children}
+    </AppShell>
+  );
 }

@@ -25,9 +25,10 @@ interface CockpitControlProps {
     tasks: number;
   };
   onToggleView: (view: string) => void;
+  minimal?: boolean;
 }
 
-export default function CockpitControl({ userImage, userName, stats, onToggleView }: CockpitControlProps) {
+export default function CockpitControl({ userImage, userName, stats, onToggleView, minimal = false }: CockpitControlProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const parallaxRef = useRef<HTMLDivElement>(null);
@@ -61,6 +62,7 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
   }, []);
 
   useEffect(() => {
+    if (minimal) return;
     const container = containerRef.current;
     const layer = parallaxRef.current;
     if (!container || !layer) return;
@@ -133,19 +135,21 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
     <div ref={containerRef} className="relative flex items-center justify-center w-[min(720px,90vw)] h-[min(720px,90vw)]">
       
       {/* --- BACKGROUND AMBIENCE (Deep Glow) --- */}
-      <div
-        ref={parallaxRef}
-        className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
-      >
-         <div className={`transition-all duration-1000 absolute w-[300px] h-[300px] bg-cyan-400/10 rounded-full ${isOpen ? 'scale-150 opacity-40' : 'scale-100 opacity-20'}`} />
-         
-         {/* Rotating Tech Rings (Subtle) */}
-         <motion.div 
+      {!minimal && (
+        <div
+          ref={parallaxRef}
+          className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
+        >
+          <div className={`transition-all duration-1000 absolute w-[300px] h-[300px] bg-cyan-400/10 rounded-full ${isOpen ? 'scale-150 opacity-40' : 'scale-100 opacity-20'}`} />
+          
+          {/* Rotating Tech Rings (Subtle) */}
+          <motion.div 
             animate={{ rotate: 360 }}
             transition={{ duration: 100, repeat: Infinity, ease: "linear" }}
             className="absolute w-[min(640px,80vw)] h-[min(640px,80vw)] rounded-full border border-white/5 opacity-30"
-         />
-      </div>
+          />
+        </div>
+      )}
 
       {/* --- CONNECTOR LINES LAYER (Behind everything) --- */}
       <svg
@@ -193,7 +197,9 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
           />
           
           {/* Orbit Ring Animation */}
-          <div className="absolute inset-[-8px] rounded-full border border-white/5 border-t-cyan-300/60 animate-spin-slow pointer-events-none" />
+          {!minimal && (
+            <div className="absolute inset-[-8px] rounded-full border border-white/5 border-t-cyan-300/60 animate-spin-slow pointer-events-none" />
+          )}
         </motion.button>
       </div>
 

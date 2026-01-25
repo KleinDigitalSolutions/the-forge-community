@@ -88,6 +88,11 @@ export default function RootLayout({
   return (
     <html lang="de">
       <head>
+        {/* Google Fonts */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800;900&family=Caveat:wght@400..700&display=swap" rel="stylesheet" />
+        
         {/* Google Tag Manager */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-3GP315ZWWP"

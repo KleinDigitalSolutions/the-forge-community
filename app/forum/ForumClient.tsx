@@ -14,6 +14,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Link from 'next/link';
 import { MicroExpander } from '@/app/components/ui/MicroExpander';
+import Prism from '@/app/components/ui/Prism';
 import { LinkPreview, extractUrls } from '@/app/components/LinkPreview';
 import { RelatedPosts } from '@/app/components/RelatedPosts';
 import { VoiceInput } from '@/app/components/VoiceInput';
@@ -183,14 +184,37 @@ function ForumImage({ src, alt }: { src?: string; alt?: string }) {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="group w-full text-left"
+        className="group w-full text-left overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-[0_0_24px_rgba(0,0,0,0.35)]"
       >
-        <div className="flex items-center justify-between px-4 py-2 text-[10px] uppercase tracking-widest text-white/50 border-b border-white/10 bg-black/30">
-          <span>Bild</span>
-          <span className="text-white/30 group-hover:text-white/60 transition-colors">Zum Laden tippen</span>
+        <div className="flex items-center justify-between px-4 py-3 text-[10px] uppercase tracking-[0.3em] text-white/60 border-b border-white/10 bg-white/5 backdrop-blur-md">
+          <span>Bild-Vorschau</span>
+          <span className="text-white/40 group-hover:text-white/70 transition-colors">Tippen zum Laden</span>
         </div>
-        <div className="h-40 sm:h-56 flex items-center justify-center bg-black/20">
-          <ImageIcon className="w-5 h-5 text-white/40" />
+        <div className="relative h-44 sm:h-60 overflow-hidden">
+          <div className="absolute inset-0">
+            <Prism
+              animationType="rotate"
+              timeScale={0.55}
+              height={3.4}
+              baseWidth={5.4}
+              scale={3.4}
+              hueShift={-0.3}
+              colorFrequency={1.1}
+              noise={0.0}
+              glow={1.15}
+              bloom={1.2}
+              suspendWhenOffscreen
+            />
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-white/10 to-transparent opacity-70" />
+          <div className="absolute -top-10 left-1/2 h-44 w-44 -translate-x-1/2 rounded-full bg-white/50 blur-3xl opacity-70" />
+          <div className="absolute inset-0 bg-gradient-to-r from-sky-300/20 via-white/40 to-cyan-200/20 opacity-70 animate-[pulse_2.8s_ease-in-out_infinite]" />
+          <div className="absolute inset-0 bg-white/25 backdrop-blur-[8px]" />
+          <div className="relative z-10 flex h-full flex-col items-center justify-center gap-2 text-white/80">
+            <ImageIcon className="h-6 w-6 text-white/70" />
+            <div className="text-[11px] uppercase tracking-[0.3em] text-white/70">Tap to load</div>
+            <div className="text-[10px] text-white/40">Daten sparen auf Mobile</div>
+          </div>
         </div>
       </button>
     );

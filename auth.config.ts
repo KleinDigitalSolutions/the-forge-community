@@ -36,6 +36,12 @@ export const authConfig = {
       if (token.sub && session.user) {
         session.user.id = token.sub;
       }
+      if (session.user) {
+        session.user.accountStatus =
+          (token as { accountStatus?: 'ACTIVE' | 'DELETED' }).accountStatus ?? 'ACTIVE';
+        session.user.onboardingComplete =
+          (token as { onboardingComplete?: boolean }).onboardingComplete ?? false;
+      }
       // Add custom claims to session here if needed (e.g. founder status)
       return session;
     },

@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { auth } from '@/auth';
+import NextAuth from 'next-auth';
+import { authConfig } from '@/auth.config';
 
 const allowedPaths = ['/dashboard', '/login', '/legal'];
+
+const { auth } = NextAuth(authConfig);
 
 export default auth((req: NextRequest) => {
   const session = req.auth;

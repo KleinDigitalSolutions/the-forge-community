@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { PROMPT_TEMPLATES, getTemplatesByType, enrichPromptWithBrandDNA, type PromptTemplate } from '@/lib/prompt-templates';
 import { extractLastFrame, uploadFrameToBlob, generateChainId } from '@/lib/video-utils';
+import Hyperspeed, { hyperspeedPresets } from '@/app/components/visual/Hyperspeed';
 
 const MEDIA_MODES = [
   {
@@ -910,14 +911,28 @@ export function MediaGeneratorModal({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="relative rounded-xl border border-[#D4AF37]/20 bg-gradient-to-br from-[#D4AF37]/5 to-black/60 overflow-hidden">
                   <div className={`${isVideoMode ? 'aspect-video' : 'aspect-square'} w-full relative`}>
-                    {/* Shimmer Animation */}
-                    <div className="absolute inset-0">
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-[shimmer_3s_ease-in-out_infinite]" />
-                    </div>
-                    {/* Scanline Effect */}
-                    <div className="absolute inset-0 opacity-30">
-                      <div className="absolute inset-0 w-full h-24 bg-gradient-to-b from-transparent via-[#D4AF37]/40 to-transparent animate-[scan_3s_ease-in-out_infinite]" />
-                    </div>
+                    {isVideoMode ? (
+                      <>
+                        <div className="absolute inset-0 pointer-events-none">
+                          <Hyperspeed
+                            className="absolute inset-0"
+                            effectOptions={hyperspeedPresets.three}
+                          />
+                        </div>
+                        <div className="absolute inset-0 bg-black/35" />
+                      </>
+                    ) : (
+                      <>
+                        {/* Shimmer Animation */}
+                        <div className="absolute inset-0">
+                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-[shimmer_3s_ease-in-out_infinite]" />
+                        </div>
+                        {/* Scanline Effect */}
+                        <div className="absolute inset-0 opacity-30">
+                          <div className="absolute inset-0 w-full h-24 bg-gradient-to-b from-transparent via-[#D4AF37]/40 to-transparent animate-[scan_3s_ease-in-out_infinite]" />
+                        </div>
+                      </>
+                    )}
                     {/* Center Icon */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                       <div className="relative">
