@@ -6,8 +6,7 @@ import { prisma } from '@/lib/prisma';
 import { Resend as ResendClient } from 'resend';
 import { assignFounderNumberIfMissing } from '@/lib/founder-number';
 
-const resendKey = process.env.AUTH_RESEND_KEY || process.env.RESEND_API_KEY || '';
-const resendClient = new ResendClient(resendKey);
+const resendClient = new ResendClient(process.env.AUTH_RESEND_KEY);
 const resendFrom =
   process.env.AUTH_RESEND_FROM ||
   (process.env.NODE_ENV === 'production'
@@ -20,16 +19,12 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
   debug: process.env.NODE_ENV === 'development',
   providers: [
     Resend({
-      apiKey: resendKey,
+      apiKey: process.env.AUTH_RESEND_KEY,
       from: resendFrom,
       async sendVerificationRequest({ identifier: email, url }) {
         try {
-          if (!resendKey) {
-            console.error('AUTH_RESEND_KEY/RESEND_API_KEY missing. Cannot send magic link.');
-            throw new Error('Missing Resend API key');
-          }
           await resendClient.emails.send({
-            from: resendFrom,
+            from: 'STAKE & SCALE <info@stakeandscale.de>',
             to: email,
             subject: 'Dein Login Link für STAKE & SCALE',
             html: `
