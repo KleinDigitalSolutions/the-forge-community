@@ -20,6 +20,15 @@ export default function GlobalAudioPlayer() {
 
   // SoundCloud Widget initialisieren
   useEffect(() => {
+    const handleStartMusic = () => {
+      if (widgetRef.current) {
+        widgetRef.current.play();
+        setIsVisible(true);
+      }
+    };
+
+    window.addEventListener('forge-start-music', handleStartMusic);
+
     const loadWidget = () => {
       if (iframeRef.current && window.SC) {
         const widget = window.SC.Widget(iframeRef.current);
@@ -49,6 +58,8 @@ export default function GlobalAudioPlayer() {
     } else {
       loadWidget();
     }
+
+    return () => window.removeEventListener('forge-start-music', handleStartMusic);
   }, []);
 
   const togglePlay = () => {

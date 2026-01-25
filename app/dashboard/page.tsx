@@ -339,22 +339,41 @@ export default function Dashboard() {
                         </div>
                       </div>
 
-                      {/* Player Stage */}
-                      <div className="px-6 pb-6 relative z-10">
-                        <div className="relative rounded-[1.5rem] overflow-hidden bg-black/60 border border-white/5 shadow-inner group/player">
-                          {/* Inner Shadow Mask (to blend the iframe) */}
-                          <div className="absolute inset-0 z-20 pointer-events-none shadow-[inset_0_0_40px_rgba(0,0,0,0.8)] border border-white/10 rounded-[1.5rem]" />
+                      {/* Audio Controller Interface (Triggers Global Player) */}
+                      <div className="px-6 pb-8 relative z-10">
+                        <div className="relative rounded-[1.5rem] overflow-hidden bg-black/60 border border-white/5 shadow-inner p-8 flex flex-col items-center justify-center gap-6 group/player">
                           
-                          <div className="p-4 flex items-center justify-center min-h-[180px]">
-                            <iframe 
-                              width="100%" 
-                              height="166" 
-                              scrolling="no" 
-                              frameBorder="no" 
-                              allow="autoplay" 
-                              className="rounded-xl relative z-10 opacity-90 group-hover/player:opacity-100 transition-opacity duration-500"
-                              src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/soundcloud%253Atracks%253A2233330283&color=%23ffb800&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true"
-                            />
+                          <div className="relative">
+                            <div className="absolute inset-0 bg-[#D4AF37] blur-2xl opacity-20 group-hover/player:opacity-40 transition-opacity" />
+                            <motion.button 
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => {
+                                window.dispatchEvent(new CustomEvent('forge-start-music'));
+                              }}
+                              className="relative w-24 h-24 rounded-full bg-linear-to-br from-[#D4AF37] to-amber-700 flex items-center justify-center text-black shadow-[0_0_30px_rgba(212,175,55,0.4)] hover:shadow-[0_0_50px_rgba(212,175,55,0.6)] transition-all group/btn"
+                            >
+                              <Play className="w-10 h-10 fill-current ml-1 group-hover/btn:scale-110 transition-transform" />
+                            </motion.button>
+                          </div>
+
+                          <div className="text-center">
+                            <h3 className="text-white font-bold tracking-widest text-xs uppercase mb-2">Initialize Global Stream</h3>
+                            <p className="text-[9px] text-white/40 uppercase tracking-[0.2em] max-w-[200px] leading-relaxed">
+                              Activate Neural Audio Link for persistent background ambience across all sectors.
+                            </p>
+                          </div>
+
+                          {/* Decorative Waveform Mockup */}
+                          <div className="flex gap-1 h-4 items-end opacity-30">
+                            {[0.4, 0.7, 1, 0.8, 0.5, 0.9, 0.6, 1, 0.4].map((h, i) => (
+                              <motion.div 
+                                key={i}
+                                animate={{ height: [h*100 + '%', (1-h)*100 + '%', h*100 + '%'] }}
+                                transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.1 }}
+                                className="w-1 bg-[#D4AF37] rounded-full"
+                              />
+                            ))}
                           </div>
                         </div>
                       </div>
