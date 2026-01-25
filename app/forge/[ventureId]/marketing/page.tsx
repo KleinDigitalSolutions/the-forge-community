@@ -137,12 +137,13 @@ export default function MarketingPage() {
       brandDNA={brandDNA}
       aiProvider="gemini"
       headerAction={
-        <Link 
+        <Link
           href={`/forge/${ventureId}/marketing/campaigns`}
-          className="flex items-center gap-2 px-4 py-2 bg-[#D4AF37] text-black rounded-lg text-sm font-bold hover:opacity-90 transition-opacity"
+          className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-[#D4AF37] text-black rounded-lg text-xs sm:text-sm font-bold hover:opacity-90 active:scale-95 transition-all w-full sm:w-auto whitespace-nowrap"
         >
-          <TrendingUp className="w-4 h-4" />
-          Kampagnen Manager
+          <TrendingUp className="w-4 h-4 flex-shrink-0" />
+          <span className="hidden xs:inline">Kampagnen Manager</span>
+          <span className="xs:hidden">Kampagnen</span>
         </Link>
       }
     >

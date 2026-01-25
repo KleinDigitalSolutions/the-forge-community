@@ -129,24 +129,24 @@ export default function VentureDetailPage() {
       <PageShell>
         {/* Header */}
         <header className="mb-12">
-          <div className="flex items-start justify-between mb-6">
-            <div>
-              <h1 className="text-5xl font-instrument-serif text-white tracking-tight mb-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-start justify-between gap-4 sm:gap-6 mb-6">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-instrument-serif text-white tracking-tight mb-4">
                 {venture.name}
               </h1>
               <p className="text-white/40 uppercase tracking-[0.2em] text-xs font-bold">
                 {venture.type} • Phase {venture.currentPhase}/6
               </p>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto flex-wrap sm:flex-nowrap">
               <Link
                 href={`/forge/${ventureId}`}
-                className="flex items-center gap-2 bg-linear-to-r from-[#D4AF37] to-[#FFD700] text-black px-6 py-3 rounded-xl font-bold text-sm hover:brightness-110 transition-all"
+                className="flex items-center justify-center gap-2 bg-linear-to-r from-[#D4AF37] to-[#FFD700] text-black px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-bold text-xs sm:text-sm hover:brightness-110 transition-all flex-1 sm:flex-initial"
               >
-                <Zap className="w-4 h-4" />
-                Open Forge
+                <Zap className="w-4 h-4 flex-shrink-0" />
+                <span className="whitespace-nowrap">Open Forge</span>
               </Link>
-              <span className={`px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest ${
+              <span className={`px-3 sm:px-4 py-2 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.15em] sm:tracking-widest whitespace-nowrap ${
                 venture.status === 'LAUNCHED' ? 'bg-green-500/10 text-green-500 border border-green-500/20' :
                 venture.status === 'IN_PROGRESS' ? 'bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/20' :
                 'bg-white/5 text-white/30 border border-white/10'
@@ -174,23 +174,25 @@ export default function VentureDetailPage() {
             </div>
           </div>
 
-          {/* Steps */}
-          <div className="grid grid-cols-6 gap-2">
-            {venture.steps.map((step: any) => (
-              <div
-                key={step.id}
-                className={`p-4 rounded-xl border transition-all ${
-                  step.status === 'COMPLETED'
-                    ? 'bg-green-500/10 border-green-500/20'
-                    : step.status === 'IN_PROGRESS'
-                    ? 'bg-[#D4AF37]/10 border-[#D4AF37]/20'
-                    : 'bg-white/2 border-white/5'
-                }`}
-              >
-                <div className="text-[10px] font-bold text-white/40 mb-1">Step {step.stepNumber}</div>
-                <div className="text-xs text-white font-medium">{step.stepName}</div>
-              </div>
-            ))}
+          {/* Steps - Horizontal Scroll on Mobile */}
+          <div className="w-full overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+            <div className="flex sm:grid sm:grid-cols-6 gap-2 min-w-max sm:min-w-0">
+              {venture.steps.map((step: any) => (
+                <div
+                  key={step.id}
+                  className={`flex-shrink-0 w-[140px] sm:w-auto p-3 sm:p-4 rounded-xl border transition-all ${
+                    step.status === 'COMPLETED'
+                      ? 'bg-green-500/10 border-green-500/20'
+                      : step.status === 'IN_PROGRESS'
+                      ? 'bg-[#D4AF37]/10 border-[#D4AF37]/20'
+                      : 'bg-white/2 border-white/5'
+                  }`}
+                >
+                  <div className="text-[9px] sm:text-[10px] font-bold text-white/40 mb-1">Step {step.stepNumber}</div>
+                  <div className="text-[10px] sm:text-xs text-white font-medium line-clamp-2">{step.stepName}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </header>
 

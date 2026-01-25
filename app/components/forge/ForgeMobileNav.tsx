@@ -17,21 +17,21 @@ export default function ForgeMobileNav({ ventureId, ventureName }: ForgeMobileNa
 
   return (
     <>
-      <div className="sticky top-0 z-40 flex items-center justify-between border-b border-white/5 bg-black/80 px-4 py-3 backdrop-blur md:hidden">
+      <div className="sticky top-0 z-40 flex items-center justify-between gap-2 border-b border-white/5 bg-black/80 px-3 sm:px-4 py-3 backdrop-blur md:hidden">
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white"
+          className="flex-shrink-0 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white"
           aria-label="Open menu"
         >
           <Menu className="h-5 w-5" />
         </button>
 
-        <div className="flex flex-1 items-center justify-center gap-2 px-3 text-center">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#D4AF37] to-[#FFD700]">
+        <div className="flex flex-1 items-center justify-center gap-2 px-2 text-center min-w-0">
+          <div className="flex-shrink-0 flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#D4AF37] to-[#FFD700]">
             <Zap className="h-4 w-4 text-black" />
           </div>
-          <div className="text-left">
+          <div className="text-left min-w-0">
             <div className="text-[9px] font-black uppercase tracking-[0.3em] text-white/40">Forge</div>
             <div className="max-w-[140px] truncate text-xs font-semibold text-white">{ventureName}</div>
           </div>
@@ -39,7 +39,7 @@ export default function ForgeMobileNav({ ventureId, ventureName }: ForgeMobileNa
 
         <Link
           href="/dashboard"
-          className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white/70"
+          className="flex-shrink-0 rounded-full border border-white/10 bg-white/5 px-2.5 sm:px-3 py-1.5 sm:py-2 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] text-white/70 hover:text-white hover:bg-white/10 transition-colors"
         >
           Back
         </Link>
