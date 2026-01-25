@@ -346,8 +346,6 @@ function SatelliteContent({ item }: { item: any }) {
     <div className="flex flex-col items-center gap-3 group">
       {/* Icon Circle - PREMIUM TECH LOOK */}
       <div className="relative w-16 h-16 transition-all duration-500 group-hover:scale-110">
-        {/* Outer Rotating Ring (Only visible on hover) */}
-        <div className="absolute -inset-2 border border-[#D4AF37]/0 group-hover:border-[#D4AF37]/40 rounded-full transition-all duration-700 animate-[spin_8s_linear_infinite] opacity-0 group-hover:opacity-100" />
         
         {/* Main Button Body */}
         <div 
@@ -363,7 +361,7 @@ function SatelliteContent({ item }: { item: any }) {
           {/* Top Shine */}
           <div className="absolute top-0 left-0 right-0 h-[1px] bg-linear-to-r from-transparent via-white/20 to-transparent" />
 
-          <item.icon className="w-6 h-6 text-white/60 transition-all duration-300 group-hover:text-white group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
+          <item.icon className="w-6 h-6 text-white/60 transition-all duration-300 group-hover:text-white" />
           
           {badge > 0 && (
             <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1.5 rounded-full bg-linear-to-br from-[#D4AF37] to-amber-600 text-[9px] font-black text-black flex items-center justify-center shadow-[0_0_15px_rgba(212,175,55,0.6)] z-10">
