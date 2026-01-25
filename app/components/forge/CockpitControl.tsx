@@ -252,13 +252,18 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
             >
               <motion.div
                 animate={{ 
-                  y: [0, 10, 0],
-                  scale: [1, 1.2, 1]
+                  y: [0, 12, 0],
+                  opacity: [0.4, 1, 0.4],
+                  scale: [0.9, 1.1, 0.9]
                 }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-                className="text-[#D4AF37] drop-shadow-[0_0_12px_rgba(212,175,55,0.6)]"
+                transition={{ 
+                  duration: 2, 
+                  repeat: Infinity, 
+                  ease: "easeInOut" 
+                }}
+                className="text-[#D4AF37] drop-shadow-[0_0_15px_rgba(212,175,55,0.7)]"
               >
-                <ChevronDown className="w-10 h-10" />
+                <ChevronDown className="w-12 h-12" />
               </motion.div>
             </motion.div>
 
@@ -271,13 +276,18 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
             >
               <motion.div
                 animate={{ 
-                  y: [0, -10, 0],
-                  scale: [1, 1.2, 1]
+                  y: [0, -12, 0],
+                  opacity: [0.4, 1, 0.4],
+                  scale: [0.9, 1.1, 0.9]
                 }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-                className="text-[#D4AF37] drop-shadow-[0_0_12px_rgba(212,175,55,0.6)]"
+                transition={{ 
+                  duration: 2, 
+                  repeat: Infinity, 
+                  ease: "easeInOut" 
+                }}
+                className="text-[#D4AF37] drop-shadow-[0_0_15px_rgba(212,175,55,0.7)]"
               >
-                <ChevronUp className="w-10 h-10" />
+                <ChevronUp className="w-12 h-12" />
               </motion.div>
             </motion.div>
           </>
