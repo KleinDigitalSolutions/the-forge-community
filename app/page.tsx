@@ -241,6 +241,24 @@ export default function Home() {
           primaryButtonHref="#apply"
           secondaryButtonText="PROTOKOLL ANSEHEN"
           secondaryButtonHref="#"
+          partners={[
+            { logoUrl: "https://upload.wikimedia.org/wikipedia/commons/5/5e/Vercel_logo_black.svg", href: "https://vercel.com", scale: 1.2 },
+            { logoUrl: "https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg", href: "https://stripe.com" },
+            { logoUrl: "https://upload.wikimedia.org/wikipedia/commons/8/8e/Nextjs-logo.svg", href: "https://nextjs.org" },
+            { logoUrl: "https://upload.wikimedia.org/wikipedia/commons/d/d5/Tailwind_CSS_Logo.svg", href: "https://tailwindcss.com" },
+            { logoUrl: "https://simpleicons.org/icons/prisma.svg", href: "https://prisma.io" },
+            { logoUrl: "/partners/openai.svg", href: "https://openai.com" },
+            { logoUrl: "/partners/claude-color.svg", href: "https://www.anthropic.com" },
+            { logoUrl: "https://simpleicons.org/icons/googlegemini.svg", href: "https://deepmind.google/technologies/gemini/" },
+            { logoUrl: "/partners/n8n-color.svg", href: "https://n8n.io" },
+            { logoUrl: "/partners/notion.svg", href: "https://www.notion.so" },
+            { logoUrl: "/partners/github.svg", href: "https://github.com" },
+            { logoUrl: "/partners/bfl.svg", href: "https://blackforestlabs.ai" },
+            { logoUrl: "/partners/aws-color.svg", href: "https://aws.amazon.com" },
+            { logoUrl: "/partners/kling-color.svg", href: "https://klingai.com" },
+            { logoUrl: "/partners/groq.svg", href: "https://groq.com" },
+            { logoUrl: "/partners/runway.svg", href: "https://runwayml.com" },
+          ]}
           navLinks={[
             { label: "Philosophie", href: "#philosophy" },
             { label: "The Forge", href: "#forge" },

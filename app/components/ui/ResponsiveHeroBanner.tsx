@@ -91,6 +91,20 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
             
             <div className="pointer-events-none absolute inset-0 ring-1 ring-white/10 z-10" />
 
+            <div className="absolute inset-0 hidden sm:flex items-center justify-center pointer-events-none select-none z-[2] overflow-hidden translate-y-64 sm:translate-y-72 md:translate-y-80">
+                <h1
+                    className="px-2 sm:px-6 md:px-10 text-[13vw] sm:text-[18vw] md:text-[16vw] lg:text-[14vw] font-black tracking-tight opacity-[0.14] leading-[0.9] text-center whitespace-nowrap"
+                    style={{
+                        WebkitTextStroke: '1.5px rgba(255,255,255,0.35)',
+                        color: 'transparent',
+                        fontFamily: 'var(--font-instrument-serif), serif',
+                        filter: 'blur(0.4px)'
+                    }}
+                >
+                    Stake & Scale
+                </h1>
+            </div>
+
             <header className="z-20 xl:top-4 relative">
                 <div className="mx-6">
                     <div className="relative flex items-center justify-between pt-4">
@@ -178,7 +192,7 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
             </header>
 
             <div className="z-10 relative">
-                <div className="sm:pt-28 md:pt-32 lg:pt-40 max-w-7xl mx-auto pt-24 px-4 pb-48">
+                <div className="pt-16 sm:pt-20 md:pt-24 lg:pt-32 max-w-7xl mx-auto px-4 pb-48">
                     <div className="mx-auto max-w-3xl text-center">
                         <div className="mb-6 inline-flex items-center gap-3 rounded-full bg-white/10 px-4 py-2 ring-1 ring-white/15 backdrop-blur animate-fade-slide-in-1">
                             <span className="text-[10px] sm:text-xs font-bold text-white/90 uppercase tracking-[0.2em]">
@@ -186,13 +200,13 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                             </span>
                         </div>
 
-                        <h1 className="sm:text-5xl md:text-6xl lg:text-7xl leading-tight text-3xl sm:text-4xl text-white tracking-tight font-instrument-serif font-normal animate-fade-slide-in-2 px-4 sm:px-0">
+                        <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl leading-tight text-white tracking-tight font-instrument-serif font-normal animate-fade-slide-in-2 px-4 sm:px-0">
                             {title}
                             <br className="hidden sm:block" />
                             {" "}{titleLine2}
                         </h1>
 
-                        <p className="sm:text-lg animate-fade-slide-in-3 text-sm sm:text-base text-white/60 max-w-xl mt-6 mx-auto leading-relaxed px-4 sm:px-0 text-left sm:text-center">
+                        <p className="text-base sm:text-lg md:text-xl animate-fade-slide-in-3 text-white/60 max-w-xl mt-6 mx-auto leading-relaxed px-4 sm:px-0 text-left sm:text-center">
                             {description}
                         </p>
 
@@ -214,33 +228,69 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                                 </svg>
                             </Link>
                         </div>
+
+                        <div className="mt-10 flex items-center justify-center pointer-events-none select-none sm:hidden" aria-hidden="true">
+                            <h2
+                                className="px-2 text-[14vw] font-black tracking-tight opacity-[0.14] leading-[0.9] text-center whitespace-nowrap"
+                                style={{
+                                    WebkitTextStroke: '1.5px rgba(255,255,255,0.35)',
+                                    color: 'transparent',
+                                    fontFamily: 'var(--font-instrument-serif), serif',
+                                    filter: 'blur(0.4px)'
+                                }}
+                            >
+                                Stake & Scale
+                            </h2>
+                        </div>
                     </div>
 
-                    <div className="mx-auto mt-24 max-w-5xl">
-                        <p className="animate-fade-slide-in-1 text-[8px] font-black uppercase tracking-[0.5em] text-white/20 text-center mb-10">
-                            {partnersTitle}
-                        </p>
-                        {/* Desktop: 5 in einer Reihe | Mobile: 2-2-1 symmetrisch */}
-                        <div className="flex flex-wrap justify-center items-center gap-x-16 gap-y-8 animate-fade-slide-in-2">
-                            {partners.map((partner, index) => (
-                                <div
-                                    key={index}
-                                    className="flex items-center justify-center"
-                                >
-                                    <div
-                                        className="w-12 h-12 bg-center bg-contain bg-no-repeat brightness-0 invert opacity-50 grayscale pointer-events-none"
-                                        style={{ 
-                                            backgroundImage: `url(${partner.logoUrl})`,
-                                            transform: `scale(${partner.scale || 1})`
-                                        }}
-                                        aria-label={`Partner logo ${index + 1}`}
-                                    />
-                                </div>
-                            ))}
+                    <div className="mx-auto mt-12 sm:mt-24 max-w-5xl">
+                        <div className="flex flex-col items-center gap-6 sm:gap-10">
+                            <div className="relative overflow-hidden animate-fade-slide-in-2 order-1 sm:order-2">
+                            <div className="partner-marquee-track flex items-center gap-x-12 sm:gap-x-16 flex-nowrap">
+                                {[...partners, ...partners].map((partner, index) => {
+                                    const isDuplicate = index >= partners.length;
+                                    return (
+                                        <div
+                                            key={`${partner.logoUrl}-${index}`}
+                                            className="flex items-center justify-center"
+                                            aria-hidden={isDuplicate}
+                                        >
+                                            <div
+                                                className="w-12 h-12 bg-center bg-contain bg-no-repeat brightness-0 invert opacity-50 grayscale pointer-events-none"
+                                                style={{
+                                                    backgroundImage: `url(${partner.logoUrl})`,
+                                                    transform: `scale(${partner.scale || 1})`
+                                                }}
+                                                aria-label={`Partner logo ${index + 1}`}
+                                            />
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                            <p className="animate-fade-slide-in-1 text-[8px] font-black uppercase tracking-[0.5em] text-white/20 text-center order-2 sm:order-1">
+                                {partnersTitle}
+                            </p>
                         </div>
                     </div>
                 </div>
             </div>
+            <style jsx>{`
+                @keyframes partner-marquee {
+                    0% {
+                        transform: translateX(0);
+                    }
+                    100% {
+                        transform: translateX(-50%);
+                    }
+                }
+
+                .partner-marquee-track {
+                    width: max-content;
+                    animation: partner-marquee 28s linear infinite;
+                }
+            `}</style>
         </section>
     );
 };
