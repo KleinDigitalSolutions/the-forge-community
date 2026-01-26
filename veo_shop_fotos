@@ -1,0 +1,63 @@
+VEO 3.1 - Produktfoto zu Shop-Visuals
+
+Modul 1 - Die 3 Inputs (Person, Produkt, Stil)
+
+Ziel: Aus einem cleanen Produktfoto wird eine glaubwuerdige Lifestyle-Visuals, ohne neues Shooting.
+
+**Input 1: Produktfoto (sauberer Cutout)**
+
+![Produktfoto](/Veo/dress.png)
+
+**Input 2: Model/Person (Pose + Proportionen)**
+
+![Model](/Veo/model.png)
+
+**Input 3: Stil-Referenz (Licht, Stimmung, Location)**
+
+![Stilreferenz](/Veo/fashion_ecommerce_shot.png)
+
+Checkliste vor dem Upload:
+- Produktfoto: neutraler Hintergrund, scharfe Kanten, keine harte Schattenkante.
+- Model: Ganzkoerper, klare Pose, keine abgeschnittenen Gelenke.
+- Stil: Ein klares Key-Image fuer Licht und Farbwelt (nicht 5 verschiedene Styles).
+
+Modul 2 - Briefing fuer die Generierung
+
+In der Forge definierst du das Ziel klar. Je praeziser das Briefing, desto weniger Iterationen.
+
+**Prompt-Blueprint (Copy/Paste)**
+- Szene: Mediterrane Gasse, weiches Tageslicht, leichte Tiefenschaerfe.
+- Styling: Blaues, florales Kleid, fliessender Stoff, elegante Silhouette.
+- Kamera: 35mm, leichte Bewegung, Fokus auf Kleid.
+- Bewegung: Model geht langsam, Stoff bewegt sich natuerlich.
+- Output: 6-10 Sekunden, hero-tauglich, clean, high-end.
+
+Qualitaets-Regeln:
+- Keine kuenstlichen Artefakte an Aermeln, Saum oder Naehten.
+- Haende und Gesichtsdetails pruefen (keine Dopplungen).
+- Branding-Farben in den Mitteltönen, nicht nur in Highlights.
+
+Modul 3 - Iteration wie ein Creative Director
+
+Arbeite in drei kurzen Runden:
+1) First Pass: Grobe Szene + Silhouette.
+2) Detail Pass: Stoff, Struktur, Naehte.
+3) Brand Pass: Licht, Farbtemperatur, Mood.
+
+Wenn das Kleid nicht sitzt:
+- Model-Input wechseln.
+- Kameraanweisung reduzieren (z.B. statt "moving" nur "static").
+- Stilreferenz klarer waehlen (eine statt drei Vorlagen).
+
+Modul 4 - Output fuer Shop und Ads
+
+Erzeuge pro Produkt immer zwei Varianten:
+- **Shop-Visual:** Neutraler Hintergrund, Fokus auf Produktform.
+- **Lifestyle-Visual:** Kontext, Emotion, Bewegung.
+
+Export-Formate:
+- Shop: 1:1 oder 4:5
+- Ads: 9:16 und 16:9
+
+Ergebnis:
+Du kannst in Minuten ganze Produkt-Serien bauen, ohne neue Shootings.

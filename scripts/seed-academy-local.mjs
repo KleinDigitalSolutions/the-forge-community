@@ -160,6 +160,17 @@ const parseLegalGuide = (text) => {
 
 const courses = [
   {
+    slug: 'veo-shop-fotos',
+    title: 'VEO 3.1: Produktfoto zu Shop-Visuals',
+    summary: 'Aus drei Inputs wird ein markenfaehiges Shop- und Lifestyle-Visual fuer deine Produktseite.',
+    category: 'Distribution',
+    level: 'Content Lab',
+    durationMins: 45,
+    coverImage: '/Veo/fashion_ecommerce_shot.png',
+    sourceFile: 'veo_shop_fotos',
+    parser: parseKursGruendung,
+  },
+  {
     slug: 'kurs-gruendung',
     title: 'Kurs zur Gruendung eines Online-Business',
     summary: 'Schritt-fuer-Schritt von der Idee ueber Rechtsform bis zum Launch in Deutschland.',
