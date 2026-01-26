@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { Menu, X, ArrowRight } from 'lucide-react';
+import SeamlessVideoLoop from './SeamlessVideoLoop';
 
 interface NavLink {
     label: string;
@@ -75,24 +76,27 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
         <section className="w-full isolate min-h-screen overflow-hidden relative">
             {backgroundVideoUrl ? (
                 <>
-                    <video
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
-                        className="w-full h-full object-cover object-center scale-[1.08] -translate-y-[6%] bg-black absolute top-0 right-0 bottom-0 left-0 z-0 md:hidden"
-                    >
-                        <source src={backgroundVideoUrlMobile ?? backgroundVideoUrl} type="video/mp4" />
-                    </video>
-                    <video
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
-                        className="hidden md:block w-full h-full object-contain object-center bg-black absolute top-0 right-0 bottom-0 left-0 z-0"
-                    >
-                        <source src={backgroundVideoUrl} type="video/mp4" />
-                    </video>
+                    {/* Mobile Video with Seamless Loop */}
+                    <div className="md:hidden absolute inset-0 z-0 bg-black">
+                        <SeamlessVideoLoop
+                            src={backgroundVideoUrlMobile ?? backgroundVideoUrl}
+                            className="object-cover"
+                            objectPosition="center 30%"
+                            crossfadeAt={2.0}
+                            fadeDuration={1.0}
+                        />
+                    </div>
+
+                    {/* Desktop Video with Seamless Loop */}
+                    <div className="hidden md:block absolute inset-0 z-0 bg-black">
+                        <SeamlessVideoLoop
+                            src={backgroundVideoUrl}
+                            className="object-cover"
+                            objectPosition="center"
+                            crossfadeAt={1.5}
+                            fadeDuration={0.8}
+                        />
+                    </div>
                 </>
             ) : backgroundImageUrl ? (
                 <img
