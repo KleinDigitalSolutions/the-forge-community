@@ -89,6 +89,7 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                 />
             ) : null}
             
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/60 via-black/35 to-black/70 z-[1]" />
             <div className="pointer-events-none absolute inset-0 ring-1 ring-white/10 z-10" />
 
             <div className="absolute inset-0 hidden sm:flex items-center justify-center pointer-events-none select-none z-[2] overflow-hidden translate-y-64 sm:translate-y-72 md:translate-y-80">
