@@ -775,6 +775,7 @@ model Venture {
   resources       VentureResource[]
   mentoringSessions MentoringSession[]
   brandDNA        BrandDNA?
+  voiceProfile    VoiceProfile?
   legalDocuments  LegalDocument[]
   marketingContents MarketingContent[]
   mediaAssets     MediaAsset[]
@@ -859,6 +860,24 @@ model BrandDNA {
 
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+
+  @@index([ventureId])
+}
+
+model VoiceProfile {
+  id                               String   @id @default(cuid())
+  ventureId                        String   @unique
+  venture                          Venture  @relation(fields: [ventureId], references: [id], onDelete: Cascade)
+
+  voiceId                          String?
+  voiceName                        String?
+  modelId                          String?
+  pronunciationDictionaryId        String?
+  pronunciationDictionaryVersionId String?
+  voiceSettings                    Json?
+
+  createdAt                        DateTime @default(now())
+  updatedAt                        DateTime @updatedAt
 
   @@index([ventureId])
 }

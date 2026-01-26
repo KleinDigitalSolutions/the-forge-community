@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { MediaAsset } from '@prisma/client';
 import { MediaGeneratorModal } from '@/app/components/marketing/MediaGeneratorModal';
 import { MediaAssetGrid } from '@/app/components/marketing/MediaAssetGrid';
+import { VoiceGeneratorPanel } from '@/app/components/marketing/VoiceGeneratorPanel';
 import { getVentureMedia } from '@/app/actions/media';
 import { 
   LayoutGrid, 
@@ -156,12 +157,19 @@ export function MediaStudio({ ventureId, brandDNA }: MediaStudioProps) {
         )}
 
         {activeTab === 'generate' && (
-          <div className="h-[800px] border border-white/10 rounded-xl overflow-hidden">
-            <MediaGeneratorModal 
-              isOpen={true} 
+          <div className="space-y-6">
+            <div className="h-[800px] border border-white/10 rounded-xl overflow-hidden">
+              <MediaGeneratorModal 
+                isOpen={true} 
+                ventureId={ventureId} 
+                brandDNA={brandDNA} 
+                inline={true}
+                onAssetCreated={handleAssetCreated}
+              />
+            </div>
+            <VoiceGeneratorPanel 
               ventureId={ventureId} 
-              brandDNA={brandDNA} 
-              inline={true}
+              brandDNA={brandDNA}
               onAssetCreated={handleAssetCreated}
             />
           </div>

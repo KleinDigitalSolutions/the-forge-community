@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { MediaAsset } from '@prisma/client';
-import { Play, Image as ImageIcon, CheckCircle2, Trash2, Download } from 'lucide-react';
+import { Play, Image as ImageIcon, CheckCircle2, Trash2, Download, Mic2 } from 'lucide-react';
 import { VideoPreview } from '@/app/components/media/VideoPreview';
 import { MediaLightbox } from '@/app/components/media/MediaLightbox';
 
@@ -62,7 +62,9 @@ export function MediaAssetGrid({
         {assets.map((asset) => {
           const isSelected = selectedIds.includes(asset.id);
           const isVideo = asset.type.toLowerCase() === 'video';
+          const isAudio = asset.type.toLowerCase() === 'audio';
           const openLightbox = enableLightbox && isVideo ? () => setLightboxAsset(asset) : undefined;
+          const defaultFilename = isVideo ? 'video.mp4' : isAudio ? 'audio.mp3' : 'image.jpg';
 
           return (
             <div
@@ -91,6 +93,14 @@ export function MediaAssetGrid({
                   onOpen={openLightbox}
                   loop={false}
                 />
+              ) : isAudio ? (
+                <div className="h-full w-full flex flex-col items-center justify-center gap-3 bg-black/40">
+                  <div className="flex flex-col items-center gap-2 text-white/70">
+                    <Mic2 className="w-6 h-6" />
+                    <span className="text-xs font-semibold">Voiceover</span>
+                  </div>
+                  <audio controls src={asset.url} className="w-[90%] h-8" />
+                </div>
               ) : (
                 <img
                   src={asset.url}
@@ -103,7 +113,7 @@ export function MediaAssetGrid({
 
               {/* Type Indicator */}
               <div className="absolute top-2 left-2 px-2 py-1 rounded-md bg-black/60 backdrop-blur-md text-[10px] font-bold text-white uppercase tracking-wider flex items-center gap-1">
-                {isVideo ? <Play className="w-3 h-3" /> : <ImageIcon className="w-3 h-3" />}
+                {isVideo ? <Play className="w-3 h-3" /> : isAudio ? <Mic2 className="w-3 h-3" /> : <ImageIcon className="w-3 h-3" />}
                 {asset.source === 'EDITED' && <span className="text-[#D4AF37] ml-1">Edited</span>}
               </div>
 
@@ -119,7 +129,7 @@ export function MediaAssetGrid({
                 hoveredId === asset.id ? 'opacity-100' : 'opacity-0'
               }`}>
                 <button 
-                  onClick={(e) => handleDownload(e, asset.url, asset.filename || 'asset.mp4')}
+                  onClick={(e) => handleDownload(e, asset.url, asset.filename || defaultFilename)}
                   className="p-2 hover:bg-white/10 rounded-lg text-white/70 hover:text-white transition-colors"
                 >
                   <Download className="w-4 h-4" />
