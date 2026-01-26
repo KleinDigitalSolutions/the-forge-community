@@ -35,7 +35,7 @@ export function VideoPreview({
   className = '',
   mediaClassName = '',
   showOverlay = true,
-  enableHover = true,
+  enableHover = false,
   allowClick = true,
   stopClickPropagation = false,
   openOnClick = true,
@@ -158,10 +158,10 @@ export function VideoPreview({
               event.stopPropagation();
               handleOpen(event);
             }}
-            className="pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full border border-white/40 bg-black/50"
+            className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full border border-white/30 bg-black/60 shadow-[0_0_24px_rgba(212,175,55,0.25)] backdrop-blur transition hover:scale-105 hover:border-[#D4AF37]/60"
             aria-label={ariaLabel}
           >
-            <Play className="h-5 w-5 text-white" />
+            <Play className="h-6 w-6 text-white" />
           </button>
         </div>
       )}

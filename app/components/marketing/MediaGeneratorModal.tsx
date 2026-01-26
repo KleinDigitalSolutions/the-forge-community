@@ -994,7 +994,6 @@ export function MediaGeneratorModal({
                             key={asset.url}
                             src={asset.url} 
                             controls 
-                            autoPlay 
                             muted 
                             loop 
                             playsInline 

@@ -16,6 +16,7 @@ import {
   Layers,
   Users,
   ChevronRight,
+  ChevronLeft,
   Package,
   Cpu,
   Truck,
@@ -50,6 +51,57 @@ type MediaPreviewItem = {
 };
 
 export default function Home() {
+  const localMediaPreview: MediaPreviewItem[] = [
+    {
+      id: '3da7a0d1-3439-438b-8620-3d6db1c2fd7e',
+      url: '/Ai_videos/3da7a0d1-3439-438b-8620-3d6db1c2fd7e.mp4',
+      thumbnailUrl: null,
+      type: 'VIDEO',
+      prompt: 'Showcase: AI Video',
+      model: 'Veo'
+    },
+    {
+      id: '14bc273f-d13e-4cac-b328-6af51be39bf1',
+      url: '/Ai_videos/14bc273f-d13e-4cac-b328-6af51be39bf1.mp4',
+      thumbnailUrl: null,
+      type: 'VIDEO',
+      prompt: 'Showcase: AI Video',
+      model: 'Veo'
+    },
+    {
+      id: '817fae87-abc7-47ea-b16a-218e20dda4cc',
+      url: '/Ai_videos/817fae87-abc7-47ea-b16a-218e20dda4cc.mp4',
+      thumbnailUrl: null,
+      type: 'VIDEO',
+      prompt: 'Showcase: AI Video',
+      model: 'Veo'
+    },
+    {
+      id: '04890af6-4f5e-4e43-9b8f-75eefbdb1ece',
+      url: '/Ai_videos/04890af6-4f5e-4e43-9b8f-75eefbdb1ece.mp4',
+      thumbnailUrl: null,
+      type: 'VIDEO',
+      prompt: 'Showcase: AI Video',
+      model: 'Veo'
+    },
+    {
+      id: 'eafa6afe-e557-4ef9-8e03-52e31b892496',
+      url: '/Ai_videos/eafa6afe-e557-4ef9-8e03-52e31b892496.mp4',
+      thumbnailUrl: null,
+      type: 'VIDEO',
+      prompt: 'Showcase: AI Video',
+      model: 'Veo'
+    },
+    {
+      id: 'efd8acba-d343-4eae-b718-43f2876de35f',
+      url: '/Ai_videos/efd8acba-d343-4eae-b718-43f2876de35f.mp4',
+      thumbnailUrl: null,
+      type: 'VIDEO',
+      prompt: 'Showcase: AI Video',
+      model: 'Veo'
+    },
+  ];
+  const useLocalMediaPreview = true;
   const [foundersCount, setFoundersCount] = useState(0);
   const MAX_GROUP_SIZE = 25;
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -65,6 +117,14 @@ export default function Home() {
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [role, setRole] = useState<'investor' | 'builder' | null>(null);
+  const veoCarouselItems = [
+    { src: '/Veo/veo_make_person_and_scene_in_video.mp4', label: 'Cinematic Scene' },
+    { src: '/Veo/Veo_product_image_to_video.mp4', label: 'Product Sequence' },
+    { src: '/Veo/veo_marketing_video.mp4', label: 'Marketing Video' },
+    { src: '/Veo/veo__marketing_video.mp4', label: 'Website Hero' },
+    { src: '/Ai_videos/0228dd17-aca9-42cf-bb1e-10d1c7fa5453.mp4', label: 'Marketing Cut' },
+  ];
+  const [veoCarouselIndex, setVeoCarouselIndex] = useState(0);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -79,8 +139,8 @@ export default function Home() {
   const [formStatus, setFormStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [formMessage, setFormMessage] = useState('');
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const [mediaPreview, setMediaPreview] = useState<MediaPreviewItem[]>([]);
-  const [mediaLoading, setMediaLoading] = useState(true);
+  const [mediaPreview, setMediaPreview] = useState<MediaPreviewItem[]>(localMediaPreview);
+  const [mediaLoading, setMediaLoading] = useState(!useLocalMediaPreview);
   const [mediaError, setMediaError] = useState(false);
 
   const refreshFoundersCount = useCallback(async () => {
@@ -206,6 +266,7 @@ export default function Home() {
   };
 
   useEffect(() => {
+    if (useLocalMediaPreview) return;
     let active = true;
     const loadMedia = async () => {
       try {
@@ -226,6 +287,14 @@ export default function Home() {
       active = false;
     };
   }, []);
+
+  const handleVeoNext = () => {
+    setVeoCarouselIndex((prev) => (prev + 1) % veoCarouselItems.length);
+  };
+
+  const handleVeoPrev = () => {
+    setVeoCarouselIndex((prev) => (prev - 1 + veoCarouselItems.length) % veoCarouselItems.length);
+  };
 
   return (
     <div className="min-h-screen bg-black text-(--foreground) selection:bg-[#D4AF37] selection:text-black overflow-x-hidden relative">
@@ -500,6 +569,141 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Veo Section */}
+        <section id="veo" className="relative py-24 px-4 md:px-6 overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(212,175,55,0.15),_transparent_55%)] opacity-80" />
+          <div className="max-w-6xl mx-auto relative">
+            <div className="max-w-3xl mx-auto mb-12 space-y-4 text-center">
+              <div className="inline-flex items-center gap-3 rounded-full bg-white/10 px-4 py-2 ring-1 ring-white/15 backdrop-blur">
+                <img
+                  src="/partners/Google_Gemini_icon_2025.svg"
+                  alt="Gemini"
+                  className="h-4 w-4 opacity-80"
+                />
+                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/80">Jetzt verfügbar</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-(--accent)">Veo 3.1</span>
+              </div>
+              <h2 className="text-3xl md:text-5xl font-instrument-serif text-white leading-tight">
+                VEO 3.1: Drei Funken, ein Feuer.
+              </h2>
+              <p className="text-sm md:text-base text-white/60 leading-relaxed">
+                Deine Brand-DNA trifft auf die stärkste Video-KI der Welt.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-[0.95fr_1.05fr] gap-10 items-center">
+              <div className="order-2 lg:order-1 space-y-4">
+                {[
+                  {
+                    step: '1',
+                    title: 'Identität',
+                    desc: 'Foto von dir oder deinem Model.',
+                    accent: 'border-[#D4AF37]/40 text-[#D4AF37]',
+                  },
+                  {
+                    step: '2',
+                    title: 'Objekt',
+                    desc: 'Dein Produkt-Shot in Nahaufnahme.',
+                    accent: 'border-white/15 text-white/80',
+                  },
+                  {
+                    step: '3',
+                    title: 'Stil',
+                    desc: 'Farben & Vibe deiner Brand.',
+                    accent: 'border-white/15 text-white/80',
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.step}
+                    className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 backdrop-blur-sm hover:border-[#D4AF37]/40 transition-all"
+                  >
+                    <div className={`h-10 w-10 rounded-full border ${item.accent} flex items-center justify-center text-xs font-black`}>
+                      {item.step}
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold text-white">{item.title}</div>
+                      <div className="text-xs text-white/50">{item.desc}</div>
+                    </div>
+                  </div>
+                ))}
+                <p className="text-sm text-white/60 leading-relaxed">
+                  Das Resultat: Ein nahtloses Marketing-Video, das deine Brand-DNA atmet.
+                </p>
+                <div className="flex flex-wrap items-center gap-4">
+                  <Link
+                    href="#apply"
+                    className="rounded-full bg-[#D4AF37] px-6 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-black hover:brightness-110 transition"
+                  >
+                    Jetzt erste Sequenz generieren
+                  </Link>
+                  <span className="text-[10px] uppercase tracking-[0.3em] text-white/40">
+                    Vollständig kommerziell nutzbar. Generiert mit lizenzierten Modellen über die Forge-Pipeline.
+                  </span>
+                </div>
+              </div>
+
+              <div className="order-1 lg:order-2">
+                <div className="relative aspect-[9/16] overflow-hidden rounded-2xl border border-white/10 bg-black/40 shadow-[0_0_60px_rgba(0,0,0,0.35)]">
+                  <div className="absolute inset-0">
+                    <VideoPreview
+                      src="/Veo/veo_make_person_to_video.mp4"
+                      className="h-full w-full"
+                      mediaClassName="h-full w-full object-cover"
+                      enableHover={false}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-12">
+              <div className="relative aspect-[16/9] overflow-hidden rounded-2xl border border-white/10 bg-black/40 shadow-[0_0_60px_rgba(0,0,0,0.35)]">
+                <div className="absolute inset-0">
+                  <VideoPreview
+                    key={veoCarouselItems[veoCarouselIndex]?.src}
+                    src={veoCarouselItems[veoCarouselIndex]?.src}
+                    className="h-full w-full"
+                    mediaClassName="h-full w-full object-cover"
+                    enableHover={false}
+                  />
+                </div>
+                <div className="absolute top-4 left-4 rounded-full border border-white/10 bg-black/60 px-3 py-1 text-[9px] font-black uppercase tracking-[0.3em] text-white/60 backdrop-blur">
+                  {veoCarouselItems[veoCarouselIndex]?.label}
+                </div>
+                <div className="absolute inset-x-0 bottom-0 flex items-center justify-between px-4 pb-4">
+                  <button
+                    type="button"
+                    onClick={handleVeoPrev}
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/60 text-white/70 hover:text-white transition"
+                    aria-label="Vorheriges Video"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <div className="flex items-center gap-2">
+                    {veoCarouselItems.map((_, index) => (
+                      <button
+                        key={`veo-dot-${index}`}
+                        type="button"
+                        onClick={() => setVeoCarouselIndex(index)}
+                        className={`h-2 w-2 rounded-full transition ${index === veoCarouselIndex ? 'bg-[#D4AF37]' : 'bg-white/30'}`}
+                        aria-label={`Video ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleVeoNext}
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/60 text-white/70 hover:text-white transition"
+                    aria-label="Naechstes Video"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Media Wall Preview */}
         <section id="media-preview" className="relative py-24 px-4 md:px-6">
           <div className="max-w-6xl mx-auto">
@@ -537,9 +741,8 @@ export default function Home() {
               {!mediaLoading && mediaPreview.map((item) => {
                 const isVideo = item.type === 'VIDEO';
                 return (
-                  <Link
+                  <div
                     key={item.id}
-                    href={`/media#${item.id}`}
                     className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.02] shadow-[0_0_40px_rgba(0,0,0,0.25)] transition-all hover:border-white/30"
                   >
                     <div className="relative aspect-[4/5] w-full overflow-hidden">
@@ -550,8 +753,8 @@ export default function Home() {
                           className="h-full w-full"
                           mediaClassName="h-full w-full object-cover"
                           enableHover={false}
-                          allowClick={false}
-                          showOverlay={false}
+                          showOverlay={true}
+                          stopClickPropagation={true}
                         />
                       ) : (
                         <img
@@ -579,7 +782,7 @@ export default function Home() {
                         {item.prompt || 'Ohne Prompt.'}
                       </p>
                     </div>
-                  </Link>
+                  </div>
                 );
               })}
 

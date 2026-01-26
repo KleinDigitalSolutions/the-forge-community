@@ -71,7 +71,6 @@ export function MediaLightbox({ open, asset, onClose }: MediaLightboxProps) {
               src={asset.url}
               poster={asset.thumbnailUrl || undefined}
               controls
-              autoPlay
               playsInline
               preload="metadata"
               className="max-h-[70vh] w-full rounded-xl bg-black"
