@@ -262,50 +262,52 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                         </div>
                     </div>
 
-                    <div className="mx-auto mt-12 sm:mt-24 max-w-5xl">
-                        <div className="flex flex-col items-center gap-6 sm:gap-10">
-                            <div className="relative overflow-hidden animate-fade-slide-in-2 order-1 sm:order-2">
-                                <div className="partner-marquee-track flex items-center flex-nowrap">
-                                    <div className="partner-marquee-group flex items-center gap-x-12 sm:gap-x-16">
-                                        {partners.map((partner, index) => (
+                </div>
+            </div>
+            <div className="absolute inset-x-0 bottom-2 z-20 pointer-events-none select-none">
+                <div className="mx-auto max-w-5xl px-4">
+                    <div className="flex flex-col items-center gap-3">
+                        <div className="relative overflow-hidden animate-fade-slide-in-2">
+                            <div className="partner-marquee-track flex items-center flex-nowrap">
+                                <div className="partner-marquee-group flex items-center gap-x-12 sm:gap-x-16">
+                                    {partners.map((partner, index) => (
+                                        <div
+                                            key={`${partner.logoUrl}-${index}`}
+                                            className="flex items-center justify-center"
+                                        >
                                             <div
-                                                key={`${partner.logoUrl}-${index}`}
-                                                className="flex items-center justify-center"
-                                            >
-                                                <div
-                                                    className="w-12 h-12 bg-center bg-contain bg-no-repeat brightness-0 invert opacity-50 grayscale pointer-events-none"
-                                                    style={{
-                                                        backgroundImage: `url(${partner.logoUrl})`,
-                                                        transform: `scale(${partner.scale || 1})`
-                                                    }}
-                                                    aria-label={`Partner logo ${index + 1}`}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className="partner-marquee-group flex items-center gap-x-12 sm:gap-x-16" aria-hidden="true">
-                                        {partners.map((partner, index) => (
+                                                className="w-12 h-12 bg-center bg-contain bg-no-repeat brightness-0 invert opacity-50 grayscale pointer-events-none"
+                                                style={{
+                                                    backgroundImage: `url(${partner.logoUrl})`,
+                                                    transform: `scale(${partner.scale || 1})`
+                                                }}
+                                                aria-label={`Partner logo ${index + 1}`}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="partner-marquee-group flex items-center gap-x-12 sm:gap-x-16" aria-hidden="true">
+                                    {partners.map((partner, index) => (
+                                        <div
+                                            key={`${partner.logoUrl}-${index}-dup`}
+                                            className="flex items-center justify-center"
+                                        >
                                             <div
-                                                key={`${partner.logoUrl}-${index}-dup`}
-                                                className="flex items-center justify-center"
-                                            >
-                                                <div
-                                                    className="w-12 h-12 bg-center bg-contain bg-no-repeat brightness-0 invert opacity-50 grayscale pointer-events-none"
-                                                    style={{
-                                                        backgroundImage: `url(${partner.logoUrl})`,
-                                                        transform: `scale(${partner.scale || 1})`
-                                                    }}
-                                                    aria-label={`Partner logo ${index + 1}`}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
+                                                className="w-12 h-12 bg-center bg-contain bg-no-repeat brightness-0 invert opacity-50 grayscale pointer-events-none"
+                                                style={{
+                                                    backgroundImage: `url(${partner.logoUrl})`,
+                                                    transform: `scale(${partner.scale || 1})`
+                                                }}
+                                                aria-label={`Partner logo ${index + 1}`}
+                                            />
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
-                            <p className="animate-fade-slide-in-1 text-[8px] font-black uppercase tracking-[0.5em] text-white/20 text-center order-2 sm:order-1">
-                                {partnersTitle}
-                            </p>
                         </div>
+                        <p className="animate-fade-slide-in-1 text-[8px] font-black uppercase tracking-[0.5em] text-white/20 text-center">
+                            {partnersTitle}
+                        </p>
                     </div>
                 </div>
             </div>
