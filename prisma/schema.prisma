@@ -182,6 +182,10 @@ model User {
   createdPosts      ContentPost[]
   timeEntries       TimeEntry[]
   walletTransactions WalletTransaction[]
+  platformTaxProfile PlatformTaxProfile?
+  platformCreditPurchases PlatformCreditPurchase[]
+  platformCreditUsages PlatformCreditUsage[]
+  platformLedgerEntries PlatformLedgerEntry[]
 
   // NextAuth
   accounts      Account[]
@@ -248,6 +252,7 @@ model EnergyTransaction {
   relatedTransaction   EnergyTransaction? @relation("EnergyTransactionRelation", fields: [relatedTransactionId], references: [id], onDelete: SetNull)
   refunds     EnergyTransaction[]     @relation("EnergyTransactionRelation")
   createdAt   DateTime                @default(now())
+  platformCreditUsages PlatformCreditUsage[]
 
   @@index([userId, createdAt])
   @@index([feature])
@@ -1191,6 +1196,42 @@ enum TransactionStatus {
   REFUNDED          // Rückerstattet
 }
 
+// ============================================
+// PLATFORM FINANCE - Taxes, Invoices & EÜR
+// ============================================
+
+enum PlatformInvoiceStatus {
+  DRAFT
+  ISSUED
+  PAID
+  VOID
+  REFUNDED
+}
+
+enum PlatformLedgerDirection {
+  INCOME
+  EXPENSE
+}
+
+enum PlatformLedgerSource {
+  INVOICE
+  CREDIT_PURCHASE
+  CREDIT_USAGE
+  REFUND
+  STRIPE_FEE
+  SUBSCRIPTION
+  OTHER
+}
+
+enum PlatformDocumentType {
+  INVOICE
+  RECEIPT
+  STATEMENT
+  CONTRACT
+  EMAIL
+  OTHER
+}
+
 model SquadTransaction {
   id              String   @id @default(cuid())
 
@@ -1229,6 +1270,245 @@ model SquadTransaction {
   @@index([status])
   @@index([createdAt])
   @@index([stripePaymentIntentId])
+}
+
+// ============================================
+// PLATFORM FINANCE - Tax, Invoices & EÜR
+// ============================================
+
+model PlatformTaxProfile {
+  id               String   @id @default(cuid())
+  ownerId          String?  @unique
+  owner            User?    @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+
+  businessName     String
+  businessType     String   @default("Einzelunternehmen")
+  addressStreet    String
+  addressZip       String
+  addressCity      String
+  addressCountry   String   @default("Germany")
+
+  taxNumber        String?
+  vatId            String?
+  taxOfficeName    String?
+  taxOfficeId      String?
+
+  smallBusiness    Boolean  @default(true)
+  invoiceEmail     String?
+  bankIban         String?
+  bankBic          String?
+  logoUrl          String?
+  invoiceNote      String?  @db.Text
+  defaultCurrency  String   @default("EUR")
+
+  invoices         PlatformInvoice[]
+  ledgerEntries    PlatformLedgerEntry[]
+  documents        PlatformDocument[]
+  creditPurchases  PlatformCreditPurchase[]
+  creditUsages     PlatformCreditUsage[]
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model PlatformInvoice {
+  id                  String   @id @default(cuid())
+  profileId           String
+  profile             PlatformTaxProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  status              PlatformInvoiceStatus @default(ISSUED)
+  invoiceNumber       String   @unique
+  issueDate           DateTime @default(now())
+  serviceDate         DateTime?
+  servicePeriodStart  DateTime?
+  servicePeriodEnd    DateTime?
+
+  buyerName           String
+  buyerEmail          String?
+  buyerTaxNumber      String?
+  buyerVatId          String?
+  buyerAddress        Json?
+  buyerCountry        String?
+
+  currency            String   @default("EUR")
+  subtotal            Float
+  taxRate             Float    @default(0)
+  taxAmount           Float    @default(0)
+  total               Float
+  isSmallBusiness     Boolean  @default(true)
+  smallBusinessNote   String?  @db.Text
+
+  pdfUrl              String?
+  structuredXmlUrl    String?
+  snapshot            Json?
+
+  stripePaymentIntentId String? @unique
+  stripeChargeId         String?
+  stripeInvoiceId        String?
+  paidAt              DateTime?
+
+  lineItems           PlatformInvoiceLine[]
+  ledgerEntry         PlatformLedgerEntry?
+  documents           PlatformDocument[]
+  creditPurchase      PlatformCreditPurchase? @relation("CreditPurchaseInvoice")
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([profileId])
+  @@index([issueDate])
+  @@index([status])
+}
+
+model PlatformInvoiceLine {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  invoice     PlatformInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  description String
+  quantity    Float    @default(1)
+  unitPrice   Float
+  netAmount   Float
+  taxRate     Float    @default(0)
+  taxAmount   Float    @default(0)
+  totalAmount Float
+  categoryId  String?
+  category    PlatformLedgerCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([invoiceId])
+}
+
+model PlatformLedgerCategory {
+  id          String   @id @default(cuid())
+  type        PlatformLedgerDirection
+  name        String
+  code        String?
+  description String?
+  isSystem    Boolean  @default(false)
+
+  entries     PlatformLedgerEntry[]
+  invoiceLines PlatformInvoiceLine[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PlatformLedgerEntry {
+  id          String   @id @default(cuid())
+  profileId   String
+  profile     PlatformTaxProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  direction   PlatformLedgerDirection
+  source      PlatformLedgerSource
+  sourceId    String?
+  categoryId  String?
+  category    PlatformLedgerCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  description String?
+  bookedAt    DateTime @default(now())
+
+  amountNet   Float
+  taxAmount   Float    @default(0)
+  amountGross Float
+  currency    String   @default("EUR")
+
+  invoiceId   String?  @unique
+  invoice     PlatformInvoice? @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  documents   PlatformDocument[]
+  creditUsage PlatformCreditUsage? @relation("LedgerCreditUsage")
+  metadata    Json?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([profileId])
+  @@index([direction])
+  @@index([bookedAt])
+  @@index([source])
+}
+
+model PlatformDocument {
+  id            String   @id @default(cuid())
+  profileId     String
+  profile       PlatformTaxProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  type          PlatformDocumentType
+  title         String
+  documentUrl   String
+  mimeType      String?
+  size          Int?
+  sha256        String?
+  issuedAt      DateTime?
+  retentionUntil DateTime?
+
+  invoiceId     String?
+  invoice       PlatformInvoice? @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  ledgerEntryId String?
+  ledgerEntry   PlatformLedgerEntry? @relation(fields: [ledgerEntryId], references: [id], onDelete: SetNull)
+  metadata      Json?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([profileId])
+  @@index([type])
+}
+
+model PlatformCreditPurchase {
+  id            String   @id @default(cuid())
+  profileId     String
+  profile       PlatformTaxProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  credits       Int
+  currency      String   @default("EUR")
+  amountNet     Float
+  taxAmount     Float    @default(0)
+  amountGross   Float
+
+  invoiceId     String?  @unique
+  invoice       PlatformInvoice? @relation("CreditPurchaseInvoice", fields: [invoiceId], references: [id], onDelete: SetNull)
+
+  stripePaymentIntentId String? @unique
+  stripeChargeId        String?
+  stripeInvoiceId       String?
+
+  createdAt     DateTime @default(now())
+
+  @@index([profileId])
+  @@index([userId])
+}
+
+model PlatformCreditUsage {
+  id            String   @id @default(cuid())
+  profileId     String
+  profile       PlatformTaxProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  energyTransactionId String? @unique
+  energyTransaction EnergyTransaction? @relation(fields: [energyTransactionId], references: [id], onDelete: SetNull)
+
+  credits       Int
+  provider      String?
+  model         String?
+  feature       String?
+  costAmount    Float?
+  currency      String   @default("EUR")
+  usedAt        DateTime @default(now())
+
+  ledgerEntryId String?  @unique
+  ledgerEntry   PlatformLedgerEntry? @relation("LedgerCreditUsage", fields: [ledgerEntryId], references: [id], onDelete: SetNull)
+  metadata      Json?
+
+  createdAt     DateTime @default(now())
+
+  @@index([profileId])
+  @@index([userId])
+  @@index([usedAt])
 }
 
 // ============================================

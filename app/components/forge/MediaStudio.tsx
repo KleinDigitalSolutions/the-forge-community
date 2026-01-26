@@ -13,19 +13,21 @@ import {
   Plus, 
   ArrowRight, 
   Loader2, 
-  Scissors 
+  Scissors,
+  Zap
 } from 'lucide-react';
 import { VideoPreview } from '@/app/components/media/VideoPreview';
+import { VeoStudio } from '@/app/components/marketing/VeoStudio';
 
 interface MediaStudioProps {
   ventureId: string;
   brandDNA?: any;
 }
 
-type Tab = 'library' | 'generate' | 'chain';
+type Tab = 'library' | 'generate' | 'veo' | 'chain';
 
 export function MediaStudio({ ventureId, brandDNA }: MediaStudioProps) {
-  const [activeTab, setActiveTab] = useState<Tab>('generate');
+  const [activeTab, setActiveTab] = useState<Tab>('veo');
   const [assets, setAssets] = useState<MediaAsset[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -123,10 +125,21 @@ export function MediaStudio({ ventureId, brandDNA }: MediaStudioProps) {
           Library
         </button>
         <button
+          onClick={() => setActiveTab('veo')}
+          className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${
+            activeTab === 'veo' 
+              ? 'bg-[#D4AF37] text-black shadow-[0_0_15px_rgba(212,175,55,0.3)]' 
+              : 'text-white/40 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <Zap className="w-4 h-4" />
+          Veo 3.1
+        </button>
+        <button
           onClick={() => setActiveTab('generate')}
           className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${
             activeTab === 'generate' 
-              ? 'bg-[#D4AF37] text-black' 
+              ? 'bg-white text-black' 
               : 'text-white/40 hover:text-white hover:bg-white/5'
           }`}
         >
