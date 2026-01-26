@@ -237,6 +237,7 @@ export default function Home() {
           title="Viele Founder. 1 Brand."
           titleLine2="Volle Transparenz."
           description="STAKE & SCALE vereint Community-Capital, KI-Studios und radikale Execution. Forge-Hub, Decision Hall, Forum und Direct Messages bündeln Ideen, Votes und Output in einem System."
+          backgroundVideoUrl="/hero_loop.mp4"
           primaryButtonText="SEQUENZ STARTEN"
           primaryButtonHref="#apply"
           secondaryButtonText="PROTOKOLL ANSEHEN"

@@ -77,7 +77,7 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                     muted
                     loop
                     playsInline
-                    className="w-full h-full object-cover absolute top-0 right-0 bottom-0 left-0 z-0"
+                    className="w-full h-full object-cover md:object-contain bg-black absolute top-0 right-0 bottom-0 left-0 z-0"
                 >
                     <source src={backgroundVideoUrl} type="video/mp4" />
                 </video>
