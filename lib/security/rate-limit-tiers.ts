@@ -8,6 +8,7 @@
  */
 
 import type { RateLimitTier } from './ip-rate-limit';
+export type { RateLimitTier } from './ip-rate-limit';
 
 /**
  * Parse integer from environment variable with fallback

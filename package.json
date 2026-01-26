@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
-    "seed:academy": "node scripts/seed-academy-local.mjs"
+    "seed:academy": "node scripts/seed-academy-local.mjs",
+    "seed:platform-finance": "node scripts/seed-platform-finance.mjs",
+    "export:platform-ledger": "node scripts/export-platform-ledger.mjs"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.10",
