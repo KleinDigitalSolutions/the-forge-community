@@ -19,9 +19,10 @@ const COSTS: Record<string, number> = {
   'text-to-image': 4,
   'text-to-video': 35,
   'image-to-video': 40,
+  'image-to-image': 5, // Nano Banana image blending
 };
 
-type MediaMode = 'text-to-image' | 'text-to-video' | 'image-to-video';
+type MediaMode = 'text-to-image' | 'text-to-video' | 'image-to-video' | 'image-to-image';
 
 type Provider = 'replicate' | 'ideogram';
 
@@ -46,7 +47,7 @@ type ReplicateInputOptions = {
   steps?: number;
   guidance?: number;
   duration?: number;
-  imageUrl?: string;
+  imageUrl?: string | string[]; // Support multiple images for Nano Banana
 };
 
 type CachedAsset = {
@@ -122,14 +123,23 @@ const MODEL_CONFIGS: Record<string, ModelConfig> = {
     outputType: 'video',
     provider: 'replicate',
   },
+  'google/nano-banana': {
+    id: 'google/nano-banana',
+    label: 'Nano Banana · Multi-Image Blending',
+    modes: ['image-to-image'],
+    outputType: 'image',
+    provider: 'replicate',
+    supportsImageInput: true, // Supports multiple images
+  },
 };
 
-const MEDIA_MODES: MediaMode[] = ['text-to-image', 'text-to-video', 'image-to-video'];
+const MEDIA_MODES: MediaMode[] = ['text-to-image', 'text-to-video', 'image-to-video', 'image-to-image'];
 
 const DEFAULT_MODEL_BY_MODE: Record<MediaMode, string> = {
   'text-to-image': 'black-forest-labs/flux-2-pro',
   'text-to-video': 'minimax/video-01',
   'image-to-video': 'kwaivgi/kling-v1.5-pro',
+  'image-to-image': 'google/nano-banana',
 };
 
 const JOB_TTL_MS = 1000 * 60 * 60 * 6;
@@ -251,6 +261,22 @@ const buildReplicateInput = (modelId: string, options: ReplicateInputOptions) =>
         prompt: options.prompt,
         aspect_ratio: safeAspectRatio,
       };
+      return input;
+    }
+    case 'google/nano-banana': {
+      // Nano Banana: Multi-Image Blending
+      const input: Record<string, unknown> = {
+        prompt: options.prompt,
+        aspect_ratio: options.aspectRatio,
+        output_format: 'jpg',
+      };
+      // Support multiple image inputs (passed as array or single imageUrl)
+      if (options.imageUrl) {
+        // If single URL, wrap in array; if already array, use as-is
+        input.image_input = Array.isArray(options.imageUrl)
+          ? options.imageUrl
+          : [options.imageUrl];
+      }
       return input;
     }
     default: {
@@ -466,10 +492,40 @@ export async function POST(
   const seed = parseOptionalNumber(formData.get('seed'));
   const duration = parseOptionalNumber(formData.get('duration'));
 
+  // Multi-Image Upload Support (for Nano Banana image-to-image)
   const imageFile = formData.get('image');
-  let imageUrl: string | undefined;
+  const imageFiles = formData.getAll('images'); // For multiple images
+  let imageUrl: string | string[] | undefined;
 
-  if (isFileLike(imageFile)) {
+  if (mode === 'image-to-image') {
+    if (imageFiles.length < 2 || imageFiles.length > 3) {
+      return NextResponse.json({ error: 'Bitte lade 2-3 Referenzbilder hoch.' }, { status: 400 });
+    }
+    if (!imageFiles.every(isFileLike)) {
+      return NextResponse.json({ error: 'Ungültige Bilddaten.' }, { status: 415 });
+    }
+
+    const uploadedUrls: string[] = [];
+    for (const file of imageFiles as File[]) {
+      if (file.size > MAX_UPLOAD_BYTES) {
+        return NextResponse.json({ error: `Bild "${file.name}" ist zu groß.` }, { status: 413 });
+      }
+      if (!ALLOWED_MIME_TYPES.has(file.type)) {
+        return NextResponse.json({ error: `Ungültiger Typ für "${file.name}".` }, { status: 415 });
+      }
+
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const safeName = sanitizeFilename(file.name || 'reference');
+      const filename = `marketing/${user.id}/inputs/${Date.now()}-${safeName}`;
+      const blob = await put(filename, buffer, {
+        access: 'public',
+        contentType: file.type,
+      });
+      uploadedUrls.push(blob.url);
+    }
+
+    imageUrl = uploadedUrls; // Pass as array for Nano Banana
+  } else if (isFileLike(imageFile)) {
     if (imageFile.size > MAX_UPLOAD_BYTES) {
       return NextResponse.json({ error: 'Bild ist zu groß.' }, { status: 413 });
     }

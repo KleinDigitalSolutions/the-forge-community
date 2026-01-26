@@ -39,6 +39,11 @@ const MEDIA_MODES = [
     label: 'Image → Video',
     description: 'Bewegung und Dynamik aus einem Bild heraus.',
   },
+  {
+    id: 'image-to-image',
+    label: 'Images → Marketing Foto',
+    description: 'Blend 2-3 Fotos zu einem einheitlichen Visual.',
+  },
 ] as const;
 
 type MediaMode = (typeof MEDIA_MODES)[number]['id'];
@@ -119,6 +124,13 @@ const MODEL_CONFIGS: ModelConfig[] = [
     outputType: 'video',
     modes: ['text-to-video'],
   },
+  {
+    id: 'google/nano-banana',
+    label: 'Nano Banana · Multi-Image Blending',
+    outputType: 'image',
+    modes: ['image-to-image'],
+    supportsImageInput: true,
+  },
 ];
 
 const ASPECT_RATIOS = [
@@ -127,6 +139,10 @@ const ASPECT_RATIOS = [
   { id: '9:16', label: '9:16 Story' },
   { id: '16:9', label: '16:9 Wide' },
   { id: '3:2', label: '3:2 Classic' },
+];
+const IMAGE_TO_IMAGE_ASPECT_RATIOS = [
+  { id: 'match_input_image', label: 'Match Input' },
+  ...ASPECT_RATIOS,
 ];
 
 const IDEOGRAM_RENDERING_SPEEDS = [
@@ -213,6 +229,10 @@ export function MediaGeneratorModal({
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(initialStartImageUrl || null);
 
+  // Multi-Image Upload (for Nano Banana image-to-image)
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+
   const [isGenerating, setIsGenerating] = useState(false);
   const [assets, setAssets] = useState<MediaAsset[]>([]);
   const [creditsRemaining, setCreditsRemaining] = useState<number | null>(null);
@@ -262,6 +282,22 @@ export function MediaGeneratorModal({
       setMode(getDefaultMode(allowedModes));
     }
   }, [modeOptions, mode, allowedModes]);
+
+  useEffect(() => {
+    if (mode !== 'image-to-image' && aspectRatio === 'match_input_image') {
+      setAspectRatio(ASPECT_RATIOS[0].id);
+    }
+  }, [mode, aspectRatio]);
+
+  useEffect(() => {
+    if (mode === 'image-to-image') {
+      setImageFile(null);
+      return;
+    }
+    if (imageFiles.length) {
+      setImageFiles([]);
+    }
+  }, [mode, imageFiles.length]);
 
   useEffect(() => {
     if (!availableModels.length || !enabledModels.length) {
@@ -339,6 +375,17 @@ export function MediaGeneratorModal({
     setImagePreview(url);
     return () => URL.revokeObjectURL(url);
   }, [imageFile, initialStartImageUrl]);
+
+  // Multi-Image Previews (Nano Banana)
+  useEffect(() => {
+    if (imageFiles.length === 0) {
+      setImagePreviews([]);
+      return;
+    }
+    const urls = imageFiles.map(file => URL.createObjectURL(file));
+    setImagePreviews(urls);
+    return () => urls.forEach(url => URL.revokeObjectURL(url));
+  }, [imageFiles]);
 
   const promptPlaceholder = useMemo(() => {
     if (mode === 'text-to-video') return 'z.B. Minimalistisches Produkt-Teasing mit weichen Lichtfahrten';
@@ -484,9 +531,18 @@ export function MediaGeneratorModal({
       setErrorMessage('Dieses Modell ist aktuell deaktiviert.');
       return;
     }
-    if (requiresImage && !imageFile) {
-      setErrorMessage('Bitte lade ein Referenzbild hoch.');
-      return;
+    // Validation for image inputs
+    if (requiresImage) {
+      if (mode === 'image-to-image') {
+        // Nano Banana: requires 2-3 images
+        if (imageFiles.length < 2) {
+          setErrorMessage('Bitte lade mindestens 2 Bilder hoch (max. 3).');
+          return;
+        }
+      } else if (!imageFile) {
+        setErrorMessage('Bitte lade ein Referenzbild hoch.');
+        return;
+      }
     }
 
     setIsGenerating(true);
@@ -502,7 +558,15 @@ export function MediaGeneratorModal({
       if (supportsSteps) formData.append('steps', String(steps));
       if (supportsGuidance) formData.append('guidance', String(guidance));
       if (supportsSeed && seed.trim()) formData.append('seed', seed.trim());
-      if (requiresImage && imageFile) formData.append('image', imageFile);
+
+      // Single image upload (existing modes)
+      if (requiresImage && imageFile && mode !== 'image-to-image') {
+        formData.append('image', imageFile);
+      }
+      // Multi-image upload (Nano Banana)
+      if (mode === 'image-to-image' && imageFiles.length > 0) {
+        imageFiles.forEach((file) => formData.append('images', file));
+      }
       if (supportsDuration) {
         formData.append('duration', String(duration));
       }
@@ -712,7 +776,7 @@ export function MediaGeneratorModal({
                   onChange={(event) => setAspectRatio(event.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-[#D4AF37] outline-none"
                 >
-                  {ASPECT_RATIOS.map((option) => (
+                  {(mode === 'image-to-image' ? IMAGE_TO_IMAGE_ASPECT_RATIOS : ASPECT_RATIOS).map((option) => (
                     <option key={option.id} value={option.id}>
                       {option.label}
                     </option>
@@ -827,8 +891,18 @@ export function MediaGeneratorModal({
           {requiresImage && (
             <div className="glass-card rounded-xl border border-white/10 p-5 space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold uppercase tracking-widest text-white/40">Referenzbild</h3>
-                {imageFile && (
+                <h3 className="text-sm font-bold uppercase tracking-widest text-white/40">
+                  {mode === 'image-to-image' ? 'Bilder (2-3)' : 'Referenzbild'}
+                </h3>
+                {mode === 'image-to-image' && imageFiles.length > 0 && (
+                  <button
+                    onClick={() => setImageFiles([])}
+                    className="text-[10px] uppercase tracking-widest text-white/50 hover:text-white"
+                  >
+                    Alle entfernen
+                  </button>
+                )}
+                {mode !== 'image-to-image' && imageFile && (
                   <button
                     onClick={() => setImageFile(null)}
                     className="text-[10px] uppercase tracking-widest text-white/50 hover:text-white"
@@ -837,23 +911,74 @@ export function MediaGeneratorModal({
                   </button>
                 )}
               </div>
-              <label className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-white/20 bg-black/40 px-6 py-8 text-white/50 text-xs cursor-pointer hover:bg-white/5 transition-colors">
-                <Upload className="w-5 h-5" />
-                <span>Bild hochladen (JPG/PNG/WebP)</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(event) => {
-                    const file = event.target.files?.[0] || null;
-                    setImageFile(file);
-                  }}
-                />
-              </label>
-              {imagePreview && (
-                <div className="rounded-xl overflow-hidden border border-white/10">
-                  <img src={imagePreview} alt="Referenz" className="w-full h-auto" />
-                </div>
+
+              {/* Multi-Image Upload (Nano Banana) */}
+              {mode === 'image-to-image' ? (
+                <>
+                  <label className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-white/20 bg-black/40 px-6 py-8 text-white/50 text-xs cursor-pointer hover:bg-white/5 transition-colors">
+                    <Upload className="w-5 h-5" />
+                    <span>2-3 Bilder hochladen (JPG/PNG/WebP)</span>
+                    <span className="text-[10px] text-white/40">
+                      {imageFiles.length}/3 Bilder ausgewählt
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={(event) => {
+                        const files = Array.from(event.target.files || []);
+                        if (files.length > 3) {
+                          setErrorMessage('Maximal 3 Bilder erlaubt.');
+                          return;
+                        }
+                        setImageFiles(files);
+                      }}
+                    />
+                  </label>
+                  {imagePreviews.length > 0 && (
+                    <div className="grid grid-cols-3 gap-2">
+                      {imagePreviews.map((preview, index) => (
+                        <div key={`${preview}-${index}`} className="relative rounded-xl overflow-hidden border border-white/10 group">
+                          <img src={preview} alt={`Upload ${index + 1}`} className="w-full h-auto aspect-square object-cover" />
+                          <button
+                            onClick={() => {
+                              setImageFiles(prev => prev.filter((_, i) => i !== index));
+                            }}
+                            className="absolute top-1 right-1 p-1 bg-black/80 rounded-full text-white/70 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                          <div className="absolute bottom-1 left-1 px-2 py-0.5 bg-black/80 rounded text-[10px] text-white/70">
+                            #{index + 1}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                /* Single Image Upload (existing modes) */
+                <>
+                  <label className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-white/20 bg-black/40 px-6 py-8 text-white/50 text-xs cursor-pointer hover:bg-white/5 transition-colors">
+                    <Upload className="w-5 h-5" />
+                    <span>Bild hochladen (JPG/PNG/WebP)</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0] || null;
+                        setImageFile(file);
+                      }}
+                    />
+                  </label>
+                  {imagePreview && (
+                    <div className="rounded-xl overflow-hidden border border-white/10">
+                      <img src={imagePreview} alt="Referenz" className="w-full h-auto" />
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
