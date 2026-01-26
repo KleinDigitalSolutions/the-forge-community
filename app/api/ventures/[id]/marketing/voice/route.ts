@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { consumeHourlyQuota, InsufficientEnergyError, reserveEnergy, refundEnergy, settleEnergy } from '@/lib/energy';
+import { estimateElevenLabsTtsCredits } from '@/lib/credit-pricing';
 import { put } from '@vercel/blob';
 import { generateUUID } from '@/lib/utils/uuid';
 
@@ -16,7 +17,7 @@ const parseLimit = (value: string | undefined, fallback: number) => {
 };
 
 const MAX_TTS_CHARS = parseLimit(process.env.MARKETING_VOICE_MAX_CHARS, 5000);
-const VOICE_COST = parseLimit(process.env.MARKETING_VOICE_CREDITS, 5);
+const VOICE_COST_FALLBACK = parseLimit(process.env.MARKETING_VOICE_CREDITS, 5);
 const HOURLY_VOICE_LIMIT = parseLimit(process.env.MARKETING_VOICE_HOURLY_LIMIT, 40);
 
 const clamp01 = (value: unknown, fallback: number) => {
@@ -116,6 +117,8 @@ export async function POST(
   const outputFormat = typeof payload?.outputFormat === 'string' ? payload.outputFormat.trim() : 'mp3_44100_128';
   const languageCode = typeof payload?.languageCode === 'string' ? payload.languageCode.trim() : undefined;
   const originTag = typeof payload?.originTag === 'string' ? payload.originTag.trim() : undefined;
+  const voiceMultiplierRaw = Number(payload?.voiceCreditMultiplier);
+  const voiceMultiplier = Number.isFinite(voiceMultiplierRaw) && voiceMultiplierRaw > 0 ? voiceMultiplierRaw : 1;
 
   if (!text) {
     return NextResponse.json({ error: 'Text fehlt.' }, { status: 400 });
@@ -158,6 +161,14 @@ export async function POST(
     return NextResponse.json({ error: 'Bitte wähle eine Stimme.' }, { status: 400 });
   }
 
+  const pricingEstimate = estimateElevenLabsTtsCredits({
+    textLength: text.length,
+    modelId: resolvedModelId,
+    voiceMultiplier,
+    minimumCredits: 1
+  });
+  const creditCost = pricingEstimate.credits || VOICE_COST_FALLBACK;
+
   let reservationId: string | null = null;
   const requestId = request.headers.get('x-request-id') || generateUUID();
 
@@ -165,10 +176,17 @@ export async function POST(
     // Step 1: Reserve credits (fail fast if insufficient)
     const reservation = await reserveEnergy({
       userId: user.id,
-      amount: VOICE_COST,
+      amount: creditCost,
       feature: 'marketing.voice',
       requestId,
-      metadata: { ventureId: id, model: resolvedModelId, voiceId: resolvedVoiceId }
+      metadata: {
+        ventureId: id,
+        model: resolvedModelId,
+        voiceId: resolvedVoiceId,
+        elevenCredits: pricingEstimate.elevenCredits,
+        costEur: pricingEstimate.costEur,
+        perCharCredits: pricingEstimate.perCharCredits
+      }
     });
     reservationId = reservation.reservationId;
 
@@ -279,20 +297,23 @@ export async function POST(
     const settlement = reservationId
       ? await settleEnergy({
           reservationId,
-          finalCost: VOICE_COST,
+          finalCost: creditCost,
           provider: 'elevenlabs',
           model: resolvedModelId,
           metadata: {
             voiceId: resolvedVoiceId,
             outputFormat,
-            characters: text.length
+            characters: text.length,
+            elevenCredits: pricingEstimate.elevenCredits,
+            costEur: pricingEstimate.costEur,
+            perCharCredits: pricingEstimate.perCharCredits
           }
         })
       : null;
 
     return NextResponse.json({
       asset,
-      creditsUsed: VOICE_COST,
+      creditsUsed: creditCost,
       creditsRemaining: settlement?.creditsRemaining ?? null
     });
   } catch (error: any) {

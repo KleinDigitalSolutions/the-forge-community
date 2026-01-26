@@ -236,7 +236,7 @@ export async function reserveEnergy(input: EnergyReserveInput): Promise<EnergyRe
       }
     }
 
-    const adminBypassEnabled = process.env.ADMIN_UNLIMITED_ENERGY !== 'false';
+    const adminBypassEnabled = process.env.ADMIN_UNLIMITED_ENERGY === 'true';
     if (adminBypassEnabled) {
       const adminUser = await tx.user.findUnique({
         where: { id: input.userId },

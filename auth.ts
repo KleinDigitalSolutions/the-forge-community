@@ -91,6 +91,14 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     async createUser({ user }) {
       if (user?.id) {
         await assignFounderNumberIfMissing(user.id);
+        const initialCreditsRaw = Number.parseInt(process.env.INITIAL_CREDITS ?? '0', 10);
+        const initialCredits = Number.isFinite(initialCreditsRaw)
+          ? Math.max(0, initialCreditsRaw)
+          : 0;
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { credits: initialCredits }
+        });
       }
     },
   },
