@@ -17,6 +17,14 @@ The Forge nutzt ein **Product-Led Growth** Modell für maximale Konvertierung vo
 *   **Energy System (AI Credits):** Neue User starten mit **50 Credits** (⚡️), um das System unentgeltlich zu testen.
 *   **Freemium:** Core-Workflows (Venture Creation, Brand DNA, Roadmap) sind gratis. AI-gestützte Features (Content Generation, Legal Drafting) kosten Credits.
 
+## TODO (Tomorrow)
+
+- Add Membership + Credits monetization flow:
+  - Stripe subscription (platform access)
+  - Stripe one-time credit top-ups
+  - Plan-based limits (Free / Pro / Squad)
+- Decide final pricing (monthly access + credit packs)
+
 ---
 
 ## 🧾 Bisher programmiert
