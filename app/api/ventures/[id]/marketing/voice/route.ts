@@ -3,6 +3,7 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { consumeHourlyQuota, InsufficientEnergyError, reserveEnergy, refundEnergy, settleEnergy } from '@/lib/energy';
 import { put } from '@vercel/blob';
+import { generateUUID } from '@/lib/utils/uuid';
 
 export const maxDuration = 60;
 
@@ -158,9 +159,10 @@ export async function POST(
   }
 
   let reservationId: string | null = null;
-  const requestId = request.headers.get('x-request-id') || crypto.randomUUID();
+  const requestId = request.headers.get('x-request-id') || generateUUID();
 
   try {
+    // Step 1: Reserve credits (fail fast if insufficient)
     const reservation = await reserveEnergy({
       userId: user.id,
       amount: VOICE_COST,
@@ -170,15 +172,35 @@ export async function POST(
     });
     reservationId = reservation.reservationId;
 
-    const quota = await consumeHourlyQuota({
+    // Step 2: Check hourly quota (existing protection)
+    const hourlyQuota = await consumeHourlyQuota({
       userId: user.id,
       feature: 'marketing.voice.audio',
       limit: HOURLY_VOICE_LIMIT
     });
 
-    if (!quota.allowed) {
-      await refundEnergy(reservationId, 'rate-limit');
-      return NextResponse.json({ error: 'Stundenlimit erreicht.' }, { status: 429 });
+    if (!hourlyQuota.allowed) {
+      await refundEnergy(reservationId, 'hourly-rate-limit');
+      return NextResponse.json({
+        error: 'Stundenlimit erreicht.',
+        retryAfter: Math.ceil((hourlyQuota.resetAt.getTime() - Date.now()) / 1000)
+      }, { status: 429 });
+    }
+
+    // Step 3: Check daily quota (NEW: prevent abuse)
+    const { checkDailyVoiceQuota } = await import('@/lib/energy');
+    const dailyQuota = await checkDailyVoiceQuota(user.id);
+
+    if (!dailyQuota.allowed) {
+      await refundEnergy(reservationId, 'daily-quota-exceeded');
+      return NextResponse.json({
+        error: `Tageslimit erreicht (${dailyQuota.limit} Generierungen/Tag). Nächster Reset: ${dailyQuota.resetAt.toLocaleTimeString('de-DE')}`,
+        quota: {
+          limit: dailyQuota.limit,
+          remaining: dailyQuota.remaining,
+          resetAt: dailyQuota.resetAt.toISOString()
+        }
+      }, { status: 429 });
     }
 
     const rawVoiceSettings = payload?.voiceSettings && typeof payload.voiceSettings === 'object'

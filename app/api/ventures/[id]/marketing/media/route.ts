@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { RateLimiters } from '@/lib/rate-limit';
 import { put } from '@vercel/blob';
 import Replicate from 'replicate';
+import { generateUUID } from '@/lib/utils/uuid';
 
 export const maxDuration = 60; // Standard serverless timeout is fine for Replicate
 
@@ -390,7 +391,7 @@ const acquireProcessingLock = async (predictionId: string, holder: string) => {
   if (!current) return null;
   if (isFreshLock(current.processingId, current.processingAt)) return null;
 
-  const lockId = crypto.randomUUID();
+  const lockId = generateUUID();
   await updateJobCache(predictionId, {
     processingId: lockId,
     processingAt: new Date().toISOString(),
@@ -549,9 +550,10 @@ export async function POST(
   const hourlyLimit = isVideoMode ? HOURLY_LIMITS.video : HOURLY_LIMITS.image;
 
   let reservationId: string | null = null;
-  const requestId = request.headers.get('x-request-id') || crypto.randomUUID();
+  const requestId = request.headers.get('x-request-id') || generateUUID();
 
   try {
+    // Step 1: Reserve credits (fail fast if insufficient)
     const reservation = await reserveEnergy({
       userId: user.id,
       amount: cost,
@@ -561,15 +563,39 @@ export async function POST(
     });
     reservationId = reservation.reservationId;
 
-    const quota = await consumeHourlyQuota({
+    // Step 2: Check hourly quota (existing protection)
+    const hourlyQuota = await consumeHourlyQuota({
       userId: user.id,
       feature: isVideoMode ? 'marketing.media.video' : 'marketing.media.image',
       limit: hourlyLimit
     });
 
-    if (!quota.allowed) {
-      await refundEnergy(reservationId, 'rate-limit');
-      return NextResponse.json({ error: 'Stundenlimit erreicht.' }, { status: 429 });
+    if (!hourlyQuota.allowed) {
+      await refundEnergy(reservationId, 'hourly-rate-limit');
+      return NextResponse.json({
+        error: 'Stundenlimit erreicht.',
+        retryAfter: Math.ceil((hourlyQuota.resetAt.getTime() - Date.now()) / 1000)
+      }, { status: 429 });
+    }
+
+    // Step 3: Check daily quota (NEW: prevent abuse, especially for expensive video generation)
+    const { checkDailyImageQuota, checkDailyVideoQuota } = await import('@/lib/energy');
+    const dailyQuota = isVideoMode
+      ? await checkDailyVideoQuota(user.id)
+      : await checkDailyImageQuota(user.id);
+
+    if (!dailyQuota.allowed) {
+      await refundEnergy(reservationId, 'daily-quota-exceeded');
+      const mediaType = isVideoMode ? 'Video' : 'Bild';
+      return NextResponse.json({
+        error: `Tageslimit für ${mediaType}-Generierung erreicht (${dailyQuota.limit}/Tag). Nächster Reset: ${dailyQuota.resetAt.toLocaleTimeString('de-DE')}`,
+        quota: {
+          type: isVideoMode ? 'video' : 'image',
+          limit: dailyQuota.limit,
+          remaining: dailyQuota.remaining,
+          resetAt: dailyQuota.resetAt.toISOString()
+        }
+      }, { status: 429 });
     }
 
     const finalPrompt = useBrandContext ? `${prompt}${buildBrandContext(venture.brandDNA)}` : prompt;

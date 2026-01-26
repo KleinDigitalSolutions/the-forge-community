@@ -122,6 +122,99 @@ export async function consumeDailyQuota(options: QuotaInput): Promise<QuotaResul
   return consumeQuotaWindow({ ...options, windowMs });
 }
 
+/**
+ * Daily Quota Configurations for Expensive Operations
+ *
+ * Independent of credit system - prevents abuse even with unlimited credits.
+ * Users can hit daily limits before running out of credits.
+ */
+export const DAILY_QUOTAS = {
+  // Voice Generation (ElevenLabs)
+  VOICE_FREE: parseInt(process.env.DAILY_QUOTA_VOICE_FREE || '20', 10),
+  VOICE_PAID: parseInt(process.env.DAILY_QUOTA_VOICE_PAID || '100', 10),
+
+  // Image Generation (Replicate/Ideogram)
+  IMAGE_FREE: parseInt(process.env.DAILY_QUOTA_IMAGE_FREE || '15', 10),
+  IMAGE_PAID: parseInt(process.env.DAILY_QUOTA_IMAGE_PAID || '50', 10),
+
+  // Video Generation (Replicate)
+  VIDEO_FREE: parseInt(process.env.DAILY_QUOTA_VIDEO_FREE || '3', 10),
+  VIDEO_PAID: parseInt(process.env.DAILY_QUOTA_VIDEO_PAID || '20', 10),
+} as const;
+
+/**
+ * Check if user has paid subscription (future implementation)
+ *
+ * For now, all users are on free tier.
+ * Future: Check user.subscriptionTier === 'pro' or similar.
+ */
+async function getUserTier(userId: string): Promise<'free' | 'paid'> {
+  // TODO: Implement subscription check
+  // const user = await prisma.user.findUnique({
+  //   where: { id: userId },
+  //   select: { subscriptionTier: true, subscriptionStatus: true }
+  // });
+  //
+  // if (user?.subscriptionStatus === 'active' && user.subscriptionTier === 'pro') {
+  //   return 'paid';
+  // }
+
+  return 'free'; // Default: All users on free tier
+}
+
+/**
+ * Check daily quota for voice generation
+ *
+ * @param userId - User ID
+ * @returns Quota result with allow/deny decision
+ *
+ * @example
+ * const quota = await checkDailyVoiceQuota(user.id);
+ * if (!quota.allowed) {
+ *   return Response.json({
+ *     error: `Daily limit reached. Resets at ${quota.resetAt.toISOString()}`
+ *   }, { status: 429 });
+ * }
+ */
+export async function checkDailyVoiceQuota(userId: string): Promise<QuotaResult> {
+  const tier = await getUserTier(userId);
+  const limit = tier === 'paid' ? DAILY_QUOTAS.VOICE_PAID : DAILY_QUOTAS.VOICE_FREE;
+
+  return consumeDailyQuota({
+    userId,
+    feature: 'daily-quota:voice-generation',
+    limit
+  });
+}
+
+/**
+ * Check daily quota for image generation
+ */
+export async function checkDailyImageQuota(userId: string): Promise<QuotaResult> {
+  const tier = await getUserTier(userId);
+  const limit = tier === 'paid' ? DAILY_QUOTAS.IMAGE_PAID : DAILY_QUOTAS.IMAGE_FREE;
+
+  return consumeDailyQuota({
+    userId,
+    feature: 'daily-quota:image-generation',
+    limit
+  });
+}
+
+/**
+ * Check daily quota for video generation
+ */
+export async function checkDailyVideoQuota(userId: string): Promise<QuotaResult> {
+  const tier = await getUserTier(userId);
+  const limit = tier === 'paid' ? DAILY_QUOTAS.VIDEO_PAID : DAILY_QUOTAS.VIDEO_FREE;
+
+  return consumeDailyQuota({
+    userId,
+    feature: 'daily-quota:video-generation',
+    limit
+  });
+}
+
 export async function reserveEnergy(input: EnergyReserveInput): Promise<EnergyReserveResult> {
   const amount = normalizeAmount(input.amount);
 

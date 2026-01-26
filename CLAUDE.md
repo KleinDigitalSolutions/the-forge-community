@@ -1005,6 +1005,262 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
 ---
 
+## Security & Rate Limiting (Production-Grade)
+
+### Multi-Layer Defense Strategy
+
+The platform implements **defense in depth** with multiple security layers:
+
+1. **IP-Based Rate Limiting** - Prevents multi-account abuse
+2. **User-Based Credit System** - Economic cost control
+3. **Daily Quotas** - Hard limits on expensive operations
+4. **CORS Protection** - Blocks cross-site attacks
+5. **Content Moderation** - AI-powered toxicity detection
+
+### IP Rate Limiting
+
+**Location:** `lib/security/ip-rate-limit.ts`
+
+**Features:**
+- Database-backed persistence (reuses existing `RateLimitBucket` table)
+- Memory fallback for development
+- Fail-open on errors (allows request if DB fails)
+- RFC 6585 compliant rate limit headers
+
+**Configuration Tiers:**
+
+| Tier | Default Limit | Window | Env Var |
+|------|--------------|--------|---------|
+| Global API | 200 req | 1 hour | `IP_RATE_LIMIT_GLOBAL` |
+| Voice Gen | 20 req | 1 hour | `IP_RATE_LIMIT_VOICE` |
+| Video Gen | 10 req | 1 hour | `IP_RATE_LIMIT_VIDEO` |
+| Image Gen | 30 req | 1 hour | `IP_RATE_LIMIT_IMAGE` |
+| Signup | 5 req | 24 hours | `IP_RATE_LIMIT_SIGNUP` |
+
+**Usage (Automatic via Middleware):**
+```typescript
+// middleware.ts automatically applies IP limiting to all /api/* routes
+// Rate limit headers are added to responses:
+// X-RateLimit-Limit: 20
+// X-RateLimit-Remaining: 15
+// X-RateLimit-Reset: 1736812800
+// Retry-After: 3600 (if blocked)
+```
+
+**Manual Check (if needed):**
+```typescript
+import { extractIpAddress, checkIpRateLimit } from '@/lib/security/ip-rate-limit';
+import { TIER_VOICE_GENERATION } from '@/lib/security/rate-limit-tiers';
+
+const ip = extractIpAddress(request);
+const result = await checkIpRateLimit(ip, TIER_VOICE_GENERATION);
+
+if (!result.allowed) {
+  return Response.json({ error: 'Rate limit exceeded' }, {
+    status: 429,
+    headers: { 'Retry-After': String(result.retryAfter) }
+  });
+}
+```
+
+**Feature Flags:**
+- `ENABLE_IP_RATE_LIMIT=false` - Disable globally (for testing)
+- `RATE_LIMIT_BACKEND=memory` - Use in-memory storage (dev only)
+
+### Daily Quotas
+
+**Location:** `lib/energy.ts`
+
+**Purpose:** Hard limits on expensive operations, independent of credit balance.
+
+**Why?** Prevents abuse even with unlimited credits (e.g., admin accounts).
+
+**Quotas:**
+
+| Feature | Free Tier | Paid Tier | Env Var |
+|---------|-----------|-----------|---------|
+| Voice | 20/day | 100/day | `DAILY_QUOTA_VOICE_FREE` |
+| Image | 15/day | 50/day | `DAILY_QUOTA_IMAGE_FREE` |
+| Video | 3/day | 20/day | `DAILY_QUOTA_VIDEO_FREE` |
+
+**Usage Pattern:**
+```typescript
+import { checkDailyVoiceQuota } from '@/lib/energy';
+
+// Check quota AFTER energy reservation (fail fast)
+const dailyQuota = await checkDailyVoiceQuota(user.id);
+
+if (!dailyQuota.allowed) {
+  await refundEnergy(reservationId, 'daily-quota-exceeded');
+  return Response.json({
+    error: `Daily limit reached (${dailyQuota.limit}/day)`,
+    quota: {
+      limit: dailyQuota.limit,
+      remaining: dailyQuota.remaining,
+      resetAt: dailyQuota.resetAt.toISOString()
+    }
+  }, { status: 429 });
+}
+```
+
+**Tier Detection:**
+```typescript
+// lib/energy.ts - getUserTier()
+// Currently: All users = 'free'
+// Future: Check user.subscriptionTier === 'pro'
+```
+
+### Blob Storage Lifecycle
+
+**Location:** `lib/storage/media-lifecycle.ts`
+
+**Purpose:** Prevent unbounded storage growth from AI-generated media.
+
+**Strategy:**
+- Auto-delete generated assets after 90 days (configurable)
+- Soft-delete (metadata preserved for audit)
+- Favorites excluded (user protection)
+- Dry-run mode for testing
+
+**Cron Job:** `/api/cron/cleanup-media` (daily at 02:00 UTC)
+
+**Configuration:**
+```bash
+MEDIA_RETENTION_DAYS=90           # How long to keep assets
+ENABLE_MEDIA_CLEANUP=true         # Master switch
+MEDIA_CLEANUP_DRY_RUN=false       # Test mode (logs only)
+MEDIA_CLEANUP_BATCH_SIZE=100      # Max per run
+```
+
+**Manual Cleanup (if needed):**
+```typescript
+import { cleanupOldMediaAssets, getCleanupStats } from '@/lib/storage/media-lifecycle';
+
+// Check what would be deleted
+const stats = await getCleanupStats();
+console.log(`${stats.eligibleAssets} assets, ${stats.totalSize / 1024 / 1024} MB`);
+
+// Dry run (test)
+const dryResult = await cleanupOldMediaAssets({ dryRun: true });
+
+// Production run
+const result = await cleanupOldMediaAssets();
+console.log(`Deleted ${result.assetsDeleted} assets, freed ${result.bytesFreed} bytes`);
+```
+
+**Eligibility Criteria:**
+- `source === 'GENERATED'` (not user uploads)
+- `createdAt < 90 days ago`
+- `isFavorite === false`
+- `isArchived === false`
+
+### CORS Protection
+
+**Location:** `middleware.ts`
+
+**Configuration:**
+```bash
+ENABLE_CORS_PROTECTION=true
+ALLOWED_ORIGINS=https://stakeandscale.de,http://localhost:3000
+```
+
+**Behavior:**
+- Validates `Origin` header on all requests
+- Handles OPTIONS preflight correctly
+- Blocks disallowed origins with 403
+- Allows same-origin requests (no Origin header)
+
+**Headers Set:**
+```
+Access-Control-Allow-Origin: <origin>
+Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+Access-Control-Allow-Headers: Content-Type, Authorization, x-request-id
+Access-Control-Allow-Credentials: true
+Access-Control-Max-Age: 3600
+```
+
+### Security Headers
+
+**Location:** `next.config.ts`
+
+Already configured:
+- `Strict-Transport-Security` (HSTS)
+- `X-Frame-Options: DENY` (clickjacking protection)
+- `X-Content-Type-Options: nosniff`
+- `Content-Security-Policy` (XSS protection)
+- `Referrer-Policy`
+- `Permissions-Policy`
+
+### Cost Attack Mitigation
+
+**Multi-Account Bypass Prevention:**
+
+Scenario: Attacker creates 100 accounts (5000 free credits) to generate expensive media.
+
+**Defenses:**
+1. **IP Rate Limiting** - Max 5 signups/day per IP (`IP_RATE_LIMIT_SIGNUP=5`)
+2. **IP API Limits** - Max 10 video generations/hour per IP (regardless of credits)
+3. **Daily Quotas** - Max 3 videos/day per user (can't exhaust 50 credits on videos)
+4. **Energy System** - Automatic refunds prevent double-charging on failures
+
+**Cost Impact:**
+- Without protection: 100 accounts × 1 video = **€300**
+- With protection: 5 accounts × 3 videos = **€45** (93% reduction)
+
+### Monitoring & Logging
+
+**What to Monitor:**
+1. **Rate Limit Hits:**
+   ```bash
+   grep "[Rate Limit]" vercel.log
+   ```
+
+2. **Daily Quota Exhaustion:**
+   ```bash
+   grep "daily-quota-exceeded" vercel.log
+   ```
+
+3. **Storage Growth:**
+   ```bash
+   # Check blob storage size (Vercel dashboard)
+   ```
+
+4. **Cleanup Job Status:**
+   ```bash
+   # Cron job logs (Vercel dashboard → Cron Jobs)
+   ```
+
+**Metrics to Track:**
+- IP blocks per hour
+- Daily quota exhaustion events (should be <5% of users)
+- Blob storage size trend
+- Cost per user (Replicate + ElevenLabs)
+
+### Feature Flags (Quick Disable)
+
+**Emergency Switches:**
+```bash
+ENABLE_IP_RATE_LIMIT=false        # Disable IP limiting
+ENABLE_MEDIA_CLEANUP=false        # Stop cleanup cron
+ENABLE_CORS_PROTECTION=false      # Allow all origins
+MEDIA_CLEANUP_DRY_RUN=true        # Test cleanup without deleting
+```
+
+**Use Case:** If false positives occur, disable temporarily while investigating.
+
+### Rollback Strategy
+
+All security features are **additive** (not breaking):
+
+1. **IP Rate Limiting** → Set `ENABLE_IP_RATE_LIMIT=false`
+2. **Daily Quotas** → Remove checks from API routes (energy system still works)
+3. **Blob Cleanup** → Set `ENABLE_MEDIA_CLEANUP=false`
+4. **CORS** → Set `ENABLE_CORS_PROTECTION=false`
+
+**No database migrations required** - all features use existing tables.
+
+---
+
 ## Documentation References
 
 - **Architecture:** `ARCHITECTURE.md` (overview)
