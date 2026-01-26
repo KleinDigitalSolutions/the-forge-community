@@ -66,10 +66,14 @@ export async function GET(
     const modelsData = await modelsRes.json().catch(() => ([]));
 
     if (!voicesRes.ok) {
-      return NextResponse.json({ error: voicesData?.detail || 'Voices konnten nicht geladen werden.' }, { status: 502 });
+      const detail = voicesData?.detail || voicesData?.error || 'Voices konnten nicht geladen werden.';
+      console.error('ElevenLabs voices error', voicesRes.status, detail);
+      return NextResponse.json({ error: detail, providerStatus: voicesRes.status }, { status: 502 });
     }
     if (!modelsRes.ok) {
-      return NextResponse.json({ error: modelsData?.detail || 'Models konnten nicht geladen werden.' }, { status: 502 });
+      const detail = modelsData?.detail || modelsData?.error || 'Models konnten nicht geladen werden.';
+      console.error('ElevenLabs models error', modelsRes.status, detail);
+      return NextResponse.json({ error: detail, providerStatus: modelsRes.status }, { status: 502 });
     }
 
     const voices = Array.isArray(voicesData?.voices) ? voicesData.voices : [];

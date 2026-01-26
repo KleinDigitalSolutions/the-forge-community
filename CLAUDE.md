@@ -27,6 +27,11 @@ npx prisma db push       # Push schema changes to database (dev only)
 npx prisma studio        # Open Prisma Studio GUI for database inspection
 ```
 
+### Data Seeding
+```bash
+npm run seed:academy     # Seed academy/training course data locally
+```
+
 **Important:** This project uses **manual SQL migrations** stored in `/migrations/`. Do NOT use `prisma migrate` as it will conflict with the RLS policies.
 
 ---
@@ -208,19 +213,28 @@ const paymentIntent = await stripe.paymentIntents.create({
 4. New users automatically created with 50 AI credits (Energy System)
 5. Protected routes check session via middleware
 
-**Legacy Notion Check (Being Phased Out):**
+**Current SignIn Logic (Open Registration):**
 ```typescript
-// auth.ts - signIn callback (old pattern, transitioning to open registration)
+// auth.ts - signIn callback
 async signIn({ user }) {
-  const founder = await getFounderByEmail(user.email);
-  if (!founder || founder.status === 'inactive') {
-    return false; // Access denied
-  }
+  if (!user?.email) return false;
+
+  // Block deleted accounts from logging in
+  const account = await prisma.user.findUnique({
+    where: { email: user.email },
+    select: { accountStatus: true }
+  });
+
+  if (account?.accountStatus === 'DELETED') return false;
   return true;
 }
 ```
 
-**Important:** The platform is transitioning from a gated community (Notion-based approval) to **open registration** with a freemium model. New code should not depend on Notion checks.
+**Events:**
+- `createUser`: Automatically assigns a unique founder number to new users via `assignFounderNumberIfMissing()`
+- New users start with 50 credits (configurable via `INITIAL_CREDITS` env var)
+
+**Important:** The platform uses **open registration** with a freemium model. No approval process required. Notion is legacy and should not be used for new features.
 
 **Protected Route Config:**
 ```typescript
@@ -243,12 +257,36 @@ const { data: session } = useSession();
 
 ## AI System Integration
 
-### Multi-Provider Setup
+### Multi-Provider Setup with Automatic Fallback
 
 **Primary:** Gemini Flash 2.0 (`@ai-sdk/google`)
 **Fallback:** Groq Llama 3.3 70B (`@ai-sdk/openai` with custom baseURL)
 
-**Usage Pattern:**
+**Unified AI Call Pattern (Recommended):**
+```typescript
+import { callAI } from '@/lib/ai';
+
+// Automatically tries Gemini first, falls back to Groq on failure
+const response = await callAI(
+  [
+    { role: 'system', content: 'You are a helpful assistant' },
+    { role: 'user', content: 'Generate content...' }
+  ],
+  { temperature: 0.7, maxTokens: 1000 }
+);
+
+console.log(response.content); // AI-generated text
+console.log(response.provider); // 'gemini' or 'groq'
+console.log(response.usage); // Token usage for cost tracking
+```
+
+**Why use callAI()?**
+- Automatic provider failover (resilience)
+- Consistent interface across providers
+- Built-in token usage tracking
+- Error handling abstraction
+
+**Direct Provider Usage (Advanced):**
 ```typescript
 import { google } from '@ai-sdk/google';
 import { streamText } from 'ai';
@@ -333,33 +371,89 @@ The Energy System is a **freemium credit-based model** for AI feature access, de
 ```typescript
 {
   credits: number;        // Current balance (default: 50)
-  totalCredits: number;   // Lifetime credits received
-  creditsUsed: number;    // Lifetime credits spent
 }
 ```
 
-### Usage Pattern
+**EnergyTransaction Table:**
+Tracks all credit operations with full audit trail:
+- `type`: GRANT | SPEND | REFUND | ADJUSTMENT
+- `status`: RESERVED | SETTLED | REFUNDED
+- `delta`: Credit change amount
+- `balanceAfter`: User's balance after transaction
+- `requestId`: Deduplication key for idempotent operations
+- `promptTokens`, `completionTokens`, `totalTokens`: Token usage tracking
+- `relatedTransactionId`: Links refunds to original transactions
 
-**Server-side credit check:**
+### Modern Reserve-Settle Pattern (CRITICAL)
+
+**DO NOT use the old direct deduction pattern!** Use the modern reserve-settle pattern from `lib/energy.ts`:
+
 ```typescript
-// Before AI operation
-const user = await prisma.user.findUnique({ where: { id: userId } });
-if (!user || user.credits < REQUIRED_CREDITS) {
-  throw new Error('Insufficient credits');
+import { reserveEnergy, settleEnergy, refundEnergy, InsufficientEnergyError } from '@/lib/energy';
+
+// 1. Reserve credits BEFORE AI call
+const reservation = await reserveEnergy({
+  userId,
+  amount: 10, // Estimated cost
+  feature: 'marketing-content',
+  requestId: `unique-id-${Date.now()}`, // For idempotency
+  provider: 'gemini',
+  model: 'gemini-2.0-flash'
+});
+
+try {
+  // 2. Perform AI operation
+  const result = await callAI(...);
+
+  // 3. Settle with actual cost (refunds excess automatically)
+  await settleEnergy({
+    reservationId: reservation.reservationId,
+    finalCost: 7, // Actual cost (3 credits refunded automatically)
+    usage: {
+      promptTokens: 100,
+      completionTokens: 200,
+      totalTokens: 300
+    }
+  });
+} catch (error) {
+  // 4. Refund on failure
+  await refundEnergy(reservation.reservationId, 'ai-generation-failed');
+  throw error;
+}
+```
+
+**Why this pattern?**
+- Prevents race conditions (credits locked during operation)
+- Automatic refunds for overestimation
+- Full audit trail with token usage
+- Idempotent (safe to retry with same `requestId`)
+- Admin bypass for unlimited credits (if `ADMIN_UNLIMITED_ENERGY !== 'false'`)
+
+### Rate Limiting
+
+The Energy System includes quota management for abuse prevention:
+
+```typescript
+import { consumeHourlyQuota, consumeDailyQuota } from '@/lib/energy';
+
+// Check hourly quota (e.g., 10 AI generations per hour)
+const quota = await consumeHourlyQuota({
+  userId,
+  feature: 'ai-content-generation',
+  limit: 10
+});
+
+if (!quota.allowed) {
+  throw new Error(`Rate limit exceeded. Try again after ${quota.resetAt.toISOString()}`);
 }
 
-// Perform AI operation
-const result = await generateContent(prompt);
-
-// Deduct credits
-await prisma.user.update({
-  where: { id: userId },
-  data: {
-    credits: { decrement: REQUIRED_CREDITS },
-    creditsUsed: { increment: REQUIRED_CREDITS }
-  }
-});
+// For daily limits, use consumeDailyQuota
 ```
+
+**RateLimitBucket Table:**
+- Tracks usage windows per user+feature
+- Automatically resets based on time window
+- Composite key: `[userId, feature, windowStart]`
 
 **Client-side display:**
 ```typescript
@@ -440,19 +534,32 @@ app/
 
 lib/
 ├── prisma.ts            # Database client (singleton)
-├── ai.ts                # Unified AI helper
+├── ai.ts                # Unified AI helper (Gemini + Groq fallback)
+├── energy.ts            # Energy System (reserve/settle/refund pattern)
 ├── moderation.ts        # Content moderation
 ├── stripe.ts            # Stripe SDK
 ├── notion.ts            # Notion API (legacy)
 ├── db-security.ts       # RLS helpers (secureQuery)
 ├── venture-templates.ts # Wizard templates
-└── knowledge-base.ts    # AI chatbot knowledge
+├── knowledge-base.ts    # AI chatbot knowledge
+├── ai-legal.ts          # Legal document generation
+├── ai-prompt-engine.ts  # Dynamic prompt builder
+├── rate-limit.ts        # Rate limiting utilities
+├── founder-number.ts    # Unique founder number assignment
+├── achievements.ts      # Achievement/badge system
+├── karma.ts             # Karma point system
+├── notifications.ts     # Notification helper
+└── ui-sound.ts          # Sound effect utilities
 
 migrations/              # Manual SQL migrations
 ├── 001_add_brand_dna.sql
 ├── 002_add_squad_member.sql
 ├── 003_add_stripe_connect.sql
-└── 004_enable_rls.sql
+├── 004_enable_rls.sql
+├── 005_add_legal_documents.sql
+├── 005_add_decision_system.sql
+├── 006_restore_roadmap_votes.sql
+└── 007_add_user_credits.sql
 ```
 
 ### Naming Conventions
@@ -679,22 +786,59 @@ try {
 }
 ```
 
-### 5. NextAuth v5 Async Params
+### 5. Next.js 16 Async Params (BREAKING CHANGE)
 
-**Next.js 16 requires async params:**
+**Next.js 16 requires async params and searchParams:**
 ```typescript
-// ❌ Old
-export default function Page({ params }: { params: { id: string } }) {
+// ❌ Old (Next.js 15 and below)
+export default function Page({
+  params,
+  searchParams
+}: {
+  params: { id: string };
+  searchParams: { q: string };
+}) {
   const id = params.id;
+  const query = searchParams.q;
 }
 
-// ✅ New
-export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+// ✅ New (Next.js 16+)
+export default async function Page({
+  params,
+  searchParams
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ q: string }>;
+}) {
   const { id } = await params;
+  const { q } = await searchParams;
 }
 ```
 
-### 6. Notion Sync
+**Also applies to:**
+- `generateMetadata()` functions
+- `generateStaticParams()` functions
+- Layout components with dynamic segments
+
+**Why?** Next.js 16 introduced async Request APIs for better edge runtime compatibility.
+
+### 6. Squad Wallet vs Stripe Connect
+
+**CRITICAL DISTINCTION:**
+
+**Stripe Connect** = Real money flow (customer → squad via Stripe)
+- `stripeConnectedAccountId`: Squad's Stripe account
+- `stripeChargesEnabled`: Can accept payments
+- Platform never holds money, only receives automatic fees
+
+**Squad Wallet** = Internal budget tracking (NOT real money)
+- `SquadWallet.balance`: Virtual tracking only
+- `WalletTransaction`: Budget allocation log (samples, production, marketing)
+- Used for expense management, not payment processing
+
+**DO NOT confuse these systems!** Payments always go through Stripe Connect. The wallet is for internal budgeting.
+
+### 7. Notion Sync
 
 **Notion is legacy. For new features, use Prisma only.**
 
@@ -706,7 +850,7 @@ Notion is still used for:
 - Write new features that depend on Notion
 - Sync data bidirectionally (race conditions)
 
-### 7. Content Moderation Everywhere
+### 8. Content Moderation Everywhere
 
 **Apply moderation to ALL user-generated content, not just public posts.**
 
@@ -742,12 +886,15 @@ DATABASE_URL=postgres://...
 # Auth
 AUTH_SECRET=xxx               # Generate: npx auth secret
 AUTH_RESEND_KEY=re_xxx
+AUTH_RESEND_FROM="STAKE & SCALE <info@stakeandscale.de>"  # Optional, defaults shown
 AUTH_URL=http://localhost:3000
 
 # AI & Energy System
 GEMINI_API_KEY=xxx
-GROQ_API_KEY=xxx             # Optional, fallback provider
-INITIAL_CREDITS=50           # Starting credits for new users (default: 50)
+GEMINI_MODEL=gemini-2.0-flash       # Optional, auto-detects if not set
+GROQ_API_KEY=xxx                    # Optional, fallback provider
+INITIAL_CREDITS=50                  # Starting credits for new users (default: 50)
+ADMIN_UNLIMITED_ENERGY=true         # Admin bypass for credit checks (default: true)
 
 # Stripe
 STRIPE_SECRET_KEY=sk_test_xxx

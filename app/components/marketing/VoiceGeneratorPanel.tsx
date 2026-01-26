@@ -115,9 +115,10 @@ export function VoiceGeneratorPanel({ ventureId, brandDNA, onAssetCreated }: Voi
       .map((model) => {
         const id = model.model_id || model.modelId || model.id;
         if (!id) return null;
+        const nameValue = typeof model.name === 'string' ? model.name : null;
         return {
           id,
-          name: model.name || id,
+          name: nameValue || id,
           description: model.description,
         };
       })

@@ -116,3 +116,7 @@ Gesetzliche Änderungen (Steuer, Arbeitsrecht, Datenschutz) beobachten und Anpas
 Fazit
 Ein Online‑Business mit acht Partnern und 20 000 € Kapital kann bei sorgfältiger Planung und klarer Aufgabenverteilung erfolgreich sein. Die Wahl des Geschäftsmodells – Dropshipping, Großhandel, Private‑Label oder Subscription‑Box – hängt von Ihren Interessen und Ressourcen ab. Durch Analyse von Trendprodukten (z. B. Apparel, Beauty, Kitchen, Aboboxen, Eco‑Produkte) und Befolgung der gesetzlichen Schritte (Businessplan, Rechtsformwahl, Gewerbeanmeldung, DSGVO‑Compliance) schaffen Sie eine solide Grundlage für Ihr Unternehmen.
 Der Kurs dient als Leitfaden, ist jedoch nicht vollständig. Es lohnt sich, Steuerberater oder Gründungsberater zu konsultieren, um rechtliche Besonderheiten zu klären und mögliche Förderprogramme zu nutzen.
+
+
+npx prisma migrate dev
+npx prisma generate
