@@ -342,234 +342,7 @@ export default function Home() {
           ctaButtonHref="#apply"
         />
 
-        {/* Metrics Section - HUD Style */}
-        <section className="relative -mt-20 z-20 px-4 md:px-6">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-              {[
-                { label: 'Execution Hebel', value: '25x', sub: 'Vs. Solo Gründung' },
-                { label: 'Tage bis Launch', value: 'Ø 45', sub: 'Infrastruktur Ready' },
-                { label: 'Risiko-Faktor', value: '-96%', sub: 'Durch Kapital-Split' },
-                { label: 'Community Owned', value: '100%', sub: 'Keine VCs. Echte Werte.' },
-              ].map((stat, i) => (
-                <div key={i} className="glass-card backdrop-blur-md p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-white/10 flex flex-col items-center justify-center hover:border-(--accent)/50 transition-all duration-700 group overflow-hidden relative shadow-2xl bg-black/20">
-                  <div className="absolute inset-0 bg-linear-to-b from-white/3 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="text-2xl sm:text-4xl md:text-5xl font-instrument-serif text-white mb-2 sm:mb-3 relative z-10 text-center">
-                    {stat.value}
-                  </div>
-                  <div className="text-[7px] sm:text-[9px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-(--accent) mb-1 relative z-10 text-center">
-                    {stat.label}
-                  </div>
-                  <div className="text-[7px] sm:text-[8px] font-bold text-white/30 uppercase tracking-widest sm:tracking-[0.2em] relative z-10 text-center">
-                    {stat.sub}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* The Forge Section */}
-        <section id="forge" className="relative py-32 px-4 md:px-6 overflow-hidden">
-          
-          <div className="relative max-w-7xl mx-auto grid lg:grid-cols-[1.15fr_0.85fr] gap-14 items-center">
-            <div className="space-y-8">
-              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">
-                The Forge
-              </div>
-              <h2 className="text-4xl md:text-6xl font-instrument-serif text-white leading-tight">
-                Dein Content-, Marketing- und Execution-HQ.
-              </h2>
-              <p className="text-sm text-white/60 leading-relaxed max-w-xl">
-                The Forge verbindet deine Brand DNA mit sofortigem Output. Texte, Bilder und Videos entstehen
-                in einem Flow und landen direkt in Kampagnen, Media und Forum. Kein Tool-Chaos, kein Copy/Paste.
-              </p>
-              <div className="flex flex-wrap gap-3">
-                <Link
-                  href="/ventures"
-                  className="rounded-full border border-[#D4AF37]/40 bg-[#D4AF37] px-6 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-black hover:opacity-90 transition-opacity"
-                >
-                  Forge betreten
-                </Link>
-                <Link
-                  href="#transparency-preview"
-                  className="rounded-full border border-white/10 bg-white/5 px-6 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-white/70 hover:text-white transition-colors"
-                >
-                  Ablauf ansehen
-                </Link>
-              </div>
-
-              <div className="grid sm:grid-cols-2 gap-4 text-xs text-white/60">
-                {[
-                  { label: '1. Venture anlegen', desc: 'Brand DNA + Zielmarkt definieren' },
-                  { label: '2. Forge Output', desc: 'Texte, Bilder, Videos generieren' },
-                  { label: '3. Kampagne bauen', desc: 'Assets direkt strukturieren' },
-                  { label: '4. Media Wall', desc: 'Ergebnisse sauber archivieren' }
-                ].map((step) => (
-                  <div key={step.label} className="glass-card border border-white/10 rounded-2xl p-4 bg-black/30 backdrop-blur-sm">
-                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">
-                      {step.label}
-                    </div>
-                    <div className="text-sm text-white mt-1">{step.desc}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="glass-card border border-white/10 rounded-3xl p-6 sm:p-8 space-y-6 bg-black/40 backdrop-blur-md">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30">
-                    Forge Modules
-                  </div>
-                  <h3 className="text-2xl font-instrument-serif text-white">Was direkt drin ist</h3>
-                </div>
-                <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[9px] font-black uppercase tracking-[0.3em] text-white/50">
-                  Live System
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                {[
-                  { icon: Sparkles, title: 'Marketing Studio', desc: 'Kopien, Ads, Posts, Hooks & Skripte.' },
-                  { icon: Image, title: 'Media Studio', desc: 'Bilder generieren, veredeln und versionieren.' },
-                  { icon: Film, title: 'Video Studio', desc: 'Clips, Creatives, Sequenzen (in Arbeit).' },
-                  { icon: Layers, title: 'Chain Builder', desc: 'Mehrere Clips zu einem Flow verbinden.' },
-                  { icon: Scale, title: 'Legal Studio', desc: 'Verträge, NDA & Compliance (bald live).' }
-                ].map((module) => (
-                  <div key={module.title} className="flex gap-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 hover:bg-white/10 transition-colors">
-                    <div className="h-10 w-10 rounded-xl border border-white/10 bg-black/40 flex items-center justify-center">
-                      <module.icon className="w-5 h-5 text-[#D4AF37]" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-semibold text-white">{module.title}</div>
-                      <div className="text-xs text-white/50">{module.desc}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="transparency-preview" className="py-24 px-4 md:px-6 relative">
-          <div className="max-w-6xl mx-auto grid lg:grid-cols-[1.1fr_0.9fr] gap-12 items-center">
-            <div className="space-y-6">
-              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30">
-                Finanz-Protokoll
-              </div>
-              <h2 className="text-4xl md:text-5xl font-instrument-serif text-white leading-tight">
-                Transparenz, die man sieht.
-              </h2>
-              <p className="text-sm text-white/50 leading-relaxed max-w-lg">
-                Jeder Euro, jede Bewegung und jeder Status ist nachvollziehbar. Das Finanz-Dashboard
-                ist kein PDF, sondern ein live gepflegtes System mit Export-Logik.
-              </p>
-              <div className="flex flex-wrap gap-3">
-                <Link
-                  href="/transparency"
-                  className="rounded-full border border-white/10 bg-white/5 px-6 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-white/70 hover:text-white transition-colors"
-                >
-                  Zum Protokoll
-                </Link>
-                <Link
-                  href="/media"
-                  className="rounded-full border border-white/10 bg-transparent px-6 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-white/40 hover:text-white transition-colors"
-                >
-                  Media Wall
-                </Link>
-              </div>
-            </div>
-
-            <Hero195 className="relative overflow-hidden border border-white/10 bg-black/40 backdrop-blur-md">
-              <BorderBeam size={240} duration={14} anchor={70} colorFrom="#D4AF37" colorTo="#8B5CF6" />
-              <div className="relative p-8">
-                <div className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em] mb-3">
-                  Demo Snapshot
-                </div>
-                <h3 className="text-2xl font-instrument-serif text-white mb-2">Live Treasury Preview</h3>
-                <p className="text-sm text-white/50">
-                  Beispielwerte zur Orientierung. Im System siehst du den echten Ledger in Echtzeit.
-                </p>
-                <div className="mt-6 grid grid-cols-2 gap-4">
-                  {[
-                    { label: 'Einnahmen', value: '€48.000' },
-                    { label: 'Ausgaben', value: '€12.400' },
-                    { label: 'Verfügbar', value: '€35.600' },
-                    { label: 'Runway', value: '12 Monate' },
-                  ].map((item) => (
-                    <div
-                      key={item.label}
-                      className="rounded-xl border border-white/10 bg-white/5 px-4 py-3"
-                    >
-                      <div className="text-[8px] font-black text-white/30 uppercase tracking-[0.3em]">
-                        {item.label}
-                      </div>
-                      <div className="text-lg font-instrument-serif text-white">{item.value}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </Hero195>
-          </div>
-        </section>
-
-        {/* Philosophy / Features */}
-        <section id="philosophy" className="py-40 px-4 md:px-6 relative">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-20 items-start mb-32">
-              <div>
-                <h2 className="text-5xl md:text-7xl font-instrument-serif text-white mb-8 leading-tight animate-fade-slide-in-1">
-                  Institutional Grade.<br/>
-                  <span className="text-(--accent)">Community Powered.</span>
-                </h2>
-                <p className="text-lg text-white/50 leading-relaxed animate-fade-slide-in-2">
-                  Wir ersetzen den veralteten VC-Ansatz durch Schwarmintelligenz.
-                  Weniger Risiko für den Einzelnen, mehr Upside für alle.
-                </p>
-              </div>
-
-              <div className="space-y-8 sm:space-y-12">
-                {[
-                  {
-                    icon: Users,
-                    title: "Kollektives Eigentum",
-                    desc: "Keine stillen Teilhaber. Jeder Founder hält Anteile, jeder hat Stimmrecht. Das Projekt gehört uns."
-                  },
-                  {
-                    icon: Layers,
-                    title: "Meritokratischer Stack",
-                    desc: "Die besten Ideen gewinnen. Wir nutzen Voting-Mechanismen um Produktentscheidungen zu treffen."
-                  },
-                  {
-                    icon: Shield,
-                    title: "Risiko-Minimierung",
-                    desc: "Statt 50k alleine zu riskieren, splitten wir das Risiko. Maximale Hebelwirkung bei minimalem Einsatz."
-                  }
-                ].map((feature, i) => (
-                  <div key={i} className="flex flex-col sm:flex-row gap-4 sm:gap-6 group">
-                    <div className="shrink-0">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:border-(--accent) group-hover:bg-(--accent)/10 transition-all duration-500 bg-black/20 backdrop-blur-sm">
-                        <feature.icon className="w-4 h-4 sm:w-5 sm:h-5 text-white/60 group-hover:text-(--accent) transition-colors" />
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="text-xl sm:text-2xl font-instrument-serif text-white mb-1 sm:mb-2 group-hover:text-(--accent) transition-colors">{feature.title}</h3>
-                      <p className="text-white/50 text-xs sm:text-sm leading-relaxed max-w-md">{feature.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* --- NEW: THE FOUNDER OS (Feature Stack) --- */}
-            <div className="mt-40 border-t border-white/5 pt-20">
-               <ForgeOSShowcase />
-            </div>
-          </div>
-        </section>
-
-        {/* Veo Section */}
+        {/* Veo Section - MOVED UP */}
         <section id="veo" className="relative py-24 px-4 md:px-6 overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(212,175,55,0.15),_transparent_55%)] opacity-80" />
           <div className="max-w-6xl mx-auto relative">
@@ -704,6 +477,116 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Metrics Section - HUD Style */}
+        <section className="relative py-24 z-20 px-4 md:px-6">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+              {[
+                { label: 'Execution Hebel', value: '25x', sub: 'Vs. Solo Gründung' },
+                { label: 'Tage bis Launch', value: 'Ø 45', sub: 'Infrastruktur Ready' },
+                { label: 'Risiko-Faktor', value: '-96%', sub: 'Durch Kapital-Split' },
+                { label: 'Community Owned', value: '100%', sub: 'Keine VCs. Echte Werte.' },
+              ].map((stat, i) => (
+                <div key={i} className="glass-card backdrop-blur-md p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-white/10 flex flex-col items-center justify-center hover:border-(--accent)/50 transition-all duration-700 group overflow-hidden relative shadow-2xl bg-black/20">
+                  <div className="absolute inset-0 bg-linear-to-b from-white/3 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="text-2xl sm:text-4xl md:text-5xl font-instrument-serif text-white mb-2 sm:mb-3 relative z-10 text-center">
+                    {stat.value}
+                  </div>
+                  <div className="text-[7px] sm:text-[9px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-(--accent) mb-1 relative z-10 text-center">
+                    {stat.label}
+                  </div>
+                  <div className="text-[7px] sm:text-[8px] font-bold text-white/30 uppercase tracking-widest sm:tracking-[0.2em] relative z-10 text-center">
+                    {stat.sub}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* The Forge Section */}
+        <section id="forge" className="relative py-32 px-4 md:px-6 overflow-hidden">
+          
+          <div className="relative max-w-7xl mx-auto grid lg:grid-cols-[1.15fr_0.85fr] gap-14 items-center">
+            <div className="space-y-8">
+              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">
+                The Forge
+              </div>
+              <h2 className="text-4xl md:text-6xl font-instrument-serif text-white leading-tight">
+                Dein Content-, Marketing- und Execution-HQ.
+              </h2>
+              <p className="text-sm text-white/60 leading-relaxed max-w-xl">
+                The Forge verbindet deine Brand DNA mit sofortigem Output. Texte, Bilder und Videos entstehen
+                in einem Flow und landen direkt in Kampagnen, Media und Forum. Kein Tool-Chaos, kein Copy/Paste.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href="/ventures"
+                  className="rounded-full border border-[#D4AF37]/40 bg-[#D4AF37] px-6 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-black hover:opacity-90 transition-opacity"
+                >
+                  Forge betreten
+                </Link>
+                <Link
+                  href="#transparency-preview"
+                  className="rounded-full border border-white/10 bg-white/5 px-6 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-white/70 hover:text-white transition-colors"
+                >
+                  Ablauf ansehen
+                </Link>
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-4 text-xs text-white/60">
+                {[
+                  { label: '1. Venture anlegen', desc: 'Brand DNA + Zielmarkt definieren' },
+                  { label: '2. Forge Output', desc: 'Texte, Bilder, Videos generieren' },
+                  { label: '3. Kampagne bauen', desc: 'Assets direkt strukturieren' },
+                  { label: '4. Media Wall', desc: 'Ergebnisse sauber archivieren' }
+                ].map((step) => (
+                  <div key={step.label} className="glass-card border border-white/10 rounded-2xl p-4 bg-black/30 backdrop-blur-sm">
+                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">
+                      {step.label}
+                    </div>
+                    <div className="text-sm text-white mt-1">{step.desc}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="glass-card border border-white/10 rounded-3xl p-6 sm:p-8 space-y-6 bg-black/40 backdrop-blur-md">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30">
+                    Forge Modules
+                  </div>
+                  <h3 className="text-2xl font-instrument-serif text-white">Was direkt drin ist</h3>
+                </div>
+                <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[9px] font-black uppercase tracking-[0.3em] text-white/50">
+                  Live System
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {[
+                  { icon: Sparkles, title: 'Marketing Studio', desc: 'Kopien, Ads, Posts, Hooks & Skripte.' },
+                  { icon: Image, title: 'Media Studio', desc: 'Bilder generieren, veredeln und versionieren.' },
+                  { icon: Film, title: 'Video Studio', desc: 'Clips, Creatives, Sequenzen (in Arbeit).' },
+                  { icon: Layers, title: 'Chain Builder', desc: 'Mehrere Clips zu einem Flow verbinden.' },
+                  { icon: Scale, title: 'Legal Studio', desc: 'Verträge, NDA & Compliance (bald live).' }
+                ].map((module) => (
+                  <div key={module.title} className="flex gap-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 hover:bg-white/10 transition-colors">
+                    <div className="h-10 w-10 rounded-xl border border-white/10 bg-black/40 flex items-center justify-center">
+                      <module.icon className="w-5 h-5 text-[#D4AF37]" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold text-white">{module.title}</div>
+                      <div className="text-xs text-white/50">{module.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Media Wall Preview */}
         <section id="media-preview" className="relative py-24 px-4 md:px-6">
           <div className="max-w-6xl mx-auto">
@@ -795,6 +678,69 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Transparency Preview */}
+        <section id="transparency-preview" className="py-24 px-4 md:px-6 relative">
+          <div className="max-w-6xl mx-auto grid lg:grid-cols-[1.1fr_0.9fr] gap-12 items-center">
+            <div className="space-y-6">
+              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30">
+                Finanz-Protokoll
+              </div>
+              <h2 className="text-4xl md:text-5xl font-instrument-serif text-white leading-tight">
+                Transparenz, die man sieht.
+              </h2>
+              <p className="text-sm text-white/50 leading-relaxed max-w-lg">
+                Jeder Euro, jede Bewegung und jeder Status ist nachvollziehbar. Das Finanz-Dashboard
+                ist kein PDF, sondern ein live gepflegtes System mit Export-Logik.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href="/transparency"
+                  className="rounded-full border border-white/10 bg-white/5 px-6 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-white/70 hover:text-white transition-colors"
+                >
+                  Zum Protokoll
+                </Link>
+                <Link
+                  href="/media"
+                  className="rounded-full border border-white/10 bg-transparent px-6 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-white/40 hover:text-white transition-colors"
+                >
+                  Media Wall
+                </Link>
+              </div>
+            </div>
+
+            <Hero195 className="relative overflow-hidden border border-white/10 bg-black/40 backdrop-blur-md">
+              <BorderBeam size={240} duration={14} anchor={70} colorFrom="#D4AF37" colorTo="#8B5CF6" />
+              <div className="relative p-8">
+                <div className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em] mb-3">
+                  Demo Snapshot
+                </div>
+                <h3 className="text-2xl font-instrument-serif text-white mb-2">Live Treasury Preview</h3>
+                <p className="text-sm text-white/50">
+                  Beispielwerte zur Orientierung. Im System siehst du den echten Ledger in Echtzeit.
+                </p>
+                <div className="mt-6 grid grid-cols-2 gap-4">
+                  {[
+                    { label: 'Einnahmen', value: '€48.000' },
+                    { label: 'Ausgaben', value: '€12.400' },
+                    { label: 'Verfügbar', value: '€35.600' },
+                    { label: 'Runway', value: '12 Monate' },
+                  ].map((item) => (
+                    <div
+                      key={item.label}
+                      className="rounded-xl border border-white/10 bg-white/5 px-4 py-3"
+                    >
+                      <div className="text-[8px] font-black text-white/30 uppercase tracking-[0.3em]">
+                        {item.label}
+                      </div>
+                      <div className="text-lg font-instrument-serif text-white">{item.value}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Hero195>
+          </div>
+        </section>
+
         {/* System Status - Glass Style */}
         <section id="status" className="py-24 px-4 md:px-6 relative border-y border-white/5 bg-black/20 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto">
@@ -881,8 +827,84 @@ export default function Home() {
           </div>
         </section>
 
-         {/* --- SHOP STACK --- */}
-         <section className="py-20 px-4 md:px-6 relative border-y border-white/5 bg-black/20 backdrop-blur-sm">
+         {/* Philosophy & Principles - Combined */}
+        <section id="philosophy" className="py-40 px-4 md:px-6 relative overflow-hidden border-b border-white/5">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-20 items-start mb-32">
+              <div>
+                <h2 className="text-5xl md:text-7xl font-instrument-serif text-white mb-8 leading-tight animate-fade-slide-in-1">
+                  Institutional Grade.<br/>
+                  <span className="text-(--accent)">Community Powered.</span>
+                </h2>
+                <p className="text-lg text-white/50 leading-relaxed animate-fade-slide-in-2">
+                  Wir ersetzen den veralteten VC-Ansatz durch Schwarmintelligenz.
+                  Weniger Risiko für den Einzelnen, mehr Upside für alle.
+                </p>
+              </div>
+
+              <div className="space-y-8 sm:space-y-12">
+                {[
+                  {
+                    icon: Users,
+                    title: "Kollektives Eigentum",
+                    desc: "Keine stillen Teilhaber. Jeder Founder hält Anteile, jeder hat Stimmrecht. Das Projekt gehört uns."
+                  },
+                  {
+                    icon: Layers,
+                    title: "Meritokratischer Stack",
+                    desc: "Die besten Ideen gewinnen. Wir nutzen Voting-Mechanismen um Produktentscheidungen zu treffen."
+                  },
+                  {
+                    icon: Shield,
+                    title: "Risiko-Minimierung",
+                    desc: "Statt 50k alleine zu riskieren, splitten wir das Risiko. Maximale Hebelwirkung bei minimalem Einsatz."
+                  }
+                ].map((feature, i) => (
+                  <div key={i} className="flex flex-col sm:flex-row gap-4 sm:gap-6 group">
+                    <div className="shrink-0">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:border-(--accent) group-hover:bg-(--accent)/10 transition-all duration-500 bg-black/20 backdrop-blur-sm">
+                        <feature.icon className="w-4 h-4 sm:w-5 sm:h-5 text-white/60 group-hover:text-(--accent) transition-colors" />
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-xl sm:text-2xl font-instrument-serif text-white mb-1 sm:mb-2 group-hover:text-(--accent) transition-colors">{feature.title}</h3>
+                      <p className="text-white/50 text-xs sm:text-sm leading-relaxed max-w-md">{feature.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* --- THE FOUNDER OS (Feature Stack) --- */}
+            <div className="mt-40 border-t border-white/5 pt-20">
+               <ForgeOSShowcase />
+            </div>
+          </div>
+        </section>
+
+        {/* Principles - System Override */}
+        <section id="principles" className="py-40 px-4 md:px-6 relative overflow-hidden border-b border-white/5">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-(--accent)/5 rounded-full blur-[150px] pointer-events-none" />
+          
+          <div className="max-w-7xl mx-auto flex flex-col items-center relative z-10">
+            <div className="text-center mb-20">
+              <h2 className="text-5xl md:text-7xl font-instrument-serif text-white mb-6 tracking-tighter">System: Override.</h2>
+              <p className="text-white/40 uppercase tracking-[0.3em] text-[10px] font-bold">
+                Vergiss, was du über Startups gelernt hast. Das hier ist die Realität.
+              </p>
+            </div>
+            
+            <AnimatedCardStack />
+          </div>
+        </section>
+
+        {/* Featured Project - Mission Log Style */}
+        <section id="projects" className="relative overflow-hidden border-y border-white/5 backdrop-blur-sm">
+          <MissionLogCarousel />
+        </section>
+
+        {/* --- SHOP STACK --- */}
+        <section className="py-20 px-4 md:px-6 relative border-y border-white/5 bg-black/20 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto">
             <div className="grid lg:grid-cols-2 gap-16 items-center">
                <div>
@@ -923,7 +945,7 @@ export default function Home() {
                     </button>
                   </div>
                </div>
-               
+
                {/* Shop Preview */}
                <div className="animate-fade-in-up delay-200">
                  <div className="glass-card border border-white/10 rounded-3xl p-6 md:p-8 relative overflow-hidden bg-black/40 backdrop-blur-md">
@@ -961,27 +983,6 @@ export default function Home() {
                  </div>
                </div>
             </div>
-          </div>
-        </section>
-
-        {/* Featured Project - Mission Log Style */}
-        <section id="projects" className="relative overflow-hidden border-y border-white/5 backdrop-blur-sm">
-          <MissionLogCarousel />
-        </section>
-
-        {/* Philosophy Interlude - Animated Stack */}
-        <section id="principles" className="py-40 px-4 md:px-6 relative overflow-hidden border-b border-white/5">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-(--accent)/5 rounded-full blur-[150px] pointer-events-none" />
-          
-          <div className="max-w-7xl mx-auto flex flex-col items-center relative z-10">
-            <div className="text-center mb-20">
-              <h2 className="text-5xl md:text-7xl font-instrument-serif text-white mb-6 tracking-tighter">System: Override.</h2>
-              <p className="text-white/40 uppercase tracking-[0.3em] text-[10px] font-bold">
-                Vergiss, was du über Startups gelernt hast. Das hier ist die Realität.
-              </p>
-            </div>
-            
-            <AnimatedCardStack />
           </div>
         </section>
 
