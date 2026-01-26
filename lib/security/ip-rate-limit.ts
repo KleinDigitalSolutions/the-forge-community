@@ -39,8 +39,8 @@ export type RateLimitTier = {
  * Extract IP address from request headers
  * Supports Vercel, Cloudflare, and standard proxy headers
  */
-export function extractIpAddress(request: Request | { headers: Headers }): string {
-  const headers = 'headers' in request ? request.headers : request.headers;
+export function extractIpAddress(request: { headers: Headers }): string {
+  const headers = request.headers;
 
   // Priority order: Cloudflare > Vercel > Standard proxies
   const ip =
