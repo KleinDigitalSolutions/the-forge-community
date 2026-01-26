@@ -238,6 +238,7 @@ export default function Home() {
           titleLine2="Volle Transparenz."
           description="STAKE & SCALE vereint Community-Capital, KI-Studios und radikale Execution. Forge-Hub, Decision Hall, Forum und Direct Messages bündeln Ideen, Votes und Output in einem System."
           backgroundVideoUrl="/hero_loop.mp4"
+          backgroundVideoUrlMobile="/hero_loop_mobile.mp4"
           primaryButtonText="SEQUENZ STARTEN"
           primaryButtonHref="#apply"
           secondaryButtonText="PROTOKOLL ANSEHEN"

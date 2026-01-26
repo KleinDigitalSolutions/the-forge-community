@@ -19,6 +19,7 @@ interface ResponsiveHeroBannerProps {
     logoUrl?: string;
     backgroundImageUrl?: string;
     backgroundVideoUrl?: string;
+    backgroundVideoUrlMobile?: string;
     navLinks?: NavLink[];
     ctaButtonText?: string;
     ctaButtonHref?: string;
@@ -39,6 +40,7 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
     logoUrl = "https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/febf2421-4a9a-42d6-871d-ff4f9518021c_1600w.png",
     backgroundImageUrl,
     backgroundVideoUrl,
+    backgroundVideoUrlMobile,
     navLinks = [
         { label: "Home", href: "/", isActive: true },
         { label: "Dashboard", href: "/dashboard" },
@@ -72,15 +74,26 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
     return (
         <section className="w-full isolate min-h-screen overflow-hidden relative">
             {backgroundVideoUrl ? (
-                <video
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    className="w-full h-full object-cover md:object-contain bg-black absolute top-0 right-0 bottom-0 left-0 z-0"
-                >
-                    <source src={backgroundVideoUrl} type="video/mp4" />
-                </video>
+                <>
+                    <video
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        className="w-full h-full object-cover object-center scale-[1.08] -translate-y-[6%] bg-black absolute top-0 right-0 bottom-0 left-0 z-0 md:hidden"
+                    >
+                        <source src={backgroundVideoUrlMobile ?? backgroundVideoUrl} type="video/mp4" />
+                    </video>
+                    <video
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        className="hidden md:block w-full h-full object-contain object-center bg-black absolute top-0 right-0 bottom-0 left-0 z-0"
+                    >
+                        <source src={backgroundVideoUrl} type="video/mp4" />
+                    </video>
+                </>
             ) : backgroundImageUrl ? (
                 <img
                     src={backgroundImageUrl}
@@ -248,28 +261,43 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                     <div className="mx-auto mt-12 sm:mt-24 max-w-5xl">
                         <div className="flex flex-col items-center gap-6 sm:gap-10">
                             <div className="relative overflow-hidden animate-fade-slide-in-2 order-1 sm:order-2">
-                            <div className="partner-marquee-track flex items-center gap-x-12 sm:gap-x-16 flex-nowrap">
-                                {[...partners, ...partners].map((partner, index) => {
-                                    const isDuplicate = index >= partners.length;
-                                    return (
-                                        <div
-                                            key={`${partner.logoUrl}-${index}`}
-                                            className="flex items-center justify-center"
-                                            aria-hidden={isDuplicate}
-                                        >
+                                <div className="partner-marquee-track flex items-center flex-nowrap">
+                                    <div className="partner-marquee-group flex items-center gap-x-12 sm:gap-x-16">
+                                        {partners.map((partner, index) => (
                                             <div
-                                                className="w-12 h-12 bg-center bg-contain bg-no-repeat brightness-0 invert opacity-50 grayscale pointer-events-none"
-                                                style={{
-                                                    backgroundImage: `url(${partner.logoUrl})`,
-                                                    transform: `scale(${partner.scale || 1})`
-                                                }}
-                                                aria-label={`Partner logo ${index + 1}`}
-                                            />
-                                        </div>
-                                    );
-                                })}
+                                                key={`${partner.logoUrl}-${index}`}
+                                                className="flex items-center justify-center"
+                                            >
+                                                <div
+                                                    className="w-12 h-12 bg-center bg-contain bg-no-repeat brightness-0 invert opacity-50 grayscale pointer-events-none"
+                                                    style={{
+                                                        backgroundImage: `url(${partner.logoUrl})`,
+                                                        transform: `scale(${partner.scale || 1})`
+                                                    }}
+                                                    aria-label={`Partner logo ${index + 1}`}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="partner-marquee-group flex items-center gap-x-12 sm:gap-x-16" aria-hidden="true">
+                                        {partners.map((partner, index) => (
+                                            <div
+                                                key={`${partner.logoUrl}-${index}-dup`}
+                                                className="flex items-center justify-center"
+                                            >
+                                                <div
+                                                    className="w-12 h-12 bg-center bg-contain bg-no-repeat brightness-0 invert opacity-50 grayscale pointer-events-none"
+                                                    style={{
+                                                        backgroundImage: `url(${partner.logoUrl})`,
+                                                        transform: `scale(${partner.scale || 1})`
+                                                    }}
+                                                    aria-label={`Partner logo ${index + 1}`}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
                             <p className="animate-fade-slide-in-1 text-[8px] font-black uppercase tracking-[0.5em] text-white/20 text-center order-2 sm:order-1">
                                 {partnersTitle}
                             </p>
@@ -290,6 +318,11 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                 .partner-marquee-track {
                     width: max-content;
                     animation: partner-marquee 28s linear infinite;
+                    will-change: transform;
+                }
+
+                .partner-marquee-group {
+                    flex-shrink: 0;
                 }
             `}</style>
         </section>
