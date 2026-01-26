@@ -198,6 +198,21 @@ const paymentIntent = await stripe.paymentIntents.create({
 - `type`: SALE | REFUND | PLATFORM_FEE | PAYOUT | SUBSCRIPTION
 - `status`: PENDING | SUCCEEDED | FAILED | REFUNDED
 - `stripePaymentIntentId`, `stripeChargeId` (tracking)
+
+### Platform Finance (Founder / Tax & EÜR)
+
+**Purpose:** Store platform‑level invoices, credits, and EÜR‑ready ledger data for the platform founder (separate from Venture finances).
+
+**Models added:**
+- `PlatformTaxProfile` (Kleinunternehmer default, tax data, IBAN/BIC, invoice email, note)
+- `PlatformInvoice` + `PlatformInvoiceLine` (invoice mirror, snapshots)
+- `PlatformLedgerCategory` + `PlatformLedgerEntry` (EÜR categories & entries)
+- `PlatformDocument` (belege + retentionUntil)
+- `PlatformCreditPurchase` + `PlatformCreditUsage` (credits buy/use, optional EnergyTransaction link)
+
+**Migration:** `prisma/migrations/20260308130000_platform_finance/migration.sql` (manually created to avoid DB connectivity issues).
+
+**DB connectivity note:** Migrations should use **direct/unpooled** URL (e.g. `DATABASE_URL_UNPOOLED` or `POSTGRES_URL_NON_POOLING`). Pooler URLs are for runtime, not for `migrate`.
 - `platformFeeAmount`, `platformFeePercent`
 
 ---

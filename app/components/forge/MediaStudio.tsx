@@ -169,6 +169,10 @@ export function MediaStudio({ ventureId, brandDNA }: MediaStudioProps) {
           }} />
         )}
 
+        {activeTab === 'veo' && (
+          <VeoStudio ventureId={ventureId} brandDNA={brandDNA} />
+        )}
+
         {activeTab === 'generate' && (
           <div className="space-y-6">
             <div className="h-[800px] border border-white/10 rounded-xl overflow-hidden">
