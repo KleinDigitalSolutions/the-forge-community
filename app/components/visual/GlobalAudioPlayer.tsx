@@ -25,14 +25,28 @@ export default function GlobalAudioPlayer() {
   const playlistTracksRef = useRef<any[]>([]);
   const playlistUrl = 'https://api.soundcloud.com/playlists/2180406137';
 
-  // Initialisierung und Event-Listener
-  useEffect(() => {
+    const isModalOpenRef = useRef(isModalOpen);
+    const isPlayingRef = useRef(isPlaying);
+    const currentTrackRef = useRef(currentTrack);
+    const hasStartedRef = useRef(hasStarted);
+
+    // Sync refs with state
+    useEffect(() => { isModalOpenRef.current = isModalOpen; }, [isModalOpen]);
+    useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
+    useEffect(() => { currentTrackRef.current = currentTrack; }, [currentTrack]);
+    useEffect(() => { hasStartedRef.current = hasStarted; }, [hasStarted]);
+
+    // Initialisierung und Event-Listener (Nur einmal!)
+    useEffect(() => {
     // Restore state from localStorage
     const saved = localStorage.getItem('forge-audio-started');
-    if (saved === 'true') setHasStarted(true);
+    if (saved === 'true') {
+        setHasStarted(true);
+        hasStartedRef.current = true;
+    }
 
     const handleToggleModal = (e: any) => {
-      setIsModalOpen(e.detail?.open ?? !isModalOpen);
+      setIsModalOpen(e.detail?.open ?? !isModalOpenRef.current);
     };
     
     const handlePlay = () => widgetRef.current?.play();
@@ -47,6 +61,12 @@ export default function GlobalAudioPlayer() {
     window.addEventListener('forge-toggle-play', handleToggle);
     window.addEventListener('forge-skip-music', handleSkip);
     window.addEventListener('forge-prev-music', handlePrev);
+
+    const broadcastState = (playing: boolean, track: any) => {
+      window.dispatchEvent(new CustomEvent('forge-audio-state', { 
+        detail: { isPlaying: playing, track, hasStarted: true } 
+      }));
+    };
 
     const loadWidget = () => {
       if (iframeRef.current && window.SC) {
@@ -75,6 +95,7 @@ export default function GlobalAudioPlayer() {
           widget.bind(window.SC.Widget.Events.PLAY, () => {
             setIsPlaying(true);
             setHasStarted(true);
+            hasStartedRef.current = true;
             localStorage.setItem('forge-audio-started', 'true');
             widget.getCurrentSound((track: any) => {
               setCurrentTrack(track);
@@ -89,23 +110,17 @@ export default function GlobalAudioPlayer() {
 
           widget.bind(window.SC.Widget.Events.PAUSE, () => {
             setIsPlaying(false);
-            broadcastState(false, currentTrack);
+            broadcastState(false, currentTrackRef.current);
           });
 
           widget.bind(window.SC.Widget.Events.FINISH, () => {
             setIsPlaying(false);
-            broadcastState(false, currentTrack);
+            broadcastState(false, currentTrackRef.current);
           });
         } catch (e) {
           console.error('SC Widget Error:', e);
         }
       }
-    };
-
-    const broadcastState = (playing: boolean, track: any) => {
-      window.dispatchEvent(new CustomEvent('forge-audio-state', { 
-        detail: { isPlaying: playing, track, hasStarted: true } 
-      }));
     };
 
     if (!window.SC) {
@@ -119,7 +134,7 @@ export default function GlobalAudioPlayer() {
 
     // Interval to keep sidebar synced
     const interval = setInterval(() => {
-      if (hasStarted) broadcastState(isPlaying, currentTrack);
+      if (hasStartedRef.current) broadcastState(isPlayingRef.current, currentTrackRef.current);
     }, 2000);
 
     return () => {
@@ -131,7 +146,7 @@ export default function GlobalAudioPlayer() {
       window.removeEventListener('forge-prev-music', handlePrev);
       clearInterval(interval);
     };
-  }, [isModalOpen, currentTrack, isPlaying, hasStarted]);
+  }, []); // Empty dependency array -> Runs once on mount
 
   const togglePlay = () => widgetRef.current?.toggle();
   const skipNext = () => {

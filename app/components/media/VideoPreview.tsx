@@ -47,7 +47,33 @@ export function VideoPreview({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [active, setActive] = useState(false);
   const [hoverEnabled, setHoverEnabled] = useState(enableHover);
+  const [isVisible, setIsVisible] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  
   const previewSrc = poster ? null : (src.includes('#') ? src : `${src}#t=0.001`);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+            // Once visible, we can stop observing if we want to keep it loaded
+            // or keep observing to unload (aggressive memory saving).
+            // For now, let's keep it loaded once seen to avoid flickering.
+            observer.disconnect();
+          }
+        });
+      },
+      { rootMargin: '200px' } // Load slightly before view
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     setHoverEnabled(enableHover && !onOpen && canAutoplayOnHover());
@@ -107,6 +133,7 @@ export function VideoPreview({
 
   return (
     <div
+      ref={containerRef}
       className={`relative ${className}`}
       onMouseEnter={hoverEnabled ? activate : undefined}
       onMouseLeave={hoverEnabled ? deactivate : undefined}
@@ -116,7 +143,12 @@ export function VideoPreview({
       tabIndex={canActivate ? 0 : -1}
       aria-label={canActivate ? ariaLabel : undefined}
     >
-      {active ? (
+      {!isVisible ? (
+        /* Placeholder while not in viewport */
+        <div className={`flex h-full w-full items-center justify-center bg-zinc-900 ${mediaClassName}`}>
+           {/* Optional: Loading spinner or static icon */}
+        </div>
+      ) : active ? (
         <video
           ref={videoRef}
           src={src}
