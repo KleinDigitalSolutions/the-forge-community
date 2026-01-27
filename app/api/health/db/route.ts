@@ -7,7 +7,8 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   const secret = process.env.HEALTHCHECK_SECRET;
   if (secret) {
-    const headerSecret = headers().get('x-healthcheck-secret');
+    const headerList = await headers();
+    const headerSecret = headerList.get('x-healthcheck-secret');
     if (headerSecret !== secret) {
       return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
     }

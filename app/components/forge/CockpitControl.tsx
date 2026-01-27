@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Rocket, 
   Users, 
-  Layout, 
+  GraduationCap,
   User as UserIcon,
   MessageCircle,
   MessageSquare,
@@ -64,7 +64,7 @@ export default function CockpitControl({
     { icon: Rocket, label: 'Ventures', description: 'Deine Projekte', action: () => onToggleView('ventures'), color: accent, tourId: 'cockpit-menu-ventures' },
     { icon: Users, label: 'Squads', description: 'Teams & Partner', href: '/squads', color: accent, tourId: 'cockpit-menu-squads' },
     { icon: Music, label: 'Music', description: 'Soundtrack', action: () => onToggleView('music'), color: accent, tourId: 'cockpit-menu-music' },
-    { icon: Layout, label: 'Academy', description: 'Playbooks & Wissen', href: '/resources', color: accent, tourId: 'cockpit-menu-academy' },
+    { icon: GraduationCap, label: 'Academy', description: 'Playbooks & Wissen', href: '/resources', color: accent, tourId: 'cockpit-menu-academy' },
     { icon: UserIcon, label: 'Profile', description: 'Deine Identität', href: '/profile', color: accent, tourId: 'cockpit-menu-profile' },
     { icon: MessageCircle, label: 'Messages', description: 'DMs & Inbox', href: '/messages', color: accent, badgeCount: unreadCount, tourId: 'cockpit-menu-messages' },
     { icon: MessageSquare, label: 'Forum', description: 'Community Threads', href: '/forum', color: accent, tourId: 'cockpit-menu-forum' },
