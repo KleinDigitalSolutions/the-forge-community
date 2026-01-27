@@ -2,6 +2,7 @@ import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { prisma } from '@/lib/prisma';
+import { createCreditPurchaseInvoice, createSubscriptionInvoice } from '@/lib/platform-invoicing';
 import Stripe from 'stripe';
 
 /**
@@ -181,29 +182,56 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
     console.log(`[CHECKOUT] Granting ${credits} credits to ${user.email}`);
 
-    // Grant credits using transaction
-    await prisma.$transaction(async (tx) => {
-      // Update user credits
-      const updated = await tx.user.update({
-        where: { id: user.id },
-        data: { credits: { increment: credits } },
-        select: { credits: true },
-      });
+    // Get payment details
+    const amountCents = session.amount_total || 0;
+    const currency = session.currency || 'eur';
 
-      // Create energy transaction record
-      await tx.energyTransaction.create({
-        data: {
-          userId: user.id,
-          delta: credits,
-          balanceAfter: updated.credits,
-          type: 'GRANT',
-          status: 'SETTLED',
-          feature: 'credit-purchase',
-          requestId: `stripe-checkout-${session.id}`,
-        },
-      });
+    const requestId = `stripe-checkout-${session.id}`;
+    const existingGrant = await prisma.energyTransaction.findUnique({
+      where: { requestId },
+    });
 
-      console.log(`[CHECKOUT] ✅ ${credits} credits granted. New balance: ${updated.credits}`);
+    if (!existingGrant) {
+      // Grant credits using transaction
+      await prisma.$transaction(async (tx) => {
+        // Update user credits
+        const updated = await tx.user.update({
+          where: { id: user.id },
+          data: { credits: { increment: credits } },
+          select: { credits: true },
+        });
+
+        // Create energy transaction record
+        await tx.energyTransaction.create({
+          data: {
+            userId: user.id,
+            delta: credits,
+            balanceAfter: updated.credits,
+            type: 'GRANT',
+            status: 'SETTLED',
+            feature: 'credit-purchase',
+            requestId,
+          },
+        });
+
+        console.log(`[CHECKOUT] ✅ ${credits} credits granted. New balance: ${updated.credits}`);
+      });
+    } else {
+      console.log(`[CHECKOUT] Credits already granted for ${requestId}`);
+    }
+
+    // Create invoice + ledger entry (Finanzamt compliance)
+    await createCreditPurchaseInvoice({
+      userId: user.id,
+      credits,
+      amountCents,
+      currency,
+      stripePaymentIntentId: session.payment_intent as string,
+      stripeInvoiceId: session.invoice as string,
+      customerEmail: customerEmail,
+      customerName: session.customer_details?.name || user.name || undefined,
+      customerAddress: session.customer_details?.address ?? undefined,
+      customerCountry: session.customer_details?.address?.country ?? undefined,
     });
   }
 
@@ -289,27 +317,53 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
 
   console.log(`[INVOICE] Granting ${monthlyCredits} monthly credits to ${user.email}`);
 
-  // Grant monthly credits
-  await prisma.$transaction(async (tx) => {
-    const updated = await tx.user.update({
-      where: { id: user.id },
-      data: { credits: { increment: monthlyCredits } },
-      select: { credits: true },
-    });
+  // Get payment details
+  const amountCents = invoice.amount_paid || 0;
+  const currency = invoice.currency || 'eur';
 
-    await tx.energyTransaction.create({
-      data: {
-        userId: user.id,
-        delta: monthlyCredits,
-        balanceAfter: updated.credits,
-        type: 'GRANT',
-        status: 'SETTLED',
-        feature: 'monthly-subscription-credits',
-        requestId: `stripe-invoice-${invoice.id}`,
-      },
-    });
+  const requestId = `stripe-invoice-${invoice.id}`;
+  const existingGrant = await prisma.energyTransaction.findUnique({
+    where: { requestId },
+  });
 
-    console.log(`[INVOICE] ✅ ${monthlyCredits} credits granted. New balance: ${updated.credits}`);
+  if (!existingGrant) {
+    // Grant monthly credits
+    await prisma.$transaction(async (tx) => {
+      const updated = await tx.user.update({
+        where: { id: user.id },
+        data: { credits: { increment: monthlyCredits } },
+        select: { credits: true },
+      });
+
+      await tx.energyTransaction.create({
+        data: {
+          userId: user.id,
+          delta: monthlyCredits,
+          balanceAfter: updated.credits,
+          type: 'GRANT',
+          status: 'SETTLED',
+          feature: 'monthly-subscription-credits',
+          requestId,
+        },
+      });
+
+      console.log(`[INVOICE] ✅ ${monthlyCredits} credits granted. New balance: ${updated.credits}`);
+    });
+  } else {
+    console.log(`[INVOICE] Credits already granted for ${requestId}`);
+  }
+
+  // Create subscription invoice + ledger entry (Finanzamt compliance)
+  await createSubscriptionInvoice({
+    userId: user.id,
+    credits: monthlyCredits,
+    amountCents,
+    currency,
+    stripeInvoiceId: invoice.id,
+    customerEmail: user.email,
+    customerName: invoice.customer_name || user.name || undefined,
+    customerAddress: invoice.customer_address ?? undefined,
+    customerCountry: invoice.customer_address?.country ?? undefined,
   });
 }
 

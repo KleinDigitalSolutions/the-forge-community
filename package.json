@@ -26,6 +26,7 @@
     "@radix-ui/react-tabs": "^1.1.13",
     "@vercel/blob": "^0.27.3",
     "@vercel/postgres": "^0.10.0",
+    "@react-pdf/renderer": "^4.3.0",
     "ai": "^6.0.39",
     "cheerio": "^1.1.2",
     "class-variance-authority": "^0.7.1",
