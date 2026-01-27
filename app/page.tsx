@@ -426,7 +426,7 @@ export default function Home() {
           description="Schluss mit dem Einzelkämpfer-Risiko. Wir vereinen viele Founder, Kapital und KI zu einer profitablen Einheit. Echte Anteile an echten Unternehmen."
           backgroundVideoUrl="/hero_loop.mp4"
           backgroundVideoUrlMobile="/hero_loop_mobile.mp4"
-          primaryButtonText="SEQUENZ STARTEN"
+          primaryButtonText="COMMUNITY BEITRETEN"
           primaryButtonHref="#apply"
           secondaryButtonText="PROTOKOLL ANSEHEN"
           secondaryButtonHref="#"
