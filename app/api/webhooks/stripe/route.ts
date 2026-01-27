@@ -243,8 +243,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
  */
 async function handleInvoicePaid(invoice: Stripe.Invoice) {
   // @ts-ignore - Stripe Invoice has subscription property
-  const subscription = invoice.subscription;
-  const subscriptionId = typeof subscription === 'string' ? subscription : subscription?.id;
+  const invoiceSub = invoice.subscription;
+  const subscriptionId = typeof invoiceSub === 'string' ? invoiceSub : invoiceSub?.id;
 
   if (!subscriptionId) {
     console.log('[INVOICE] No subscription ID, skipping');
@@ -319,8 +319,8 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
  */
 async function handleInvoiceFailed(invoice: Stripe.Invoice) {
   // @ts-ignore - Stripe Invoice has subscription property
-  const subscription = invoice.subscription;
-  const subscriptionId = typeof subscription === 'string' ? subscription : subscription?.id;
+  const invoiceSub = invoice.subscription;
+  const subscriptionId = typeof invoiceSub === 'string' ? invoiceSub : invoiceSub?.id;
 
   if (!subscriptionId) return;
 
