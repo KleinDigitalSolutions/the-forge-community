@@ -1,6 +1,7 @@
 import NextAuth from 'next-auth';
 import { authConfig } from './auth.config';
 import Resend from 'next-auth/providers/resend';
+import Google from 'next-auth/providers/google';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { prisma } from '@/lib/prisma';
 import { Resend as ResendClient } from 'resend';
@@ -13,12 +14,8 @@ const resendFrom =
     ? 'STAKE & SCALE <info@stakeandscale.de>'
     : 'onboarding@resend.dev');
 
-export const { auth, signIn, signOut, handlers } = NextAuth({
-  ...authConfig,
-  adapter: PrismaAdapter(prisma),
-  debug: process.env.NODE_ENV === 'development',
-  providers: [
-    Resend({
+const providers = [
+  Resend({
       apiKey: process.env.AUTH_RESEND_KEY,
       from: resendFrom,
       async sendVerificationRequest({ identifier: email, url }) {
@@ -49,8 +46,23 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
           throw new Error('Failed to send verification email');
         }
       },
-    }),
-  ],
+    })
+];
+
+if (process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET) {
+  providers.push(
+    Google({
+      clientId: process.env.AUTH_GOOGLE_ID,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET,
+    })
+  );
+}
+
+export const { auth, signIn, signOut, handlers } = NextAuth({
+  ...authConfig,
+  adapter: PrismaAdapter(prisma),
+  debug: process.env.NODE_ENV === 'development',
+  providers,
   callbacks: {
     // Open Access: No signIn checks required. Everyone can join.
     ...authConfig.callbacks,

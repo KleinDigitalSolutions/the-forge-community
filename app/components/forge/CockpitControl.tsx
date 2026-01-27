@@ -44,14 +44,14 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
 
   const accent = '#D4AF37';
   const menuItems = [
-    { icon: Rocket, label: 'Ventures', action: () => onToggleView('ventures'), color: accent },
-    { icon: Users, label: 'Squads', href: '/squads', color: accent },
-    { icon: Music, label: 'Music', action: () => onToggleView('music'), color: accent },
-    { icon: Layout, label: 'Academy', href: '/resources', color: accent },
-    { icon: UserIcon, label: 'Profile', href: '/profile', color: accent },
-    { icon: MessageCircle, label: 'Messages', href: '/messages', color: accent, badgeCount: unreadCount },
-    { icon: MessageSquare, label: 'Forum', href: '/forum', color: accent },
-    { icon: Zap, label: 'Missions', action: () => onToggleView('missions'), color: accent },
+    { icon: Rocket, label: 'Ventures', description: 'Deine Projekte', action: () => onToggleView('ventures'), color: accent },
+    { icon: Users, label: 'Squads', description: 'Teams & Partner', href: '/squads', color: accent },
+    { icon: Music, label: 'Music', description: 'Soundtrack', action: () => onToggleView('music'), color: accent },
+    { icon: Layout, label: 'Academy', description: 'Playbooks & Wissen', href: '/resources', color: accent },
+    { icon: UserIcon, label: 'Profile', description: 'Deine Identität', href: '/profile', color: accent },
+    { icon: MessageCircle, label: 'Messages', description: 'DMs & Inbox', href: '/messages', color: accent, badgeCount: unreadCount },
+    { icon: MessageSquare, label: 'Forum', description: 'Community Threads', href: '/forum', color: accent },
+    { icon: Zap, label: 'Missions', description: 'Tasks & Ziele', action: () => onToggleView('missions'), color: accent },
   ];
   const angleStep = 360 / menuItems.length;
   const startAngle = -90;
@@ -347,7 +347,7 @@ function SatelliteContent({ item }: { item: any }) {
   const badgeText = badge > 99 ? '99+' : String(badge);
 
   return (
-    <div className="flex flex-col items-center gap-3 group">
+    <div className="flex flex-col items-center gap-2 group">
       {/* Icon Circle - PREMIUM TECH LOOK */}
       <div className="relative w-16 h-16 transition-all duration-500 group-hover:scale-110">
         
@@ -377,6 +377,14 @@ function SatelliteContent({ item }: { item: any }) {
         {/* Decorative Corner Brackets (Tech Detail) */}
         <div className="absolute -top-1 -left-1 w-2 h-2 border-t border-l border-[#D4AF37]/0 group-hover:border-[#D4AF37]/60 transition-all duration-500" />
         <div className="absolute -bottom-1 -right-1 w-2 h-2 border-b border-r border-[#D4AF37]/0 group-hover:border-[#D4AF37]/60 transition-all duration-500" />
+      </div>
+      <div className="text-center">
+        <div className="text-[9px] font-black uppercase tracking-[0.35em] text-white/70 group-hover:text-white transition-colors">
+          {item.label}
+        </div>
+        <div className="text-[9px] uppercase tracking-[0.2em] text-white/35">
+          {item.description}
+        </div>
       </div>
     </div>
   );

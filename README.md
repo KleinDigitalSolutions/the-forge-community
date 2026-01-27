@@ -24,6 +24,9 @@ The Forge nutzt ein **Product-Led Growth** Modell für maximale Konvertierung vo
   - Stripe one-time credit top-ups
   - Plan-based limits (Free / Pro / Squad)
 - Decide final pricing (monthly access + credit packs)
+- Add Google Login on `/login` (and registration flow if introduced) for trust:
+  - Provide Google OAuth Client ID/Secret + redirect URLs
+  - Enable env flags (`AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=1`)
 
 ---
 

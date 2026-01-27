@@ -14,8 +14,10 @@ function LoginForm() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [isLocalhost, setIsLocalhost] = useState(false);
+  const [googleStatus, setGoogleStatus] = useState<'idle' | 'loading'>('idle');
 
   const turnstileBypass = process.env.NEXT_PUBLIC_TURNSTILE_BYPASS === '1';
+  const googleEnabled = process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === '1';
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -64,6 +66,16 @@ function LoginForm() {
       console.error('Login error:', error);
       setErrorMessage('Verbindungsfehler. Bitte prüfe deine Internetverbindung.');
       setStatus('error');
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setGoogleStatus('loading');
+    try {
+      const { signIn } = await import('next-auth/react');
+      await signIn('google', { callbackUrl: '/dashboard' });
+    } finally {
+      setGoogleStatus('idle');
     }
   };
 
@@ -161,6 +173,39 @@ function LoginForm() {
             </div>
           )}
         </form>
+
+        {googleEnabled && (
+          <div className="mt-8 space-y-4 relative z-10">
+            <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-[0.3em] text-white/20">
+              <div className="h-px flex-1 bg-white/5" />
+              <span>oder</span>
+              <div className="h-px flex-1 bg-white/5" />
+            </div>
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              disabled={googleStatus === 'loading'}
+              className="w-full border border-white/10 bg-white/5 text-white/80 font-bold py-4 rounded-xl hover:bg-white/10 transition-all flex items-center justify-center gap-3 uppercase text-[10px] tracking-[0.2em] disabled:opacity-40"
+            >
+              {googleStatus === 'loading' ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Verbinde...
+                </>
+              ) : (
+                <>
+                  <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+                    <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303C33.9 32.657 29.393 36 24 36c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.962 3.038l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.651-.389-3.917z" />
+                    <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 16.108 19.001 12 24 12c3.059 0 5.842 1.154 7.962 3.038l5.657-5.657C34.046 6.053 29.268 4 24 4c-7.682 0-14.327 4.327-17.694 10.691z" />
+                    <path fill="#4CAF50" d="M24 44c5.314 0 10.02-1.986 13.576-5.219l-6.271-5.307C29.41 35.092 26.82 36 24 36c-5.372 0-9.92-3.356-11.522-8.043l-6.522 5.025C9.276 39.556 16.19 44 24 44z" />
+                    <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-1.067 2.884-3.12 5.183-5.998 6.474l6.271 5.307C33.76 41.602 44 36.5 44 24c0-1.341-.138-2.651-.389-3.917z" />
+                  </svg>
+                  Mit Google fortfahren
+                </>
+              )}
+            </button>
+          </div>
+        )}
 
         <div className="mt-10 text-center relative z-10 border-t border-white/5 pt-8">
           <p className="text-xs text-white/30 uppercase tracking-widest font-bold">

@@ -46,7 +46,7 @@ export async function POST(req: Request) {
       },
     });
 
-    console.log(`[ADMIN] User ${user.email} deleted by ${session.user.email}`);
+    console.log(`[ADMIN] User ${user.email} deleted by ${session?.user?.email ?? 'unknown'}`);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
