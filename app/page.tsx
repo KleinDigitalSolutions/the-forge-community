@@ -342,140 +342,140 @@ export default function Home() {
           ctaButtonHref="#apply"
         />
 
-        {/* Veo Section - MOVED UP */}
-        <section id="veo" className="relative py-24 px-4 md:px-6 overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(212,175,55,0.15),_transparent_55%)] opacity-80" />
-          <div className="max-w-6xl mx-auto relative">
-            <div className="max-w-3xl mx-auto mb-12 space-y-4 text-center">
-              <div className="inline-flex items-center gap-3 rounded-full bg-white/10 px-4 py-2 ring-1 ring-white/15 backdrop-blur">
-                <img
-                  src="/partners/Google_Gemini_icon_2025.svg"
-                  alt="Gemini"
-                  className="h-4 w-4 opacity-80"
-                />
-                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/80">Jetzt verfügbar</span>
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-(--accent)">Veo 3.1</span>
-              </div>
-              <h2 className="text-3xl md:text-5xl font-instrument-serif text-white leading-tight">
-                VEO 3.1: Drei Funken, ein Feuer.
-              </h2>
-              <p className="text-sm md:text-base text-white/60 leading-relaxed">
-                Deine Brand-DNA trifft auf die stärkste Video-KI der Welt.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-[0.95fr_1.05fr] gap-10 items-center">
-              <div className="order-2 lg:order-1 space-y-4">
-                {[
-                  {
-                    step: '1',
-                    title: 'Identität',
-                    desc: 'Foto von dir oder deinem Model.',
-                    accent: 'border-[#D4AF37]/40 text-[#D4AF37]',
-                  },
-                  {
-                    step: '2',
-                    title: 'Objekt',
-                    desc: 'Dein Produkt-Shot in Nahaufnahme.',
-                    accent: 'border-white/15 text-white/80',
-                  },
-                  {
-                    step: '3',
-                    title: 'Stil',
-                    desc: 'Farben & Vibe deiner Brand.',
-                    accent: 'border-white/15 text-white/80',
-                  },
-                ].map((item) => (
-                  <div
-                    key={item.step}
-                    className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 backdrop-blur-sm hover:border-[#D4AF37]/40 transition-all"
-                  >
-                    <div className={`h-10 w-10 rounded-full border ${item.accent} flex items-center justify-center text-xs font-black`}>
-                      {item.step}
-                    </div>
-                    <div>
-                      <div className="text-sm font-semibold text-white">{item.title}</div>
-                      <div className="text-xs text-white/50">{item.desc}</div>
-                    </div>
-                  </div>
-                ))}
-                <p className="text-sm text-white/60 leading-relaxed">
-                  Das Resultat: Ein nahtloses Marketing-Video, das deine Brand-DNA atmet.
-                </p>
-                <div className="flex flex-wrap items-center gap-4">
-                  <Link
-                    href="#apply"
-                    className="rounded-full bg-[#D4AF37] px-6 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-black hover:brightness-110 transition"
-                  >
-                    Jetzt erste Sequenz generieren
-                  </Link>
-                  <span className="text-[10px] uppercase tracking-[0.3em] text-white/40">
-                    Vollständig kommerziell nutzbar. Generiert mit lizenzierten Modellen über die Forge-Pipeline.
-                  </span>
-                </div>
-              </div>
-
-              <div className="order-1 lg:order-2">
-                <div className="relative aspect-[9/16] overflow-hidden rounded-2xl border border-white/10 bg-black/40 shadow-[0_0_60px_rgba(0,0,0,0.35)]">
-                  <div className="absolute inset-0">
-                    <VideoPreview
-                      src="/Veo/veo_make_person_to_video.mp4"
-                      className="h-full w-full"
-                      mediaClassName="h-full w-full object-cover"
-                      enableHover={false}
+            {/* Veo Section - MOVED UP */}
+            <section id="veo" className="relative py-24 px-4 md:px-6 overflow-hidden">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(212,175,55,0.15),_transparent_55%)] opacity-80" />
+              <div className="max-w-6xl mx-auto relative">
+                <div className="max-w-3xl mx-auto mb-12 space-y-4 text-center">
+                  <div className="inline-flex items-center gap-3 rounded-full bg-white/10 px-4 py-2 ring-1 ring-white/15 backdrop-blur">
+                    <img
+                      src="/partners/Google_Gemini_icon_2025.svg"
+                      alt="Gemini"
+                      className="h-4 w-4 opacity-80"
                     />
+                    <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/80">Jetzt verfügbar</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-(--accent)">Veo 3.1</span>
                   </div>
+                  <h2 className="text-3xl md:text-5xl font-instrument-serif text-white leading-tight">
+                    VEO 3.1: Drei Funken, ein Feuer.
+                  </h2>
+                  <p className="text-sm md:text-base text-white/60 leading-relaxed">
+                    Deine Brand-DNA trifft auf die stärkste Video-KI der Welt.
+                  </p>
                 </div>
-              </div>
-            </div>
 
-            <div className="mt-12">
-              <div className="relative aspect-[16/9] overflow-hidden rounded-2xl border border-white/10 bg-black/40 shadow-[0_0_60px_rgba(0,0,0,0.35)]">
-                <div className="absolute inset-0">
-                  <VideoPreview
-                    key={veoCarouselItems[veoCarouselIndex]?.src}
-                    src={veoCarouselItems[veoCarouselIndex]?.src}
-                    className="h-full w-full"
-                    mediaClassName="h-full w-full object-cover"
-                    enableHover={false}
-                  />
-                </div>
-                <div className="absolute top-4 left-4 rounded-full border border-white/10 bg-black/60 px-3 py-1 text-[9px] font-black uppercase tracking-[0.3em] text-white/60 backdrop-blur">
-                  {veoCarouselItems[veoCarouselIndex]?.label}
-                </div>
-                <div className="absolute inset-x-0 bottom-0 flex items-center justify-between px-4 pb-4">
-                  <button
-                    type="button"
-                    onClick={handleVeoPrev}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/60 text-white/70 hover:text-white transition"
-                    aria-label="Vorheriges Video"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </button>
-                  <div className="flex items-center gap-2">
-                    {veoCarouselItems.map((_, index) => (
-                      <button
-                        key={`veo-dot-${index}`}
-                        type="button"
-                        onClick={() => setVeoCarouselIndex(index)}
-                        className={`h-2 w-2 rounded-full transition ${index === veoCarouselIndex ? 'bg-[#D4AF37]' : 'bg-white/30'}`}
-                        aria-label={`Video ${index + 1}`}
-                      />
+                <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10 items-center">
+                  <div className="order-2 lg:order-1 space-y-4">
+                    {[
+                      {
+                        step: '1',
+                        title: 'Identität',
+                        desc: 'Foto von dir oder deinem Model.',
+                        accent: 'border-[#D4AF37]/40 text-[#D4AF37]',
+                      },
+                      {
+                        step: '2',
+                        title: 'Objekt',
+                        desc: 'Dein Produkt-Shot in Nahaufnahme.',
+                        accent: 'border-white/15 text-white/80',
+                      },
+                      {
+                        step: '3',
+                        title: 'Stil',
+                        desc: 'Farben & Vibe deiner Brand.',
+                        accent: 'border-white/15 text-white/80',
+                      },
+                    ].map((item) => (
+                      <div
+                        key={item.step}
+                        className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 backdrop-blur-sm hover:border-[#D4AF37]/40 transition-all"
+                      >
+                        <div className={`h-10 w-10 rounded-full border ${item.accent} flex items-center justify-center text-xs font-black`}>
+                          {item.step}
+                        </div>
+                        <div>
+                          <div className="text-sm font-semibold text-white">{item.title}</div>
+                          <div className="text-xs text-white/50">{item.desc}</div>
+                        </div>
+                      </div>
                     ))}
+                    <p className="text-sm text-white/60 leading-relaxed">
+                      Das Resultat: Ein nahtloses Marketing-Video, das deine Brand-DNA atmet.
+                    </p>
+                    <div className="flex flex-wrap items-center gap-4">
+                      <Link
+                        href="#apply"
+                        className="rounded-full bg-[#D4AF37] px-6 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-black hover:brightness-110 transition"
+                      >
+                        Jetzt erste Sequenz generieren
+                      </Link>
+                      <span className="text-[10px] uppercase tracking-[0.3em] text-white/40">
+                        Vollständig kommerziell nutzbar. Generiert mit lizenzierten Modellen über die Forge-Pipeline.
+                      </span>
+                    </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={handleVeoNext}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/60 text-white/70 hover:text-white transition"
-                    aria-label="Naechstes Video"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
+
+                  <div className="order-1 lg:order-2 flex lg:justify-end">
+                    <div className="relative aspect-[9/16] w-full max-w-[320px] sm:max-w-[360px] lg:max-w-[340px] xl:max-w-[380px] overflow-hidden rounded-2xl border border-white/10 bg-black/40 shadow-[0_0_60px_rgba(0,0,0,0.35)]">
+                      <div className="absolute inset-0">
+                        <VideoPreview
+                          src="/Veo/veo_make_person_to_video.mp4"
+                          className="h-full w-full"
+                          mediaClassName="h-full w-full object-cover"
+                          enableHover={false}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-12">
+                  <div className="relative aspect-[16/9] overflow-hidden rounded-2xl border border-white/10 bg-black/40 shadow-[0_0_60px_rgba(0,0,0,0.35)]">
+                    <div className="absolute inset-0">
+                      <VideoPreview
+                        key={veoCarouselItems[veoCarouselIndex]?.src}
+                        src={veoCarouselItems[veoCarouselIndex]?.src}
+                        className="h-full w-full"
+                        mediaClassName="h-full w-full object-cover"
+                        enableHover={false}
+                      />
+                    </div>
+                    <div className="absolute top-4 left-4 rounded-full border border-white/10 bg-black/60 px-3 py-1 text-[9px] font-black uppercase tracking-[0.3em] text-white/60 backdrop-blur">
+                      {veoCarouselItems[veoCarouselIndex]?.label}
+                    </div>
+                    <div className="absolute inset-x-0 bottom-0 flex items-center justify-between px-4 pb-4">
+                      <button
+                        type="button"
+                        onClick={handleVeoPrev}
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/60 text-white/70 hover:text-white transition"
+                        aria-label="Vorheriges Video"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </button>
+                      <div className="flex items-center gap-2">
+                        {veoCarouselItems.map((_, index) => (
+                          <button
+                            key={`veo-dot-${index}`}
+                            type="button"
+                            onClick={() => setVeoCarouselIndex(index)}
+                            className={`h-2 w-2 rounded-full transition ${index === veoCarouselIndex ? 'bg-[#D4AF37]' : 'bg-white/30'}`}
+                            aria-label={`Video ${index + 1}`}
+                          />
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleVeoNext}
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/60 text-white/70 hover:text-white transition"
+                        aria-label="Naechstes Video"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
+            </section>
 
         {/* Metrics Section - HUD Style */}
         <section className="relative py-24 z-20 px-4 md:px-6">

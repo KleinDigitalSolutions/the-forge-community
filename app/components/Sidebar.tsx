@@ -2,16 +2,19 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Settings, Sliders, Music, Play, Pause, SkipForward, Maximize2, CreditCard } from 'lucide-react';
+import { Settings, Sliders, Music, Play, Pause, SkipForward, Maximize2, CreditCard, Shield, Euro, UserCog } from 'lucide-react';
 import { SignOutButton } from './SignOutButton';
 import { CreditsDisplay } from './CreditsDisplay';
 import { useUnreadMessages } from '@/app/hooks/useUnreadMessages';
 import { navigation } from './navigation';
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 
 export default function Sidebar() {
   const pathname = usePathname();
   const { unreadCount } = useUnreadMessages();
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL || session?.user?.email === 'info@kleindigitalsolutions.de';
   const [audioState, setAudioState] = useState<{ isPlaying: boolean; track: any; hasStarted: boolean }>({
     isPlaying: false,
     track: null,
@@ -74,6 +77,48 @@ export default function Sidebar() {
             </Link>
           );
         })}
+
+        {/* Admin Section */}
+        {isAdmin && (
+          <>
+            <div className="text-[9px] font-bold text-white/20 uppercase tracking-[0.3em] px-4 mb-4 mt-10">
+              Admin
+            </div>
+            <Link
+              href="/admin"
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all duration-500 group ${
+                pathname === '/admin'
+                  ? 'bg-white/5 text-[var(--accent)] border border-white/10'
+                  : 'text-white/40 hover:text-white hover:bg-white/[0.02]'
+              }`}
+            >
+              <Shield className="w-4 h-4 transition-transform duration-500 group-hover:scale-110" />
+              Dashboard
+            </Link>
+            <Link
+              href="/admin/finance"
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all duration-500 group ${
+                pathname === '/admin/finance'
+                  ? 'bg-white/5 text-[var(--accent)] border border-white/10'
+                  : 'text-white/40 hover:text-white hover:bg-white/[0.02]'
+              }`}
+            >
+              <Euro className="w-4 h-4 transition-transform duration-500 group-hover:rotate-12" />
+              Finance
+            </Link>
+            <Link
+              href="/admin/users"
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all duration-500 group ${
+                pathname === '/admin/users'
+                  ? 'bg-white/5 text-[var(--accent)] border border-white/10'
+                  : 'text-white/40 hover:text-white hover:bg-white/[0.02]'
+              }`}
+            >
+              <UserCog className="w-4 h-4 transition-transform duration-500 group-hover:scale-110" />
+              Users
+            </Link>
+          </>
+        )}
 
         <div className="text-[9px] font-bold text-white/20 uppercase tracking-[0.3em] px-4 mb-4 mt-10">
           Account

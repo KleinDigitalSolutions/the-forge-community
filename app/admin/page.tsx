@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Users, UserPlus, CheckCircle2, XCircle, ArrowRight, Activity, Clock } from 'lucide-react';
+import { Users, UserPlus, CheckCircle2, XCircle, ArrowRight, Activity, Clock, FileText, Euro, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function AdminDashboard() {
@@ -127,6 +127,60 @@ export default function AdminDashboard() {
           icon={XCircle} 
           color="red"
         />
+      </div>
+
+      {/* Quick Access Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <Link href="/admin/finance" className="group">
+          <div className="glass-card p-6 rounded-2xl border border-white/10 hover:border-green-500/30 transition-all h-full flex flex-col justify-between">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center group-hover:bg-green-500/20 transition">
+                <Euro className="w-6 h-6 text-green-500" />
+              </div>
+              <div>
+                <h3 className="text-lg font-instrument-serif text-white">Finance</h3>
+                <p className="text-xs text-white/40">Rechnungen & EÜR</p>
+              </div>
+            </div>
+            <div className="flex items-center text-sm text-green-400 group-hover:translate-x-1 transition-transform">
+              Explorer öffnen <ArrowRight className="w-4 h-4 ml-1" />
+            </div>
+          </div>
+        </Link>
+
+        <Link href="/admin/users" className="group">
+          <div className="glass-card p-6 rounded-2xl border border-white/10 hover:border-blue-500/30 transition-all h-full flex flex-col justify-between">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500/20 transition">
+                <Users className="w-6 h-6 text-blue-500" />
+              </div>
+              <div>
+                <h3 className="text-lg font-instrument-serif text-white">User Management</h3>
+                <p className="text-xs text-white/40">Accounts verwalten</p>
+              </div>
+            </div>
+            <div className="flex items-center text-sm text-blue-400 group-hover:translate-x-1 transition-transform">
+              Alle User anzeigen <ArrowRight className="w-4 h-4 ml-1" />
+            </div>
+          </div>
+        </Link>
+
+        <Link href="/admin/applicants" className="group">
+          <div className="glass-card p-6 rounded-2xl border border-white/10 hover:border-yellow-500/30 transition-all h-full flex flex-col justify-between">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-xl bg-yellow-500/10 flex items-center justify-center group-hover:bg-yellow-500/20 transition">
+                <UserPlus className="w-6 h-6 text-yellow-500" />
+              </div>
+              <div>
+                <h3 className="text-lg font-instrument-serif text-white">Bewerbungen</h3>
+                <p className="text-xs text-white/40">Pending: {stats.pending}</p>
+              </div>
+            </div>
+            <div className="flex items-center text-sm text-yellow-400 group-hover:translate-x-1 transition-transform">
+              Review starten <ArrowRight className="w-4 h-4 ml-1" />
+            </div>
+          </div>
+        </Link>
       </div>
 
       {/* Recent Activity Section */}
