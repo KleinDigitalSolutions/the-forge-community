@@ -57,6 +57,12 @@ export async function createCreditPurchaseInvoice(params: CreateCreditPurchaseIn
 
   const existingInvoice = await findExistingInvoice({ stripePaymentIntentId, stripeInvoiceId });
   if (existingInvoice) {
+    if (!existingInvoice.pdfUrl) {
+      await finalizeInvoiceArtifacts({
+        invoiceId: existingInvoice.id,
+        profileId: existingInvoice.profileId,
+      });
+    }
     return {
       invoice: existingInvoice,
       purchase: existingInvoice.creditPurchase ?? null,
@@ -446,6 +452,12 @@ export async function createSubscriptionInvoice(params: {
 
   const existingInvoice = await findExistingInvoice({ stripeInvoiceId });
   if (existingInvoice) {
+    if (!existingInvoice.pdfUrl) {
+      await finalizeInvoiceArtifacts({
+        invoiceId: existingInvoice.id,
+        profileId: existingInvoice.profileId,
+      });
+    }
     return {
       invoice: existingInvoice,
       ledgerEntry: existingInvoice.ledgerEntry ?? null,
