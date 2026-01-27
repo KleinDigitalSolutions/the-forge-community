@@ -114,10 +114,15 @@ export function CockpitTour({ initialHasSeenTour, isNavOpen, onNavOpenChange, on
   const [anchorFound, setAnchorFound] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    if (!initialHasSeenTour) {
+    const dismissed = typeof window !== 'undefined'
+      ? window.localStorage.getItem('cockpit_tour_completed') === 'true'
+      : false;
+    setIsDismissed(dismissed);
+    if (!initialHasSeenTour && !dismissed) {
       const timer = setTimeout(() => setIsVisible(true), 600);
       return () => clearTimeout(timer);
     }
@@ -170,6 +175,9 @@ export function CockpitTour({ initialHasSeenTour, isNavOpen, onNavOpenChange, on
       setCurrentStep(prev => prev + 1);
     } else {
       setIsVisible(false);
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('cockpit_tour_completed', 'true');
+      }
       await completeCockpitTour();
       onComplete();
     }
@@ -181,7 +189,7 @@ export function CockpitTour({ initialHasSeenTour, isNavOpen, onNavOpenChange, on
     }
   };
 
-  if (!isVisible || !mounted) return null;
+  if (!isVisible || !mounted || isDismissed) return null;
 
   const step = STEPS[currentStep];
   const Icon = step.icon;
@@ -209,7 +217,7 @@ export function CockpitTour({ initialHasSeenTour, isNavOpen, onNavOpenChange, on
 
   return createPortal(
     <div className="fixed inset-0 z-[2147483647] pointer-events-none">
-      <div className="absolute inset-0 bg-black/85 backdrop-blur-[3px] pointer-events-auto" />
+      <div className="absolute inset-0 bg-black/65 pointer-events-auto" />
 
       {anchorFound && (
         <motion.div
@@ -229,20 +237,20 @@ export function CockpitTour({ initialHasSeenTour, isNavOpen, onNavOpenChange, on
         initial={{ opacity: 0, y: 20, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         key={currentStep}
-        className="absolute w-[360px] bg-[#0F1113] border border-white/10 rounded-[2rem] p-7 shadow-[0_40px_100px_-20px_rgba(0,0,0,1)] pointer-events-auto"
+        className="absolute w-[300px] bg-[#0F1113] border border-white/10 rounded-[1.5rem] p-5 shadow-[0_30px_80px_-20px_rgba(0,0,0,1)] pointer-events-auto"
         style={getTooltipStyle()}
       >
-        <div className="flex items-center gap-4 mb-5">
-          <div className="w-11 h-11 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center text-[#D4AF37] border border-[#D4AF37]/20">
-            <Icon className="w-5 h-5" />
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-9 h-9 rounded-xl bg-[#D4AF37]/10 flex items-center justify-center text-[#D4AF37] border border-[#D4AF37]/20">
+            <Icon className="w-4.5 h-4.5" />
           </div>
           <div className="flex-1">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#D4AF37]">Step {currentStep + 1} / {STEPS.length}</p>
-            <h3 className="text-lg font-bold text-white tracking-tight">{step.title}</h3>
+            <p className="text-[9px] font-black uppercase tracking-[0.25em] text-[#D4AF37]">Step {currentStep + 1} / {STEPS.length}</p>
+            <h3 className="text-base font-bold text-white tracking-tight">{step.title}</h3>
           </div>
         </div>
 
-        <p className="text-sm text-white/60 leading-relaxed mb-6">
+        <p className="text-[13px] text-white/60 leading-relaxed mb-5">
           {step.content}
         </p>
 
@@ -250,7 +258,7 @@ export function CockpitTour({ initialHasSeenTour, isNavOpen, onNavOpenChange, on
           <div className="mb-5">
             <button
               onClick={() => onNavOpenChange(true)}
-              className="w-full px-5 py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-white/80 text-[11px] font-bold uppercase tracking-[0.2em] transition-colors"
+              className="w-full px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/80 text-[10px] font-bold uppercase tracking-[0.2em] transition-colors"
             >
               Navigation öffnen
             </button>
@@ -260,7 +268,7 @@ export function CockpitTour({ initialHasSeenTour, isNavOpen, onNavOpenChange, on
         <div className="flex items-center justify-between">
           <button
             onClick={handleBack}
-            className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${currentStep === 0 ? 'opacity-0 pointer-events-none' : 'text-white/30 hover:text-white'}`}
+            className={`flex items-center gap-2 text-[9px] font-black uppercase tracking-widest transition-all ${currentStep === 0 ? 'opacity-0 pointer-events-none' : 'text-white/30 hover:text-white'}`}
           >
             <ArrowLeft className="w-3.5 h-3.5" /> Zurück
           </button>
@@ -268,7 +276,7 @@ export function CockpitTour({ initialHasSeenTour, isNavOpen, onNavOpenChange, on
           <button
             onClick={handleNext}
             disabled={!canProceed}
-            className={`flex items-center gap-3 px-6 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all active:scale-95 ${
+            className={`flex items-center gap-3 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 ${
               canProceed ? 'bg-[#D4AF37] hover:bg-[#F0C05A] text-black shadow-2xl shadow-[#D4AF37]/20' : 'bg-white/10 text-white/40 cursor-not-allowed'
             }`}
           >
