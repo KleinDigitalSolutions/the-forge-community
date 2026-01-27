@@ -199,21 +199,40 @@ const paymentIntent = await stripe.paymentIntents.create({
 - `status`: PENDING | SUCCEEDED | FAILED | REFUNDED
 - `stripePaymentIntentId`, `stripeChargeId` (tracking)
 
-### Platform Finance (Founder / Tax & EÜR)
+### Platform Finance & Billing System (PRODUCTION-READY)
 
-**Purpose:** Store platform‑level invoices, credits, and EÜR‑ready ledger data for the platform founder (separate from Venture finances).
+**Purpose:** Automated Stripe billing with invoice generation, PDF archiving, and EÜR-ready bookkeeping for Finanzamt compliance.
 
-**Models added:**
-- `PlatformTaxProfile` (Kleinunternehmer default, tax data, IBAN/BIC, invoice email, note)
-- `PlatformInvoice` + `PlatformInvoiceLine` (invoice mirror, snapshots)
-- `PlatformLedgerCategory` + `PlatformLedgerEntry` (EÜR categories & entries)
-- `PlatformDocument` (belege + retentionUntil)
-- `PlatformCreditPurchase` + `PlatformCreditUsage` (credits buy/use, optional EnergyTransaction link)
+**Status:** ✅ Fully implemented (27.01.2026)
 
-**Migration:** `prisma/migrations/20260308130000_platform_finance/migration.sql` (manually created to avoid DB connectivity issues).
+**Database Models (8 tables):**
+- `PlatformTaxProfile` - Business info (Kleinunternehmer, IBAN, tax data)
+- `PlatformInvoice` - Invoices with sequential numbers (YYYY-NNNN)
+- `PlatformInvoiceLine` - Line items per invoice
+- `PlatformLedgerCategory` - EÜR categories (INCOME/EXPENSE)
+- `PlatformLedgerEntry` - Ledger bookings for tax reporting
+- `PlatformDocument` - PDF archive with 10-year retention (GoBD)
+- `PlatformCreditPurchase` - Credit purchase tracking
+- `PlatformCreditUsage` - Credit usage analytics
+
+**Key Features:**
+- ✅ Automated invoice generation on every purchase
+- ✅ PDF rendering with @react-pdf/renderer
+- ✅ Vercel Blob storage with SHA256 verification
+- ✅ Sequential invoice numbers (2026-0001, 2026-0002, etc.)
+- ✅ Kleinunternehmer compliant (§19 UStG)
+- ✅ 10-year archiving (GoBD)
+- ✅ Full EÜR bookkeeping (INCOME entries)
+
+**Migration:** `prisma/migrations/20260308130000_platform_finance/migration.sql`
+
+**Implementation Files:**
+- `lib/platform-invoicing.ts` - Invoice + ledger creation
+- `lib/invoice-pdf.tsx` - PDF generation
+- `app/api/webhooks/stripe/route.ts` - Webhook handler
+- `app/settings/billing/` - User-facing billing UI
 
 **DB connectivity note:** Migrations should use **direct/unpooled** URL (e.g. `DATABASE_URL_UNPOOLED` or `POSTGRES_URL_NON_POOLING`). Pooler URLs are for runtime, not for `migrate`.
-- `platformFeeAmount`, `platformFeePercent`
 
 ---
 
@@ -911,10 +930,27 @@ GROQ_API_KEY=xxx                    # Optional, fallback provider
 INITIAL_CREDITS=50                  # Starting credits for new users (default: 50)
 ADMIN_UNLIMITED_ENERGY=true         # Admin bypass for credit checks (default: true)
 
-# Stripe
+# Stripe (Billing System - PRODUCTION READY)
 STRIPE_SECRET_KEY=sk_test_xxx
 STRIPE_WEBHOOK_SECRET=whsec_xxx
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_xxx
+
+# Stripe Products (Platform Access + AI Credits)
+STRIPE_PRODUCT_PLATFORM_ACCESS=prod_xxx
+STRIPE_PRICE_PLATFORM_ACCESS=price_xxx
+STRIPE_PRODUCT_AI_CREDITS=prod_xxx
+STRIPE_PRICE_CREDITS_SMALL=price_xxx
+STRIPE_PRICE_CREDITS_MEDIUM=price_xxx
+STRIPE_PRICE_CREDITS_LARGE=price_xxx
+
+# Public Keys (Frontend - PricingTable)
+NEXT_PUBLIC_STRIPE_PRICE_PLATFORM_ACCESS=price_xxx
+NEXT_PUBLIC_STRIPE_PRICE_CREDITS_SMALL=price_xxx
+NEXT_PUBLIC_STRIPE_PRICE_CREDITS_MEDIUM=price_xxx
+NEXT_PUBLIC_STRIPE_PRICE_CREDITS_LARGE=price_xxx
+
+# Vercel Blob (Invoice PDF Storage)
+BLOB_READ_WRITE_TOKEN=vercel_blob_rw_xxx
 
 # Admin
 ADMIN_EMAIL=admin@example.com
@@ -993,6 +1029,45 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 2. Update `ForumAIActions` type
 3. Add UI trigger in forum components
 4. Update API route `/app/api/forum/ai-action/route.ts`
+
+### Test Stripe Billing System
+
+**Prerequisites:**
+- Stripe CLI installed: `brew install stripe`
+- Stripe webhook forwarding: `stripe listen --forward-to http://localhost:3000/api/webhooks/stripe`
+- Test card: `4242 4242 4242 4242` (any CVV, future expiry)
+
+**Test Flow:**
+```bash
+# 1. Start local dev
+npm run dev
+
+# 2. Forward webhooks (new terminal)
+stripe listen --forward-to http://localhost:3000/api/webhooks/stripe
+
+# 3. Test credit purchase
+# Navigate to http://localhost:3000/pricing
+# Click "100 Credits kaufen" → Checkout → Complete with test card
+# Check console logs for:
+#   [CHECKOUT] ✅ 100 credits granted
+#   [INVOICING] ✅ Created invoice 2026-0001
+
+# 4. Verify in UI
+# Go to /settings/billing
+# Check: Credits updated, invoice visible, PDF downloadable
+
+# 5. Test subscription
+# Navigate to /pricing
+# Click "Pro Plan" → Checkout → Complete
+# Check logs for subscription activation
+# Go to /settings/billing → Cancel subscription
+```
+
+**Production Deployment:**
+1. Add all ENV vars to Vercel
+2. Update Stripe webhook URL to `https://www.stakeandscale.de/api/webhooks/stripe`
+3. Test with Stripe test mode first
+4. Switch to live mode once verified
 
 ### Implement Account Deletion Flow
 
