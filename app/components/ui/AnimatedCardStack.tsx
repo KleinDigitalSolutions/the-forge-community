@@ -2,34 +2,55 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Sparkles, Target, Zap, ArrowRight } from "lucide-react"
+import { Sparkles, Layers, Mic, ShieldCheck, ArrowRight, Zap, Truck, MessageSquare, BarChart } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface Card {
   id: number
-  contentType: 1 | 2 | 3
+  contentType: 1 | 2 | 3 | 4 | 5 | 6
 }
 
 const cardData = {
   1: {
-    title: "VIELE KÖCHE? KAUFEN DAS RESTAURANT.",
-    description: "Vergiss das alte Sprichwort. Ein Solo-Gründer ist mutig, 50 Gründer sind eine Naturgewalt. Wir verderben nicht den Brei, wir übernehmen die ganze Küche.",
+    title: "VIDEO CHAIN REACTION.",
+    description: "Erstelle 60s Viral-Clips aus 6x 10s Sequenzen. Der letzte Frame wird zum Start des nächsten. Perfekte Konsistenz mit Veo, Kling & Luma in einer Pipeline.",
     gradient: "from-amber-500 via-yellow-600 to-orange-700",
-    icon: Sparkles,
-    font: "font-serif italic",
+    icon: Layers,
+    font: "font-sans font-black tracking-tighter",
   },
   2: {
-    title: "WER DEN CENT NICHT EHRT? IST DEN EXIT NICHT WERT.",
-    description: "Gehalt macht satt, Equity macht frei. Wir jagen keinem Stundenlohn hinterher. Wir bauen Systeme, die auch dann verdienen, wenn wir offline sind.",
+    title: "IDENTITY FIRST. VOICE SYNC.",
+    description: "Erst das Model (Flux), dann das Video. Dazu voll integrierte ElevenLabs Voice-Engine für emotionale Hooks. Dein Avatar spricht, wie du willst.",
     gradient: "from-blue-600 via-indigo-600 to-violet-700",
-    icon: Target,
+    icon: Mic,
     font: "font-sans font-black tracking-tighter",
   },
   3: {
-    title: "WAS LANGE WÄHRT? IST LÄNGST KAPUTT.",
-    description: "Der Markt wartet nicht auf deine Perfektion. Während die Konkurrenz noch plant, haben wir schon gelauncht. Lieber unperfekt starten als perfekt warten.",
+    title: "SAFE OPERATIONS. NO DRAMA.",
+    description: "Rechtssichere Nutzung aller Assets dank integrierter Lizenzen. B2B-Vertragsmanagement und AI-Support regeln den Papierkram im Hintergrund.",
     gradient: "from-emerald-500 via-teal-600 to-cyan-700",
-    icon: Zap,
+    icon: ShieldCheck,
+    font: "font-mono uppercase tracking-widest",
+  },
+  4: {
+    title: "B2B SOURCING ENGINE.",
+    description: "Direkter Zugang zu 50+ verifizierten Großhändlern. Samples & Orders per Klick. Kein Zwischenhändler, volle Marge für deine Brand.",
+    gradient: "from-rose-500 via-red-600 to-orange-700",
+    icon: Truck,
+    font: "font-serif italic",
+  },
+  5: {
+    title: "COMMUNITY BRAIN.",
+    description: "Das Forum, das mitdenkt. Orion AI analysiert alle Threads, erkennt Trends und generiert Bilder direkt im Chat. Schwarmintelligenz auf Steroiden.",
+    gradient: "from-cyan-500 via-blue-600 to-indigo-700",
+    icon: MessageSquare,
+    font: "font-sans font-bold",
+  },
+  6: {
+    title: "AD CAMPAIGN CONTROL.",
+    description: "Vom Asset zur Ad. Verwalte Kampagnen, tracke den ROI und skaliere Winning-Creatives direkt aus dem Dashboard. Data-Driven Execution.",
+    gradient: "from-purple-500 via-fuchsia-600 to-pink-700",
+    icon: BarChart,
     font: "font-mono uppercase tracking-widest",
   },
 }
@@ -53,7 +74,7 @@ const exitAnimation = {
   transition: { duration: 0.4, ease: "easeOut" }
 }
 
-function CardContent({ contentType }: { contentType: 1 | 2 | 3 }) {
+function CardContent({ contentType }: { contentType: 1 | 2 | 3 | 4 | 5 | 6 }) {
   const data = cardData[contentType]
   const Icon = data.icon
 
@@ -79,7 +100,7 @@ function CardContent({ contentType }: { contentType: 1 | 2 | 3 }) {
         </div>
 
         <div className="flex items-center gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest mt-4">
-          <span>Manifest lesen</span>
+          <span>Feature ansehen</span>
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </div>
       </div>
@@ -132,7 +153,8 @@ export default function AnimatedCardStack() {
     if (isAnimating) return
     setIsAnimating(true)
 
-    const nextContentType = ((cards[2].contentType % 3) + 1) as 1 | 2 | 3
+    // Cycle through 1 to 6
+    const nextContentType = ((cards[2].contentType % 6) + 1) as 1 | 2 | 3 | 4 | 5 | 6
 
     setCards([...cards.slice(1), { id: nextId, contentType: nextContentType }])
     setNextId((prev) => prev + 1)
@@ -157,7 +179,7 @@ export default function AnimatedCardStack() {
           onClick={handleAnimate}
           className="btn-shimmer flex h-12 cursor-pointer select-none items-center justify-center gap-3 overflow-hidden rounded-full bg-[var(--foreground)] px-8 text-sm font-bold uppercase tracking-widest text-[var(--background)] transition-all active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
         >
-          REGELN NEU SCHREIBEN
+          NEXT LEVEL FEATURES
           <Zap className="w-4 h-4 fill-current" />
         </button>
       </div>

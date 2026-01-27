@@ -23,7 +23,11 @@ import {
   Sparkles,
   Image,
   Film,
-  Scale
+  Scale,
+  ChevronDown,
+  ChevronUp,
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 import ResponsiveHeroBanner from '@/app/components/ui/ResponsiveHeroBanner';
 import AnimatedCardStack from '@/app/components/ui/AnimatedCardStack';
@@ -32,11 +36,11 @@ import MissionLogCarousel from '@/app/components/landing/MissionLogCarousel';
 import { BorderBeam } from '@/components/ui/border-beam';
 import { Hero195 } from '@/components/ui/hero-195';
 import { VideoPreview } from '@/app/components/media/VideoPreview';
+import { cn } from '@/lib/utils';
 
 // --------------------------------------------------------
 
 type ChatMessage = {
-
   role: 'assistant' | 'user';
   content: string;
 };
@@ -49,6 +53,120 @@ type MediaPreviewItem = {
   prompt: string | null;
   model: string | null;
 };
+
+// --------------------------------------------------------
+
+function LoginFormInline() {
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [googleStatus, setGoogleStatus] = useState<'idle' | 'loading'>('idle');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus('loading');
+    setErrorMessage('');
+
+    try {
+      const { signIn } = await import('next-auth/react');
+      const result = await signIn('resend', {
+        email,
+        redirect: false,
+        callbackUrl: '/dashboard',
+      });
+
+      if (result?.error) {
+        setErrorMessage('Fehler beim Senden des Magic Links.');
+        setStatus('error');
+      } else {
+        setStatus('success');
+      }
+    } catch (error) {
+      setErrorMessage('Ein Systemfehler ist aufgetreten.');
+      setStatus('error');
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setGoogleStatus('loading');
+    try {
+      const { signIn } = await import('next-auth/react');
+      await signIn('google', { callbackUrl: '/dashboard' });
+    } catch (e) {
+      setGoogleStatus('idle');
+    }
+  };
+
+  if (status === 'success') {
+    return (
+      <div className="text-center py-10 animate-fade-in">
+        <div className="w-16 h-16 bg-green-500/10 rounded-2xl border border-green-500/20 flex items-center justify-center mx-auto mb-6">
+          <Check className="w-8 h-8 text-green-500" />
+        </div>
+        <h3 className="text-xl font-bold text-white mb-2">Link gesendet</h3>
+        <p className="text-sm text-white/50">Prüfe deinen Posteingang für den Zugriff.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-2 ml-1">Email Addresse</label>
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="founder@theforge.system"
+            className="w-full bg-white/2 border border-white/10 rounded-xl px-5 py-3.5 text-sm text-white focus:border-(--accent) outline-none transition-all placeholder:text-white/10"
+          />
+        </div>
+        
+        {errorMessage && (
+          <div className="flex items-center gap-2 text-red-400 text-[10px] font-bold uppercase tracking-wider bg-red-500/5 border border-red-500/10 p-3 rounded-lg">
+            <AlertCircle className="w-3.5 h-3.5" />
+            {errorMessage}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={status === 'loading'}
+          className="w-full bg-white text-black font-black py-4 rounded-xl hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-3 uppercase text-[10px] tracking-[0.2em]"
+        >
+          {status === 'loading' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Magic Link anfordern'}
+        </button>
+      </form>
+
+      <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-[0.3em] text-white/10">
+        <div className="h-px flex-1 bg-white/5" />
+        <span>oder</span>
+        <div className="h-px flex-1 bg-white/5" />
+      </div>
+
+      <button
+        onClick={handleGoogleLogin}
+        disabled={googleStatus === 'loading'}
+        className="w-full border border-white/10 bg-white/5 text-white/80 font-bold py-4 rounded-xl hover:bg-white/10 transition-all flex items-center justify-center gap-3 uppercase text-[10px] tracking-[0.2em]"
+      >
+        {googleStatus === 'loading' ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <svg width="16" height="16" viewBox="0 0 48 48" className="invert opacity-80 shrink-0">
+            <path fill="currentColor" d="M43.611 20.083H42V20H24v8h11.303C33.9 32.657 29.393 36 24 36c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.962 3.038l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.651-.389-3.917z" />
+          </svg>
+        )}
+        <span>Google Login</span>
+      </button>
+    </div>
+  );
+}
+
+
+
+// --------------------------------------------------------
 
 export default function Home() {
   const localMediaPreview: MediaPreviewItem[] = [
@@ -305,7 +423,7 @@ export default function Home() {
           badgeText="BATCH #001 — REKRUTIERUNG LÄUFT"
           title="Wir bauen Brands."
           titleLine2="Du verdienst mit."
-          description=" Wir vereinen viele Founder, Kapital und KI zu einer profitablen Einheit. Echte Anteile an echten Unternehmen."
+          description="Schluss mit dem Einzelkämpfer-Risiko. Wir vereinen viele Founder, Kapital und KI zu einer profitablen Einheit. Echte Anteile an echten Unternehmen."
           backgroundVideoUrl="/hero_loop.mp4"
           backgroundVideoUrlMobile="/hero_loop_mobile.mp4"
           primaryButtonText="SEQUENZ STARTEN"
@@ -331,151 +449,50 @@ export default function Home() {
             { logoUrl: "/partners/runway.svg", href: "https://runwayml.com" },
           ]}
           navLinks={[
-            { label: "Philosophie", href: "#philosophy" },
-            { label: "The Forge", href: "#forge" },
-            { label: "Mission Log", href: "#projects" },
-            { label: "Prinzipien", href: "#principles" },
+            { label: "Konzept", href: "#concept" },
+            { label: "Ökosystem", href: "#forge" },
+            { label: "Technologie", href: "#veo" },
             { label: "Preise", href: "#pricing" },
-            { label: "Shop Demo", href: "/demo-shop" }
+            { label: "Shop", href: "/demo-shop" }
           ]}
           ctaButtonText="BEWERBEN"
           ctaButtonHref="#apply"
         />
 
-            {/* Veo Section - MOVED UP */}
-            <section id="veo" className="relative py-24 px-4 md:px-6 overflow-hidden">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(212,175,55,0.15),_transparent_55%)] opacity-80" />
-              <div className="max-w-6xl mx-auto relative">
-                <div className="max-w-3xl mx-auto mb-12 space-y-4 text-center">
-                  <div className="inline-flex items-center gap-3 rounded-full bg-white/10 px-4 py-2 ring-1 ring-white/15 backdrop-blur">
-                    <img
-                      src="/partners/Google_Gemini_icon_2025.svg"
-                      alt="Gemini"
-                      className="h-4 w-4 opacity-80"
-                    />
-                    <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/80">Jetzt verfügbar</span>
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-(--accent)">Veo 3.1</span>
-                  </div>
-                  <h2 className="text-3xl md:text-5xl font-instrument-serif text-white leading-tight">
-                    VEO 3.1: Drei Funken, ein Feuer.
-                  </h2>
-                  <p className="text-sm md:text-base text-white/60 leading-relaxed">
-                    Deine Brand-DNA trifft auf die stärkste Video-KI der Welt.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10 items-center">
-                  <div className="order-2 lg:order-1 space-y-4">
-                    {[
-                      {
-                        step: '1',
-                        title: 'Identität',
-                        desc: 'Foto von dir oder deinem Model.',
-                        accent: 'border-[#D4AF37]/40 text-[#D4AF37]',
-                      },
-                      {
-                        step: '2',
-                        title: 'Objekt',
-                        desc: 'Dein Produkt-Shot in Nahaufnahme.',
-                        accent: 'border-white/15 text-white/80',
-                      },
-                      {
-                        step: '3',
-                        title: 'Stil',
-                        desc: 'Farben & Vibe deiner Brand.',
-                        accent: 'border-white/15 text-white/80',
-                      },
-                    ].map((item) => (
-                      <div
-                        key={item.step}
-                        className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 backdrop-blur-sm hover:border-[#D4AF37]/40 transition-all"
-                      >
-                        <div className={`h-10 w-10 rounded-full border ${item.accent} flex items-center justify-center text-xs font-black`}>
-                          {item.step}
-                        </div>
-                        <div>
-                          <div className="text-sm font-semibold text-white">{item.title}</div>
-                          <div className="text-xs text-white/50">{item.desc}</div>
-                        </div>
-                      </div>
-                    ))}
-                    <p className="text-sm text-white/60 leading-relaxed">
-                      Das Resultat: Ein nahtloses Marketing-Video, das deine Brand-DNA atmet.
-                    </p>
-                    <div className="flex flex-wrap items-center gap-4">
-                      <Link
-                        href="#apply"
-                        className="rounded-full bg-[#D4AF37] px-6 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-black hover:brightness-110 transition"
-                      >
-                        Jetzt erste Sequenz generieren
-                      </Link>
-                      <span className="text-[10px] uppercase tracking-[0.3em] text-white/40">
-                        Vollständig kommerziell nutzbar. Generiert mit lizenzierten Modellen über die Forge-Pipeline.
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="order-1 lg:order-2 flex lg:justify-end">
-                    <div className="relative aspect-[9/16] w-full max-w-[320px] sm:max-w-[360px] lg:max-w-[340px] xl:max-w-[380px] overflow-hidden rounded-2xl border border-white/10 bg-black/40 shadow-[0_0_60px_rgba(0,0,0,0.35)]">
-                      <div className="absolute inset-0">
-                        <VideoPreview
-                          src="/Veo/veo_make_person_to_video.mp4"
-                          className="h-full w-full"
-                          mediaClassName="h-full w-full object-cover"
-                          enableHover={false}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-12">
-                  <div className="relative aspect-[16/9] overflow-hidden rounded-2xl border border-white/10 bg-black/40 shadow-[0_0_60px_rgba(0,0,0,0.35)]">
-                    <div className="absolute inset-0">
-                      <VideoPreview
-                        key={veoCarouselItems[veoCarouselIndex]?.src}
-                        src={veoCarouselItems[veoCarouselIndex]?.src}
-                        className="h-full w-full"
-                        mediaClassName="h-full w-full object-cover"
-                        enableHover={false}
-                      />
-                    </div>
-                    <div className="absolute top-4 left-4 rounded-full border border-white/10 bg-black/60 px-3 py-1 text-[9px] font-black uppercase tracking-[0.3em] text-white/60 backdrop-blur">
-                      {veoCarouselItems[veoCarouselIndex]?.label}
-                    </div>
-                    <div className="absolute inset-x-0 bottom-0 flex items-center justify-between px-4 pb-4">
-                      <button
-                        type="button"
-                        onClick={handleVeoPrev}
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/60 text-white/70 hover:text-white transition"
-                        aria-label="Vorheriges Video"
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                      </button>
-                      <div className="flex items-center gap-2">
-                        {veoCarouselItems.map((_, index) => (
-                          <button
-                            key={`veo-dot-${index}`}
-                            type="button"
-                            onClick={() => setVeoCarouselIndex(index)}
-                            className={`h-2 w-2 rounded-full transition ${index === veoCarouselIndex ? 'bg-[#D4AF37]' : 'bg-white/30'}`}
-                            aria-label={`Video ${index + 1}`}
-                          />
-                        ))}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleVeoNext}
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/60 text-white/70 hover:text-white transition"
-                        aria-label="Naechstes Video"
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
+        {/* --- CONCEPT SECTION (Professional & Dynamic) --- */}
+        <section id="concept" className="py-24 px-4 md:px-6 relative border-b border-white/5 bg-black/40">
+           <div className="max-w-5xl mx-auto text-center">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-(--accent) mb-8">
+                 <Zap className="w-3 h-3" />
+                 Venture Capital 2.0
               </div>
-            </section>
+              <h2 className="text-4xl md:text-6xl font-instrument-serif text-white mb-8 leading-tight">
+                 Der Community-Hebel.<br/>
+                 <span className="text-white/40">Massive Execution durch gebündelte Power.</span>
+              </h2>
+              <p className="text-lg text-white/60 max-w-3xl mx-auto leading-relaxed">
+                 Durch das Pooling von Kapital und Kompetenz
+                 von vielen Foundern erreichen wir sofortige Marktrelevanz. Wir finanzieren Warenlager, 
+                 High-End Produktion und operative Infrastruktur aus einem gemeinsamen Topf. 
+              </p>
+           </div>
+        </section>
+
+        {/* Principles - System Override */}
+        <section id="principles" className="py-20 px-4 md:px-6 relative overflow-hidden border-b border-white/5">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-(--accent)/5 rounded-full blur-[150px] pointer-events-none" />
+          
+          <div className="max-w-7xl mx-auto flex flex-col items-center relative z-10">
+            <div className="text-center mb-20">
+              <h2 className="text-5xl md:text-7xl font-instrument-serif text-white mb-6 tracking-tighter">System: Override.</h2>
+              <p className="text-white/40 uppercase tracking-[0.3em] text-[10px] font-bold">
+                Vergiss, was du über Startups gelernt hast. Das hier ist die Realität.
+              </p>
+            </div>
+            
+            <AnimatedCardStack />
+          </div>
+        </section>
 
         {/* Metrics Section - HUD Style */}
         <section className="relative py-24 z-20 px-4 md:px-6">
@@ -504,50 +521,45 @@ export default function Home() {
           </div>
         </section>
 
-        {/* The Forge Section */}
+        {/* The Forge Section (RESTRUCTURED: Enterprise Ecosystem) */}
         <section id="forge" className="relative py-32 px-4 md:px-6 overflow-hidden">
-          
+          {/* ... existing content ... */}
           <div className="relative max-w-7xl mx-auto grid lg:grid-cols-[1.15fr_0.85fr] gap-14 items-center">
             <div className="space-y-8">
               <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">
-                The Forge
+                Infrastruktur
               </div>
               <h2 className="text-4xl md:text-6xl font-instrument-serif text-white leading-tight">
-                Dein Content-, Marketing- und Execution-HQ.
+                Enterprise-Level<br/>Operating System.
               </h2>
               <p className="text-sm text-white/60 leading-relaxed max-w-xl">
-                The Forge verbindet deine Brand DNA mit sofortigem Output. Texte, Bilder und Videos entstehen
-                in einem Flow und landen direkt in Kampagnen, Media und Forum. Kein Tool-Chaos, kein Copy/Paste.
+                The Forge ist keine Sammlung von Tools, sondern ein integriertes Betriebssystem für digitales Business.
+                Vom Global Sourcing über KI-gestützte Content-Produktion bis zum Legal-Framework – alles ist nahtlos verbunden.
               </p>
-              <div className="flex flex-wrap gap-3">
+              
+              <div className="grid sm:grid-cols-2 gap-4 text-xs text-white/60 pt-4">
+                {[
+                  { title: 'Global Sourcing Network', desc: 'Direkter Datenbank-Zugriff auf 50+ verifizierte B2B-Händler & Produzenten (DE, PL, TR). Keine Zwischenhändler.' },
+                  { title: 'Contextual Intelligence', desc: 'Orion AI kennt Budget, Brand-DNA und Zielgruppe in jedem Modul.' },
+                  { title: 'Market Intelligence', desc: 'KI-Analyse von Community-Daten zur Identifikation von High-Performance Trends.' },
+                  { title: 'Compliance & Legal', desc: 'Automatisierte Verträge und IP-Schutz für alle Assets.' }
+                ].map((step) => (
+                  <div key={step.title} className="glass-card border border-white/10 rounded-2xl p-5 bg-black/30 backdrop-blur-sm hover:border-(--accent)/30 transition-colors">
+                    <div className="text-sm font-bold text-white mb-1">
+                      {step.title}
+                    </div>
+                    <div className="text-[11px] text-white/50 leading-snug">{step.desc}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-wrap gap-3 pt-4">
                 <Link
                   href="/ventures"
                   className="rounded-full border border-[#D4AF37]/40 bg-[#D4AF37] px-6 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-black hover:opacity-90 transition-opacity"
                 >
-                  Forge betreten
+                  System starten
                 </Link>
-                <Link
-                  href="#transparency-preview"
-                  className="rounded-full border border-white/10 bg-white/5 px-6 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-white/70 hover:text-white transition-colors"
-                >
-                  Ablauf ansehen
-                </Link>
-              </div>
-
-              <div className="grid sm:grid-cols-2 gap-4 text-xs text-white/60">
-                {[
-                  { label: '1. Venture anlegen', desc: 'Brand DNA + Zielmarkt definieren' },
-                  { label: '2. Forge Output', desc: 'Texte, Bilder, Videos generieren' },
-                  { label: '3. Kampagne bauen', desc: 'Assets direkt strukturieren' },
-                  { label: '4. Media Wall', desc: 'Ergebnisse sauber archivieren' }
-                ].map((step) => (
-                  <div key={step.label} className="glass-card border border-white/10 rounded-2xl p-4 bg-black/30 backdrop-blur-sm">
-                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">
-                      {step.label}
-                    </div>
-                    <div className="text-sm text-white mt-1">{step.desc}</div>
-                  </div>
-                ))}
               </div>
             </div>
 
@@ -555,25 +567,25 @@ export default function Home() {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30">
-                    Forge Modules
+                    Live Modules
                   </div>
-                  <h3 className="text-2xl font-instrument-serif text-white">Was direkt drin ist</h3>
+                  <h3 className="text-2xl font-instrument-serif text-white">Integrierte Lösung</h3>
                 </div>
-                <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[9px] font-black uppercase tracking-[0.3em] text-white/50">
-                  Live System
+                <div className="flex items-center gap-2 rounded-full border border-green-500/20 bg-green-500/10 px-3 py-1 text-[9px] font-black uppercase tracking-[0.3em] text-green-500">
+                  Operational
                 </div>
               </div>
 
               <div className="space-y-4">
                 {[
-                  { icon: Sparkles, title: 'Marketing Studio', desc: 'Kopien, Ads, Posts, Hooks & Skripte.' },
-                  { icon: Image, title: 'Media Studio', desc: 'Bilder generieren, veredeln und versionieren.' },
-                  { icon: Film, title: 'Video Studio', desc: 'Clips, Creatives, Sequenzen (in Arbeit).' },
-                  { icon: Layers, title: 'Chain Builder', desc: 'Mehrere Clips zu einem Flow verbinden.' },
-                  { icon: Scale, title: 'Legal Studio', desc: 'Verträge, NDA & Compliance (bald live).' }
+                  { icon: Truck, title: 'Sourcing Studio', desc: 'Lieferanten-Datenbank & Order Management.' },
+                  { icon: MessageSquare, title: 'Community Brain', desc: 'Kollektive Intelligenz & KI-Trendscouting.' },
+                  { icon: Sparkles, title: 'Marketing Studio', desc: 'Brand-Aware Copywriting & Campaigning.' },
+                  { icon: Film, title: 'Media Factory', desc: 'Veo 3.1 & Flux für High-Fidelity Assets.' },
+                  { icon: Cpu, title: 'Capital Control', desc: 'Transparente Verwaltung der gepoolten Mittel.' }
                 ].map((module) => (
                   <div key={module.title} className="flex gap-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 hover:bg-white/10 transition-colors">
-                    <div className="h-10 w-10 rounded-xl border border-white/10 bg-black/40 flex items-center justify-center">
+                    <div className="h-10 w-10 rounded-xl border border-white/10 bg-black/40 flex items-center justify-center shrink-0">
                       <module.icon className="w-5 h-5 text-[#D4AF37]" />
                     </div>
                     <div>
@@ -586,6 +598,8 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+
 
         {/* Media Wall Preview */}
         <section id="media-preview" className="relative py-24 px-4 md:px-6">
@@ -678,230 +692,149 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Transparency Preview */}
-        <section id="transparency-preview" className="py-24 px-4 md:px-6 relative">
-          <div className="max-w-6xl mx-auto grid lg:grid-cols-[1.1fr_0.9fr] gap-12 items-center">
-            <div className="space-y-6">
-              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30">
-                Finanz-Protokoll
+        {/* Veo Section - MOVED DOWN */}
+        <section id="veo" className="relative py-24 px-4 md:px-6 overflow-hidden border-t border-white/5">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(212,175,55,0.1),_transparent_60%)] opacity-60" />
+          <div className="max-w-6xl mx-auto relative">
+            <div className="max-w-3xl mx-auto mb-12 space-y-4 text-center">
+              <div className="inline-flex items-center gap-3 rounded-full bg-white/10 px-4 py-2 ring-1 ring-white/15 backdrop-blur">
+                <img
+                  src="/partners/Google_Gemini_icon_2025.svg"
+                  alt="Gemini"
+                  className="h-4 w-4 opacity-80"
+                />
+                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/80">Exklusiv</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-(--accent)">Veo 3.1</span>
               </div>
-              <h2 className="text-4xl md:text-5xl font-instrument-serif text-white leading-tight">
-                Transparenz, die man sieht.
-              </h2>
-              <p className="text-sm text-white/50 leading-relaxed max-w-lg">
-                Jeder Euro, jede Bewegung und jeder Status ist nachvollziehbar. Das Finanz-Dashboard
-                ist kein PDF, sondern ein live gepflegtes System mit Export-Logik.
-              </p>
-              <div className="flex flex-wrap gap-3">
-                <Link
-                  href="/transparency"
-                  className="rounded-full border border-white/10 bg-white/5 px-6 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-white/70 hover:text-white transition-colors"
-                >
-                  Zum Protokoll
-                </Link>
-                <Link
-                  href="/media"
-                  className="rounded-full border border-white/10 bg-transparent px-6 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-white/40 hover:text-white transition-colors"
-                >
-                  Media Wall
-                </Link>
-              </div>
-            </div>
+                                <h2 className="text-3xl md:text-5xl font-instrument-serif text-white leading-tight">
+                                  Integrierte<br/>Media-Infrastruktur.
+                                </h2>
+                                <p className="text-sm md:text-base text-white/60 leading-relaxed">
+                                  Hocheffiziente Asset-Produktion auf Enterprise-Niveau. Unsere Pipeline verknüpft führende KI-Modelle wie Veo 3.1, ElevenLabs und Flux zu einem nahtlosen Workflow für konsistenten, performanten Content.
+                                </p>            </div>
 
-            <Hero195 className="relative overflow-hidden border border-white/10 bg-black/40 backdrop-blur-md">
-              <BorderBeam size={240} duration={14} anchor={70} colorFrom="#D4AF37" colorTo="#8B5CF6" />
-              <div className="relative p-8">
-                <div className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em] mb-3">
-                  Demo Snapshot
-                </div>
-                <h3 className="text-2xl font-instrument-serif text-white mb-2">Live Treasury Preview</h3>
-                <p className="text-sm text-white/50">
-                  Beispielwerte zur Orientierung. Im System siehst du den echten Ledger in Echtzeit.
-                </p>
-                <div className="mt-6 grid grid-cols-2 gap-4">
-                  {[
-                    { label: 'Einnahmen', value: '€48.000' },
-                    { label: 'Ausgaben', value: '€12.400' },
-                    { label: 'Verfügbar', value: '€35.600' },
-                    { label: 'Runway', value: '12 Monate' },
-                  ].map((item) => (
-                    <div
-                      key={item.label}
-                      className="rounded-xl border border-white/10 bg-white/5 px-4 py-3"
-                    >
-                      <div className="text-[8px] font-black text-white/30 uppercase tracking-[0.3em]">
-                        {item.label}
-                      </div>
-                      <div className="text-lg font-instrument-serif text-white">{item.value}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </Hero195>
-          </div>
-        </section>
-
-        {/* System Status - Glass Style */}
-        <section id="status" className="py-24 px-4 md:px-6 relative border-y border-white/5 bg-black/20 backdrop-blur-sm">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-12">
-              <div>
-                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mb-4">System Status</div>
-                <h2 className="text-4xl md:text-6xl font-instrument-serif text-white leading-tight">
-                  Was live ist.<br />Was neu ist.<br />Was als Nächstes kommt.
-                </h2>
-              </div>
-              <p className="text-sm text-white/50 max-w-xl leading-relaxed">
-                Basierend auf dem aktuellen Build: Kern-Workflow ist live, die Community-Schicht
-                wurde in den letzten 24h stark erweitert, und die nächsten Studios stehen im Rollout.
-              </p>
-            </div>
-
-            <div className="grid lg:grid-cols-3 gap-6">
-              <div className="glass-card border border-white/10 rounded-2xl p-6 space-y-5 bg-black/40 backdrop-blur-md">
-                <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">Live Now</div>
-                <ul className="space-y-4 text-sm text-white/70">
-                  <li className="flex items-start gap-3">
-                    <Check className="w-4 h-4 text-(--accent) mt-0.5" />
-                    Founder Cockpit, Venture Wizard, Decision Hall + Roadmap Voting
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <Check className="w-4 h-4 text-(--accent) mt-0.5" />
-                    Brand DNA Studio + Legal Studio (Verträge & Compliance)
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <Check className="w-4 h-4 text-(--accent) mt-0.5" />
-                    Marketing Studio (AI Content) + Sourcing Studio (Core Workflows)
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <Check className="w-4 h-4 text-(--accent) mt-0.5" />
-                    Forum, Profile, Notifications und Founder-Identität
-                  </li>
-                </ul>
-              </div>
-
-              <div className="glass-card border border-white/10 rounded-2xl p-6 space-y-5 bg-black/40 backdrop-blur-md">
-                <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">Aktuelle Updates</div>
-                <ul className="space-y-4 text-sm text-white/70">
-                  <li className="flex items-start gap-3">
-                    <Zap className="w-4 h-4 text-(--accent) mt-0.5" />
-                    Orion Forum AI mit Kontext-Injection + Insight-Labels
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <Zap className="w-4 h-4 text-(--accent) mt-0.5" />
-                    Threaded Comments, Likes/Votes, Edit/Delete & Uploads
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <Zap className="w-4 h-4 text-(--accent) mt-0.5" />
-                    Direct Messages mit Inbox, Thread-Ansicht und User-Search
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <Zap className="w-4 h-4 text-(--accent) mt-0.5" />
-                    Rate Limits, Validierung & robuster Notification-Flow
-                  </li>
-                </ul>
-              </div>
-
-              <div className="glass-card border border-white/10 rounded-2xl p-6 space-y-5 bg-black/40 backdrop-blur-md">
-                <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">Als Nächstes</div>
-                <ul className="space-y-4 text-sm text-white/70">
-                  <li className="flex items-start gap-3">
-                    <Target className="w-4 h-4 text-(--accent) mt-0.5" />
-                    Admin Studio: Budget, Team-Management, Permissions
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <Target className="w-4 h-4 text-(--accent) mt-0.5" />
-                    Marketing Studio 2.0: Kampagnen-Manager + Content Kalender
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <Target className="w-4 h-4 text-(--accent) mt-0.5" />
-                    Sourcing Studio 2.0: Supplier DB, Samples, Production Orders
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <Target className="w-4 h-4 text-(--accent) mt-0.5" />
-                    Analytics, Stripe Connect Payouts, Mobile & Public API
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
-
-         {/* Philosophy & Principles - Combined */}
-        <section id="philosophy" className="py-40 px-4 md:px-6 relative overflow-hidden border-b border-white/5">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-20 items-start mb-32">
-              <div>
-                <h2 className="text-5xl md:text-7xl font-instrument-serif text-white mb-8 leading-tight animate-fade-slide-in-1">
-                  Institutional Grade.<br/>
-                  <span className="text-(--accent)">Community Powered.</span>
-                </h2>
-                <p className="text-lg text-white/50 leading-relaxed animate-fade-slide-in-2">
-                  Wir ersetzen den veralteten VC-Ansatz durch Schwarmintelligenz.
-                  Weniger Risiko für den Einzelnen, mehr Upside für alle.
-                </p>
-              </div>
-
-              <div className="space-y-8 sm:space-y-12">
+            <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10 items-center">
+              <div className="order-2 lg:order-1 space-y-4">
                 {[
                   {
-                    icon: Users,
-                    title: "Kollektives Eigentum",
-                    desc: "Keine stillen Teilhaber. Jeder Founder hält Anteile, jeder hat Stimmrecht. Das Projekt gehört uns."
+                    step: '1',
+                    title: 'Identität',
+                    desc: 'Foto von dir oder deinem Model.',
+                    accent: 'border-[#D4AF37]/40 text-[#D4AF37]',
                   },
                   {
-                    icon: Layers,
-                    title: "Meritokratischer Stack",
-                    desc: "Die besten Ideen gewinnen. Wir nutzen Voting-Mechanismen um Produktentscheidungen zu treffen."
+                    step: '2',
+                    title: 'Objekt',
+                    desc: 'Dein Produkt-Shot in Nahaufnahme.',
+                    accent: 'border-white/15 text-white/80',
                   },
                   {
-                    icon: Shield,
-                    title: "Risiko-Minimierung",
-                    desc: "Statt 50k alleine zu riskieren, splitten wir das Risiko. Maximale Hebelwirkung bei minimalem Einsatz."
-                  }
-                ].map((feature, i) => (
-                  <div key={i} className="flex flex-col sm:flex-row gap-4 sm:gap-6 group">
-                    <div className="shrink-0">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:border-(--accent) group-hover:bg-(--accent)/10 transition-all duration-500 bg-black/20 backdrop-blur-sm">
-                        <feature.icon className="w-4 h-4 sm:w-5 sm:h-5 text-white/60 group-hover:text-(--accent) transition-colors" />
-                      </div>
+                    step: '3',
+                    title: 'Stil',
+                    desc: 'Farben & Vibe deiner Brand.',
+                    accent: 'border-white/15 text-white/80',
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.step}
+                    className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 backdrop-blur-sm hover:border-[#D4AF37]/40 transition-all"
+                  >
+                    <div className={`h-10 w-10 rounded-full border ${item.accent} flex items-center justify-center text-xs font-black`}>
+                      {item.step}
                     </div>
                     <div>
-                      <h3 className="text-xl sm:text-2xl font-instrument-serif text-white mb-1 sm:mb-2 group-hover:text-(--accent) transition-colors">{feature.title}</h3>
-                      <p className="text-white/50 text-xs sm:text-sm leading-relaxed max-w-md">{feature.desc}</p>
+                      <div className="text-sm font-semibold text-white">{item.title}</div>
+                      <div className="text-xs text-white/50">{item.desc}</div>
                     </div>
                   </div>
                 ))}
+                <p className="text-sm text-white/60 leading-relaxed">
+                  Das Resultat: Ein nahtloses Marketing-Video, das deine Brand-DNA atmet.
+                </p>
+                <div className="flex flex-wrap items-center gap-4">
+                  <Link
+                    href="#apply"
+                    className="rounded-full bg-[#D4AF37] px-6 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-black hover:brightness-110 transition"
+                  >
+                    Jetzt erste Sequenz generieren
+                  </Link>
+                  <span className="text-[10px] uppercase tracking-[0.3em] text-white/40">
+                    Vollständig kommerziell nutzbar. Generiert mit lizenzierten Modellen über die Forge-Pipeline.
+                  </span>
+                </div>
+              </div>
+
+              <div className="order-1 lg:order-2 flex lg:justify-end">
+                <div className="relative aspect-[9/16] w-full max-w-[320px] sm:max-w-[360px] lg:max-w-[340px] xl:max-w-[380px] overflow-hidden rounded-2xl border border-white/10 bg-black/40 shadow-[0_0_60px_rgba(0,0,0,0.35)]">
+                  <div className="absolute inset-0">
+                    <VideoPreview
+                      src="/Veo/veo_make_person_to_video.mp4"
+                      className="h-full w-full"
+                      mediaClassName="h-full w-full object-cover"
+                      enableHover={false}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* --- THE FOUNDER OS (Feature Stack) --- */}
-            <div className="mt-40 border-t border-white/5 pt-20">
-               <ForgeOSShowcase />
+            <div className="mt-12">
+              <div className="relative aspect-[16/9] overflow-hidden rounded-2xl border border-white/10 bg-black/40 shadow-[0_0_60px_rgba(0,0,0,0.35)]">
+                <div className="absolute inset-0">
+                  <VideoPreview
+                    key={veoCarouselItems[veoCarouselIndex]?.src}
+                    src={veoCarouselItems[veoCarouselIndex]?.src}
+                    className="h-full w-full"
+                    mediaClassName="h-full w-full object-cover"
+                    enableHover={false}
+                  />
+                </div>
+                <div className="absolute top-4 left-4 rounded-full border border-white/10 bg-black/60 px-3 py-1 text-[9px] font-black uppercase tracking-[0.3em] text-white/60 backdrop-blur">
+                  {veoCarouselItems[veoCarouselIndex]?.label}
+                </div>
+                <div className="absolute inset-x-0 bottom-0 flex items-center justify-between px-4 pb-4">
+                  <button
+                    type="button"
+                    onClick={handleVeoPrev}
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/60 text-white/70 hover:text-white transition"
+                    aria-label="Vorheriges Video"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <div className="flex items-center gap-2">
+                    {veoCarouselItems.map((_, index) => (
+                      <button
+                        key={`veo-dot-${index}`}
+                        type="button"
+                        onClick={() => setVeoCarouselIndex(index)}
+                        className={`h-2 w-2 rounded-full transition ${index === veoCarouselIndex ? 'bg-[#D4AF37]' : 'bg-white/30'}`}
+                        aria-label={`Video ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleVeoNext}
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/60 text-white/70 hover:text-white transition"
+                    aria-label="Naechstes Video"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Principles - System Override */}
-        <section id="principles" className="py-40 px-4 md:px-6 relative overflow-hidden border-b border-white/5">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-(--accent)/5 rounded-full blur-[150px] pointer-events-none" />
-          
-          <div className="max-w-7xl mx-auto flex flex-col items-center relative z-10">
-            <div className="text-center mb-20">
-              <h2 className="text-5xl md:text-7xl font-instrument-serif text-white mb-6 tracking-tighter">System: Override.</h2>
-              <p className="text-white/40 uppercase tracking-[0.3em] text-[10px] font-bold">
-                Vergiss, was du über Startups gelernt hast. Das hier ist die Realität.
-              </p>
-            </div>
-            
-            <AnimatedCardStack />
-          </div>
-        </section>
 
-        {/* Featured Project - Mission Log Style */}
-        <section id="projects" className="relative overflow-hidden border-y border-white/5 backdrop-blur-sm">
-          <MissionLogCarousel />
-        </section>
+
+
+
+
+
+
+
+
 
         {/* --- SHOP STACK --- */}
         <section className="py-20 px-4 md:px-6 relative border-y border-white/5 bg-black/20 backdrop-blur-sm">
@@ -912,14 +845,12 @@ export default function Home() {
                     Forge Shop.<br/><span className="text-(--accent)">Ready to Sell.</span>
                   </h2>
                   <p className="text-lg text-white/60 mb-8 leading-relaxed">
-                    Der Shop ist die Verkaufsebene für alle Founder-Brands. Ihr bekommt eine erprobte
-                    Storefront-Experience, die sich schnell branden lässt, plus einen klaren Launch-Flow
-                    aus Forge-Studios und Community-Execution.
+                    Der Shop ist deine Startrampe. Nutze unsere optimierte Storefront-Experience für einen blitzschnellen Marktstart oder lass uns dein individuelles Shopify-System inklusive aller Forge-Integrations einrichten.
                   </p>
                   <ul className="space-y-4 mb-8">
                     <li className="flex items-center gap-3 text-sm text-white/80">
                       <div className="w-1.5 h-1.5 rounded-full bg-(--accent) shadow-[0_0_10px_rgba(212,175,55,0.8)]" />
-                      Founder erhalten Zugriff auf den Shop-Stack
+                      Wahlweise Forge-Stack oder Shopify-Anbindung
                     </li>
                     <li className="flex items-center gap-3 text-sm text-white/80">
                       <div className="w-1.5 h-1.5 rounded-full bg-(--accent) shadow-[0_0_10px_rgba(212,175,55,0.8)]" />
@@ -927,7 +858,7 @@ export default function Home() {
                     </li>
                     <li className="flex items-center gap-3 text-sm text-white/80">
                       <div className="w-1.5 h-1.5 rounded-full bg-(--accent) shadow-[0_0_10px_rgba(212,175,55,0.8)]" />
-                      Launch-Setup in Verbindung mit Sourcing, Marketing & Legal
+                      Vollständige Synchronisation mit Sourcing & Logistik
                     </li>
                   </ul>
                   <div className="flex flex-wrap gap-4">
@@ -986,200 +917,37 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Pricing / Join */}
+        {/* --- JOIN & ACCESS SECTION --- */}
         <section id="pricing" className="py-40 px-4 md:px-6 relative overflow-hidden">
-           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-(--accent)/5 rounded-full blur-[150px] pointer-events-none" />
-           <div className="max-w-7xl mx-auto relative z-10">
-              <div className="text-center mb-32">
-                 <h2 className="text-5xl md:text-7xl font-instrument-serif text-white mb-6">Mitgliedschaften</h2>
-                 <p className="text-white/40 uppercase tracking-[0.3em] text-[10px] font-bold">Beta-Phase aktiv – Zugang aktuell kostenlos.</p>
+           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-(--accent)/5 rounded-full blur-[150px] pointer-events-none" />
+           
+           <div className="max-w-3xl mx-auto relative z-10">
+              <div className="bg-[#0F1113]/90 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden relative group transition-all duration-700 hover:border-(--accent)/30">
+                <div className="absolute inset-0 bg-linear-to-br from-(--accent)/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                
+                {/* Terminal Header */}
+                <div className="h-12 bg-white/3 border-b border-white/10 flex items-center px-6 gap-2">
+                    <div className="w-3 h-3 rounded-full bg-[#FF5F56] opacity-80" />
+                    <div className="w-3 h-3 rounded-full bg-[#FFBD2E] opacity-80" />
+                    <div className="w-3 h-3 rounded-full bg-[#27C93F] opacity-80" />
+                    <div className="ml-4 text-[10px] font-mono text-white/20 uppercase tracking-widest">Operator Terminal v1.0.4</div>
+                </div>
+
+                <div className="p-8 sm:p-12">
+                  <div className="relative z-10">
+                    <div className="flex flex-col mb-10 text-center">
+                      <div className="w-14 h-14 rounded-2xl bg-(--accent)/10 border border-(--accent)/20 flex items-center justify-center mb-6 mx-auto">
+                        <Zap className="w-7 h-7 text-(--accent)" />
+                      </div>
+                      <h2 className="text-4xl font-instrument-serif text-white mb-3 tracking-tight">Sequenz Starten</h2>
+                      <p className="text-white/40 text-sm font-medium uppercase tracking-widest">Identität bestätigen & Systemzugriff anfordern</p>
+                    </div>
+
+                    <LoginFormInline />
+                  </div>
+                </div>
               </div>
-              <PricingTable 
-                isLoading={false} 
-                onSelectPlan={() => document.getElementById('apply')?.scrollIntoView({ behavior: 'smooth' })} 
-              />
            </div>
-        </section>
-
-        {/* The Application Interface */}
-        <section id="apply" className="py-40 px-4 relative">
-          <div className="max-w-3xl mx-auto relative z-10">
-            <div className="mb-20 text-center">
-              <h2 className="text-5xl md:text-6xl font-instrument-serif text-white mb-6">Sequenz Starten</h2>
-              <p className="text-white/40 uppercase tracking-[0.3em] text-[10px] font-bold">Zugang zur Schmiede anfordern.</p>
-            </div>
-
-            <div className="bg-[#0F1113]/80 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden relative group transition-all duration-700 hover:border-(--accent)/30">
-               <div className="absolute inset-0 bg-linear-to-br from-white/2 to-transparent pointer-events-none" />
-               
-               {/* Terminal Header */}
-               <div className="h-12 bg-white/3 border-b border-white/10 flex items-center px-6 gap-2">
-                  <div className="w-3 h-3 rounded-full bg-[#FF5F56] opacity-80" />
-                  <div className="w-3 h-3 rounded-full bg-[#FFBD2E] opacity-80" />
-                  <div className="w-3 h-3 rounded-full bg-[#27C93F] opacity-80" />
-                  <div className="ml-4 text-[10px] font-mono text-white/20 uppercase tracking-widest">Operator Terminal v1.0.4</div>
-               </div>
-
-               <div className="p-8 md:p-12">
-                  <form onSubmit={handleSubmit} className="relative z-10">
-                     {formStatus === 'success' ? (
-                        <div className="text-center py-12 animate-fade-in-up">
-                           <div className="w-16 h-16 rounded-full bg-green-500/10 text-green-500 flex items-center justify-center mx-auto mb-6 border border-green-500/20">
-                              <Check className="w-8 h-8" />
-                           </div>
-                           <h3 className="text-xl font-bold mb-2">Request Transmitted</h3>
-                           <p className="text-sm text-(--muted-foreground)">Check your inbox for the encrypted key.</p>
-                        </div>
-                     ) : (
-                        <>
-                          {/* Step Indicator */}
-                          <div className="flex gap-2 mb-10">
-                             {[1, 2, 3].map(s => (
-                                <div key={s} className={`h-1 flex-1 rounded-full transition-all duration-500 ${currentStep >= s ? 'bg-(--accent)' : 'bg-white/5'}`} />
-                             ))}
-                          </div>
-
-                          {currentStep === 1 && (
-                             <div className="animate-fade-in-up">
-                                <label className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold mb-8 block">Zugang wählen</label>
-                                <div className="grid grid-cols-1 gap-6">
-                                   {/* Unified Login/Signup */}
-                                   <Link
-                                      href="/login"
-                                      className="p-8 sm:p-12 rounded-2xl border border-[#D4AF37]/30 bg-[#D4AF37]/5 hover:border-[#D4AF37] hover:bg-[#D4AF37]/10 transition-all text-center group relative overflow-hidden"
-                                   >
-                                      <div className="absolute top-0 right-0 p-2 sm:p-3 bg-[#D4AF37] text-black text-[7px] sm:text-[8px] font-black uppercase tracking-widest rounded-bl-xl">
-                                         Sofort-Start
-                                      </div>
-                                      <div className="flex flex-col items-center gap-4 mb-4">
-                                         <div className="w-16 h-16 rounded-2xl border-2 border-[#D4AF37] bg-[#D4AF37]/10 flex items-center justify-center">
-                                            <Zap className="w-8 h-8 text-[#D4AF37]" />
-                                         </div>
-                                         <div className="font-instrument-serif text-3xl sm:text-4xl text-white group-hover:text-(--accent) transition-colors">
-                                            Login / Anmelden
-                                         </div>
-                                      </div>
-                                      <div className="text-sm sm:text-base text-white/70 leading-relaxed max-w-lg mx-auto mb-6">
-                                         Starte mit <strong className="text-white">50 AI-Credits gratis</strong> und erkunde alle Forge-Studios.
-                                         Login mit Google oder Magic Link.
-                                      </div>
-                                      <div className="flex items-center justify-center gap-3 text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">
-                                         <span>Google Login</span>
-                                         <span className="w-1 h-1 rounded-full bg-white/20" />
-                                         <span>Magic Link</span>
-                                      </div>
-                                   </Link>
-
-                                   {/* Bewerbung für Batch-Partner */}
-                                   <div className="text-center py-4 border-t border-white/5">
-                                      <p className="text-xs text-white/40 mb-3 uppercase tracking-widest">
-                                         Interesse an aktiver Beteiligung?
-                                      </p>
-                                      <button
-                                         type="button"
-                                         onClick={handleNextStep}
-                                         className="text-sm text-[#D4AF37] hover:text-white font-bold uppercase tracking-widest transition-colors"
-                                      >
-                                         Als Batch-Partner bewerben →
-                                      </button>
-                                   </div>
-                                </div>
-                             </div>
-                          )}
-
-                          {currentStep === 2 && (
-                             <div className="animate-fade-in-up space-y-8">
-                                <label className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold block">Identitäts-Konfig</label>
-                                <div className="grid gap-4">
-                                   <input
-                                      type="text"
-                                      value={formData.name}
-                                      onChange={handleFormChange('name')}
-                                      className="w-full bg-white/2 border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-(--accent) focus:ring-0 outline-none transition-all placeholder:text-white/20"
-                                      placeholder="Vollständiger Name"
-                                   />
-                                   <input
-                                      type="email"
-                                      value={formData.email}
-                                      onChange={handleFormChange('email')}
-                                      className="w-full bg-white/2 border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-(--accent) focus:ring-0 outline-none transition-all placeholder:text-white/20"
-                                      placeholder="E-Mail Adresse"
-                                   />
-                                   {role === 'investor' && (
-                                       <select
-                                         value={formData.capital}
-                                         onChange={handleFormChange('capital')}
-                                         className="w-full bg-white/2 border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-(--accent) focus:ring-0 outline-none transition-all [&>option]:bg-black"
-                                       >
-                                          <option value="">Kapitalziel wählen...</option>
-                                          <option value="12.5k">✨ 12.5k (Validator Batch)</option> {/* NEU HINZUGEFÜGT */}
-                                          <option value="25k">25k (Standard Batch)</option>
-                                          <option value="50k">50k (Growth Tier)</option>
-                                          <option value="100k">100k (Scale Tier)</option>
-                                       </select>
-                                   )}
-                                   {role === 'builder' && (
-                                      <input
-                                         type="text"
-                                         value={formData.skill}
-                                         onChange={handleFormChange('skill')}
-                                         className="w-full bg-white/2 border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-(--accent) focus:ring-0 outline-none transition-all placeholder:text-white/20"
-                                         placeholder="Kern-Skill (z.B. Next.js, Marketing)"
-                                      />
-                                   )}
-                                </div>
-                                <div className="flex justify-between pt-4">
-                                   <button type="button" onClick={handlePrevStep} className="text-[10px] font-bold text-white/40 hover:text-white uppercase tracking-widest">ZURÜCK</button>
-                                   <button type="button" onClick={handleNextStep} disabled={!formData.name || !formData.email} className="text-[10px] font-bold text-(--accent) hover:opacity-80 disabled:opacity-30 uppercase tracking-widest">WEITER</button>
-                                </div>
-                             </div>
-                          )}
-
-                          {currentStep === 3 && (
-                             <div className="animate-fade-in-up space-y-8">
-                                <label className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold block">Manifest</label>
-                                <textarea
-                                   value={formData.why}
-                                   onChange={handleFormChange('why')}
-                                   rows={4}
-                                   className="w-full bg-white/2 border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-(--accent) focus:ring-0 outline-none transition-all placeholder:text-white/20 resize-none"
-                                   placeholder="Erzähl uns, warum du hierher gehörst."
-                                />
-                                 <input
-                                      type="text"
-                                      value={formData.instagram}
-                                      onChange={handleFormChange('instagram')}
-                                      className="w-full bg-white/2 border border-white/10 rounded-xl px-6 py-4 text-sm focus:border-(--accent) focus:ring-0 outline-none transition-all placeholder:text-white/20"
-                                      placeholder="LinkedIn / Social URL"
-                                   />
-                                
-                                {formMessage && <p className="text-red-500 text-[10px] text-center uppercase tracking-widest">{formMessage}</p>}
-
-                                <div className="flex justify-center py-4">
-                                  <Turnstile
-                                    siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
-                                    onSuccess={(token) => setTurnstileToken(token)}
-                                  />
-                                </div>
-
-                                <div className="flex justify-between pt-4">
-                                   <button type="button" onClick={handlePrevStep} className="text-[10px] font-bold text-white/40 hover:text-white uppercase tracking-widest">ZURÜCK</button>
-                                   <button 
-                                      type="submit" 
-                                      disabled={formStatus === 'loading' || !turnstileToken}
-                                      className="px-8 py-3 bg-(--accent) text-(--accent-foreground) rounded-xl text-[10px] font-bold hover:brightness-110 transition-all disabled:opacity-30 uppercase tracking-[0.2em]"
-                                   >
-                                      {formStatus === 'loading' ? 'ÜBERTRAGE...' : 'BEWERBUNG ABSCHICKEN'}
-                                   </button>
-                                </div>
-                             </div>
-                          )}
-                        </>
-                     )}
-                  </form>
-               </div>
-            </div>
-          </div>
         </section>
 
         {/* Footer */}
