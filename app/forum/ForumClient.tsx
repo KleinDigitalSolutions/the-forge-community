@@ -1203,14 +1203,7 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
     );
   };
 
-  const renderTrendingPanel = () => (
-    <div className="bg-[#121212] border border-white/10 rounded-2xl p-6">
-      <h4 className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-        <TrendingUp className="w-3.5 h-3.5 text-[#D4AF37]" /> Trending Topics
-      </h4>
-      <TrendingTopics />
-    </div>
-  );
+  const renderTrendingPanel = () => <TrendingTopics />;
 
   const renderGuidelinesPanel = () => (
     <div className="bg-[#121212] border border-white/10 rounded-2xl p-6">

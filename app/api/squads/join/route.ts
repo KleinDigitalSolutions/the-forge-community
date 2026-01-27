@@ -33,7 +33,8 @@ export async function POST(request: Request) {
     const squadResult = await sql`
       SELECT * FROM squads
       WHERE id = ${squad_id}
-        AND status = 'forming'
+        AND status IN ('forming', 'building')
+        AND is_public = true
         AND is_accepting_members = true
         AND current_members < max_members
       LIMIT 1

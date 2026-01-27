@@ -95,8 +95,12 @@ export default function SquadDetailPage() {
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
+  const [joinError, setJoinError] = useState('');
+  const [applicationSent, setApplicationSent] = useState(false);
 
   useEffect(() => {
+    setApplicationSent(false);
+    setJoinError('');
     fetchSquadDetails();
   }, [squadId]);
 
@@ -119,26 +123,27 @@ export default function SquadDetailPage() {
     }
   }
 
-  async function handleJoinSquad() {
+  async function handleJoinSquad(message: string) {
     setJoining(true);
+    setJoinError('');
     try {
       const res = await fetch('/api/squads/join', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ squad_id: squadId })
+        body: JSON.stringify({ squad_id: squadId, message })
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.error || 'Failed to join squad');
+        setJoinError(data.error || 'Bewerbung konnte nicht gesendet werden');
         return;
       }
 
       setShowJoinModal(false);
-      fetchSquadDetails(); // Refresh
+      setApplicationSent(true);
     } catch (err: any) {
-      alert(err.message || 'Failed to join squad');
+      setJoinError(err.message || 'Bewerbung konnte nicht gesendet werden');
     } finally {
       setJoining(false);
     }
@@ -206,16 +211,25 @@ export default function SquadDetailPage() {
             </div>
 
             <div className="flex flex-col gap-3">
-              {!squad.is_member && squad.is_accepting_members && (
+              {!squad.is_member && squad.is_accepting_members && !applicationSent && (
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => setShowJoinModal(true)}
+                  onClick={() => {
+                    setJoinError('');
+                    setShowJoinModal(true);
+                  }}
                   className="btn-shimmer bg-[var(--accent)] text-[var(--accent-foreground)] px-8 py-4 rounded-xl font-bold text-sm uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-[var(--accent)]/20"
                 >
                   <UserPlus className="w-5 h-5" />
-                  Squad Beitreten
+                  Jetzt bewerben
                 </motion.button>
+              )}
+
+              {applicationSent && (
+                <div className="px-8 py-4 rounded-xl border border-white/10 text-white/60 text-xs font-bold uppercase tracking-[0.2em] text-center">
+                  Bewerbung gesendet
+                </div>
               )}
 
               {isLead && (
@@ -399,6 +413,7 @@ export default function SquadDetailPage() {
             onClose={() => setShowJoinModal(false)}
             onJoin={handleJoinSquad}
             joining={joining}
+            error={joinError}
           />
         )}
       </PageShell>
@@ -629,7 +644,13 @@ function TransactionRow({ transaction }: { transaction: Transaction }) {
   );
 }
 
-function JoinModal({ squad, onClose, onJoin, joining }: any) {
+function JoinModal({ squad, onClose, onJoin, joining, error }: any) {
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    setMessage('');
+  }, [squad?.id]);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -647,22 +668,22 @@ function JoinModal({ squad, onClose, onJoin, joining }: any) {
           <div className="w-20 h-20 rounded-2xl bg-[var(--accent)]/10 border border-[var(--accent)]/20 flex items-center justify-center mx-auto mb-6 text-[var(--accent)] text-4xl font-instrument-serif">
             {squad.name.charAt(0)}
           </div>
-          <h2 className="text-3xl font-instrument-serif text-white mb-2">Squad beitreten?</h2>
+          <h2 className="text-3xl font-instrument-serif text-white mb-2">Bewerbung senden</h2>
           <p className="text-white/60">
-            Du wirst Mitglied von <strong>{squad.name}</strong>
+            Deine Bewerbung geht direkt an den Lead von <strong>{squad.name}</strong>
           </p>
         </div>
 
-        <div className="space-y-4 mb-8">
+        <div className="space-y-4 mb-6">
           <div className="p-4 rounded-xl bg-white/[0.03] border border-white/5">
-            <div className="text-xs text-white/40 mb-1">Equity Share</div>
+            <div className="text-xs text-white/40 mb-1">Potenzielle Equity (Richtwert)</div>
             <div className="text-2xl font-bold text-white">
               {Number((100 / (squad.currentMembers + 1))).toFixed(1)}%
             </div>
           </div>
 
           <div className="p-4 rounded-xl bg-white/[0.03] border border-white/5 text-sm text-white/60">
-            <p className="mb-2">Als Mitglied erhältst du:</p>
+            <p className="mb-2">Nach Annahme erhältst du:</p>
             <ul className="space-y-1 text-xs">
               <li>• Zugriff auf Squad Forum & Resources</li>
               <li>• Mitbestimmungsrecht bei Entscheidungen</li>
@@ -670,6 +691,25 @@ function JoinModal({ squad, onClose, onJoin, joining }: any) {
             </ul>
           </div>
         </div>
+
+        <div className="mb-6">
+          <label className="block text-[10px] font-bold text-white/40 uppercase tracking-[0.3em] mb-2">
+            Nachricht (optional)
+          </label>
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            rows={3}
+            className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-[var(--accent)] transition-all resize-none"
+            placeholder="Kurz sagen, warum du reinpasst."
+          />
+        </div>
+
+        {error && (
+          <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+            {error}
+          </div>
+        )}
 
         <div className="flex gap-4">
           <button
@@ -679,11 +719,11 @@ function JoinModal({ squad, onClose, onJoin, joining }: any) {
             Abbrechen
           </button>
           <button
-            onClick={onJoin}
+            onClick={() => onJoin(message)}
             disabled={joining}
             className="flex-1 bg-[var(--accent)] text-[var(--accent-foreground)] px-6 py-4 rounded-xl font-bold text-sm uppercase tracking-widest disabled:opacity-50"
           >
-            {joining ? 'Beitrete...' : 'Jetzt beitreten'}
+            {joining ? 'Sende...' : 'Bewerbung senden'}
           </button>
         </div>
       </motion.div>
