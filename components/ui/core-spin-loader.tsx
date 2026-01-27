@@ -42,18 +42,18 @@ export function CoreSpinLoader({
   const palette =
     variant === 'forge'
       ? {
-          baseGlow: 'bg-[#ff6a00]/20',
-          outerRing: 'border-[#fec700]/40',
-          mainArc: 'border-t-[#ff6a00]',
-          mainShadow: 'shadow-[0_0_12px_rgba(255,106,0,0.6)]',
-          reverseArc: 'border-b-[#fec700]/80',
-          reverseShadow: 'shadow-[0_0_10px_rgba(254,199,0,0.4)]',
-          innerRing: 'border-l-[#ff6a00]/70',
-          dot: 'bg-[#fec700]',
-          dotShadow: 'shadow-[0_0_8px_rgba(254,199,0,0.9)]',
-          core: 'bg-[#ff6a00]',
-          coreShadow: 'shadow-[0_0_15px_rgba(255,106,0,0.8)]',
-          text: 'text-[#fec700]'
+          baseGlow: 'bg-[#D4AF37]/20',
+          outerRing: 'border-[#D4AF37]/45',
+          mainArc: 'border-t-[#D4AF37]',
+          mainShadow: 'shadow-[0_0_12px_rgba(212,175,55,0.6)]',
+          reverseArc: 'border-b-[#F0C05A]/80',
+          reverseShadow: 'shadow-[0_0_10px_rgba(240,192,90,0.4)]',
+          innerRing: 'border-l-[#D4AF37]/70',
+          dot: 'bg-[#F0C05A]',
+          dotShadow: 'shadow-[0_0_8px_rgba(240,192,90,0.9)]',
+          core: 'bg-[#D4AF37]',
+          coreShadow: 'shadow-[0_0_15px_rgba(212,175,55,0.8)]',
+          text: 'text-[#D4AF37]'
         }
       : variant === 'alien'
       ? {

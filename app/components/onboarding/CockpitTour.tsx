@@ -220,15 +220,13 @@ export function CockpitTour({ initialHasSeenTour, isNavOpen, onNavOpenChange, on
       <div className="absolute inset-0 bg-black/65 pointer-events-auto" />
 
       {anchorFound && (
-        <motion.div
-          animate={{ boxShadow: ['0 0 0 2px rgba(212,175,55,0.2)', '0 0 0 8px rgba(212,175,55,0.4)', '0 0 0 2px rgba(212,175,55,0.2)'] }}
-          transition={{ repeat: Infinity, duration: 2 }}
-          className="absolute rounded-2xl border-2 border-[#D4AF37]"
+        <div
+          className="absolute rounded-2xl border border-white/10"
           style={{
-            top: coords.top - 12,
-            left: coords.left - 12,
-            width: coords.width + 24,
-            height: coords.height + 24
+            top: coords.top - 8,
+            left: coords.left - 8,
+            width: coords.width + 16,
+            height: coords.height + 16
           }}
         />
       )}

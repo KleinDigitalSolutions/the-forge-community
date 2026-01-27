@@ -163,45 +163,18 @@ export default function CockpitControl({
           ref={parallaxRef}
           className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
         >
-          <div className={`transition-all duration-1000 absolute w-[300px] h-[300px] bg-cyan-400/10 rounded-full ${isOpen ? 'scale-150 opacity-40' : 'scale-100 opacity-20'}`} />
+          <div className={`transition-all duration-1000 absolute w-[300px] h-[300px] bg-[#D4AF37]/15 rounded-full ${isOpen ? 'scale-150 opacity-45' : 'scale-100 opacity-25'}`} />
           
           {/* Rotating Tech Rings (Subtle) */}
           <motion.div 
             animate={{ rotate: 360 }}
             transition={{ duration: 100, repeat: Infinity, ease: "linear" }}
-            className="absolute w-[min(640px,80vw)] h-[min(640px,80vw)] rounded-full border border-white/5 opacity-30"
+            className="absolute w-[min(640px,80vw)] h-[min(640px,80vw)] rounded-full border border-[#D4AF37]/15 opacity-35"
           />
         </div>
       )}
 
-      {/* --- CONNECTOR LINES LAYER (Behind everything) --- */}
-      <svg
-        className="absolute inset-0 w-full h-full pointer-events-none overflow-visible z-10"
-        viewBox={`0 0 ${orbitSize} ${orbitSize}`}
-      >
-        <AnimatePresence>
-          {isOpen && menuItems.map((item, index) => {
-            const angle = startAngle + index * angleStep;
-            const radian = (angle * Math.PI) / 180;
-            const cx = orbitSize / 2;
-            const cy = orbitSize / 2;
-            
-            // Start under the main button
-            const startX = cx; 
-            const startY = cy;
-            
-            // End under the satellite button
-            const endX = cx + Math.cos(radian) * orbitRadius;
-            const endY = cy + Math.sin(radian) * orbitRadius;
-
-            return (
-              <motion.g key={`line-${index}`}>
-                <motion.circle cx={endX} cy={endY} r="3" fill={item.color} opacity="0.25" />
-              </motion.g>
-            );
-          })}
-        </AnimatePresence>
-      </svg>
+      {/* Connector dots removed */}
 
       {/* --- CENTRAL CONTROL --- */}
       <div className="relative z-50">
@@ -260,7 +233,7 @@ export default function CockpitControl({
           
           {/* Orbit Ring Animation */}
           {!minimal && (
-            <div className="absolute inset-[-8px] rounded-full border border-white/5 border-t-cyan-300/60 animate-spin-slow pointer-events-none" />
+            <div className="absolute inset-[-8px] rounded-full border border-[#D4AF37]/20 border-t-[#D4AF37]/70 animate-spin-slow pointer-events-none" />
           )}
         </motion.button>
 
@@ -367,41 +340,20 @@ function SatelliteContent({ item }: { item: any }) {
 
   return (
     <div className="flex flex-col items-center gap-2 group">
-      {/* Icon Circle - PREMIUM TECH LOOK */}
-      <div className="relative w-16 h-16 transition-all duration-500 group-hover:scale-110">
-        
-        {/* Main Button Body */}
-        <div 
-          className="relative w-full h-full rounded-2xl bg-linear-to-br from-white/10 to-transparent border border-white/10 flex items-center justify-center shadow-[0_0_30px_rgba(0,0,0,0.8)] overflow-hidden"
-          style={{ backdropFilter: 'blur(8px)' }}
-        >
-          {/* Inner Glow */}
-          <div className="absolute inset-0 bg-[#D4AF37]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          
-          {/* Scanlines Overlay */}
-          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 pointer-events-none" />
-          
-          {/* Top Shine */}
-          <div className="absolute top-0 left-0 right-0 h-[1px] bg-linear-to-r from-transparent via-white/20 to-transparent" />
-
-          <item.icon className="w-6 h-6 text-white/60 transition-all duration-300 group-hover:text-white" />
-          
-          {badge > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1.5 rounded-full bg-linear-to-br from-[#D4AF37] to-amber-600 text-[9px] font-black text-black flex items-center justify-center shadow-[0_0_15px_rgba(212,175,55,0.6)] z-10">
-              {badgeText}
-            </span>
-          )}
-        </div>
-
-        {/* Decorative Corner Brackets (Tech Detail) */}
-        <div className="absolute -top-1 -left-1 w-2 h-2 border-t border-l border-[#D4AF37]/0 group-hover:border-[#D4AF37]/60 transition-all duration-500" />
-        <div className="absolute -bottom-1 -right-1 w-2 h-2 border-b border-r border-[#D4AF37]/0 group-hover:border-[#D4AF37]/60 transition-all duration-500" />
+      {/* Simple Icon */}
+      <div className="relative w-12 h-12 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+        <item.icon className="w-7 h-7 text-[#D4AF37]" />
+        {badge > 0 && (
+          <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-[#D4AF37] text-[8px] font-black text-black flex items-center justify-center">
+            {badgeText}
+          </span>
+        )}
       </div>
-      <div className="text-center">
-        <div className="text-[9px] font-black uppercase tracking-[0.35em] text-white/70 group-hover:text-white transition-colors">
+      <div className="text-center antialiased">
+        <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/85 group-hover:text-white transition-colors">
           {item.label}
         </div>
-        <div className="text-[9px] uppercase tracking-[0.2em] text-white/35">
+        <div className="text-[10px] uppercase tracking-[0.12em] text-white/55">
           {item.description}
         </div>
       </div>
