@@ -295,6 +295,7 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
   const [hasMore, setHasMore] = useState(true);
 
   const [user, setUser] = useState<UserProfile | null>(initialUser);
+  const [forumVentureIdState, setForumVentureIdState] = useState<string | null>(forumVentureId ?? null);
   const [content, setContent] = useState('');
   const [activeChannel, setActiveChannel] = useState('All');
   const [sortMode, setSortMode] = useState('Hot');
@@ -370,6 +371,17 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
       const res = await fetch('/api/me');
       if (res.ok) setUser(await res.json());
     } catch (e) { console.error(e); }
+  };
+
+  const fetchForumVentureId = async () => {
+    try {
+      const res = await fetch('/api/forum/venture');
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data?.id) setForumVentureIdState(data.id);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   // Reset Feed when Channel/Sort changes
@@ -473,6 +485,12 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
     if (!initialUser) fetchUser();
     // fetchPosts wird initial durch den useEffect([activeChannel, sortMode]) getriggert, da diese default gesetzt sind
   }, [initialUser]);
+
+  useEffect(() => {
+    if (user && !forumVentureIdState) {
+      fetchForumVentureId();
+    }
+  }, [user?.id, forumVentureIdState]);
 
   useEffect(() => {
     if (user && notifications.length === 0) {
@@ -1718,7 +1736,7 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
                                             showCancel
                                             onCancel={cancelCommentEdit}
                                             minHeight="100px"
-                                            mediaVentureId={forumVentureId}
+                                            mediaVentureId={forumVentureIdState}
                                             enableImageGenerator
                                             markdownComponents={MarkdownComponents}
                                           />
@@ -1845,7 +1863,7 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
                                 placeholder={replyTargets[post.id] ? 'Antwort schreiben...' : 'Antworte oder ergänze den Thread...'}
                                 submitLabel="Kommentar senden"
                                 minHeight="120px"
-                                mediaVentureId={forumVentureId}
+                                mediaVentureId={forumVentureIdState}
                                 enableImageGenerator
                                 markdownComponents={MarkdownComponents}
                               />
@@ -1947,7 +1965,7 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
                     submitLabel={editingPost === 'NEW' ? 'Beitrag posten' : 'Update speichern'}
                     minHeight="400px"
                     autoFocus
-                    mediaVentureId={forumVentureId}
+                    mediaVentureId={forumVentureIdState}
                     enableImageGenerator
                     markdownComponents={MarkdownComponents}
                   />
