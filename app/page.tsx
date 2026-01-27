@@ -423,7 +423,7 @@ export default function Home() {
           badgeText="BATCH #001 — REKRUTIERUNG LÄUFT"
           title="Wir bauen Brands."
           titleLine2="Du verdienst mit."
-          description="Schluss mit dem Einzelkämpfer-Risiko. Wir vereinen viele Founder, Kapital und KI zu einer profitablen Einheit. Echte Anteile an echten Unternehmen."
+          description="Wir vereinen viele Founder, Kapital und KI zu einer profitablen Einheit. Echte Anteile an echten Unternehmen."
           backgroundVideoUrl="/hero_loop.mp4"
           backgroundVideoUrlMobile="/hero_loop_mobile.mp4"
           primaryButtonText="COMMUNITY BEITRETEN"
@@ -878,39 +878,41 @@ export default function Home() {
                </div>
 
                {/* Shop Preview */}
-               <div className="animate-fade-in-up delay-200">
-                 <div className="glass-card border border-white/10 rounded-3xl p-6 md:p-8 relative overflow-hidden bg-black/40 backdrop-blur-md">
-                   <div className="absolute inset-0 bg-linear-to-br from-white/2 to-transparent pointer-events-none" />
-                   <div className="flex items-center justify-between mb-6">
-                     <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">Storefront v1</div>
-                     <div className="text-[9px] font-bold uppercase tracking-widest text-(--accent)">Live Demo</div>
-                   </div>
-                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                     {[
-                       { name: 'Capsule Drop', price: '€89', tone: 'from-emerald-500/20 to-teal-500/10' },
-                       { name: 'Founder Kit', price: '€149', tone: 'from-purple-500/20 to-blue-500/10' },
-                     ].map((item) => (
-                       <div key={item.name} className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                         <div className={`h-24 rounded-xl bg-linear-to-br ${item.tone} mb-3`} />
-                         <div className="text-sm font-semibold text-white">{item.name}</div>
-                         <div className="text-[10px] text-white/40 uppercase tracking-widest">{item.price}</div>
+               <div className="animate-fade-in-up delay-200 h-full min-h-[500px] w-full relative group">
+                 <div className="absolute -inset-1 bg-gradient-to-r from-[#D4AF37] to-[#8C721F] rounded-3xl opacity-20 blur-lg group-hover:opacity-40 transition-opacity duration-1000" />
+                 <div className="relative h-full w-full rounded-3xl border border-white/10 bg-black/90 overflow-hidden shadow-2xl">
+                   {/* Browser Bar */}
+                   <div className="h-8 bg-white/5 border-b border-white/10 flex items-center px-4 gap-2">
+                     <div className="flex gap-1.5">
+                       <div className="w-2.5 h-2.5 rounded-full bg-[#FF5F56] opacity-80" />
+                       <div className="w-2.5 h-2.5 rounded-full bg-[#FFBD2E] opacity-80" />
+                       <div className="w-2.5 h-2.5 rounded-full bg-[#27C93F] opacity-80" />
+                     </div>
+                     <div className="flex-1 mx-4">
+                       <div className="h-5 bg-black/40 rounded-md border border-white/5 flex items-center justify-center">
+                         <span className="text-[9px] text-white/30 font-mono flex items-center gap-1">
+                           <span className="w-2 h-2 rounded-full bg-green-500/50" />
+                           secure-shop.forge.system
+                         </span>
                        </div>
-                     ))}
-                   </div>
-                   <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 text-[10px] text-white/60">
-                     <div className="flex items-center gap-2 rounded-xl border border-white/5 bg-white/2 px-3 py-2">
-                       <Package className="w-4 h-4 text-(--accent)" />
-                       <span>Collections</span>
-                     </div>
-                     <div className="flex items-center gap-2 rounded-xl border border-white/5 bg-white/2 px-3 py-2">
-                       <TrendingUp className="w-4 h-4 text-(--accent)" />
-                       <span>Conversion</span>
-                     </div>
-                     <div className="flex items-center gap-2 rounded-xl border border-white/5 bg-white/2 px-3 py-2">
-                       <Truck className="w-4 h-4 text-(--accent)" />
-                       <span>Fulfillment</span>
                      </div>
                    </div>
+                   
+                   {/* Iframe with Scale effect for Preview */}
+                   <div className="w-full h-[calc(100%-32px)] overflow-hidden">
+                     <iframe 
+                       src="/demo-shop" 
+                       className="w-[200%] h-[200%] border-0 origin-top-left scale-50"
+                       title="Shop Preview"
+                       loading="lazy"
+                     />
+                   </div>
+                   
+                   {/* Overlay to prevent interaction if desired, or allow it. User asked for preview, interactive is usually better for 'preview'. 
+                       But usually clicking links inside iframe might navigate away. 
+                       For now, keeping it interactive but maybe scaling it if needed. 
+                       Since it's a preview on the side, standard iframe behavior is fine.
+                   */}
                  </div>
                </div>
             </div>
