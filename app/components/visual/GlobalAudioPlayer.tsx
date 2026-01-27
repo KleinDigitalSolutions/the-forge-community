@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Play, Pause, ChevronLeft, ChevronRight, Music, X, Volume2, Maximize2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 
@@ -168,87 +168,52 @@ export default function GlobalAudioPlayer() {
         }`}
       >
         <div 
-          className={`absolute bottom-12 left-1/2 -translate-x-1/2 w-[min(540px,95vw)] transition-transform duration-500 ${
+          className={`absolute bottom-8 left-1/2 -translate-x-1/2 w-[min(480px,92vw)] transition-transform duration-500 ${
             isModalOpen ? 'translate-y-0 scale-100 pointer-events-auto' : 'translate-y-12 scale-95 pointer-events-none'
           }`}
         >
-          <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-[#D4AF37] via-orange-600 to-amber-900 rounded-[2.5rem] opacity-20 group-hover:opacity-40 blur-xl transition duration-1000 animate-pulse"></div>
-            <div className="relative bg-black/90 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] shadow-[0_0_100px_rgba(0,0,0,1)] overflow-hidden">
-              
-              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20 pointer-events-none" />
-              
-              <div className="absolute top-0 left-0 w-16 h-16 border-t-2 border-l-2 border-[#D4AF37]/60 rounded-tl-[2.5rem] pointer-events-none" />
-              <div className="absolute top-0 right-0 w-16 h-16 border-t-2 border-r-2 border-[#D4AF37]/60 rounded-tr-[2.5rem] pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-16 h-16 border-b-2 border-l-2 border-[#D4AF37]/60 rounded-bl-[2.5rem] pointer-events-none" />
-              <div className="absolute bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-[#D4AF37]/60 rounded-br-[2.5rem] pointer-events-none" />
+          <div className="relative">
+            <div className="relative bg-black/35 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_20px_80px_rgba(0,0,0,0.6)] overflow-hidden">
+              <button 
+                onClick={(e) => { e.stopPropagation(); setIsModalOpen(false); }} 
+                className="absolute top-2 right-2 w-9 h-9 flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-all text-white/50 hover:text-white z-10"
+                aria-label="Player schließen"
+              >
+                <X className="w-4 h-4"/>
+              </button>
 
-              <div className="px-8 pt-7 pb-5 flex justify-between items-center relative z-10">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-linear-to-br from-[#D4AF37]/20 to-transparent border border-[#D4AF37]/30 flex items-center justify-center">
-                    <Music className="w-5 h-5 text-[#D4AF37] animate-[spin_4s_linear_infinite]" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-sm font-black uppercase tracking-[0.3em] text-white">Audio Core</h2>
-                      <span className="px-1.5 py-0.5 rounded bg-green-500/10 border border-green-500/20 text-[7px] text-green-400 font-bold animate-pulse">LIVE</span>
-                    </div>
-                    <p className="text-[9px] text-[#D4AF37]/50 uppercase tracking-[0.2em] font-mono">FRG-OS // SIGNAL_V2.23</p>
-                  </div>
-                </div>
-                
-                <button 
-                  onClick={(e) => { e.stopPropagation(); setIsModalOpen(false); }} 
-                  className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-all text-white/40 hover:text-[#D4AF37]"
-                >
-                  <X className="w-5 h-5 relative z-10"/>
-                </button>
-              </div>
-
-              <div className="px-6 pb-6 relative z-10">
-                <div className="relative rounded-[1.5rem] overflow-hidden bg-black/60 border border-white/5 shadow-inner">
-                  <div className="absolute inset-0 z-20 pointer-events-none shadow-[inset_0_0_40px_rgba(0,0,0,0.8)] border border-white/10 rounded-[1.5rem]" />
-                  <div className="p-4 flex items-center justify-center min-h-[180px]">
+              <div className="p-3 sm:p-4">
+                <div className="relative rounded-xl overflow-hidden bg-black/30 border border-white/10">
+                  <div className="p-2 sm:p-3 flex items-center justify-center">
                     <iframe 
                       ref={iframeRef}
                       width="100%" 
-                      height="166" 
                       scrolling="no" 
                       frameBorder="no" 
                       allow="autoplay" 
-                      className="rounded-xl relative z-10"
+                      className="rounded-lg w-full h-[140px] sm:h-[166px]"
                       src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/2180406137&color=%23ffb800&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true"
                     />
                   </div>
                 </div>
-                <div className="mt-4 flex items-center justify-center gap-3">
+                <div className="mt-3 flex items-center justify-center gap-3">
                   <button
                     type="button"
                     onClick={skipPrev}
-                    className="w-12 h-12 rounded-full border border-white/15 bg-white/[0.08] hover:bg-white/15 text-white hover:text-white transition-all flex items-center justify-center"
+                    className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-white/15 bg-white/[0.08] hover:bg-white/15 text-white transition-all flex items-center justify-center"
                     aria-label="Vorheriger Track"
                   >
-                    <ChevronLeft className="w-6 h-6" />
+                    <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
                   </button>
                   <button
                     type="button"
                     onClick={skipNext}
-                    className="w-12 h-12 rounded-full border border-white/15 bg-white/[0.08] hover:bg-white/15 text-white hover:text-white transition-all flex items-center justify-center"
+                    className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-white/15 bg-white/[0.08] hover:bg-white/15 text-white transition-all flex items-center justify-center"
                     aria-label="Nächster Track"
                   >
-                    <ChevronRight className="w-6 h-6" />
+                    <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
                   </button>
                 </div>
-              </div>
-              
-              <div className="px-8 py-4 bg-white/[0.05] border-t border-white/10 flex justify-between items-center relative z-10">
-                <div className="flex gap-6">
-                  <div className="flex items-center gap-2">
-                    <div className="w-1 h-1 rounded-full bg-[#D4AF37] animate-ping" />
-                    <span className="text-[7px] font-bold text-[#D4AF37]/80 uppercase tracking-widest">Mastering Active</span>
-                  </div>
-                </div>
-                <span className="text-[7px] font-mono text-white/30 uppercase tracking-[0.3em]">Sector 7-G // Audio Stream</span>
               </div>
             </div>
           </div>

@@ -113,7 +113,26 @@ function LoginForm() {
         </p>
       </div>
 
-      <div className="glass-card p-10 rounded-3xl border border-white/10 shadow-2xl relative overflow-hidden">
+      <div className="glass-card p-10 rounded-3xl border border-white/10 shadow-2xl relative overflow-hidden group">
+        {/* Animated Video Background */}
+        <div className="absolute inset-0 overflow-hidden rounded-3xl">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover opacity-20 blur-[1px] scale-110"
+            style={{ filter: 'brightness(0.4) saturate(1.5)' }}
+          >
+            <source src="/login-bg.mp4" type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/50 to-black/70 backdrop-blur-[2px]" />
+
+          {/* Pulsating Glow Effect (Lightning Flash) */}
+          <div className="absolute inset-0 bg-gradient-radial from-[#D4AF37]/10 via-transparent to-transparent animate-pulse opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-[#D4AF37]/5 rounded-full blur-3xl animate-pulse" />
+        </div>
+
         <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
         
         <form onSubmit={handleSubmit} className="space-y-6 relative z-10">

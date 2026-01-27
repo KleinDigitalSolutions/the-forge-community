@@ -1041,41 +1041,46 @@ export default function Home() {
 
                           {currentStep === 1 && (
                              <div className="animate-fade-in-up">
-                                <label className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold mb-8 block">Zugangs-Modus wählen</label>
-                                <div className="grid grid-cols-1 gap-4">
-                                   {/* NEW: Quick Access Card */}
+                                <label className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold mb-8 block">Zugang wählen</label>
+                                <div className="grid grid-cols-1 gap-6">
+                                   {/* Unified Login/Signup */}
                                    <Link
                                       href="/login"
-                                      className="p-5 sm:p-8 rounded-2xl border border-[#D4AF37]/30 bg-[#D4AF37]/5 hover:border-[#D4AF37] hover:bg-[#D4AF37]/10 transition-all text-left group relative overflow-hidden"
+                                      className="p-8 sm:p-12 rounded-2xl border border-[#D4AF37]/30 bg-[#D4AF37]/5 hover:border-[#D4AF37] hover:bg-[#D4AF37]/10 transition-all text-center group relative overflow-hidden"
                                    >
                                       <div className="absolute top-0 right-0 p-2 sm:p-3 bg-[#D4AF37] text-black text-[7px] sm:text-[8px] font-black uppercase tracking-widest rounded-bl-xl">
-                                         Sofort-Zugriff
+                                         Sofort-Start
                                       </div>
-                                      <div className="flex items-center gap-3 sm:gap-4 mb-2">
-                                         <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-[#D4AF37]" />
-                                         <div className="font-instrument-serif text-xl sm:text-3xl text-white group-hover:text-(--accent) transition-colors">Free Trial</div>
+                                      <div className="flex flex-col items-center gap-4 mb-4">
+                                         <div className="w-16 h-16 rounded-2xl border-2 border-[#D4AF37] bg-[#D4AF37]/10 flex items-center justify-center">
+                                            <Zap className="w-8 h-8 text-[#D4AF37]" />
+                                         </div>
+                                         <div className="font-instrument-serif text-3xl sm:text-4xl text-white group-hover:text-(--accent) transition-colors">
+                                            Login / Anmelden
+                                         </div>
                                       </div>
-                                      <div className="text-xs sm:text-sm text-white/60 leading-relaxed max-w-md">
-                                         Geh direkt rein. Erhalte <strong>50 AI-Credits</strong> gratis und erkunde alle Forge-Studios unentgeltlich.
+                                      <div className="text-sm sm:text-base text-white/70 leading-relaxed max-w-lg mx-auto mb-6">
+                                         Starte mit <strong className="text-white">50 AI-Credits gratis</strong> und erkunde alle Forge-Studios.
+                                         Login mit Google oder Magic Link.
+                                      </div>
+                                      <div className="flex items-center justify-center gap-3 text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">
+                                         <span>Google Login</span>
+                                         <span className="w-1 h-1 rounded-full bg-white/20" />
+                                         <span>Magic Link</span>
                                       </div>
                                    </Link>
 
-                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                                   {/* Bewerbung für Batch-Partner */}
+                                   <div className="text-center py-4 border-t border-white/5">
+                                      <p className="text-xs text-white/40 mb-3 uppercase tracking-widest">
+                                         Interesse an aktiver Beteiligung?
+                                      </p>
                                       <button
                                          type="button"
-                                         onClick={() => handleSelectRole('investor')}
-                                         className="p-5 sm:p-8 rounded-2xl border border-white/5 bg-white/2 hover:border-(--accent)/50 hover:bg-(--accent)/5 transition-all text-left group"
+                                         onClick={handleNextStep}
+                                         className="text-sm text-[#D4AF37] hover:text-white font-bold uppercase tracking-widest transition-colors"
                                       >
-                                         <div className="font-instrument-serif text-lg sm:text-2xl text-white mb-1 sm:mb-2 group-hover:text-(--accent) transition-colors">Kapital-Partner</div>
-                                         <div className="text-[10px] sm:text-xs text-white/40 leading-relaxed">Passive Beteiligung. Bewerbung für Batches.</div>
-                                      </button>
-                                      <button
-                                         type="button"
-                                         onClick={() => handleSelectRole('builder')}
-                                         className="p-5 sm:p-8 rounded-2xl border border-white/5 bg-white/2 hover:border-(--accent)/50 hover:bg-(--accent)/5 transition-all text-left group"
-                                      >
-                                         <div className="font-instrument-serif text-lg sm:text-2xl text-white mb-1 sm:mb-2 group-hover:text-(--accent) transition-colors">Builder</div>
-                                         <div className="text-[10px] sm:text-xs text-white/40 leading-relaxed">Aktive Beteiligung. Sweat Equity & Skills.</div>
+                                         Als Batch-Partner bewerben →
                                       </button>
                                    </div>
                                 </div>
