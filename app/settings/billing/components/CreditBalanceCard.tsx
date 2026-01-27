@@ -77,6 +77,7 @@ export function CreditBalanceCard({ currentCredits, recentGrants }: CreditBalanc
                       {grant.feature === 'credit-purchase' && 'Kauf'}
                       {grant.feature === 'monthly-subscription-credits' && 'Monatliches Abo'}
                       {grant.feature === 'signup' && 'Willkommensbonus'}
+                      {grant.feature === 'other' && 'Gutschrift'}
                     </div>
                   </div>
                 </div>

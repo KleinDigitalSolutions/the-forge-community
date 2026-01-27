@@ -39,6 +39,13 @@ export default async function BillingPage() {
     redirect('/login');
   }
 
+  const recentGrants = user.energyTransactions.map((grant) => ({
+    id: grant.id,
+    delta: grant.delta,
+    feature: grant.feature ?? 'other',
+    createdAt: grant.createdAt,
+  }));
+
   const invoices = await prisma.platformInvoice.findMany({
     where: {
       OR: [
@@ -100,7 +107,7 @@ export default async function BillingPage() {
           {/* Credit Balance & Purchase */}
           <CreditBalanceCard
             currentCredits={user.credits}
-            recentGrants={user.energyTransactions}
+            recentGrants={recentGrants}
           />
 
           {/* Invoice History */}

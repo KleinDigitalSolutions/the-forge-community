@@ -381,13 +381,14 @@ async function finalizeInvoiceArtifacts({
     profile,
   });
 
-  const pdfBlob = new Blob([pdfBuffer], { type: 'application/pdf' });
-  const blob = await put(`invoices/${invoice.invoiceNumber}.pdf`, pdfBlob, {
+  const pdfPayload = Buffer.isBuffer(pdfBuffer) ? pdfBuffer : Buffer.from(pdfBuffer as ArrayBuffer);
+  const blob = await put(`invoices/${invoice.invoiceNumber}.pdf`, pdfPayload, {
     access: 'public',
     addRandomSuffix: true,
+    contentType: 'application/pdf',
   });
 
-  const sha256 = createHash('sha256').update(pdfBuffer).digest('hex');
+  const sha256 = createHash('sha256').update(pdfPayload).digest('hex');
   const retentionUntil = new Date(invoice.issueDate);
   retentionUntil.setFullYear(retentionUntil.getFullYear() + 10);
 
@@ -414,7 +415,7 @@ async function finalizeInvoiceArtifacts({
         title: `Rechnung ${invoice.invoiceNumber}`,
         documentUrl: blob.url,
         mimeType: 'application/pdf',
-        size: pdfBuffer.length,
+        size: pdfPayload.length,
         sha256,
         issuedAt: invoice.issueDate,
         retentionUntil,
