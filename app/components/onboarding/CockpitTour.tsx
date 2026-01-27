@@ -276,11 +276,11 @@ export function CockpitTour({ initialHasSeenTour, isNavOpen, onNavOpenChange, on
           <button
             onClick={handleNext}
             disabled={!canProceed}
-            className={`flex items-center gap-3 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 ${
-              canProceed ? 'bg-[#D4AF37] hover:bg-[#F0C05A] text-black shadow-2xl shadow-[#D4AF37]/20' : 'bg-white/10 text-white/40 cursor-not-allowed'
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 ${
+              canProceed ? 'bg-[#D4AF37] hover:bg-[#F0C05A] text-black shadow-xl shadow-[#D4AF37]/15' : 'bg-white/10 text-white/40 cursor-not-allowed'
             }`}
           >
-            {currentStep === STEPS.length - 1 ? 'Tour abschließen' : 'Nächster Schritt'} <ChevronRight className="w-4 h-4" />
+            {currentStep === STEPS.length - 1 ? 'Tour abschließen' : 'Nächster Schritt'} <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
       </motion.div>
