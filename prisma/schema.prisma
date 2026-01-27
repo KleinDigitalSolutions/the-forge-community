@@ -136,6 +136,7 @@ model User {
   notionId      String?   @unique
   onboardingComplete Boolean @default(false)
   hasSeenTour        Boolean @default(false)
+  hasSeenCockpitTour Boolean @default(false)
   founderNumber Int       @default(0)
   karmaScore    Int       @default(0)
   phone         String?

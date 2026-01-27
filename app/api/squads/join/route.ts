@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { sql } from '@vercel/postgres';
+import { sendDirectMessage } from '@/lib/direct-messages';
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -67,7 +68,7 @@ export async function POST(request: Request) {
         );
       } else if (status === 'invited') {
         return NextResponse.json(
-          { error: 'You already have a pending invitation to this squad' },
+          { error: 'Du hast bereits eine offene Bewerbung für dieses Squad' },
           { status: 409 }
         );
       }
@@ -76,9 +77,8 @@ export async function POST(request: Request) {
     // Calculate equity share (equal split among all members)
     const equityShare = 100 / (squad.current_members + 1);
 
-    // Add user as member with 'invited' status (needs approval from lead)
-    // For MVP, we auto-approve if squad is public
-    const memberStatus = squad.is_public ? 'active' : 'invited';
+    // Add user as member with 'invited' status (pending approval)
+    const memberStatus = 'invited';
 
     await sql`
       INSERT INTO squad_members (
@@ -101,26 +101,32 @@ export async function POST(request: Request) {
       )
     `;
 
-    // If auto-approved, update equity shares for all members
-    if (memberStatus === 'active') {
-      await sql`
-        UPDATE squad_members
-        SET equity_share = ${equityShare}
-        WHERE squad_id = ${squad_id}
-          AND status = 'active'
-      `;
-    }
-
     // Trigger will auto-update current_members count
 
-    console.log(`✅ User ${user.name} joined squad ${squad.name} (${memberStatus})`);
+    const note = typeof message === 'string' ? message.trim() : '';
+    const dmContent = [
+      `Neue Bewerbung für Squad: ${squad.name}`,
+      `Bewerber: ${user.name || session.user.email}`,
+      note ? `Nachricht: ${note}` : null,
+      `Squad Link: /squads/${squad.id}`
+    ].filter(Boolean).join('\n');
+
+    try {
+      await sendDirectMessage({
+        senderId: user.id,
+        recipientId: squad.lead_id,
+        content: dmContent
+      });
+    } catch (error) {
+      console.error('Failed to send application DM:', error);
+    }
+
+    console.log(`✅ User ${user.name} applied to squad ${squad.name} (${memberStatus})`);
 
     return NextResponse.json({
       success: true,
       status: memberStatus,
-      message: memberStatus === 'active'
-        ? `Welcome to ${squad.name}!`
-        : `Your request to join ${squad.name} has been sent to the squad lead.`,
+      message: `Deine Bewerbung für ${squad.name} wurde an den Squad Lead gesendet.`,
       squad: {
         id: squad.id,
         name: squad.name,

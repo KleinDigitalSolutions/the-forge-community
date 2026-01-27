@@ -115,10 +115,11 @@ export default function SquadsPage() {
           const config = statusConfig[squad.status] || statusConfig['forming'];
           const Icon = config.icon;
           const fillPercent = Math.min((squad.current_members / squad.max_members) * 100, 100);
+          const isMySquadView = filter === 'my-squads';
           const slotsAvailable = typeof squad.slots_available === 'number'
             ? squad.slots_available
             : squad.max_members - squad.current_members;
-          const canApply = squad.is_public && squad.is_accepting_members && slotsAvailable > 0;
+          const canApply = !isMySquadView && squad.is_public && squad.is_accepting_members && slotsAvailable > 0;
           const hasApplied = appliedSquadIds.includes(squad.id);
           const showLeadControls = filter === 'my-squads' && squad.my_role === 'lead';
 

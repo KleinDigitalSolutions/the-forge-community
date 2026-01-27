@@ -28,11 +28,28 @@ interface CockpitControlProps {
     tasks: number;
   };
   onToggleView: (view: string) => void;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
   minimal?: boolean;
 }
 
-export default function CockpitControl({ userImage, userName, stats, onToggleView, minimal = false }: CockpitControlProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export default function CockpitControl({
+  userImage,
+  userName,
+  stats,
+  onToggleView,
+  isOpen: controlledOpen,
+  onOpenChange,
+  minimal = false
+}: CockpitControlProps) {
+  const [isOpenInternal, setIsOpenInternal] = useState(false);
+  const isOpen = typeof controlledOpen === 'boolean' ? controlledOpen : isOpenInternal;
+  const setIsOpen = (next: boolean) => {
+    onOpenChange?.(next);
+    if (typeof controlledOpen !== 'boolean') {
+      setIsOpenInternal(next);
+    }
+  };
   const containerRef = useRef<HTMLDivElement>(null);
   const parallaxRef = useRef<HTMLDivElement>(null);
   const parallaxRafRef = useRef<number | null>(null);
@@ -44,14 +61,14 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
 
   const accent = '#D4AF37';
   const menuItems = [
-    { icon: Rocket, label: 'Ventures', description: 'Deine Projekte', action: () => onToggleView('ventures'), color: accent },
-    { icon: Users, label: 'Squads', description: 'Teams & Partner', href: '/squads', color: accent },
-    { icon: Music, label: 'Music', description: 'Soundtrack', action: () => onToggleView('music'), color: accent },
-    { icon: Layout, label: 'Academy', description: 'Playbooks & Wissen', href: '/resources', color: accent },
-    { icon: UserIcon, label: 'Profile', description: 'Deine Identität', href: '/profile', color: accent },
-    { icon: MessageCircle, label: 'Messages', description: 'DMs & Inbox', href: '/messages', color: accent, badgeCount: unreadCount },
-    { icon: MessageSquare, label: 'Forum', description: 'Community Threads', href: '/forum', color: accent },
-    { icon: Zap, label: 'Missions', description: 'Tasks & Ziele', action: () => onToggleView('missions'), color: accent },
+    { icon: Rocket, label: 'Ventures', description: 'Deine Projekte', action: () => onToggleView('ventures'), color: accent, tourId: 'cockpit-menu-ventures' },
+    { icon: Users, label: 'Squads', description: 'Teams & Partner', href: '/squads', color: accent, tourId: 'cockpit-menu-squads' },
+    { icon: Music, label: 'Music', description: 'Soundtrack', action: () => onToggleView('music'), color: accent, tourId: 'cockpit-menu-music' },
+    { icon: Layout, label: 'Academy', description: 'Playbooks & Wissen', href: '/resources', color: accent, tourId: 'cockpit-menu-academy' },
+    { icon: UserIcon, label: 'Profile', description: 'Deine Identität', href: '/profile', color: accent, tourId: 'cockpit-menu-profile' },
+    { icon: MessageCircle, label: 'Messages', description: 'DMs & Inbox', href: '/messages', color: accent, badgeCount: unreadCount, tourId: 'cockpit-menu-messages' },
+    { icon: MessageSquare, label: 'Forum', description: 'Community Threads', href: '/forum', color: accent, tourId: 'cockpit-menu-forum' },
+    { icon: Zap, label: 'Missions', description: 'Tasks & Ziele', action: () => onToggleView('missions'), color: accent, tourId: 'cockpit-menu-missions' },
   ];
   const angleStep = 360 / menuItems.length;
   const startAngle = -90;
@@ -231,6 +248,7 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
           onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }}
           className="relative w-32 h-32 flex items-center justify-center group outline-none cursor-pointer"
           aria-label={`${isOpen ? 'Close' : 'Open'} cockpit for ${displayName}`}
+          data-tour="cockpit-core"
         >
           <CoreSpinLoader
             size={96}
@@ -312,6 +330,7 @@ export default function CockpitControl({ userImage, userName, stats, onToggleVie
               key={item.label}
               className="absolute left-1/2 top-1/2 z-40 pointer-events-auto"
               style={{ transform: `translate(-50%, -50%) translate(${x}px, ${y}px)` }}
+              data-tour={item.tourId}
             >
               <motion.div
                 initial={{ opacity: 0, scale: 0 }}

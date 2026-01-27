@@ -20,3 +20,20 @@ export async function completeOnboardingTour() {
     return { error: 'Database update failed' };
   }
 }
+
+export async function completeCockpitTour() {
+  const session = await auth();
+  if (!session?.user?.email) return { error: 'Unauthorized' };
+
+  try {
+    await prisma.user.update({
+      where: { email: session.user.email },
+      data: { hasSeenCockpitTour: true }
+    });
+    revalidatePath('/dashboard');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to update cockpit tour status:', error);
+    return { error: 'Database update failed' };
+  }
+}

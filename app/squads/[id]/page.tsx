@@ -167,6 +167,10 @@ export default function SquadDetailPage() {
   if (!squad) return null;
 
   const isLead = squad.user_role === 'lead';
+  const isPublic = squad.is_public ?? true;
+  const canApply = !squad.is_member
+    && (squad.is_accepting_members ?? true)
+    && isPublic;
 
   return (
     <AuthGuard>
@@ -196,7 +200,7 @@ export default function SquadDetailPage() {
               <div className="flex flex-wrap items-center gap-3">
                 <StatusBadge status={squad.status} />
                 <TypeBadge type={squad.squadType} />
-                {squad.is_public ? (
+                {isPublic ? (
                   <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-bold uppercase tracking-widest">
                     <Globe className="w-3 h-3" />
                     Öffentlich
@@ -211,7 +215,7 @@ export default function SquadDetailPage() {
             </div>
 
             <div className="flex flex-col gap-3">
-              {!squad.is_member && squad.is_accepting_members && !applicationSent && (
+              {canApply && !applicationSent && (
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}

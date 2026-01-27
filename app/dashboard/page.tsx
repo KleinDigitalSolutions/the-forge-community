@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import OnboardingWizard from '@/app/components/onboarding/OnboardingWizard';
+import { CockpitTour } from '@/app/components/onboarding/CockpitTour';
 import { formatDistanceToNow, isPast, isToday } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -38,6 +39,7 @@ export default function Dashboard() {
   const [bootSequence, setBootSequence] = useState(true); // Neu: Boot Animation State
   
   const [activeView, setActiveView] = useState<string>('idle');
+  const [cockpitOpen, setCockpitOpen] = useState(false);
 
   const handleToggleView = (view: string) => {
     if (view === 'music') {
@@ -161,6 +163,8 @@ export default function Dashboard() {
                   userName={user.name}
                   stats={{ ventures: ventures.length, tasks: allTasks.length }}
                   onToggleView={handleToggleView}
+                  isOpen={cockpitOpen}
+                  onOpenChange={setCockpitOpen}
                   minimal
                />
             </div>
@@ -315,6 +319,17 @@ export default function Dashboard() {
               />
              </div>
           </div>
+        )}
+
+        {user?.onboardingComplete && !user?.hasSeenCockpitTour && (
+          <CockpitTour
+            initialHasSeenTour={!!user?.hasSeenCockpitTour}
+            isNavOpen={cockpitOpen}
+            onNavOpenChange={setCockpitOpen}
+            onComplete={() => {
+              setData(prev => prev ? { ...prev, user: { ...prev.user, hasSeenCockpitTour: true } } : null);
+            }}
+          />
         )}
       </div>
     </AuthGuard>
