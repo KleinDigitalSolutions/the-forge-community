@@ -42,6 +42,7 @@ const LightPillar = ({
   const sceneRef = useRef<any | null>(null);
   const cameraRef = useRef<any | null>(null);
   const geometryRef = useRef<any | null>(null);
+  const runningRef = useRef(true);
   const mouseRef = useRef<any>(new THREE.Vector2(0, 0));
   const timeRef = useRef(0);
   const [webGLSupported, setWebGLSupported] = useState(true);
@@ -68,10 +69,15 @@ const LightPillar = ({
 
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     const isLowEndDevice = isMobile || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     let effectiveQuality = quality;
     if (isLowEndDevice && quality === 'high') effectiveQuality = 'medium';
     if (isMobile && quality !== 'low') effectiveQuality = 'low';
+    if (prefersReducedMotion) effectiveQuality = 'low';
 
     const qualitySettings = {
       low: { iterations: 24, waveIterations: 1, pixelRatio: 0.5, precision: 'mediump', stepMultiplier: 1.5 },
@@ -261,10 +267,11 @@ const LightPillar = ({
     }
 
     let lastTime = performance.now();
-    const targetFPS = effectiveQuality === 'low' ? 30 : 60;
+    const targetFPS = effectiveQuality === 'low' || prefersReducedMotion ? 24 : 60;
     const frameTime = 1000 / targetFPS;
 
     const animate = (currentTime: number) => {
+      if (!runningRef.current) return;
       if (!materialRef.current || !rendererRef.current || !sceneRef.current || !cameraRef.current) return;
 
       const deltaTime = currentTime - lastTime;
@@ -282,6 +289,17 @@ const LightPillar = ({
       rafRef.current = requestAnimationFrame(animate);
     };
     rafRef.current = requestAnimationFrame(animate);
+
+    const handleVisibilityChange = () => {
+      const isVisible = typeof document !== 'undefined' && document.visibilityState === 'visible';
+      runningRef.current = isVisible;
+      if (isVisible && rafRef.current === null) {
+        lastTime = performance.now();
+        rafRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     let resizeTimeout: number | null = null;
     const handleResize = () => {
@@ -301,6 +319,7 @@ const LightPillar = ({
     window.addEventListener('resize', handleResize, { passive: true });
 
     return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('resize', handleResize);
       if (interactive) {
         container.removeEventListener('mousemove', handleMouseMove);
@@ -308,6 +327,7 @@ const LightPillar = ({
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
       }
+      rafRef.current = null;
       if (rendererRef.current) {
         rendererRef.current.dispose();
         rendererRef.current.forceContextLoss();

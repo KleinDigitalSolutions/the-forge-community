@@ -140,8 +140,8 @@ export default function Dashboard() {
             <LightPillar
               topColor="#ff6a00"
               bottomColor="#fec700"
-              intensity={0.8}
-              rotationSpeed={0.2}
+              intensity={0.6}
+              rotationSpeed={0.12}
               glowAmount={0.0015}
               pillarWidth={2.5}
               pillarHeight={0.3}
@@ -149,7 +149,7 @@ export default function Dashboard() {
               pillarRotation={15}
               interactive={false}
               mixBlendMode="screen"
-              quality="medium"
+              quality="low"
             />
           </div>
           
