@@ -1,9 +1,18 @@
 import { NextResponse } from 'next/server';
+import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
+  const secret = process.env.HEALTHCHECK_SECRET;
+  if (secret) {
+    const headerSecret = headers().get('x-healthcheck-secret');
+    if (headerSecret !== secret) {
+      return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+    }
+  }
+
   const startedAt = Date.now();
   try {
     await prisma.$queryRaw`SELECT 1`;
