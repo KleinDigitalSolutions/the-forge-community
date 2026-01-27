@@ -186,8 +186,17 @@ the-forge-community/
 Erstelle eine `.env.local` Datei im Root-Verzeichnis:
 
 ```bash
-# Database
-DATABASE_URL="postgresql://user:password@host:5432/database"
+# Database (Neon/Postgres)
+# Pooled Connection (Runtime)
+DATABASE_URL="postgresql://user:password@host:5432/database?sslmode=require"
+# Direct Connection (Migrations/Seeding)
+DIRECT_URL="postgresql://user:password@host:5432/database?sslmode=require"
+# Vercel Postgres compatibility (optional)
+POSTGRES_URL="postgresql://user:password@host:5432/database?sslmode=require"
+POSTGRES_URL_NON_POOLING="postgresql://user:password@host:5432/database?sslmode=require"
+POSTGRES_PRISMA_URL="postgresql://user:password@host:5432/database?sslmode=require"
+# Optional pool sizing for Prisma
+PG_POOL_SIZE=10
 
 # Auth (NextAuth v5)
 AUTH_SECRET="xxx"                    # Generieren: npx auth secret

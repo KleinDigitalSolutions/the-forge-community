@@ -15,8 +15,10 @@ if (fs.existsSync(envPath)) {
 
 const url =
   process.env.DATABASE_URL_UNPOOLED ||
+  process.env.DIRECT_URL ||
   process.env.POSTGRES_URL_NON_POOLING ||
   process.env.DATABASE_URL ||
+  process.env.POSTGRES_URL ||
   process.env.POSTGRES_PRISMA_URL;
 
 if (!url) {
