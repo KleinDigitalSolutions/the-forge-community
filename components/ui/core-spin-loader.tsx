@@ -42,18 +42,18 @@ export function CoreSpinLoader({
   const palette =
     variant === 'forge'
       ? {
-          baseGlow: 'bg-[#D4AF37]/20',
-          outerRing: 'border-[#D4AF37]/45',
-          mainArc: 'border-t-[#D4AF37]',
-          mainShadow: 'shadow-[0_0_12px_rgba(212,175,55,0.6)]',
-          reverseArc: 'border-b-[#F0C05A]/80',
-          reverseShadow: 'shadow-[0_0_10px_rgba(240,192,90,0.4)]',
-          innerRing: 'border-l-[#D4AF37]/70',
-          dot: 'bg-[#F0C05A]',
-          dotShadow: 'shadow-[0_0_8px_rgba(240,192,90,0.9)]',
-          core: 'bg-[#D4AF37]',
-          coreShadow: 'shadow-[0_0_15px_rgba(212,175,55,0.8)]',
-          text: 'text-[#D4AF37]'
+          baseGlow: 'bg-white/5',
+          outerRing: 'border-white/10',
+          mainArc: 'border-t-white/40',
+          mainShadow: 'shadow-[0_0_8px_rgba(255,255,255,0.15)]',
+          reverseArc: 'border-b-white/20',
+          reverseShadow: 'shadow-[0_0_6px_rgba(255,255,255,0.12)]',
+          innerRing: 'border-l-white/25',
+          dot: 'bg-white/55',
+          dotShadow: 'shadow-[0_0_4px_rgba(255,255,255,0.25)]',
+          core: 'bg-white/70',
+          coreShadow: 'shadow-[0_0_6px_rgba(255,255,255,0.2)]',
+          text: 'text-white/50'
         }
       : variant === 'alien'
       ? {
