@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
+    "migrate:deploy": "bash scripts/migrate-unpooled.sh",
     "seed:academy": "node scripts/seed-academy-local.mjs",
     "seed:platform-finance": "node scripts/seed-platform-finance.mjs",
     "export:platform-ledger": "node scripts/export-platform-ledger.mjs"

@@ -201,6 +201,9 @@ POSTGRES_PRISMA_URL="postgresql://user:password@host:5432/database?sslmode=requi
 # Optional pool sizing for Prisma
 PG_POOL_SIZE=10
 
+# Migrations (unpooled)
+# Example: npm run migrate:deploy
+
 # Auth (NextAuth v5)
 AUTH_SECRET="xxx"                    # Generieren: npx auth secret
 AUTH_RESEND_KEY="re_xxx"             # Resend.com API Key
