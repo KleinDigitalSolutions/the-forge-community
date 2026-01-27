@@ -242,7 +242,9 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
  * Grant monthly credits for active subscriptions
  */
 async function handleInvoicePaid(invoice: Stripe.Invoice) {
-  const subscriptionId = invoice.subscription as string;
+  const subscriptionId = typeof invoice.subscription === 'string'
+    ? invoice.subscription
+    : invoice.subscription?.id;
 
   if (!subscriptionId) {
     console.log('[INVOICE] No subscription ID, skipping');
