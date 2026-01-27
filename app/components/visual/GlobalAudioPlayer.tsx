@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Play, Pause, SkipForward, Music, X, ChevronRight, Volume2, Maximize2 } from 'lucide-react';
+import { Play, Pause, ChevronLeft, ChevronRight, Music, X, Volume2, Maximize2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 
@@ -15,11 +15,15 @@ export default function GlobalAudioPlayer() {
   const pathname = usePathname();
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrack, setCurrentTrack] = useState<any>(null);
+  const [playlistTracks, setPlaylistTracks] = useState<any[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [isMinimized, setIsMinimized] = useState(true);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const widgetRef = useRef<any>(null);
+  const playlistTracksRef = useRef<any[]>([]);
+  const playlistUrl = 'https://api.soundcloud.com/playlists/2180406137';
 
   // Initialisierung und Event-Listener
   useEffect(() => {
@@ -35,12 +39,14 @@ export default function GlobalAudioPlayer() {
     const handlePause = () => widgetRef.current?.pause();
     const handleToggle = () => widgetRef.current?.toggle();
     const handleSkip = () => widgetRef.current?.next();
+    const handlePrev = () => widgetRef.current?.prev();
 
     window.addEventListener('forge-toggle-music', handleToggleModal);
     window.addEventListener('forge-play-music', handlePlay);
     window.addEventListener('forge-pause-music', handlePause);
     window.addEventListener('forge-toggle-play', handleToggle);
     window.addEventListener('forge-skip-music', handleSkip);
+    window.addEventListener('forge-prev-music', handlePrev);
 
     const loadWidget = () => {
       if (iframeRef.current && window.SC) {
@@ -49,9 +55,20 @@ export default function GlobalAudioPlayer() {
           widgetRef.current = widget;
 
           widget.bind(window.SC.Widget.Events.READY, () => {
-            widget.getCurrentSound((track: any) => {
-              setCurrentTrack(track);
-              broadcastState(false, track);
+            widget.getSounds((tracks: any[]) => {
+              if (Array.isArray(tracks)) {
+                playlistTracksRef.current = tracks;
+                setPlaylistTracks(tracks);
+              }
+              widget.getCurrentSound((track: any) => {
+                setCurrentTrack(track);
+                const list = Array.isArray(tracks) ? tracks : playlistTracksRef.current;
+                if (track && list.length) {
+                  const idx = list.findIndex((t) => t?.id === track?.id);
+                  if (idx >= 0) setCurrentIndex(idx);
+                }
+                broadcastState(false, track);
+              });
             });
           });
 
@@ -61,6 +78,11 @@ export default function GlobalAudioPlayer() {
             localStorage.setItem('forge-audio-started', 'true');
             widget.getCurrentSound((track: any) => {
               setCurrentTrack(track);
+              const list = playlistTracksRef.current;
+              if (track && list.length) {
+                const idx = list.findIndex((t) => t?.id === track?.id);
+                if (idx >= 0) setCurrentIndex(idx);
+              }
               broadcastState(true, track);
             });
           });
@@ -106,11 +128,34 @@ export default function GlobalAudioPlayer() {
       window.removeEventListener('forge-pause-music', handlePause);
       window.removeEventListener('forge-toggle-play', handleToggle);
       window.removeEventListener('forge-skip-music', handleSkip);
+      window.removeEventListener('forge-prev-music', handlePrev);
       clearInterval(interval);
     };
   }, [isModalOpen, currentTrack, isPlaying, hasStarted]);
 
   const togglePlay = () => widgetRef.current?.toggle();
+  const skipNext = () => {
+    if (!widgetRef.current) return;
+    const list = playlistTracksRef.current.length ? playlistTracksRef.current : playlistTracks;
+    if (!list.length) {
+      widgetRef.current.next();
+      return;
+    }
+    const nextIndex = (currentIndex + 1) % list.length;
+    setCurrentIndex(nextIndex);
+    widgetRef.current.load(playlistUrl, { auto_play: true, start_track: nextIndex });
+  };
+  const skipPrev = () => {
+    if (!widgetRef.current) return;
+    const list = playlistTracksRef.current.length ? playlistTracksRef.current : playlistTracks;
+    if (!list.length) {
+      widgetRef.current.prev();
+      return;
+    }
+    const prevIndex = (currentIndex - 1 + list.length) % list.length;
+    setCurrentIndex(prevIndex);
+    widgetRef.current.load(playlistUrl, { auto_play: true, start_track: prevIndex });
+  };
 
   return (
     <>
@@ -172,9 +217,27 @@ export default function GlobalAudioPlayer() {
                       frameBorder="no" 
                       allow="autoplay" 
                       className="rounded-xl relative z-10"
-                      src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/soundcloud%253Aplaylists%253A2180406137&color=%23ffb800&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true"
+                      src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/2180406137&color=%23ffb800&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true"
                     />
                   </div>
+                </div>
+                <div className="mt-4 flex items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={skipPrev}
+                    className="w-12 h-12 rounded-full border border-white/15 bg-white/[0.08] hover:bg-white/15 text-white hover:text-white transition-all flex items-center justify-center"
+                    aria-label="Vorheriger Track"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={skipNext}
+                    className="w-12 h-12 rounded-full border border-white/15 bg-white/[0.08] hover:bg-white/15 text-white hover:text-white transition-all flex items-center justify-center"
+                    aria-label="Nächster Track"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
                 </div>
               </div>
               

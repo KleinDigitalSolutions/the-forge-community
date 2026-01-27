@@ -2,6 +2,7 @@ import NextAuth from 'next-auth';
 import { authConfig } from './auth.config';
 import Resend from 'next-auth/providers/resend';
 import Google from 'next-auth/providers/google';
+import type { Provider } from 'next-auth/providers';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { prisma } from '@/lib/prisma';
 import { Resend as ResendClient } from 'resend';
@@ -14,7 +15,7 @@ const resendFrom =
     ? 'STAKE & SCALE <info@stakeandscale.de>'
     : 'onboarding@resend.dev');
 
-const providers = [
+const providers: Provider[] = [
   Resend({
       apiKey: process.env.AUTH_RESEND_KEY,
       from: resendFrom,
