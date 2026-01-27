@@ -16,26 +16,17 @@ export async function GET() {
     // Create webhook_events table for idempotency
     await sql`
       CREATE TABLE IF NOT EXISTS webhook_events (
-        id SERIAL PRIMARY KEY,
-        event_id VARCHAR(255) UNIQUE NOT NULL,
-        event_type VARCHAR(100),
-        processed_at TIMESTAMP DEFAULT NOW(),
-        created_at TIMESTAMP DEFAULT NOW()
+        event_id TEXT PRIMARY KEY,
+        processed_at TIMESTAMP DEFAULT NOW()
       );
-    `;
-
-    // Add index for fast lookups
-    await sql`
-      CREATE INDEX IF NOT EXISTS idx_webhook_events_event_id
-      ON webhook_events(event_id);
     `;
 
     return NextResponse.json({
       success: true,
       message: 'Webhook events table created successfully',
       table: 'webhook_events',
-      columns: ['id', 'event_id', 'event_type', 'processed_at', 'created_at'],
-      indexes: ['idx_webhook_events_event_id']
+      columns: ['event_id', 'processed_at'],
+      indexes: []
     });
   } catch (error: any) {
     console.error('Webhook table setup failed:', error);
