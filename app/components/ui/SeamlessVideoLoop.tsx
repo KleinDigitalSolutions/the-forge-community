@@ -8,6 +8,7 @@ interface SeamlessVideoLoopProps {
   crossfadeAt?: number; // Seconds before end to start crossfade
   fadeDuration?: number;
   objectPosition?: string; // CSS object-position (e.g., "center 30%")
+  isPlaying?: boolean;
 }
 
 /**
@@ -30,12 +31,14 @@ export default function SeamlessVideoLoop({
   className = '',
   crossfadeAt = 1.2, // Start crossfade 1.2 seconds before video ends
   fadeDuration = 0.8,
-  objectPosition = 'center'
+  objectPosition = 'center',
+  isPlaying = true
 }: SeamlessVideoLoopProps) {
   const videoARef = useRef<HTMLVideoElement>(null);
   const videoBRef = useRef<HTMLVideoElement>(null);
   const [activeVideo, setActiveVideo] = useState<'A' | 'B'>('A');
   const isTransitioningRef = useRef(false);
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     const videoA = videoARef.current;
@@ -43,12 +46,31 @@ export default function SeamlessVideoLoop({
 
     if (!videoA || !videoB) return;
 
-    let rafId: number;
+    if (!isPlaying) {
+      // Pause everything if not playing
+      videoA.pause();
+      videoB.pause();
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      return;
+    }
 
     // Initialize: Start video A playing
     const init = async () => {
-      videoA.currentTime = 0;
-      await videoA.play().catch(console.error);
+      // Ensure the correct video is visible and playing
+      const currentActive = activeVideo === 'A' ? videoA : videoB;
+      const currentStandby = activeVideo === 'A' ? videoB : videoA;
+      
+      currentStandby.style.opacity = '0';
+      currentStandby.pause();
+      
+      currentActive.style.opacity = '1';
+      currentActive.currentTime = 0; // Reset or continue? Resetting is safer for loop logic
+      try {
+        await currentActive.play();
+      } catch (e) {
+        console.error('Playback failed', e);
+      }
+      
       monitorPlayback();
     };
 
@@ -79,7 +101,7 @@ export default function SeamlessVideoLoop({
       const standby = activeVideo === 'A' ? videoB : videoA;
 
       if (!active.duration) {
-        rafId = requestAnimationFrame(monitorPlayback);
+        rafRef.current = requestAnimationFrame(monitorPlayback);
         return;
       }
 
@@ -115,15 +137,15 @@ export default function SeamlessVideoLoop({
         })();
       }
 
-      rafId = requestAnimationFrame(monitorPlayback);
+      rafRef.current = requestAnimationFrame(monitorPlayback);
     };
 
     init();
 
     return () => {
-      if (rafId) cancelAnimationFrame(rafId);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [activeVideo, crossfadeAt, fadeDuration]);
+  }, [activeVideo, crossfadeAt, fadeDuration, isPlaying]);
 
   return (
     <div className="absolute inset-0">
@@ -131,7 +153,7 @@ export default function SeamlessVideoLoop({
         ref={videoARef}
         muted
         playsInline
-        preload="auto"
+        preload={isPlaying ? "auto" : "none"}
         className={className}
         style={{
           position: 'absolute',
@@ -152,7 +174,7 @@ export default function SeamlessVideoLoop({
         ref={videoBRef}
         muted
         playsInline
-        preload="auto"
+        preload={isPlaying ? "auto" : "none"}
         className={className}
         style={{
           position: 'absolute',

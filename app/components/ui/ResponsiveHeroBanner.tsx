@@ -70,7 +70,15 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
     ]
 }) => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
     const { status } = useSession();
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     return (
         <section className="w-full isolate min-h-screen overflow-hidden relative">
@@ -84,6 +92,7 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                             objectPosition="center 30%"
                             crossfadeAt={2.0}
                             fadeDuration={1.0}
+                            isPlaying={isMobile}
                         />
                     </div>
 
@@ -95,6 +104,7 @@ const ResponsiveHeroBanner: React.FC<ResponsiveHeroBannerProps> = ({
                             objectPosition="center"
                             crossfadeAt={1.5}
                             fadeDuration={0.8}
+                            isPlaying={!isMobile}
                         />
                     </div>
                 </>
