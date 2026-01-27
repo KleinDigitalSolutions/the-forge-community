@@ -61,7 +61,7 @@ export async function POST(req: Request) {
         type: type,
       },
       // German compliance
-      automatic_tax: { enabled: true },
+      // automatic_tax: { enabled: true }, // Disabled - requires Stripe Tax setup
       billing_address_collection: 'required',
       allow_promotion_codes: true,
     };
