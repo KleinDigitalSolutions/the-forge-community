@@ -421,9 +421,9 @@ export default function Home() {
         {/* Integrated Hero & Header */}
         <ResponsiveHeroBanner 
           badgeText="BATCH #001 — REKRUTIERUNG LÄUFT"
-          title="Wir bauen Brands."
-          titleLine2="Du verdienst mit."
-          description="Wir vereinen viele Founder, Kapital und KI zu einer profitablen Einheit. Echte Anteile an echten Unternehmen."
+          title="Viele Founder. 1 Brand."
+          titleLine2="Schließ dich der Community an."
+          description="Wir vereinen viele Founder, Kapital und Netwerk zu einer profitablen Einheit."
           backgroundVideoUrl="/hero_loop.mp4"
           backgroundVideoUrlMobile="/hero_loop_mobile.mp4"
           primaryButtonText="COMMUNITY BEITRETEN"

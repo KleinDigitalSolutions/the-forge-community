@@ -10,77 +10,6 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { cn } from '@/lib/utils';
 
-const normalizeTrainingContent = (value: string) => {
-  let working = value.trim();
-  if (!working) return '';
-
-  if (!/\r?\n/.test(working)) {
-    working = working
-      .replace(/\s*(#{1,6}\s+)/g, '\n\n$1')
-      .replace(/\s*(\*\*[^*]+?\*\*:)/g, '\n\n$1')
-      .replace(/\s*(\d+)\.\s+/g, '\n$1. ')
-      .replace(/\s*(-)\s+/g, '\n- ')
-      .replace(/\n{3,}/g, '\n\n')
-      .trim();
-
-    if (!/\r?\n/.test(working)) {
-      working = working.replace(/([.!?])\s+(?=[A-ZÄÖÜ])/g, '$1\n\n');
-    }
-  }
-
-  const lines = working.split(/\r?\n/);
-  const normalized: string[] = [];
-  let inCodeFence = false;
-
-  const isListLine = (line: string) => /^\s{0,3}([-*+]|\d+\.)\s+/.test(line);
-  const isTableLine = (line: string) => /^\s*\|/.test(line);
-  const isQuoteLine = (line: string) => /^\s{0,3}>\s?/.test(line);
-  const isHeadingLine = (line: string) => /^\s{0,3}#{1,6}\s+/.test(line);
-
-  for (let i = 0; i < lines.length; i += 1) {
-    const line = lines[i];
-    const next = lines[i + 1];
-    const trimmedLine = line.trimEnd();
-
-    if (/^\s*```/.test(trimmedLine)) {
-      inCodeFence = !inCodeFence;
-      normalized.push(trimmedLine);
-      continue;
-    }
-
-    if (inCodeFence) {
-      normalized.push(line);
-      continue;
-    }
-
-    if (!trimmedLine.trim()) {
-      if (normalized[normalized.length - 1] !== '') normalized.push('');
-      continue;
-    }
-
-    normalized.push(trimmedLine);
-
-    if (next && next.trim()) {
-      const currentIsList = isListLine(trimmedLine);
-      const nextIsList = isListLine(next);
-      const currentIsTable = isTableLine(trimmedLine);
-      const nextIsTable = isTableLine(next);
-      const currentIsQuote = isQuoteLine(trimmedLine);
-      const nextIsQuote = isQuoteLine(next);
-      const currentIsHeading = isHeadingLine(trimmedLine);
-
-      const keepTogether =
-        (currentIsList && nextIsList) ||
-        (currentIsTable && nextIsTable) ||
-        (currentIsQuote && nextIsQuote);
-
-      if (!keepTogether || currentIsHeading) normalized.push('');
-    }
-  }
-
-  return normalized.join('\n').trim();
-};
-
 type TrainingModule = {
   id: string;
   order: number;
@@ -339,23 +268,24 @@ export default function TrainingDetailPage() {
                   )}
 
                   {/* PROSE OPTIMIZATION */}
-                  <div className="prose prose-invert prose-lg max-w-none 
-                    prose-headings:text-white prose-headings:font-instrument-serif prose-headings:tracking-tight prose-headings:mb-8 prose-headings:mt-16 prose-headings:text-center
-                    prose-h2:text-4xl prose-h3:text-3xl
-                    prose-p:text-white/60 prose-p:leading-[1.8] prose-p:mb-8 prose-p:text-xl prose-p:font-medium prose-p:text-center
+                  <div className="prose prose-invert prose-lg max-w-none
+                    prose-headings:text-white prose-headings:font-instrument-serif prose-headings:tracking-tight prose-headings:mb-8 prose-headings:mt-16
+                    prose-h2:text-4xl prose-h2:text-left prose-h2:mt-20 prose-h2:mb-10
+                    prose-h3:text-3xl prose-h3:text-left
+                    prose-p:text-white/60 prose-p:leading-[1.8] prose-p:mb-6 prose-p:text-lg prose-p:font-medium prose-p:text-left
                     prose-strong:text-white prose-strong:font-bold
-                    prose-ul:list-none prose-ul:pl-0 prose-ul:mb-10 prose-ul:space-y-4
-                    prose-li:text-white/50 prose-li:text-lg prose-li:pl-8 prose-li:relative
+                    prose-ul:list-none prose-ul:pl-0 prose-ul:mb-10 prose-ul:space-y-4 prose-ul:mt-6
+                    prose-li:text-white/50 prose-li:text-lg prose-li:pl-8 prose-li:relative prose-li:leading-relaxed
                     prose-li:before:content-[''] prose-li:before:absolute prose-li:before:left-0 prose-li:before:top-[0.7em] prose-li:before:w-2 prose-li:before:h-2 prose-li:before:bg-[#D4AF37] prose-li:before:rounded-full
                     prose-a:text-[#D4AF37] prose-a:no-underline prose-a:font-bold border-b border-[#D4AF37]/20 hover:border-[#D4AF37] transition-all
                     prose-code:bg-white/5 prose-code:px-2 prose-code:py-1 prose-code:rounded-lg prose-code:text-[#D4AF37] prose-code:before:content-none prose-code:after:content-none prose-code:text-sm
                     prose-pre:bg-[#050505] prose-pre:border prose-pre:border-white/10 prose-pre:rounded-[2rem] prose-pre:p-10 prose-pre:shadow-inner
-                    prose-blockquote:border-l-4 prose-blockquote:border-l-[#D4AF37] prose-blockquote:bg-white/5 prose-blockquote:p-10 prose-blockquote:rounded-r-[2.5rem] prose-blockquote:italic prose-blockquote:text-white/70 prose-blockquote:text-xl prose-blockquote:text-center
+                    prose-blockquote:border-l-4 prose-blockquote:border-l-[#D4AF37] prose-blockquote:bg-white/5 prose-blockquote:p-10 prose-blockquote:rounded-r-[2.5rem] prose-blockquote:italic prose-blockquote:text-white/70 prose-blockquote:text-xl
                     prose-img:rounded-[2.5rem] prose-img:border prose-img:border-white/10 prose-img:shadow-2xl
-                    prose-hr:border-white/5
+                    prose-hr:border-white/5 prose-hr:my-12
                   ">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {normalizeTrainingContent(module.content)}
+                      {module.content}
                     </ReactMarkdown>
                   </div>
                 </div>

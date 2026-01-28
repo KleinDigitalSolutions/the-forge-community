@@ -1,13 +1,9 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Lock, SendHorizontal, Sparkles } from 'lucide-react';
+import { Lock, SendHorizontal, Sparkles, User, Bot, Brain } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-type ChatMessage = {
-  role: 'user' | 'assistant';
-  content: string;
-};
+import { useChat } from '@ai-sdk/react';
 
 type ProviderOption = {
   id: string;
@@ -19,8 +15,8 @@ type ProviderOption = {
 const providerOptions: ProviderOption[] = [
   {
     id: 'forge-gemini',
-    label: 'Forge AI (Gemini)',
-    description: 'Unsere Standard-API fuer schnelle Antworten.',
+    label: 'Forge AI (Jarvis Mode)',
+    description: 'Dein persönlicher Assistent mit Langzeitgedächtnis.',
     status: 'active',
   },
   {
@@ -32,49 +28,21 @@ const providerOptions: ProviderOption[] = [
 ];
 
 export default function CommunicationClient() {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState('');
-  const [status, setStatus] = useState<'idle' | 'loading'>('idle');
+  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
+    api: '/api/communication/chat',
+  });
+
   const [selectedProvider, setSelectedProvider] = useState(providerOptions[0].id);
   const isLocked = useMemo(
     () => providerOptions.find((p) => p.id === selectedProvider)?.status === 'disabled',
     [selectedProvider]
   );
 
-  const handleSend = async () => {
-    const trimmed = input.trim();
-    if (!trimmed || status === 'loading' || isLocked) return;
-
-    const userMessage: ChatMessage = { role: 'user', content: trimmed };
-    setMessages((prev) => [...prev, userMessage]);
-    setInput('');
-    setStatus('loading');
-
-    try {
-      const res = await fetch('/api/communication/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: trimmed }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'AI request failed');
-
-      const reply: ChatMessage = { role: 'assistant', content: data.reply || 'Keine Antwort erhalten.' };
-      setMessages((prev) => [...prev, reply]);
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: 'Fehler: Anfrage fehlgeschlagen. Bitte spaeter erneut versuchen.' },
-      ]);
-    } finally {
-      setStatus('idle');
-    }
-  };
-
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
-      handleSend();
+      const form = (event.target as HTMLTextAreaElement).form;
+      if (form) form.requestSubmit();
     }
   };
 
@@ -94,11 +62,11 @@ export default function CommunicationClient() {
                 isDisabled
                   ? 'border-white/10 bg-white/5 text-white/30 cursor-not-allowed'
                   : isActive
-                    ? 'border-[#4da5fc] bg-[#4da5fc]/15 text-white'
+                    ? 'border-[#D4AF37] bg-[#D4AF37]/15 text-white shadow-[0_0_15px_rgba(212,175,55,0.1)]'
                     : 'border-white/10 bg-white/5 text-white/60 hover:text-white hover:border-white/30'
               )}
             >
-              {isDisabled ? <Lock className="h-3.5 w-3.5" /> : <Sparkles className="h-3.5 w-3.5" />}
+              {isDisabled ? <Lock className="h-3.5 w-3.5" /> : <Brain className={cn("h-3.5 w-3.5", isActive && "text-[#D4AF37]")} />}
               <div className="text-left">
                 <div>{option.label}</div>
                 <div className="text-[10px] text-white/40">{option.description}</div>
@@ -108,57 +76,79 @@ export default function CommunicationClient() {
         })}
       </div>
 
-      <div className="mt-12 space-y-4">
+      <div className="mt-12 space-y-6">
         {messages.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-white/5 px-6 py-10 text-center text-white/40">
-            Stell deine erste Frage, um den Chat zu starten.
+          <div className="rounded-3xl border border-white/5 bg-white/2 px-6 py-16 text-center">
+            <div className="w-16 h-16 bg-[#D4AF37]/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-[#D4AF37]/20">
+              <Brain className="w-8 h-8 text-[#D4AF37]" />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">Bereit, Founder.</h3>
+            <p className="text-sm text-white/40 max-w-sm mx-auto">
+              Stell mir eine Frage zu deinen Projekten, Squads oder sag mir, was ich mir merken soll.
+            </p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {messages.map((message, index) => (
+          <div className="space-y-6">
+            {messages.map((message) => (
               <div
-                key={`${message.role}-${index}`}
+                key={message.id}
                 className={cn(
-                  'rounded-2xl px-5 py-4 text-sm leading-relaxed',
+                  'flex gap-4 p-6 rounded-[2rem] transition-all',
                   message.role === 'user'
-                    ? 'bg-[#111827] border border-white/10 text-white/90'
-                    : 'bg-[#0f172a] border border-[#4da5fc]/30 text-white/80'
+                    ? 'bg-white/5 border border-white/10 ml-12'
+                    : 'bg-[#0F1113] border border-[#D4AF37]/20 mr-12 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)]'
                 )}
               >
-                {message.content}
+                <div className={cn(
+                  "w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border",
+                  message.role === 'user' ? "bg-white/5 border-white/10" : "bg-[#D4AF37]/10 border-[#D4AF37]/20"
+                )}>
+                  {message.role === 'user' ? <User className="w-5 h-5 text-white/40" /> : <Bot className="w-5 h-5 text-[#D4AF37]" />}
+                </div>
+                <div className="flex-1 space-y-2">
+                  <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">
+                    {message.role === 'user' ? 'Operator' : 'Orion AI'}
+                  </div>
+                  <div className="text-sm leading-relaxed text-white/90 whitespace-pre-wrap">
+                    {message.content}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
         )}
       </div>
 
-      <div className="mt-10">
-        <div className="relative rounded-2xl border border-white/10 bg-[#0f1116] p-4 shadow-[0_0_20px_rgba(77,165,252,0.08)]">
+      <div className="mt-10 sticky bottom-6">
+        <form onSubmit={handleSubmit} className="relative rounded-[2.5rem] border border-white/10 bg-[#0B0C0E]/80 backdrop-blur-2xl p-2 shadow-[0_30px_100px_-20px_rgba(0,0,0,1)]">
           <textarea
-            value={input}
-            onChange={(event) => setInput(event.target.value)}
+            value={input || ''}
+            onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            placeholder="Was soll die AI fuer dich klaeren?"
-            className="min-h-[120px] w-full resize-none bg-transparent text-sm text-white/90 placeholder:text-white/30 focus:outline-none"
+            placeholder="Schreib Orion... (z.B. 'Merk dir, dass ich Kaffee hasse')"
+            className="min-h-[80px] w-full resize-none bg-transparent px-6 py-4 text-sm text-white/90 placeholder:text-white/20 focus:outline-none custom-scrollbar"
           />
-          <div className="mt-3 flex items-center justify-between">
-            <span className="text-xs text-white/40">Shift + Enter fuer neue Zeile</span>
+          <div className="flex items-center justify-between px-4 pb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest px-3 py-1 rounded-full border border-white/5">
+                Shift + Enter für Zeile
+              </span>
+              {isLoading && (
+                <span className="flex items-center gap-2 text-[9px] font-bold text-[#D4AF37] uppercase tracking-widest animate-pulse">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]" />
+                  Orion verarbeitet...
+                </span>
+              )}
+            </div>
             <button
-              type="button"
-              onClick={handleSend}
-              disabled={!input.trim() || status === 'loading' || isLocked}
-              className="inline-flex items-center gap-2 rounded-full bg-[#1488fc] px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-[#1a94ff] disabled:cursor-not-allowed disabled:opacity-40"
+              type="submit"
+              disabled={!input?.trim() || isLoading || isLocked}
+              className="flex h-12 w-12 items-center justify-center rounded-full bg-[#D4AF37] text-black transition hover:bg-[#F0C05A] active:scale-90 disabled:cursor-not-allowed disabled:opacity-20 shadow-xl shadow-[#D4AF37]/10"
             >
-              {status === 'loading' ? 'Denke…' : 'Senden'}
-              <SendHorizontal className="h-4 w-4" />
+              <SendHorizontal className="h-5 w-5" />
             </button>
           </div>
-        </div>
-        {isLocked && (
-          <p className="mt-3 text-center text-xs text-white/40">
-            Eigene API ist noch nicht freigeschaltet. Wir schalten diese Option nach deinem Key-Setup frei.
-          </p>
-        )}
+        </form>
       </div>
     </>
   );

@@ -183,6 +183,7 @@ model User {
   createdPosts      ContentPost[]
   timeEntries       TimeEntry[]
   walletTransactions WalletTransaction[]
+  memories          UserMemory[]
   platformTaxProfile PlatformTaxProfile?
   platformCreditPurchases PlatformCreditPurchase[]
   platformCreditUsages PlatformCreditUsage[]
@@ -1864,3 +1865,18 @@ model TimeEntry {
   @@index([squadId])
   @@index([userId])
 }
+
+model UserMemory {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String   @db.Text
+  category  String   @default("general") // e.g., 'preference', 'fact', 'goal'
+  importance Int      @default(1) // 1-5
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([category])
+}
+

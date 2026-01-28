@@ -82,6 +82,8 @@ export interface UserProfile {
   founderNumber?: number;
   karmaScore?: number;
   credits?: number;
+  onboardingComplete?: boolean;
+  hasSeenCockpitTour?: boolean;
   _count?: {
     ventures: number;
     squadMemberships: number;
@@ -237,12 +239,18 @@ const MarkdownComponents = {
       );
     }
 
+    const hasImage = node.children?.some((child: any) => child.tagName === 'img');
+
     if (isParagraphImageOnly(node)) {
       return (
         <figure className="my-4 overflow-hidden border border-white/10 bg-black/20 rounded-none sm:rounded-xl">
           {children}
         </figure>
       );
+    }
+
+    if (hasImage) {
+      return <div className="mb-4 last:mb-0 leading-relaxed">{children}</div>;
     }
 
     return <p className="mb-4 last:mb-0 leading-relaxed">{children}</p>;

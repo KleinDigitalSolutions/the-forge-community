@@ -16,6 +16,7 @@
   "dependencies": {
     "@ai-sdk/google": "^3.0.10",
     "@ai-sdk/openai": "^3.0.12",
+    "@ai-sdk/react": "^3.0.60",
     "@auth/pg-adapter": "^1.11.1",
     "@auth/prisma-adapter": "^2.11.1",
     "@marsidev/react-turnstile": "^1.4.1",
