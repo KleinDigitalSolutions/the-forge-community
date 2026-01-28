@@ -422,14 +422,14 @@ export default function Home() {
         <ResponsiveHeroBanner 
           badgeText="BATCH #001 — REKRUTIERUNG LÄUFT"
           title="Viele Founder. 1 Brand."
-          titleLine2="Schließ dich der Community an und proftiere von unserem Netwerk von B2B Händlern."
-          description="Wir vereinen viele Founder, Kapital und Netwerk zu einer profitablen Einheit."
+          titleLine2="Profitiere von unserem Netzwerk an B2B Händlern."
+          description="Wir vereinen viele Founder, Kapital und Netzwerk zu einer profitablen Einheit."
           backgroundVideoUrl="/hero_loop.mp4"
           backgroundVideoUrlMobile="/hero_loop_mobile.mp4"
           primaryButtonText="COMMUNITY BEITRETEN"
-          primaryButtonHref="#apply"
-          secondaryButtonText="PROTOKOLL ANSEHEN"
-          secondaryButtonHref="#"
+          primaryButtonHref="#pricing"
+          secondaryButtonText="Demo Shop"
+          secondaryButtonHref="/demo-shop"
           partners={[
             { logoUrl: "https://upload.wikimedia.org/wikipedia/commons/5/5e/Vercel_logo_black.svg", href: "https://vercel.com", scale: 1.2 },
             { logoUrl: "https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg", href: "https://stripe.com" },

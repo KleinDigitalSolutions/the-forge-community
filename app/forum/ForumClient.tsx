@@ -1997,7 +1997,7 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
         {/* Onboarding Overlay */}
         {user && !user.onboardingComplete && (
           <OnboardingWizard 
-            user={user} 
+            user={user as any} 
             onComplete={() => {
               setUser(prev => prev ? { ...prev, onboardingComplete: true } : null);
             }} 

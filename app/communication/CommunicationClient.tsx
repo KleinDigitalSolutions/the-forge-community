@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { Lock, SendHorizontal, Sparkles, User, Bot, Brain } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useChat } from '@ai-sdk/react';
+import { DefaultChatTransport } from 'ai';
 
 type ProviderOption = {
   id: string;
@@ -29,7 +30,9 @@ const providerOptions: ProviderOption[] = [
 
 export default function CommunicationClient() {
   const { messages, sendMessage, status, setMessages } = useChat({
-    api: '/api/communication/chat',
+    transport: new DefaultChatTransport({
+      api: '/api/communication/chat',
+    }),
   });
 
   const [input, setInput] = useState('');

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
-import { streamText, tool } from 'ai';
+import { streamText, tool, convertToModelMessages } from 'ai';
 import { getUserFullContext } from '@/lib/ai/context';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
@@ -17,9 +17,9 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { message } = await req.json();
-    if (typeof message !== 'string' || !message.trim()) {
-      return NextResponse.json({ error: 'Nachricht fehlt' }, { status: 400 });
+    const { messages } = await req.json();
+    if (!messages || !Array.isArray(messages)) {
+      return NextResponse.json({ error: 'Nachrichten fehlen' }, { status: 400 });
     }
 
     const userContext = await getUserFullContext(session.user.email);
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     const result = await streamText({
       model: gemini('gemini-2.0-flash-exp'),
       system: systemPrompt,
-      messages: [{ role: 'user', content: message }],
+      messages: await convertToModelMessages(messages),
       tools: {
         saveMemory: tool({
           description: 'Speichert eine Information im Langzeitgedächtnis des Benutzers.',
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
       } as any,
     });
 
-    return result.toTextStreamResponse();
+    return result.toUIMessageStreamResponse();
   } catch (error) {
     console.error('Jarvis chat failed:', error);
     return NextResponse.json({ error: 'AI service unavailable' }, { status: 500 });
