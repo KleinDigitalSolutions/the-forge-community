@@ -17,12 +17,19 @@ export default function FaceSwapPage() {
   const ventureId = params.ventureId as string;
   const { setContext } = useAIContext();
 
+  const [isPaid, setIsPaid] = useState(false);
+  const [tierLabel, setTierLabel] = useState<'Free' | 'Pro' | 'Enterprise'>('Free');
+  const [tierReady, setTierReady] = useState(false);
+
   const [model, setModel] = useState('lucataco-faceswap');
   const [swapCondition, setSwapCondition] = useState<'all' | 'first'>('all');
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [faceFile, setFaceFile] = useState<File | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [facePreview, setFacePreview] = useState<string | null>(null);
+  const [prompt, setPrompt] = useState('');
+  const [aspectRatio, setAspectRatio] = useState('9:16');
+  const [duration, setDuration] = useState(4);
 
   const [status, setStatus] = useState<JobStatus>('idle');
   const [predictionId, setPredictionId] = useState<string | null>(null);
@@ -34,7 +41,7 @@ export default function FaceSwapPage() {
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    setContext('Face Swap Studio - Person Replacement in Videos.');
+    setContext('AI Avatar Studio - Hybrid Character & Background Swap.');
     return () => {
       if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
     };
@@ -145,8 +152,8 @@ export default function FaceSwapPage() {
 
   return (
     <StudioShell
-      title="Face Swap Studio"
-      description="Ersetze Personen in Videos - perfekt für Ads, Content Creation und Testing."
+      title="AI Avatar Studio"
+      description="Hybrid Character Swap: FREE (Wan 2.2) + PRO (Replicate)."
       icon={<User className="w-5 h-5" />}
     >
       {/* Back Navigation */}

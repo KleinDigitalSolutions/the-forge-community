@@ -81,19 +81,21 @@ type QuotaInput = {
   windowMs?: number;
 };
 
-const consumeQuotaWindow = async (options: QuotaInput & { windowMs: number }): Promise<QuotaResult> => {
+type QuotaBucketInput = QuotaInput & {
+  windowStart: Date;
+  resetAt: Date;
+};
+
+const consumeQuotaBucket = async (options: QuotaBucketInput): Promise<QuotaResult> => {
   const limit = Math.max(0, Math.floor(options.limit));
-  const now = Date.now();
-  const windowStart = new Date(Math.floor(now / options.windowMs) * options.windowMs);
-  const resetAt = new Date(windowStart.getTime() + options.windowMs);
 
   if (limit <= 0) {
-    return { allowed: true, remaining: Number.MAX_SAFE_INTEGER, limit: 0, resetAt };
+    return { allowed: true, remaining: Number.MAX_SAFE_INTEGER, limit: 0, resetAt: options.resetAt };
   }
 
   const rows = await prisma.$queryRaw<{ count: number }[]>`
     INSERT INTO "RateLimitBucket" ("userId", "feature", "windowStart", "count", "createdAt", "updatedAt")
-    VALUES (${options.userId}, ${options.feature}, ${windowStart}, 1, NOW(), NOW())
+    VALUES (${options.userId}, ${options.feature}, ${options.windowStart}, 1, NOW(), NOW())
     ON CONFLICT ("userId", "feature", "windowStart")
     DO UPDATE SET
       "count" = "RateLimitBucket"."count" + 1,
@@ -103,13 +105,27 @@ const consumeQuotaWindow = async (options: QuotaInput & { windowMs: number }): P
   `;
 
   if (rows.length === 0) {
-    return { allowed: false, remaining: 0, limit, resetAt };
+    return { allowed: false, remaining: 0, limit, resetAt: options.resetAt };
   }
 
   const currentCount = rows[0].count;
   const remaining = Math.max(0, limit - currentCount);
 
-  return { allowed: true, remaining, limit, resetAt };
+  return { allowed: true, remaining, limit, resetAt: options.resetAt };
+};
+
+const consumeQuotaWindow = async (options: QuotaInput & { windowMs: number }): Promise<QuotaResult> => {
+  const now = Date.now();
+  const windowStart = new Date(Math.floor(now / options.windowMs) * options.windowMs);
+  const resetAt = new Date(windowStart.getTime() + options.windowMs);
+
+  return consumeQuotaBucket({
+    userId: options.userId,
+    feature: options.feature,
+    limit: options.limit,
+    windowStart,
+    resetAt,
+  });
 };
 
 export async function consumeHourlyQuota(options: QuotaInput): Promise<QuotaResult> {
@@ -120,6 +136,20 @@ export async function consumeHourlyQuota(options: QuotaInput): Promise<QuotaResu
 export async function consumeDailyQuota(options: QuotaInput): Promise<QuotaResult> {
   const windowMs = options.windowMs ?? 24 * 60 * 60 * 1000;
   return consumeQuotaWindow({ ...options, windowMs });
+}
+
+export async function consumeMonthlyQuota(options: QuotaInput): Promise<QuotaResult> {
+  const now = new Date();
+  const windowStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  const resetAt = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+
+  return consumeQuotaBucket({
+    userId: options.userId,
+    feature: options.feature,
+    limit: options.limit,
+    windowStart,
+    resetAt,
+  });
 }
 
 /**
@@ -142,24 +172,30 @@ export const DAILY_QUOTAS = {
   VIDEO_PAID: parseInt(process.env.DAILY_QUOTA_VIDEO_PAID || '20', 10),
 } as const;
 
+export const MONTHLY_QUOTAS = {
+  AVATAR_FREE: parseInt(process.env.MONTHLY_QUOTA_AVATAR_FREE || '3', 10),
+  AVATAR_PAID: parseInt(process.env.MONTHLY_QUOTA_AVATAR_PAID || '200', 10),
+} as const;
+
 /**
  * Check if user has paid subscription (future implementation)
  *
  * For now, all users are on free tier.
  * Future: Check user.subscriptionTier === 'pro' or similar.
  */
-async function getUserTier(userId: string): Promise<'free' | 'paid'> {
-  // TODO: Implement subscription check
-  // const user = await prisma.user.findUnique({
-  //   where: { id: userId },
-  //   select: { subscriptionTier: true, subscriptionStatus: true }
-  // });
-  //
-  // if (user?.subscriptionStatus === 'active' && user.subscriptionTier === 'pro') {
-  //   return 'paid';
-  // }
+export async function getUserTier(userId: string): Promise<'free' | 'paid'> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { subscriptionTier: true, subscriptionStatus: true, role: true },
+  });
 
-  return 'free'; // Default: All users on free tier
+  if (!user) return 'free';
+  if (user.role === 'ADMIN') return 'paid';
+
+  const isActive = user.subscriptionStatus === 'active' || user.subscriptionStatus === 'trialing';
+  const isPaidTier = user.subscriptionTier === 'pro' || user.subscriptionTier === 'enterprise';
+
+  return isActive && isPaidTier ? 'paid' : 'free';
 }
 
 /**
@@ -212,6 +248,17 @@ export async function checkDailyVideoQuota(userId: string): Promise<QuotaResult>
     userId,
     feature: 'daily-quota:video-generation',
     limit
+  });
+}
+
+export async function checkMonthlyAvatarQuota(userId: string): Promise<QuotaResult> {
+  const tier = await getUserTier(userId);
+  const limit = tier === 'paid' ? MONTHLY_QUOTAS.AVATAR_PAID : MONTHLY_QUOTAS.AVATAR_FREE;
+
+  return consumeMonthlyQuota({
+    userId,
+    feature: 'monthly-quota:avatar-swap',
+    limit,
   });
 }
 

@@ -509,79 +509,86 @@ export default function Home() {
           </div>
         </section>
 
-        {/* The Forge Section (RESTRUCTURED: Enterprise Ecosystem) */}
-        <section id="forge" className="relative py-32 px-4 md:px-6 overflow-hidden">
-          {/* ... existing content ... */}
-          <div className="relative max-w-7xl mx-auto grid lg:grid-cols-[1.15fr_0.85fr] gap-14 items-center">
-            <div className="space-y-8">
-              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">
-                Infrastruktur
-              </div>
-              <h2 className="text-4xl md:text-6xl font-instrument-serif text-white leading-tight">
-                Enterprise-Level<br/>Operating System.
-              </h2>
-              <p className="text-sm text-white/60 leading-relaxed max-w-xl">
-                The Forge ist keine Sammlung von Tools, sondern ein integriertes Betriebssystem für digitales Business.
-                Vom Global Sourcing über KI-gestützte Content-Produktion bis zum Legal-Framework – alles ist nahtlos verbunden.
-              </p>
-              
-              <div className="grid sm:grid-cols-2 gap-4 text-xs text-white/60 pt-4">
-                {[
-                  { title: 'Global Sourcing Network', desc: 'Direkter Datenbank-Zugriff auf 50+ verifizierte B2B-Händler & Produzenten (DE, PL, TR). Keine Zwischenhändler.' },
-                  { title: 'Contextual Intelligence', desc: 'Orion AI kennt Budget, Brand-DNA und Zielgruppe in jedem Modul.' },
-                  { title: 'Market Intelligence', desc: 'KI-Analyse von Community-Daten zur Identifikation von High-Performance Trends.' },
-                  { title: 'Compliance & Legal', desc: 'Automatisierte Verträge und IP-Schutz für alle Assets.' }
-                ].map((step) => (
-                  <div key={step.title} className="glass-card border border-white/10 rounded-2xl p-5 bg-black/30 backdrop-blur-sm hover:border-(--accent)/30 transition-colors">
-                    <div className="text-sm font-bold text-white mb-1">
-                      {step.title}
-                    </div>
-                    <div className="text-[11px] text-white/50 leading-snug">{step.desc}</div>
-                  </div>
-                ))}
+        {/* The Forge Section (RESTRUCTURED: Technical Blueprint) */}
+        <section id="forge" className="relative py-40 px-4 md:px-6 border-b border-white/10 bg-black">
+          <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-0 border border-white/10">
+            {/* Left Side: The Philosophy */}
+            <div className="p-12 md:p-20 border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col justify-between bg-black">
+              <div className="space-y-12">
+                <div className="inline-flex items-center gap-4">
+                  <span className="text-[10px] font-mono text-[#D4AF37] uppercase tracking-[0.5em]">Section_02 // Infrastructure</span>
+                  <div className="h-px w-12 bg-[#D4AF37]/30" />
+                </div>
+                <h2 className="text-6xl md:text-8xl font-instrument-serif text-white leading-[0.85] tracking-tighter">
+                  Forge<br/>
+                  <span className="italic opacity-40 text-7xl md:text-9xl">Operating</span><br/>
+                  System.
+                </h2>
+                <p className="text-xl text-white/40 max-w-lg leading-relaxed font-medium">
+                  The Forge ist kein Toolset. Es ist ein End-to-End Protokoll für den Aufbau, die Skalierung und die Dominanz digitaler Märkte.
+                </p>
               </div>
 
-              <div className="flex flex-wrap gap-3 pt-4">
-                <Link
-                  href="/ventures"
-                  className="rounded-full border border-[#D4AF37]/40 bg-[#D4AF37] px-6 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-black hover:opacity-90 transition-opacity"
-                >
-                  ACCESS ECOSYSTEM
-                </Link>
+              <div className="mt-24 grid grid-cols-2 gap-12 border-t border-white/10 pt-12">
+                {[
+                  { label: 'Intelligenz', val: 'Dezentral' },
+                  { label: 'Prozesse', val: 'Automatisiert' },
+                  { label: 'Legal', val: 'Protokollbasiert' },
+                  { label: 'Sourcing', val: 'Direktzugriff' }
+                ].map(item => (
+                  <div key={item.label} className="space-y-1">
+                    <div className="text-[9px] font-mono text-white/20 uppercase tracking-widest">{item.label}</div>
+                    <div className="text-lg font-instrument-serif text-white">{item.val}</div>
+                  </div>
+                ))}
               </div>
             </div>
 
-            <div className="glass-card border border-white/10 rounded-3xl p-6 sm:p-8 space-y-6 bg-black/40 backdrop-blur-md">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30">
-                    Live Modules
+            {/* Right Side: The Status Terminal */}
+            <div className="bg-black p-12 md:p-20 flex flex-col justify-between">
+              <div className="space-y-16">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-3xl md:text-5xl font-instrument-serif text-white italic">Interface Status</h3>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                    <span className="text-[10px] font-mono text-green-500 uppercase tracking-[0.2em]">System_Live</span>
                   </div>
-                  <h3 className="text-2xl font-instrument-serif text-white">Integrierte Lösung</h3>
                 </div>
-                <div className="flex items-center gap-2 rounded-full border border-green-500/20 bg-green-500/10 px-3 py-1 text-[9px] font-black uppercase tracking-[0.3em] text-green-500">
-                  Operational
+
+                <div className="space-y-0">
+                  {[
+                    { icon: Truck, title: 'Sourcing Studio', status: 'ONLINE', color: 'text-green-500' },
+                    { icon: MessageSquare, title: 'Community Brain', status: 'ONLINE', color: 'text-green-500' },
+                    { icon: Sparkles, title: 'Marketing Studio', status: 'SYNCING', color: 'text-[#D4AF37]' },
+                    { icon: Film, title: 'Media Factory', status: 'ONLINE', color: 'text-green-500' },
+                    { icon: Cpu, title: 'Capital Control', status: 'LOCKED', color: 'text-white/10' }
+                  ].map((module) => (
+                    <div key={module.title} className="group flex items-center justify-between py-8 border-b border-white/5 last:border-0 hover:px-4 transition-all duration-500">
+                      <div className="flex items-center gap-10">
+                        <module.icon className="w-5 h-5 text-white/20 group-hover:text-[#D4AF37] transition-all" />
+                        <span className="text-2xl md:text-4xl font-instrument-serif text-white/20 group-hover:text-white transition-all duration-500">
+                          {module.title}
+                        </span>
+                      </div>
+                      <div className={cn("text-[10px] font-mono font-bold px-4 py-1.5 border border-current rounded-[2px] transition-all", module.color)}>
+                        {module.status}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              <div className="space-y-4">
-                {[
-                  { icon: Truck, title: 'Sourcing Studio', desc: 'Lieferanten-Datenbank & Order Management.' },
-                  { icon: MessageSquare, title: 'Community Brain', desc: 'Kollektive Intelligenz & KI-Trendscouting.' },
-                  { icon: Sparkles, title: 'Marketing Studio', desc: 'Brand-Aware Copywriting & Campaigning.' },
-                  { icon: Film, title: 'Media Factory', desc: 'Veo 3.1 & Flux für High-Fidelity Assets.' },
-                  { icon: Cpu, title: 'Capital Control', desc: 'Transparente Verwaltung der gepoolten Mittel.' }
-                ].map((module) => (
-                  <div key={module.title} className="flex gap-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 hover:bg-white/10 transition-colors">
-                    <div className="h-10 w-10 rounded-xl border border-white/10 bg-black/40 flex items-center justify-center shrink-0">
-                      <module.icon className="w-5 h-5 text-[#D4AF37]" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-semibold text-white">{module.title}</div>
-                      <div className="text-xs text-white/50">{module.desc}</div>
-                    </div>
+              <div className="mt-20 pt-12 border-t border-white/10 flex items-end justify-between">
+                <div className="space-y-6 flex-1 pr-12">
+                  <div className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">Network Throughput</div>
+                  <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                    <div className="h-full w-[68%] bg-[#D4AF37] opacity-50" />
                   </div>
-                ))}
+                </div>
+                <Link href="/ventures" className="text-[10px] font-black uppercase tracking-[0.4em] text-white hover:text-[#D4AF37] transition-all flex items-center gap-4 group">
+                  <span>INIT_SEQUENCE</span>
+                  <ChevronRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
+                </Link>
               </div>
             </div>
           </div>

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { reserveEnergy, refundEnergy, settleEnergy, InsufficientEnergyError, checkDailyVideoQuota } from '@/lib/energy';
+import { reserveEnergy, refundEnergy, settleEnergy, InsufficientEnergyError, checkDailyVideoQuota, checkMonthlyAvatarQuota, getUserTier } from '@/lib/energy';
 import { prisma } from '@/lib/prisma';
 import { RateLimiters } from '@/lib/rate-limit';
 import { put } from '@vercel/blob';
@@ -14,10 +14,26 @@ const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
 });
 
+const MODAL_IMAGE_TO_VIDEO_URL =
+  process.env.MODAL_MEDIA_IMAGE_TO_VIDEO_URL || process.env.MODAL_MEDIA_TEXT_TO_VIDEO_URL;
+
 const MAX_VIDEO_BYTES = 50 * 1024 * 1024; // 50MB
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10MB
 const ALLOWED_VIDEO_TYPES = new Set(['video/mp4', 'video/quicktime']);
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const ALLOWED_ASPECT_RATIOS = new Set(['1:1', '4:5', '9:16', '16:9', '3:2']);
+
+const parseLimit = (value: string | undefined, fallback: number) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? Math.max(0, Math.floor(parsed)) : fallback;
+};
+
+const FREE_AVATAR_COST = parseLimit(process.env.MARKETING_AVATAR_FREE_CREDITS, 10);
+const FREE_AVATAR_MODEL = process.env.MARKETING_AVATAR_FREE_MODEL || 'wan-2.2';
+const FREE_AVATAR_DEFAULT_PROMPT =
+  process.env.MARKETING_AVATAR_FREE_PROMPT || 'high quality, cinematic lighting, smooth motion';
+const FREE_AVATAR_DEFAULT_ASPECT = process.env.MARKETING_AVATAR_FREE_ASPECT_RATIO || '9:16';
+const FREE_AVATAR_DEFAULT_DURATION = parseLimit(process.env.MARKETING_AVATAR_FREE_DURATION, 4);
 
 type FaceSwapJobCache = {
   ventureId: string;
@@ -69,6 +85,18 @@ const isFileLike = (value: FormDataEntryValue | null): value is File => {
 
 const sanitizeFilename = (value: string) => value.replace(/[^a-zA-Z0-9._-]+/g, '-');
 
+const parseFormNumber = (value: FormDataEntryValue | null, fallback: number) => {
+  if (typeof value !== 'string') return fallback;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const normalizeAspectRatio = (value: string | undefined) => {
+  if (!value) return FREE_AVATAR_DEFAULT_ASPECT;
+  const trimmed = value.trim();
+  return ALLOWED_ASPECT_RATIOS.has(trimmed) ? trimmed : FREE_AVATAR_DEFAULT_ASPECT;
+};
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -88,33 +116,24 @@ export async function POST(
   const videoFile = formData.get('video');
   const faceFile = formData.get('face');
   const swapCondition = String(formData.get('swapCondition') || 'all'); // 'all' or 'first'
+  const prompt = String(formData.get('prompt') || '').trim();
+  const aspectRatio = normalizeAspectRatio(
+    typeof formData.get('aspectRatio') === 'string' ? String(formData.get('aspectRatio')) : undefined
+  );
+  const duration = parseFormNumber(formData.get('duration'), FREE_AVATAR_DEFAULT_DURATION);
+  const fps = parseFormNumber(formData.get('fps'), 24);
+  const guidance = parseFormNumber(formData.get('guidance'), 7.5);
+  const steps = parseFormNumber(formData.get('steps'), 30);
 
-  if (!isFileLike(videoFile) || !isFileLike(faceFile)) {
-    return NextResponse.json({ error: 'Video und Face Image sind erforderlich' }, { status: 400 });
+  const hasVideo = isFileLike(videoFile);
+  const hasFace = isFileLike(faceFile);
+
+  if (!hasFace) {
+    return NextResponse.json({ error: 'Referenzbild ist erforderlich' }, { status: 400 });
   }
 
-  const modelConfig = FACESWAP_MODELS[modelKey];
-  if (!modelConfig) {
-    return NextResponse.json({ error: 'Ungültiges Modell' }, { status: 400 });
-  }
-
-  if (!process.env.REPLICATE_API_TOKEN) {
-    return NextResponse.json({ error: 'Replicate API Token fehlt' }, { status: 500 });
-  }
-
-  // Validate files
-  if (videoFile.size > MAX_VIDEO_BYTES) {
-    return NextResponse.json({ error: 'Video ist zu groß (max 50MB)' }, { status: 413 });
-  }
-  if (faceFile.size > MAX_IMAGE_BYTES) {
-    return NextResponse.json({ error: 'Face Image ist zu groß (max 10MB)' }, { status: 413 });
-  }
-  if (!ALLOWED_VIDEO_TYPES.has(videoFile.type)) {
-    return NextResponse.json({ error: 'Ungültiges Video-Format (nur MP4/MOV)' }, { status: 415 });
-  }
-  if (!ALLOWED_IMAGE_TYPES.has(faceFile.type)) {
-    return NextResponse.json({ error: 'Ungültiges Bild-Format (nur JPG/PNG/WebP)' }, { status: 415 });
-  }
+  const face = faceFile as File;
+  const video = hasVideo ? (videoFile as File) : null;
 
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
@@ -133,7 +152,41 @@ export async function POST(
     return NextResponse.json({ error: 'Venture nicht gefunden oder Zugriff verweigert' }, { status: 404 });
   }
 
-  const cost = modelConfig.cost;
+  const tier = await getUserTier(user.id);
+  const isPaid = tier === 'paid';
+
+  if (isPaid && !hasVideo) {
+    return NextResponse.json({ error: 'Video ist für Pro erforderlich' }, { status: 400 });
+  }
+
+  const modelConfig = isPaid ? FACESWAP_MODELS[modelKey] : null;
+  if (isPaid && !modelConfig) {
+    return NextResponse.json({ error: 'Ungültiges Modell' }, { status: 400 });
+  }
+
+  if (isPaid && !process.env.REPLICATE_API_TOKEN) {
+    return NextResponse.json({ error: 'Replicate API Token fehlt' }, { status: 500 });
+  }
+
+  if (!isPaid && !MODAL_IMAGE_TO_VIDEO_URL) {
+    return NextResponse.json({ error: 'Modal Video Endpoint nicht konfiguriert' }, { status: 500 });
+  }
+
+  // Validate files
+  if (hasVideo && video!.size > MAX_VIDEO_BYTES) {
+    return NextResponse.json({ error: 'Video ist zu groß (max 50MB)' }, { status: 413 });
+  }
+  if (face.size > MAX_IMAGE_BYTES) {
+    return NextResponse.json({ error: 'Referenzbild ist zu groß (max 10MB)' }, { status: 413 });
+  }
+  if (hasVideo && !ALLOWED_VIDEO_TYPES.has(video!.type)) {
+    return NextResponse.json({ error: 'Ungültiges Video-Format (nur MP4/MOV)' }, { status: 415 });
+  }
+  if (!ALLOWED_IMAGE_TYPES.has(face.type)) {
+    return NextResponse.json({ error: 'Ungültiges Bild-Format (nur JPG/PNG/WebP)' }, { status: 415 });
+  }
+
+  const cost = isPaid ? modelConfig!.cost : FREE_AVATAR_COST;
   let reservationId: string | null = null;
   const requestId = request.headers.get('x-request-id') || generateUUID();
 
@@ -144,16 +197,34 @@ export async function POST(
       amount: cost,
       feature: 'marketing.faceswap',
       requestId,
-      metadata: { ventureId, model: modelConfig.id, cost }
+      metadata: {
+        ventureId,
+        model: isPaid ? modelConfig!.id : FREE_AVATAR_MODEL,
+        cost,
+        tier
+      }
     });
     reservationId = reservation.reservationId;
 
-    // Step 2: Check daily video quota (face swap is heavy like video)
+    // Step 2: Monthly + Daily quotas
+    const monthlyQuota = await checkMonthlyAvatarQuota(user.id);
+    if (!monthlyQuota.allowed) {
+      await refundEnergy(reservationId, 'monthly-quota-exceeded');
+      return NextResponse.json({
+        error: `Monatslimit erreicht (${monthlyQuota.limit}/Monat). Reset: ${monthlyQuota.resetAt.toLocaleDateString('de-DE')}`,
+        quota: {
+          limit: monthlyQuota.limit,
+          remaining: monthlyQuota.remaining,
+          resetAt: monthlyQuota.resetAt.toISOString()
+        }
+      }, { status: 429 });
+    }
+
     const dailyQuota = await checkDailyVideoQuota(user.id);
     if (!dailyQuota.allowed) {
       await refundEnergy(reservationId, 'daily-quota-exceeded');
       return NextResponse.json({
-        error: `Tageslimit für Face Swap erreicht (${dailyQuota.limit}/Tag). Reset: ${dailyQuota.resetAt.toLocaleTimeString('de-DE')}`,
+        error: `Tageslimit für Avatar Swap erreicht (${dailyQuota.limit}/Tag). Reset: ${dailyQuota.resetAt.toLocaleTimeString('de-DE')}`,
         quota: {
           limit: dailyQuota.limit,
           remaining: dailyQuota.remaining,
@@ -163,63 +234,150 @@ export async function POST(
     }
 
     // Step 3: Upload files to Vercel Blob
-    const videoBuffer = Buffer.from(await videoFile.arrayBuffer());
-    const faceBuffer = Buffer.from(await faceFile.arrayBuffer());
-
-    const videoFilename = `faceswap/${user.id}/videos/${Date.now()}-${sanitizeFilename(videoFile.name)}`;
-    const faceFilename = `faceswap/${user.id}/faces/${Date.now()}-${sanitizeFilename(faceFile.name)}`;
-
-    const videoBlob = await put(videoFilename, videoBuffer, {
-      access: 'public',
-      contentType: videoFile.type,
-    });
-
+    const faceBuffer = Buffer.from(await face.arrayBuffer());
+    const faceFilename = `faceswap/${user.id}/faces/${Date.now()}-${sanitizeFilename(face.name)}`;
     const faceBlob = await put(faceFilename, faceBuffer, {
       access: 'public',
-      contentType: faceFile.type,
+      contentType: face.type,
     });
 
-    // Step 4: Create Replicate prediction
-    const input: Record<string, unknown> = {
-      target_video: videoBlob.url,
-      swap_image: faceBlob.url,
-    };
+    const videoBlob = hasVideo
+      ? await (async () => {
+          const videoBuffer = Buffer.from(await video!.arrayBuffer());
+          const videoFilename = `faceswap/${user.id}/videos/${Date.now()}-${sanitizeFilename(video!.name)}`;
+          return put(videoFilename, videoBuffer, {
+            access: 'public',
+            contentType: video!.type,
+          });
+        })()
+      : null;
 
-    // Model-specific configurations
-    if (modelKey === 'lucataco-faceswap') {
-      input.swap_condition = swapCondition; // 'all' or 'first'
+    if (isPaid) {
+      const input: Record<string, unknown> = {
+        target_video: videoBlob!.url,
+        swap_image: faceBlob.url,
+      };
+
+      if (modelKey === 'lucataco-faceswap') {
+        input.swap_condition = swapCondition;
+      }
+
+      const appUrl =
+        process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null);
+      const webhookUrl = appUrl ? `${appUrl}/api/webhooks/replicate` : undefined;
+
+      const prediction = await replicate.predictions.create({
+        model: modelConfig!.id,
+        input,
+        ...(webhookUrl
+          ? {
+              webhook: webhookUrl,
+              webhook_events_filter: ['completed'],
+            }
+          : {}),
+      });
+
+      await writeJobCache(prediction.id, {
+        ventureId,
+        userId: user.id,
+        model: modelConfig!.id,
+        cost,
+        reservationId,
+        videoUrl: videoBlob!.url,
+        faceUrl: faceBlob.url,
+        createdAt: new Date().toISOString(),
+      });
+
+      return NextResponse.json({
+        predictionId: prediction.id,
+        status: prediction.status,
+        provider: 'replicate',
+        model: modelConfig!.label,
+        creditsUsed: cost,
+        tier
+      });
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null);
-    const webhookUrl = appUrl ? `${appUrl}/api/webhooks/replicate` : undefined;
+    const resolvedDuration = Math.min(12, Math.max(2, Math.round(duration)));
+    const resolvedPrompt = prompt || FREE_AVATAR_DEFAULT_PROMPT;
+    const modalHeaders: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (process.env.MODAL_API_KEY) {
+      modalHeaders.Authorization = `Bearer ${process.env.MODAL_API_KEY}`;
+    }
 
-    const prediction = await replicate.predictions.create({
-      model: modelConfig.id,
-      input,
-      ...(webhookUrl ? {
-        webhook: webhookUrl,
-        webhook_events_filter: ['completed'],
-      } : {}),
+    const modalPayload = {
+      mode: 'image-to-video',
+      model: FREE_AVATAR_MODEL,
+      prompt: resolvedPrompt,
+      negativePrompt: undefined,
+      imageUrl: faceBlob.url,
+      aspectRatio,
+      duration: resolvedDuration,
+      fps: Math.round(fps),
+      guidance,
+      steps,
+    };
+
+    const modalRes = await fetch(MODAL_IMAGE_TO_VIDEO_URL!, {
+      method: 'POST',
+      headers: modalHeaders,
+      body: JSON.stringify(modalPayload),
     });
 
-    // Step 5: Cache job data
-    await writeJobCache(prediction.id, {
-      ventureId,
-      userId: user.id,
-      model: modelConfig.id,
-      cost,
-      reservationId,
-      videoUrl: videoBlob.url,
-      faceUrl: faceBlob.url,
-      createdAt: new Date().toISOString(),
+    if (!modalRes.ok) {
+      const errText = await modalRes.text();
+      throw new Error(`Modal error: ${errText}`);
+    }
+
+    const modalData = await modalRes.json();
+    const resultAsset = Array.isArray(modalData?.assets) ? modalData.assets[0] : modalData?.asset;
+
+    if (!resultAsset?.data) {
+      throw new Error('Kein Output von Modal');
+    }
+
+    const outputBuffer = Buffer.from(resultAsset.data, 'base64');
+    const outputFilename = `avatar/${user.id}/outputs/${Date.now()}-result.mp4`;
+    const outputBlob = await put(outputFilename, outputBuffer, {
+      access: 'public',
+      contentType: 'video/mp4',
     });
+
+    const asset = await prisma.mediaAsset.create({
+      data: {
+        ventureId,
+        ownerId: user.id,
+        type: 'VIDEO',
+        url: outputBlob.url,
+        filename: outputFilename,
+        mimeType: 'video/mp4',
+        size: outputBuffer.length,
+        source: 'GENERATED',
+        prompt: resolvedPrompt,
+        model: FREE_AVATAR_MODEL,
+        tags: ['avatar', 'modal', FREE_AVATAR_MODEL]
+      }
+    });
+
+    if (reservationId) {
+      await settleEnergy({
+        reservationId,
+        finalCost: cost,
+        provider: 'modal',
+        model: FREE_AVATAR_MODEL,
+        metadata: { assetId: asset.id },
+      });
+    }
 
     return NextResponse.json({
-      predictionId: prediction.id,
-      status: prediction.status,
-      provider: 'replicate',
-      model: modelConfig.label,
+      status: 'succeeded',
+      outputUrl: outputBlob.url,
+      provider: 'modal',
+      model: FREE_AVATAR_MODEL,
       creditsUsed: cost,
+      tier
     });
   } catch (error: any) {
     if (reservationId) await refundEnergy(reservationId, 'faceswap-failed');
