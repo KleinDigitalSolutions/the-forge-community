@@ -6,21 +6,17 @@ import { motion } from 'framer-motion';
 import {
   ChevronRight,
   ArrowLeft,
-  Layout,
-  MessageCircle,
   MessageSquare,
-  Music,
-  Rocket,
-  ShieldCheck,
-  Target,
-  Users
+  MessageCircle,
+  PlusCircle,
+  Hash,
+  User,
+  Zap
 } from 'lucide-react';
 import { completeCockpitTour } from '@/app/actions/user';
 
-interface CockpitTourProps {
+interface ForumTourProps {
   initialHasSeenTour: boolean;
-  isNavOpen: boolean;
-  onNavOpenChange: (open: boolean) => void;
   onComplete: () => void;
 }
 
@@ -35,80 +31,48 @@ interface Step {
 
 const STEPS: Step[] = [
   {
-    id: 'open-nav',
-    title: 'Navigation öffnen',
-    content: 'Öffne jetzt deinen Orbital-Navigator, damit wir alle Module im Cockpit erklären können.',
-    anchor: 'cockpit-core',
+    id: 'welcome',
+    title: 'Willkommen im Forum',
+    content: 'Das ist das Herzstück der Forge. Hier tauschen wir Wissen aus und bauen gemeinsam.',
+    anchor: 'forum-post-trigger',
     position: 'bottom',
-    icon: ShieldCheck
-  },
-  {
-    id: 'ventures',
-    title: 'Ventures',
-    content: 'Hier findest du deine aktiven Ventures, ihren Fortschritt und den direkten Einstieg ins Forge-Cockpit.',
-    anchor: 'cockpit-menu-ventures',
-    position: 'bottom',
-    icon: Rocket
-  },
-  {
-    id: 'squads',
-    title: 'Squads',
-    content: 'Teamräume, Partner und interne Strukturen. Erstelle Squads oder tritt bestehenden Einheiten bei.',
-    anchor: 'cockpit-menu-squads',
-    position: 'left',
-    icon: Users
-  },
-  {
-    id: 'music',
-    title: 'Music',
-    content: 'Steuere den Soundtrack der Forge. Fokus-Mode, Atmosphäre und Session-Flow auf Knopfdruck.',
-    anchor: 'cockpit-menu-music',
-    position: 'left',
-    icon: Music
-  },
-  {
-    id: 'academy',
-    title: 'Academy',
-    content: 'Playbooks, Frameworks und Ressourcen. Hier findest du Wissen, Templates und operative Guides.',
-    anchor: 'cockpit-menu-academy',
-    position: 'left',
-    icon: Layout
-  },
-  {
-    id: 'profile',
-    title: 'Profile',
-    content: 'Deine Identität im Netzwerk: Profil, Bio, Skills, Reputation und Founder-Daten.',
-    anchor: 'cockpit-menu-profile',
-    position: 'top',
-    icon: ShieldCheck
-  },
-  {
-    id: 'messages',
-    title: 'Messages',
-    content: 'Direkte Kommunikation mit Foundern, Squads und Partnern. Alle DMs laufen hier zusammen.',
-    anchor: 'cockpit-menu-messages',
-    position: 'right',
-    icon: MessageCircle
-  },
-  {
-    id: 'forum',
-    title: 'Forum',
-    content: 'Community-Threads, Diskussionen, Feedback und Wissenstransfer. Poste, vote und kommentiere.',
-    anchor: 'cockpit-menu-forum',
-    position: 'right',
     icon: MessageSquare
   },
   {
-    id: 'missions',
-    title: 'Missions',
-    content: 'Mission Control: Tasks, Ziele und Deadlines. Alles Operative läuft über diese Missionen.',
-    anchor: 'cockpit-menu-missions',
-    position: 'right',
-    icon: Target
+    id: 'channels',
+    title: 'Kanäle & Themen',
+    content: 'Filtere den Feed nach Themen wie Tech, Marketing oder Wins, um genau das zu finden, was du suchst.',
+    anchor: 'forum-mobile-filters',
+    position: 'bottom',
+    icon: Hash
+  },
+  {
+    id: 'create',
+    title: 'Beitrag schmieden',
+    content: 'Teile deine Fortschritte oder stelle Fragen. Die Community und Orion (unsere KI) unterstützen dich.',
+    anchor: 'forum-post-trigger',
+    position: 'bottom',
+    icon: PlusCircle
+  },
+  {
+    id: 'messages',
+    title: 'DMs & Nachrichten',
+    content: 'Über dieses Icon gelangst du direkt zu deinen privaten Nachrichten und Gruppen-Chats.',
+    anchor: 'tab-messages',
+    position: 'top',
+    icon: MessageCircle
+  },
+  {
+    id: 'cockpit-link',
+    title: 'Zurück zum Cockpit',
+    content: 'Falls du doch mal zu deinen Ventures musst: Hier geht es zurück zur Übersicht.',
+    anchor: 'tab-dashboard',
+    position: 'top',
+    icon: Zap
   }
 ];
 
-export function CockpitTour({ initialHasSeenTour, isNavOpen, onNavOpenChange, onComplete }: CockpitTourProps) {
+export function ForumTour({ initialHasSeenTour, onComplete }: ForumTourProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [coords, setCoords] = useState({ top: 0, left: 0, width: 0, height: 0 });
   const [anchorFound, setAnchorFound] = useState(false);
@@ -119,19 +83,14 @@ export function CockpitTour({ initialHasSeenTour, isNavOpen, onNavOpenChange, on
   useEffect(() => {
     setMounted(true);
     const dismissed = typeof window !== 'undefined'
-      ? window.localStorage.getItem('cockpit_tour_completed') === 'true'
+      ? window.localStorage.getItem('forum_tour_completed') === 'true'
       : false;
     setIsDismissed(dismissed);
     if (!initialHasSeenTour && !dismissed) {
-      const timer = setTimeout(() => setIsVisible(true), 600);
+      const timer = setTimeout(() => setIsVisible(true), 1500);
       return () => clearTimeout(timer);
     }
   }, [initialHasSeenTour]);
-
-  useEffect(() => {
-    if (!isVisible || currentStep === 0) return;
-    if (!isNavOpen) onNavOpenChange(true);
-  }, [currentStep, isNavOpen, isVisible, onNavOpenChange]);
 
   const updateCoords = useCallback(() => {
     const step = STEPS[currentStep];
@@ -159,10 +118,12 @@ export function CockpitTour({ initialHasSeenTour, isNavOpen, onNavOpenChange, on
   useEffect(() => {
     if (!isVisible) return;
     updateCoords();
+    const timer = setTimeout(updateCoords, 100); // Small delay to ensure layout is ready
     window.addEventListener('resize', updateCoords);
     window.addEventListener('scroll', updateCoords);
     document.body.style.overflow = 'hidden';
     return () => {
+      clearTimeout(timer);
       window.removeEventListener('resize', updateCoords);
       window.removeEventListener('scroll', updateCoords);
       document.body.style.overflow = 'unset';
@@ -170,15 +131,14 @@ export function CockpitTour({ initialHasSeenTour, isNavOpen, onNavOpenChange, on
   }, [isVisible, updateCoords]);
 
   const handleNext = async () => {
-    if (currentStep === 0 && !isNavOpen) return;
     if (currentStep < STEPS.length - 1) {
       setCurrentStep(prev => prev + 1);
     } else {
       setIsVisible(false);
       if (typeof window !== 'undefined') {
-        window.localStorage.setItem('cockpit_tour_completed', 'true');
+        window.localStorage.setItem('forum_tour_completed', 'true');
       }
-      await completeCockpitTour();
+      await completeCockpitTour(); // Reusing the same action to mark "seen"
       onComplete();
     }
   };
@@ -193,7 +153,6 @@ export function CockpitTour({ initialHasSeenTour, isNavOpen, onNavOpenChange, on
 
   const step = STEPS[currentStep];
   const Icon = step.icon;
-  const canProceed = currentStep > 0 || isNavOpen;
 
   const getTooltipStyle = () => {
     const margin = 24;
@@ -201,8 +160,6 @@ export function CockpitTour({ initialHasSeenTour, isNavOpen, onNavOpenChange, on
 
     if (isMobile) {
       const windowHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
-      // Wandere-Logik: Falls das Icon in der unteren Hälfte ist, Tooltip oben anzeigen.
-      const step = STEPS[currentStep];
       const element = document.querySelector(`[data-tour="${step.anchor}"]`);
       const rect = element?.getBoundingClientRect();
       const showAtTop = rect ? rect.top > windowHeight / 2 : false;
@@ -239,7 +196,7 @@ export function CockpitTour({ initialHasSeenTour, isNavOpen, onNavOpenChange, on
 
       {anchorFound && (
         <div
-          className="absolute rounded-2xl border border-white/10"
+          className="absolute rounded-2xl border border-[#D4AF37]/50 shadow-[0_0_20px_rgba(212,175,55,0.2)]"
           style={{
             top: coords.top - 8,
             left: coords.left - 8,
@@ -270,17 +227,6 @@ export function CockpitTour({ initialHasSeenTour, isNavOpen, onNavOpenChange, on
           {step.content}
         </p>
 
-        {currentStep === 0 && (
-          <div className="mb-5">
-            <button
-              onClick={() => onNavOpenChange(true)}
-              className="w-full px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/80 text-[10px] font-bold uppercase tracking-[0.2em] transition-colors"
-            >
-              Navigation öffnen
-            </button>
-          </div>
-        )}
-
         <div className="flex items-center justify-between">
           <button
             onClick={handleBack}
@@ -291,10 +237,7 @@ export function CockpitTour({ initialHasSeenTour, isNavOpen, onNavOpenChange, on
 
           <button
             onClick={handleNext}
-            disabled={!canProceed}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 ${
-              canProceed ? 'bg-[#D4AF37] hover:bg-[#F0C05A] text-black shadow-xl shadow-[#D4AF37]/15' : 'bg-white/10 text-white/40 cursor-not-allowed'
-            }`}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 bg-[#D4AF37] hover:bg-[#F0C05A] text-black shadow-xl shadow-[#D4AF37]/15"
           >
             {currentStep === STEPS.length - 1 ? 'Tour abschließen' : 'Nächster Schritt'} <ChevronRight className="w-3.5 h-3.5" />
           </button>

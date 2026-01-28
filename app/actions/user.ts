@@ -31,6 +31,7 @@ export async function completeCockpitTour() {
       data: { hasSeenCockpitTour: true }
     });
     revalidatePath('/dashboard');
+    revalidatePath('/forum');
     return { success: true };
   } catch (error) {
     console.error('Failed to update cockpit tour status:', error);

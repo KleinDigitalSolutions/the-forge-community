@@ -9,7 +9,7 @@ export default async function AdminFinancePage() {
 
   // Admin check
   if (session?.user?.email !== process.env.ADMIN_EMAIL) {
-    redirect('/dashboard');
+    redirect('/forum');
   }
 
   // Fetch all financial data

@@ -78,8 +78,8 @@ export function VentureTour({ initialHasSeenTour }: { initialHasSeenTour: boolea
     if (element) {
       const rect = element.getBoundingClientRect();
       setCoords({
-        top: rect.top + window.scrollY,
-        left: rect.left + window.scrollX,
+        top: rect.top,
+        left: rect.left,
         width: rect.width,
         height: rect.height
       });
@@ -125,7 +125,21 @@ export function VentureTour({ initialHasSeenTour }: { initialHasSeenTour: boolea
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
     
     if (isMobile) {
-      return { bottom: 20, left: '50%', transform: 'translateX(-50%)', width: '90vw' };
+      const windowHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
+      // Wander-Logik: Falls Icon in der unteren Hälfte, Tooltip oben.
+      const step = STEPS[currentStep];
+      const element = document.querySelector(`[data-tour="${step.anchor}"]`);
+      const rect = element?.getBoundingClientRect();
+      const showAtTop = rect ? rect.top > windowHeight / 2 : false;
+
+      return { 
+        top: showAtTop ? 'calc(env(safe-area-inset-top) + 60px)' : 'auto', 
+        bottom: showAtTop ? 'auto' : 'calc(env(safe-area-inset-bottom) + 80px)', 
+        left: '50%', 
+        width: 'calc(100vw - 32px)',
+        maxWidth: '400px',
+        transform: 'translateX(-50%)'
+      };
     }
 
     if (step.position === 'right') {
@@ -171,10 +185,10 @@ export function VentureTour({ initialHasSeenTour }: { initialHasSeenTour: boolea
 
       {/* Tooltip Card */}
       <motion.div
-        initial={{ opacity: 0, y: 20, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
         key={currentStep}
-        className="absolute w-85 bg-[#0F1113] border border-white/10 rounded-[2rem] p-8 shadow-[0_40px_100px_-20px_rgba(0,0,0,1)] pointer-events-auto"
+        className="absolute bg-[#0F1113] border border-white/10 rounded-[2rem] p-8 shadow-[0_40px_100px_-20px_rgba(0,0,0,1)] pointer-events-auto"
         style={getTooltipStyle()}
       >
         <div className="flex items-center gap-4 mb-6">

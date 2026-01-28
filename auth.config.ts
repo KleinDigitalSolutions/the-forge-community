@@ -20,7 +20,7 @@ export const authConfig = {
       if (isPublicRoute) {
         // Redirect logged-in users away from login page to dashboard
         if (isLoggedIn && nextUrl.pathname.startsWith('/login')) {
-          return Response.redirect(new URL('/dashboard', nextUrl));
+          return Response.redirect(new URL('/forum', nextUrl));
         }
         return true;
       }

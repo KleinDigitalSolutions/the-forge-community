@@ -25,6 +25,7 @@ export async function GET() {
         accountStatus: true,
         credits: true,
         onboardingComplete: true,
+        hasSeenCockpitTour: true,
         founderNumber: true,
         karmaScore: true,
         phone: true,
@@ -84,6 +85,7 @@ export async function GET() {
           accountStatus: true,
           credits: true,
           onboardingComplete: true,
+          hasSeenCockpitTour: true,
           founderNumber: true,
           karmaScore: true,
           _count: {
@@ -108,6 +110,7 @@ export async function GET() {
         accountStatus: 'ACTIVE',
         credits: 0,
       onboardingComplete: false,
+      hasSeenCockpitTour: false,
       founderNumber: 0,
       karmaScore: 0,
       _count: { ventures: 0, squadMemberships: 0 }

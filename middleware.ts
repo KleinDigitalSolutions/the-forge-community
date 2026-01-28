@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import NextAuth from 'next-auth';
 import { authConfig } from '@/auth.config';
 
-const allowedPaths = ['/dashboard', '/login', '/legal'];
+const allowedPaths = ['/forum', '/dashboard', '/login', '/legal'];
 
 const { auth } = NextAuth(authConfig);
 
@@ -76,7 +76,7 @@ export default auth(async (req: NextRequest) => {
     return NextResponse.next();
   }
 
-  const redirectUrl = new URL('/dashboard', req.nextUrl);
+  const redirectUrl = new URL('/forum', req.nextUrl);
   redirectUrl.searchParams.set('onboarding', 'required');
   return NextResponse.redirect(redirectUrl);
 });

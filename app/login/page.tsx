@@ -53,7 +53,7 @@ function LoginForm() {
       const result = await signIn('resend', {
         email,
         redirect: false,
-        callbackUrl: '/dashboard',
+        callbackUrl: '/forum',
       });
 
       if (result?.error) {
@@ -73,7 +73,7 @@ function LoginForm() {
     setGoogleStatus('loading');
     try {
       const { signIn } = await import('next-auth/react');
-      await signIn('google', { callbackUrl: '/dashboard' });
+      await signIn('google', { callbackUrl: '/forum' });
     } finally {
       setGoogleStatus('idle');
     }

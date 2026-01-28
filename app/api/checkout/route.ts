@@ -79,10 +79,10 @@ export async function POST(req: Request) {
 
     // Set success/cancel URLs
     if (type === 'subscription') {
-      sessionConfig.success_url = `${appUrl}/dashboard?payment=success&type=subscription`;
+      sessionConfig.success_url = `${appUrl}/forum?payment=success&type=subscription`;
       sessionConfig.cancel_url = `${appUrl}/pricing?canceled=true`;
     } else {
-      sessionConfig.success_url = `${appUrl}/dashboard?payment=success&type=credits`;
+      sessionConfig.success_url = `${appUrl}/forum?payment=success&type=credits`;
       sessionConfig.cancel_url = `${appUrl}/pricing?canceled=true`;
     }
 

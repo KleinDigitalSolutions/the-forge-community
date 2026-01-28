@@ -24,6 +24,8 @@ import { de } from 'date-fns/locale';
 import EmojiPicker, { EmojiClickData, EmojiStyle, Theme } from 'emoji-picker-react';
 import { PostSkeleton } from '@/app/components/PostSkeleton';
 import { ForumEditor } from '@/app/components/ForumEditor';
+import { ForumTour } from '@/app/components/onboarding/ForumTour';
+import OnboardingWizard from '@/app/components/onboarding/OnboardingWizard';
 
 export interface Comment {
   id: string;
@@ -1225,7 +1227,7 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
         <div className="max-w-[1600px] grid grid-cols-1 lg:grid-cols-[240px_1fr_320px] gap-8">
           
           {/* LEFT SIDEBAR - Reddit Style Navigation */}
-          <aside className="hidden lg:block sticky top-8 h-fit space-y-8">
+          <aside className="hidden lg:block sticky top-8 h-fit space-y-8" data-tour="forum-channels">
             <div className="space-y-1">
               {FEEDS.map(f => (
                 <NavItem
@@ -1267,7 +1269,7 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
           {/* MAIN FEED */}
           <main className="space-y-4">
             {/* Mobile Filters */}
-            <div className="lg:hidden space-y-3 bg-[#121212] border border-white/10 rounded-xl p-3">
+            <div className="lg:hidden space-y-3 bg-[#121212] border border-white/10 rounded-xl p-3" data-tour="forum-mobile-filters">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Feeds</p>
@@ -1340,7 +1342,7 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
             )}
 
             {/* Post Creation Trigger */}
-            <div className="bg-[#121212] border border-white/10 rounded-xl p-3 flex flex-col gap-3 shadow-xl sm:flex-row sm:items-center">
+            <div className="bg-[#121212] border border-white/10 rounded-xl p-3 flex flex-col gap-3 shadow-xl sm:flex-row sm:items-center" data-tour="forum-post-trigger">
               <div className="flex items-center gap-3 w-full">
                 <div className="w-10 h-10 rounded-full bg-linear-to-br from-[#D4AF37] to-amber-700 flex items-center justify-center text-black font-black text-sm overflow-hidden">
                   {user?.image ? (
@@ -1983,6 +1985,25 @@ export default function Forum({ initialPosts, initialUser, forumVentureId }: For
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Onboarding Overlay */}
+        {user && !user.onboardingComplete && (
+          <OnboardingWizard 
+            user={user} 
+            onComplete={() => {
+              setUser(prev => prev ? { ...prev, onboardingComplete: true } : null);
+            }} 
+          />
+        )}
+
+        {user && user.onboardingComplete && !user.hasSeenCockpitTour && (
+          <ForumTour
+            initialHasSeenTour={!!user.hasSeenCockpitTour}
+            onComplete={() => {
+              setUser(prev => prev ? { ...prev, hasSeenCockpitTour: true } : null);
+            }}
+          />
+        )}
       </PageShell>
     </AuthGuard>
   );

@@ -309,16 +309,12 @@ export default function Dashboard() {
         
         {/* Onboarding Overlay */}
         {user && !user.onboardingComplete && (
-          <div className="absolute inset-0 z-[60] bg-black/90 flex items-center justify-center">
-             <div className="max-w-4xl w-full">
-               <OnboardingWizard 
-                user={user} 
-                onComplete={() => {
-                  setData(prev => prev ? { ...prev, user: { ...prev.user, onboardingComplete: true } } : null);
-                }} 
-              />
-             </div>
-          </div>
+          <OnboardingWizard 
+            user={user} 
+            onComplete={() => {
+              setData(prev => prev ? { ...prev, user: { ...prev.user, onboardingComplete: true } } : null);
+            }} 
+          />
         )}
 
         {user?.onboardingComplete && !user?.hasSeenCockpitTour && (

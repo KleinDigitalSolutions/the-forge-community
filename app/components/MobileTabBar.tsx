@@ -7,11 +7,10 @@ import { useUnreadMessages } from '@/app/hooks/useUnreadMessages';
 import { useState, useEffect } from 'react';
 
 const tabs = [
-  // ... (tabs array remains unchanged)
-  { href: '/dashboard', label: 'Cockpit', shortLabel: 'Home', icon: LayoutDashboard },
-  { href: '/media', label: 'Media', shortLabel: 'Media', icon: ImageIcon },
   { href: '/forum', label: 'Forum', shortLabel: 'Forum', icon: MessageSquare },
   { href: '/messages', label: 'Messages', shortLabel: 'Chat', icon: MessageCircle },
+  { href: '/media', label: 'Media', shortLabel: 'Media', icon: ImageIcon },
+  { href: '/dashboard', label: 'Cockpit', shortLabel: 'Cockpit', icon: LayoutDashboard },
   { href: '/tasks', label: 'Tasks', shortLabel: 'Tasks', icon: CheckSquare },
 ];
 
@@ -76,6 +75,7 @@ export default function MobileTabBar() {
                 key={tab.href}
                 href={tab.href}
                 aria-current={active ? 'page' : undefined}
+                data-tour={`tab-${tab.href.replace('/', '')}`}
                 className={`relative flex flex-col items-center gap-1 rounded-xl px-1.5 xs:px-2 sm:px-3 py-2 text-[8px] xs:text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.05em] xs:tracking-[0.1em] sm:tracking-[0.15em] transition ${
                   active
                     ? 'text-[var(--accent)] bg-white/5'
