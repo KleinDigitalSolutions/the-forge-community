@@ -12,45 +12,45 @@ interface Card {
 
 const cardData = {
   1: {
-    title: "VIDEO CHAIN REACTION.",
-    description: "Erstelle 60s Viral-Clips aus 6x 10s Sequenzen. Der letzte Frame wird zum Start des nächsten. Perfekte Konsistenz mit Veo, Kling & Luma in einer Pipeline.",
-    gradient: "from-amber-500 via-yellow-600 to-orange-700",
-    icon: Layers,
-    font: "font-sans font-black tracking-tighter",
-  },
-  2: {
-    title: "IDENTITY FIRST. VOICE SYNC.",
-    description: "Erst das Model (Flux), dann das Video. Dazu voll integrierte ElevenLabs Voice-Engine für emotionale Hooks. Dein Avatar spricht, wie du willst.",
-    gradient: "from-blue-600 via-indigo-600 to-violet-700",
-    icon: Mic,
-    font: "font-sans font-black tracking-tighter",
-  },
-  3: {
-    title: "SAFE OPERATIONS. NO DRAMA.",
-    description: "Rechtssichere Nutzung aller Assets dank integrierter Lizenzen. B2B-Vertragsmanagement und AI-Support regeln den Papierkram im Hintergrund.",
-    gradient: "from-emerald-500 via-teal-600 to-cyan-700",
-    icon: ShieldCheck,
-    font: "font-mono uppercase tracking-widest",
-  },
-  4: {
     title: "B2B SOURCING ENGINE.",
     description: "Direkter Zugang zu 50+ verifizierten Großhändlern. Samples & Orders per Klick. Kein Zwischenhändler, volle Marge für deine Brand.",
     gradient: "from-rose-500 via-red-600 to-orange-700",
     icon: Truck,
     font: "font-serif italic",
   },
-  5: {
+  2: {
+    title: "AD CAMPAIGN CONTROL.",
+    description: "Vom Asset zur Ad. Verwalte Kampagnen, tracke den ROI und skaliere Winning-Creatives direkt aus dem Dashboard. Data-Driven Execution.",
+    gradient: "from-purple-500 via-fuchsia-600 to-pink-700",
+    icon: BarChart,
+    font: "font-mono uppercase tracking-widest",
+  },
+  3: {
     title: "COMMUNITY BRAIN.",
     description: "Das Forum, das mitdenkt. Orion AI analysiert alle Threads, erkennt Trends und generiert Bilder direkt im Chat. Schwarmintelligenz auf Steroiden.",
     gradient: "from-cyan-500 via-blue-600 to-indigo-700",
     icon: MessageSquare,
     font: "font-sans font-bold",
   },
+  4: {
+    title: "VIDEO CHAIN REACTION.",
+    description: "Erstelle 60s Viral-Clips aus 6x 10s Sequenzen. Der letzte Frame wird zum Start des nächsten. Perfekte Konsistenz mit Veo, Kling & Luma in einer Pipeline.",
+    gradient: "from-amber-500 via-yellow-600 to-orange-700",
+    icon: Layers,
+    font: "font-sans font-black tracking-tighter",
+  },
+  5: {
+    title: "IDENTITY FIRST. VOICE SYNC.",
+    description: "Erst das Model (Flux), dann das Video. Dazu voll integrierte ElevenLabs Voice-Engine für emotionale Hooks. Dein Avatar spricht, wie du willst.",
+    gradient: "from-blue-600 via-indigo-600 to-violet-700",
+    icon: Mic,
+    font: "font-sans font-black tracking-tighter",
+  },
   6: {
-    title: "AD CAMPAIGN CONTROL.",
-    description: "Vom Asset zur Ad. Verwalte Kampagnen, tracke den ROI und skaliere Winning-Creatives direkt aus dem Dashboard. Data-Driven Execution.",
-    gradient: "from-purple-500 via-fuchsia-600 to-pink-700",
-    icon: BarChart,
+    title: "SAFE OPERATIONS. NO DRAMA.",
+    description: "Rechtssichere Nutzung aller Assets dank integrierter Lizenzen. B2B-Vertragsmanagement und AI-Support regeln den Papierkram im Hintergrund.",
+    gradient: "from-emerald-500 via-teal-600 to-cyan-700",
+    icon: ShieldCheck,
     font: "font-mono uppercase tracking-widest",
   },
 }

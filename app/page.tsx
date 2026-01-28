@@ -27,7 +27,8 @@ import {
   ChevronDown,
   ChevronUp,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  Volume2
 } from 'lucide-react';
 import ResponsiveHeroBanner from '@/app/components/ui/ResponsiveHeroBanner';
 import AnimatedCardStack from '@/app/components/ui/AnimatedCardStack';
@@ -471,9 +472,6 @@ export default function Home() {
                  <span className="text-white/40">Massive Execution durch gebündelte Power.</span>
               </h2>
               <p className="text-lg text-white/60 max-w-3xl mx-auto leading-relaxed mb-20">
-                 Durch das Pooling von Kapital und Kompetenz
-                 von vielen Foundern erreichen wir sofortige Marktrelevanz. Wir finanzieren Warenlager, 
-                 High-End Produktion und operative Infrastruktur aus einem gemeinsamen Topf. 
               </p>
            </div>
            
@@ -557,11 +555,13 @@ export default function Home() {
 
                 <div className="space-y-0">
                   {[
-                    { icon: Truck, title: 'Sourcing Studio', status: 'ONLINE', color: 'text-green-500' },
+                    { icon: Truck, title: 'B2B Sourcing', status: 'ONLINE', color: 'text-green-500' },
+                    { icon: Sparkles, title: 'Campaign Control', status: 'ONLINE', color: 'text-green-500' },
                     { icon: MessageSquare, title: 'Community Brain', status: 'ONLINE', color: 'text-green-500' },
-                    { icon: Sparkles, title: 'Marketing Studio', status: 'SYNCING', color: 'text-[#D4AF37]' },
-                    { icon: Film, title: 'Media Factory', status: 'ONLINE', color: 'text-green-500' },
-                    { icon: Cpu, title: 'Capital Control', status: 'LOCKED', color: 'text-white/10' }
+                    { icon: Film, title: 'Veo 3.1', status: 'ONLINE', color: 'text-green-500' },
+                    { icon: Image, title: 'Image Generation', status: 'SYNCING', color: 'text-[#D4AF37]' },
+                    { icon: Volume2, title: 'ElevenLabs Audio', status: 'ONLINE', color: 'text-green-500' },
+                    { icon: Layers, title: 'Pipeline Sync', status: 'ONLINE', color: 'text-green-500' }
                   ].map((module) => (
                     <div key={module.title} className="group flex items-center justify-between py-8 border-b border-white/5 last:border-0 hover:px-4 transition-all duration-500">
                       <div className="flex items-center gap-10">

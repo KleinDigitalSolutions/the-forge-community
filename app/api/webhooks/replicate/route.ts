@@ -11,6 +11,7 @@ const JOB_TTL_MS = 1000 * 60 * 60 * 6;
 const PROCESSING_LOCK_TTL_MS = 1000 * 60 * 10;
 const WEBHOOK_TOLERANCE_SECONDS = 60 * 5;
 const jobKeyForPrediction = (predictionId: string) => `replicate:media:${predictionId}`;
+const faceSwapJobKeyForPrediction = (predictionId: string) => `faceswap:${predictionId}`;
 
 const readJobCache = async (predictionId: string) => {
   const record = await prisma.systemCache.findUnique({ where: { key: jobKeyForPrediction(predictionId) } });
@@ -36,6 +37,33 @@ const updateJobCache = async (predictionId: string, updates: any) => {
   if (!existing) return null;
   const next = { ...existing, ...updates };
   await writeJobCache(predictionId, next);
+  return next;
+};
+
+const readFaceSwapJobCache = async (predictionId: string) => {
+  const record = await prisma.systemCache.findUnique({ where: { key: faceSwapJobKeyForPrediction(predictionId) } });
+  if (!record) return null;
+  try {
+    return JSON.parse(record.value);
+  } catch (error) {
+    return null;
+  }
+};
+
+const writeFaceSwapJobCache = async (predictionId: string, payload: any) => {
+  const expiresAt = new Date(Date.now() + JOB_TTL_MS);
+  await prisma.systemCache.upsert({
+    where: { key: faceSwapJobKeyForPrediction(predictionId) },
+    update: { value: JSON.stringify(payload), expiresAt },
+    create: { key: faceSwapJobKeyForPrediction(predictionId), value: JSON.stringify(payload), expiresAt },
+  });
+};
+
+const updateFaceSwapJobCache = async (predictionId: string, updates: any) => {
+  const existing = await readFaceSwapJobCache(predictionId);
+  if (!existing) return null;
+  const next = { ...existing, ...updates };
+  await writeFaceSwapJobCache(predictionId, next);
   return next;
 };
 
@@ -113,6 +141,23 @@ const acquireProcessingLock = async (predictionId: string, holder: string) => {
   return confirmed;
 };
 
+const acquireFaceSwapProcessingLock = async (predictionId: string, holder: string) => {
+  const current = await readFaceSwapJobCache(predictionId);
+  if (!current) return null;
+  if (isFreshLock(current.processingId, current.processingAt)) return null;
+
+  const lockId = crypto.randomUUID();
+  await updateFaceSwapJobCache(predictionId, {
+    processingId: lockId,
+    processingAt: new Date().toISOString(),
+    processingBy: holder,
+  });
+
+  const confirmed = await readFaceSwapJobCache(predictionId);
+  if (!confirmed || confirmed.processingId !== lockId) return null;
+  return confirmed;
+};
+
 const decodeWebhookSecret = (secret: string) => {
   if (!secret.startsWith('whsec_')) {
     return Buffer.from(secret, 'utf8');
@@ -183,8 +228,82 @@ export async function POST(req: NextRequest) {
 
     let cachedJob = await readJobCache(predictionId);
     if (!cachedJob) {
-      console.warn(`[Replicate Webhook] Job ${predictionId} not found in cache`);
-      return NextResponse.json({ ok: true }); // Return OK so Replicate doesn't retry
+      let faceSwapJob = await readFaceSwapJobCache(predictionId);
+      if (!faceSwapJob) {
+        console.warn(`[Replicate Webhook] Job ${predictionId} not found in cache`);
+        return NextResponse.json({ ok: true }); // Return OK so Replicate doesn't retry
+      }
+
+      if (status === 'succeeded') {
+        if (faceSwapJob.outputUrl) return NextResponse.json({ ok: true });
+
+        const lockedJob = await acquireFaceSwapProcessingLock(predictionId, 'webhook');
+        if (!lockedJob) return NextResponse.json({ ok: true });
+        faceSwapJob = lockedJob;
+        if (faceSwapJob.outputUrl) return NextResponse.json({ ok: true });
+
+        const outputUrls = await extractOutputUrls(prediction.output);
+        if (!outputUrls.length) {
+          throw new Error('No output URLs from prediction');
+        }
+
+        const outputUrl = outputUrls[0];
+        const res = await fetch(outputUrl);
+        if (!res.ok) throw new Error('Output konnte nicht geladen werden');
+        const blobData = await res.blob();
+        const buffer = Buffer.from(await blobData.arrayBuffer());
+
+        const filename = `faceswap/${faceSwapJob.userId}/outputs/${Date.now()}-result.mp4`;
+        const blob = await put(filename, buffer, {
+          access: 'public',
+          contentType: 'video/mp4',
+        });
+
+        const asset = await prisma.mediaAsset.create({
+          data: {
+            ventureId: faceSwapJob.ventureId,
+            ownerId: faceSwapJob.userId,
+            type: 'VIDEO',
+            url: blob.url,
+            filename,
+            mimeType: 'video/mp4',
+            size: buffer.length,
+            source: 'GENERATED',
+            model: faceSwapJob.model,
+            tags: ['faceswap', 'replicate']
+          }
+        });
+
+        if (faceSwapJob.reservationId) {
+          await settleEnergy({
+            reservationId: faceSwapJob.reservationId,
+            finalCost: faceSwapJob.cost,
+            provider: 'replicate',
+            model: faceSwapJob.model,
+            metadata: { assetId: asset.id },
+          });
+        }
+
+        await updateFaceSwapJobCache(predictionId, {
+          outputUrl: blob.url,
+          settledAt: new Date().toISOString(),
+        });
+
+        return NextResponse.json({ ok: true });
+      }
+
+      if (status === 'failed' || status === 'canceled') {
+        if (!faceSwapJob.refundedAt && faceSwapJob.reservationId) {
+          await refundEnergy(faceSwapJob.reservationId, 'faceswap-failed');
+          await updateFaceSwapJobCache(predictionId, {
+            refundedAt: new Date().toISOString(),
+            error: String(prediction.error || 'Avatar fehlgeschlagen'),
+          });
+        }
+        return NextResponse.json({ ok: true });
+      }
+
+      return NextResponse.json({ ok: true });
     }
 
     if (status === 'succeeded') {
