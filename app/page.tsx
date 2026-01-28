@@ -470,28 +470,16 @@ export default function Home() {
                  Der Community-Hebel.<br/>
                  <span className="text-white/40">Massive Execution durch gebündelte Power.</span>
               </h2>
-              <p className="text-lg text-white/60 max-w-3xl mx-auto leading-relaxed">
+              <p className="text-lg text-white/60 max-w-3xl mx-auto leading-relaxed mb-20">
                  Durch das Pooling von Kapital und Kompetenz
                  von vielen Foundern erreichen wir sofortige Marktrelevanz. Wir finanzieren Warenlager, 
                  High-End Produktion und operative Infrastruktur aus einem gemeinsamen Topf. 
               </p>
            </div>
-        </section>
-
-        {/* Principles - System Override */}
-        <section id="principles" className="py-20 px-4 md:px-6 relative overflow-hidden border-b border-white/5">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-(--accent)/5 rounded-full blur-[150px] pointer-events-none" />
-          
-          <div className="max-w-7xl mx-auto flex flex-col items-center relative z-10">
-            <div className="text-center mb-20">
-              <h2 className="text-5xl md:text-7xl font-instrument-serif text-white mb-6 tracking-tighter">System: Override.</h2>
-              <p className="text-white/40 uppercase tracking-[0.3em] text-[10px] font-bold">
-                Vergiss, was du über Startups gelernt hast. Das hier ist die Realität.
-              </p>
-            </div>
-            
-            <AnimatedCardStack />
-          </div>
+           
+           <div className="max-w-7xl mx-auto flex flex-col items-center relative z-10">
+              <AnimatedCardStack />
+           </div>
         </section>
 
         {/* Metrics Section - HUD Style */}

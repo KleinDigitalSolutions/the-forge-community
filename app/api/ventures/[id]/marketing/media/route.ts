@@ -49,6 +49,7 @@ type ReplicateInputOptions = {
   guidance?: number;
   duration?: number;
   imageUrl?: string | string[]; // Support multiple images for Nano Banana
+  endImageUrl?: string; // For Veo/Kling frame interpolation
 };
 
 type CachedAsset = {
@@ -131,6 +132,14 @@ const MODEL_CONFIGS: Record<string, ModelConfig> = {
     outputType: 'image',
     provider: 'replicate',
     supportsImageInput: true, // Supports multiple images
+  },
+  'google/veo-3.1': {
+    id: 'google/veo-3.1',
+    label: 'Veo 3.1 · Enterprise Video',
+    modes: ['text-to-video', 'image-to-video'],
+    outputType: 'video',
+    provider: 'replicate',
+    supportsImageInput: true,
   },
 };
 
@@ -262,6 +271,15 @@ const buildReplicateInput = (modelId: string, options: ReplicateInputOptions) =>
         prompt: options.prompt,
         aspect_ratio: safeAspectRatio,
       };
+      return input;
+    }
+    case 'google/veo-3.1': {
+      const input: Record<string, unknown> = {
+        prompt: options.prompt,
+        aspect_ratio: safeAspectRatio,
+      };
+      if (options.imageUrl) input.image = options.imageUrl;
+      if (options.endImageUrl) input.end_image = options.endImageUrl;
       return input;
     }
     case 'google/nano-banana': {
@@ -495,10 +513,15 @@ export async function POST(
 
   // Multi-Image Upload Support (for Nano Banana image-to-image)
   const imageFile = formData.get('image');
+  const endImageFile = formData.get('endImage');
+  const existingImageUrl = formData.get('existingImageUrl');
+  const existingEndImageUrl = formData.get('existingEndImageUrl');
   const imageFiles = formData.getAll('images'); // For multiple images
   let imageUrl: string | string[] | undefined;
+  let endImageUrl: string | undefined;
 
   if (mode === 'image-to-image') {
+    // ... (rest of logic same)
     if (imageFiles.length < 2 || imageFiles.length > 3) {
       return NextResponse.json({ error: 'Bitte lade 2-3 Referenzbilder hoch.' }, { status: 400 });
     }
@@ -526,24 +549,52 @@ export async function POST(
     }
 
     imageUrl = uploadedUrls; // Pass as array for Nano Banana
-  } else if (isFileLike(imageFile)) {
-    if (imageFile.size > MAX_UPLOAD_BYTES) {
-      return NextResponse.json({ error: 'Bild ist zu groß.' }, { status: 413 });
-    }
-    if (!ALLOWED_MIME_TYPES.has(imageFile.type)) {
-      return NextResponse.json({ error: 'Ungültiger Bildtyp.' }, { status: 415 });
+  } else {
+    if (isFileLike(imageFile)) {
+      if (imageFile.size > MAX_UPLOAD_BYTES) {
+        return NextResponse.json({ error: 'Bild ist zu groß.' }, { status: 413 });
+      }
+      if (!ALLOWED_MIME_TYPES.has(imageFile.type)) {
+        return NextResponse.json({ error: 'Ungültiger Bildtyp.' }, { status: 415 });
+      }
+
+      const buffer = Buffer.from(await imageFile.arrayBuffer());
+      const safeName = sanitizeFilename(imageFile.name || 'reference');
+      const filename = `marketing/${user.id}/inputs/${Date.now()}-${safeName}`;
+      const blob = await put(filename, buffer, {
+        access: 'public',
+        contentType: imageFile.type,
+      });
+      imageUrl = blob.url;
     }
 
-    const buffer = Buffer.from(await imageFile.arrayBuffer());
-    const safeName = sanitizeFilename(imageFile.name || 'reference');
-    const filename = `marketing/${user.id}/inputs/${Date.now()}-${safeName}`;
-    const blob = await put(filename, buffer, {
-      access: 'public',
-      contentType: imageFile.type,
-    });
-    imageUrl = blob.url;
-  } else if (mode.includes('image-to') && modelConfig.supportsImageInput) {
-    return NextResponse.json({ error: 'Bitte lade ein Referenzbild hoch.' }, { status: 400 });
+    if (isFileLike(endImageFile)) {
+      if (endImageFile.size > MAX_UPLOAD_BYTES) {
+        return NextResponse.json({ error: 'End-Bild ist zu groß.' }, { status: 413 });
+      }
+      if (!ALLOWED_MIME_TYPES.has(endImageFile.type)) {
+        return NextResponse.json({ error: 'Ungültiger End-Bildtyp.' }, { status: 415 });
+      }
+
+      const buffer = Buffer.from(await endImageFile.arrayBuffer());
+      const safeName = sanitizeFilename(endImageFile.name || 'end-frame');
+      const filename = `marketing/${user.id}/inputs/${Date.now()}-end-${safeName}`;
+      const blob = await put(filename, buffer, {
+        access: 'public',
+        contentType: endImageFile.type,
+      });
+      endImageUrl = blob.url;
+    } else if (typeof existingEndImageUrl === 'string') {
+      endImageUrl = existingEndImageUrl;
+    }
+
+    if (!imageUrl && typeof existingImageUrl === 'string') {
+      imageUrl = existingImageUrl;
+    }
+
+    if (!imageUrl && mode.includes('image-to') && modelConfig.supportsImageInput) {
+      return NextResponse.json({ error: 'Bitte lade ein Referenzbild hoch.' }, { status: 400 });
+    }
   }
 
   const isVideoMode = modelConfig.outputType === 'video';
@@ -703,6 +754,7 @@ export async function POST(
       guidance,
       duration,
       imageUrl,
+      endImageUrl,
     });
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null);

@@ -366,6 +366,13 @@ const result = await streamText({
    - Returns real `Resource` entries with matching explanation
    - 10-15 credits per discovery session
 
+6. **Veo 3.1 Studio (Cinematic Production)** (`/app/components/marketing/VeoStudio.tsx`)
+   - High-end multi-step AI pipeline (implemented 28.01.2026)
+   - **Phase 1: Brand Alchemy** (Nano Banana) blends Identity (Model) + Object (Product) into a consistent marketing shot.
+   - **Phase 2: Cinematic Animation** (Veo 3.1) animates the blended image or a provided start frame.
+   - **Frame Steering:** Supports `end_image` for precise motion interpolation between two frames.
+   - **Backend:** `route.ts` handles complex chaining using `existingImageUrl` and `existingEndImageUrl`.
+
 **Example:**
 ```typescript
 const brandDNA = await prisma.brandDNA.findUnique({
@@ -506,6 +513,9 @@ import { Zap } from 'lucide-react';
 | Feature | Cost | Notes |
 |---------|------|-------|
 | Marketing Content (Instagram, LinkedIn, Email) | 5-10 | Depends on length |
+| Veo 3.1 Cinematic Video | 58 | High-fidelity production |
+| Kling 2.6 / Sora 2 Video | 55-60 | Cinema quality |
+| Nano Banana Blending | 5 | Image-to-image mixing |
 | Legal Document Generation | 10-15 | Contract complexity |
 | Forum AI (Summarize, Feedback, Expand) | 2-5 | Per action |
 | AI Chatbot Message | 1-3 | Per message |

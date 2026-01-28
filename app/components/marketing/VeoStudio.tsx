@@ -24,12 +24,22 @@ interface VeoStudioProps {
 }
 
 export function VeoStudio({ ventureId, brandDNA }: VeoStudioProps) {
-  const [identityImage, setIdentityImage] = useState<string | null>(null);
-  const [objectImage, setObjectImage] = useState<string | null>(null);
+  const [identityFile, setIdentityFile] = useState<File | null>(null);
+  const [objectFile, setObjectFile] = useState<File | null>(null);
+  const [firstFrameFile, setFirstFrameFile] = useState<File | null>(null);
+  const [lastFrameFile, setLastFrameFile] = useState<File | null>(null);
+
+  const [identityPreview, setIdentityPreview] = useState<string | null>(null);
+  const [objectPreview, setObjectPreview] = useState<string | null>(null);
+  const [firstFramePreview, setFirstFramePreview] = useState<string | null>(null);
+  const [lastFramePreview, setLastFramePreview] = useState<string | null>(null);
+
   const [styleDesc, setStyleDesc] = useState(brandDNA?.toneOfVoice || '');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generationPhase, setGenerationPhase] = useState<'idle' | 'blending' | 'animating'>('idle');
   const [generatedVideo, setGeneratedVideo] = useState<string | null>(null);
   const [activePulse, setActivePulse] = useState<number | null>(null);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // SVG Refs for animated paths
   const videoRef = useRef<HTMLDivElement>(null);
@@ -46,17 +56,111 @@ export function VeoStudio({ ventureId, brandDNA }: VeoStudioProps) {
     return () => clearInterval(interval);
   }, []);
 
-  const handleGenerate = async () => {
-    if (!identityImage || !objectImage) {
-      alert('Bitte lade Identität und Objekt hoch.');
-      return;
+  const pollPrediction = async (predictionId: string) => {
+    const pollStart = Date.now();
+    const maxWaitMs = 1000 * 60 * 10; // 10 minutes for video
+    let attempt = 0;
+
+    while (Date.now() - pollStart < maxWaitMs) {
+      await new Promise((resolve) => setTimeout(resolve, attempt === 0 ? 1000 : 2000));
+      attempt += 1;
+
+      const res = await fetch(`/api/ventures/${ventureId}/marketing/media?predictionId=${predictionId}`);
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) throw new Error(data?.error || 'Prediction fehlgeschlagen.');
+      
+      if (data?.status === 'succeeded') return data;
+      if (data?.status === 'failed' || data?.status === 'canceled') {
+        throw new Error(data?.error || 'Generierung fehlgeschlagen.');
+      }
     }
+    throw new Error('Timeout: Bitte später erneut prüfen.');
+  };
+
+  const handleGenerate = async () => {
+    setErrorMessage('');
     setIsGenerating(true);
-    // Simulate generation for now - in reality this would call the Veo API
-    setTimeout(() => {
-      setGeneratedVideo('/Veo/veo_make_person_and_scene_in_video.mp4');
+    setGeneratedVideo(null);
+
+    try {
+      let currentImageUrl: string | null = null;
+
+      // PHASE 1: ALCHEMY BLENDING (if identity + object provided)
+      if (identityFile && objectFile) {
+        setGenerationPhase('blending');
+        const blendFormData = new FormData();
+        blendFormData.append('mode', 'image-to-image');
+        blendFormData.append('model', 'google/nano-banana');
+        blendFormData.append('prompt', `A high-quality studio shot blending the identity and the product. ${styleDesc}`);
+        blendFormData.append('images', identityFile);
+        blendFormData.append('images', objectFile);
+        blendFormData.append('aspectRatio', '9:16');
+
+        const blendRes = await fetch(`/api/ventures/${ventureId}/marketing/media`, {
+          method: 'POST',
+          body: blendFormData,
+        });
+
+        const blendData = await blendRes.json();
+        if (!blendRes.ok) throw new Error(blendData.error || 'Blending fehlgeschlagen');
+
+        const blendResult = await pollPrediction(blendData.predictionId);
+        currentImageUrl = blendResult.assets?.[0]?.url || null;
+      } else if (firstFrameFile) {
+        // Direct start frame upload
+        const uploadFormData = new FormData();
+        uploadFormData.append('mode', 'text-to-image'); // Just to reuse upload logic
+        uploadFormData.append('model', 'black-forest-labs/flux-1.1-pro');
+        uploadFormData.append('prompt', 'upload');
+        uploadFormData.append('image', firstFrameFile);
+        
+        // Actually, we can just send the file in the next step, 
+        // but for consistency we might want to upload it first or just pass it to the video call.
+        // Let's just pass it to the video call directly in Phase 2.
+      }
+
+      // PHASE 2: VEO ANIMATION
+      setGenerationPhase('animating');
+      const videoFormData = new FormData();
+      videoFormData.append('mode', 'image-to-video');
+      videoFormData.append('model', 'google/veo-3.1');
+      videoFormData.append('prompt', styleDesc || 'Cinematic movement, high quality');
+      videoFormData.append('aspectRatio', '9:16');
+
+      if (currentImageUrl) {
+        // We have a blended image from Nano Banana
+        // Since our API currently expects a 'File' for 'image', we might need to handle URLs.
+        // Wait, route.ts buildReplicateInput uses 'imageUrl'. 
+        // But the POST handler expects a file.
+        // I should update route.ts to accept an existing asset URL too.
+        videoFormData.append('existingImageUrl', currentImageUrl);
+      } else if (firstFrameFile) {
+        videoFormData.append('image', firstFrameFile);
+      }
+
+      if (lastFrameFile) {
+        videoFormData.append('endImage', lastFrameFile);
+      }
+
+      const videoRes = await fetch(`/api/ventures/${ventureId}/marketing/media`, {
+        method: 'POST',
+        body: videoFormData,
+      });
+
+      const videoData = await videoRes.json();
+      if (!videoRes.ok) throw new Error(videoData.error || 'Video-Generierung fehlgeschlagen');
+
+      const videoResult = await pollPrediction(videoData.predictionId);
+      setGeneratedVideo(videoResult.assets?.[0]?.url || null);
+
+    } catch (err: any) {
+      console.error(err);
+      setErrorMessage(err.message || 'Ein Fehler ist aufgetreten.');
+    } finally {
       setIsGenerating(false);
-    }, 4000);
+      setGenerationPhase('idle');
+    }
   };
 
   return (
@@ -92,24 +196,31 @@ export function VeoStudio({ ventureId, brandDNA }: VeoStudioProps) {
           </div>
 
           <div className="space-y-4">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-white/30">Variante A: Alchemie (Identity + Product)</h3>
+            </div>
             {/* Input 1: Identity */}
             <div 
               ref={input1Ref}
-              className={`group relative glass-card p-4 rounded-2xl border border-white/10 transition-all hover:border-[#D4AF37]/40 ${identityImage ? 'bg-[#D4AF37]/5 border-[#D4AF37]/20' : ''}`}
+              className={`group relative glass-card p-4 rounded-2xl border border-white/10 transition-all hover:border-[#D4AF37]/40 ${identityPreview ? 'bg-[#D4AF37]/5 border-[#D4AF37]/20' : ''}`}
             >
               <BorderBeam size={100} duration={8} colorFrom="#D4AF37" colorTo="transparent" />
               <div className="flex items-center gap-4">
-                <div className={`h-12 w-12 rounded-xl flex items-center justify-center border ${identityImage ? 'border-[#D4AF37] bg-[#D4AF37]/10' : 'border-white/10 bg-white/5'}`}>
-                  {identityImage ? <img src={identityImage} className="w-full h-full object-cover rounded-lg" /> : <User className="w-5 h-5 text-white/40" />}
+                <div className={`h-12 w-12 rounded-xl flex items-center justify-center border ${identityPreview ? 'border-[#D4AF37] bg-[#D4AF37]/10' : 'border-white/10 bg-white/5'}`}>
+                  {identityPreview ? <img src={identityPreview} className="w-full h-full object-cover rounded-lg" /> : <User className="w-5 h-5 text-white/40" />}
                 </div>
                 <div className="flex-1">
                   <h3 className="text-sm font-bold text-white">Identität</h3>
-                  <p className="text-[10px] text-white/40 uppercase tracking-widest">Foto von dir oder deinem Model</p>
+                  <p className="text-[10px] text-white/40 uppercase tracking-widest">Model-Referenz</p>
                 </div>
                 <label className="cursor-pointer p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/40 hover:text-white transition-colors">
                   <Plus className="w-4 h-4" />
-                  <input type="file" className="hidden" onChange={(e) => {
-                    if (e.target.files?.[0]) setIdentityImage(URL.createObjectURL(e.target.files[0]));
+                  <input type="file" className="hidden" accept="image/*" onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setIdentityFile(file);
+                      setIdentityPreview(URL.createObjectURL(file));
+                    }
                   }} />
                 </label>
               </div>
@@ -118,12 +229,12 @@ export function VeoStudio({ ventureId, brandDNA }: VeoStudioProps) {
             {/* Input 2: Object */}
             <div 
               ref={input2Ref}
-              className={`group relative glass-card p-4 rounded-2xl border border-white/10 transition-all hover:border-[#D4AF37]/40 ${objectImage ? 'bg-[#D4AF37]/5 border-[#D4AF37]/20' : ''}`}
+              className={`group relative glass-card p-4 rounded-2xl border border-white/10 transition-all hover:border-[#D4AF37]/40 ${objectPreview ? 'bg-[#D4AF37]/5 border-[#D4AF37]/20' : ''}`}
             >
               <BorderBeam size={100} duration={8} delay={2} colorFrom="#D4AF37" colorTo="transparent" />
               <div className="flex items-center gap-4">
-                <div className={`h-12 w-12 rounded-xl flex items-center justify-center border ${objectImage ? 'border-[#D4AF37] bg-[#D4AF37]/10' : 'border-white/10 bg-white/5'}`}>
-                   {objectImage ? <img src={objectImage} className="w-full h-full object-cover rounded-lg" /> : <Package className="w-5 h-5 text-white/40" />}
+                <div className={`h-12 w-12 rounded-xl flex items-center justify-center border ${objectPreview ? 'border-[#D4AF37] bg-[#D4AF37]/10' : 'border-white/10 bg-white/5'}`}>
+                   {objectPreview ? <img src={objectPreview} className="w-full h-full object-cover rounded-lg" /> : <Package className="w-5 h-5 text-white/40" />}
                 </div>
                 <div className="flex-1">
                   <h3 className="text-sm font-bold text-white">Objekt</h3>
@@ -131,10 +242,62 @@ export function VeoStudio({ ventureId, brandDNA }: VeoStudioProps) {
                 </div>
                 <label className="cursor-pointer p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/40 hover:text-white transition-colors">
                   <Plus className="w-4 h-4" />
-                  <input type="file" className="hidden" onChange={(e) => {
-                    if (e.target.files?.[0]) setObjectImage(URL.createObjectURL(e.target.files[0]));
+                  <input type="file" className="hidden" accept="image/*" onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setObjectFile(file);
+                      setObjectPreview(URL.createObjectURL(file));
+                    }
                   }} />
                 </label>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between mt-6 mb-2">
+              <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-white/30">Variante B: Frame Steering (Start + End)</h3>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className={`group relative glass-card p-3 rounded-2xl border border-white/10 transition-all hover:border-[#D4AF37]/40 ${firstFramePreview ? 'bg-[#D4AF37]/5 border-[#D4AF37]/20' : ''}`}>
+                <div className="flex items-center gap-3">
+                  <div className={`h-10 w-10 rounded-lg flex items-center justify-center border ${firstFramePreview ? 'border-[#D4AF37] bg-[#D4AF37]/10' : 'border-white/10 bg-white/5'}`}>
+                    {firstFramePreview ? <img src={firstFramePreview} className="w-full h-full object-cover rounded-lg" /> : <Play className="w-4 h-4 text-white/40" />}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-[10px] font-bold text-white uppercase tracking-widest">Start Frame</h3>
+                  </div>
+                  <label className="cursor-pointer p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/40 transition-colors">
+                    <Plus className="w-3 h-3" />
+                    <input type="file" className="hidden" accept="image/*" onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setFirstFrameFile(file);
+                        setFirstFramePreview(URL.createObjectURL(file));
+                      }
+                    }} />
+                  </label>
+                </div>
+              </div>
+
+              <div className={`group relative glass-card p-3 rounded-2xl border border-white/10 transition-all hover:border-[#D4AF37]/40 ${lastFramePreview ? 'bg-[#D4AF37]/5 border-[#D4AF37]/20' : ''}`}>
+                <div className="flex items-center gap-3">
+                  <div className={`h-10 w-10 rounded-lg flex items-center justify-center border ${lastFramePreview ? 'border-[#D4AF37] bg-[#D4AF37]/10' : 'border-white/10 bg-white/5'}`}>
+                    {lastFramePreview ? <img src={lastFramePreview} className="w-full h-full object-cover rounded-lg" /> : <div className="w-4 h-4 rounded-sm border border-white/20" />}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-[10px] font-bold text-white uppercase tracking-widest">End Frame</h3>
+                  </div>
+                  <label className="cursor-pointer p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/40 transition-colors">
+                    <Plus className="w-3 h-3" />
+                    <input type="file" className="hidden" accept="image/*" onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setLastFrameFile(file);
+                        setLastFramePreview(URL.createObjectURL(file));
+                      }
+                    }} />
+                  </label>
+                </div>
               </div>
             </div>
 
@@ -149,7 +312,7 @@ export function VeoStudio({ ventureId, brandDNA }: VeoStudioProps) {
                   <Palette className="w-5 h-5 text-white/40" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-sm font-bold text-white">Stil</h3>
+                  <h3 className="text-sm font-bold text-white">Stil / Prompt</h3>
                   <input 
                     type="text" 
                     value={styleDesc}
@@ -164,7 +327,7 @@ export function VeoStudio({ ventureId, brandDNA }: VeoStudioProps) {
 
           <button
             onClick={handleGenerate}
-            disabled={isGenerating || !identityImage || !objectImage}
+            disabled={isGenerating || (!identityFile && !objectFile && !firstFrameFile)}
             className="w-full mt-8 relative group overflow-hidden rounded-2xl bg-[#D4AF37] p-4 text-black font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50"
           >
             <div className="relative z-10 flex items-center justify-center gap-2">
@@ -173,6 +336,9 @@ export function VeoStudio({ ventureId, brandDNA }: VeoStudioProps) {
             </div>
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite]" />
           </button>
+          {errorMessage && (
+            <p className="text-[10px] text-red-500 font-bold uppercase tracking-widest text-center mt-2">{errorMessage}</p>
+          )}
         </div>
 
         {/* Right Side: Video Preview & Visual Flow */}
@@ -217,8 +383,12 @@ export function VeoStudio({ ventureId, brandDNA }: VeoStudioProps) {
                    <Sparkles className="w-12 h-12 text-[#D4AF37] animate-bounce" />
                  </div>
                  <div className="text-center space-y-2">
-                   <div className="text-sm font-black text-white uppercase tracking-[0.3em]">Alchemie aktiv</div>
-                   <div className="text-[10px] text-white/40 uppercase tracking-widest font-bold">VEO 3.1 verarbeitet die Funken...</div>
+                   <div className="text-sm font-black text-white uppercase tracking-[0.3em]">
+                     {generationPhase === 'blending' ? 'Verschmelze Funken' : 'Schmiede Vision'}
+                   </div>
+                   <div className="text-[10px] text-white/40 uppercase tracking-widest font-bold">
+                     {generationPhase === 'blending' ? 'Nano-Banana kombiniert Komponenten...' : 'VEO 3.1 animiert die Szene...'}
+                   </div>
                  </div>
               </div>
             ) : generatedVideo ? (
