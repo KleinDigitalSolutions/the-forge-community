@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { 
-  ShoppingBag, 
-  Search, 
-  Menu, 
-  ArrowRight, 
-  Star, 
-  Package, 
+import dynamic from 'next/dynamic';
+import {
+  ShoppingBag,
+  Search,
+  Menu,
+  ArrowRight,
+  Star,
+  Package,
   Zap,
   Sparkles,
   Camera,
@@ -17,6 +18,16 @@ import {
   Globe,
   ArrowUpRight
 } from 'lucide-react';
+
+// Dynamic import to avoid SSR issues with Three.js
+const EnergyCan3D = dynamic(() => import('@/app/components/shop/EnergyCan3D'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center w-full h-full">
+      <div className="w-12 h-12 border-4 border-white/10 border-t-[var(--accent)] rounded-full animate-spin" />
+    </div>
+  )
+});
 
 // --- MOCK DATA ---
 const PRODUCTS = [
@@ -119,15 +130,34 @@ export default function DemoShop() {
                </div>
             </div>
             
-            {/* Abstract 3D Representation */}
+            {/* 3D Interactive Can */}
             <div className="relative aspect-square">
-               <div className="absolute inset-0 bg-gradient-to-tr from-[var(--accent)]/20 to-purple-500/20 rounded-full blur-[120px] opacity-50" />
-               <div className="relative w-full h-full border border-white/10 bg-white/[0.02] backdrop-blur-sm rounded-3xl overflow-hidden p-8 flex items-center justify-center group">
-                  <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />
-                  <Package className="w-64 h-64 text-white/5 group-hover:text-[var(--accent)]/20 transition-all duration-1000 group-hover:scale-110" />
-                  <div className="absolute bottom-8 left-8 text-xs font-mono text-[var(--accent)]">
-                     ITEM: #0921<br/>
-                     STOCK: LOW
+               <div className="absolute inset-0 bg-gradient-to-tr from-[var(--accent)]/20 to-purple-500/20 rounded-full blur-[120px] opacity-50 animate-pulse" />
+               <div className="relative w-full h-full border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
+                  {/* 3D Canvas - Full bleed, no padding */}
+                  <div className="absolute inset-0 rounded-3xl overflow-hidden">
+                     <EnergyCan3D />
+                  </div>
+
+                  {/* Info Badge */}
+                  <div className="absolute top-6 left-6 px-3 py-2 rounded-xl bg-black/60 border border-white/10 backdrop-blur-md text-xs font-mono text-[var(--accent)]">
+                     <div className="flex items-center gap-2 mb-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
+                        <span className="font-bold">INTERACTIVE 3D</span>
+                     </div>
+                     <div className="text-[9px] text-white/40">
+                        Click to change colors
+                     </div>
+                  </div>
+
+                  {/* Tech Stack Badge */}
+                  <div className="absolute top-6 right-6 flex flex-col gap-2">
+                     <div className="px-2 py-1 rounded-lg bg-black/60 border border-white/10 backdrop-blur-md text-[8px] font-bold uppercase tracking-wider text-white/50">
+                        Three.js
+                     </div>
+                     <div className="px-2 py-1 rounded-lg bg-black/60 border border-white/10 backdrop-blur-md text-[8px] font-bold uppercase tracking-wider text-white/50">
+                        WebGL
+                     </div>
                   </div>
                </div>
             </div>
