@@ -1366,3 +1366,49 @@ All security features are **additive** (not breaking):
 **GitHub Issues:** (not public yet)
 **Documentation:** Internal docs in root directory
 **Admin Contact:** Set via `ADMIN_EMAIL` env var
+
+---
+
+## AI SDK v6 Migration (Jarvis Mode Implementation)
+
+The platform was migrated to **Vercel AI SDK v6** on 28.01.2026. This is a breaking change from v3/v4.
+
+### 1. Key Changes in `useChat`
+- **Manual Input Management:** The `input`, `handleInputChange`, and `handleSubmit` helpers are no longer automatically provided. They must be managed manually via `useState` and `sendMessage`.
+- **Transports:** All AI calls must now use a `ChatTransport`. Use `DefaultChatTransport` for standard HTTP streaming.
+
+```typescript
+// Pattern: useChat in v6
+const { messages, sendMessage, status } = useChat({
+  transport: new DefaultChatTransport({ api: '/api/chat' }),
+});
+```
+
+### 2. Message Format (`parts` vs `content`)
+- `UIMessage` no longer has a `content` property.
+- It uses an array of `parts` (e.g., `{ type: 'text', text: '...' }`).
+- **Rendering Pattern:**
+```typescript
+{message.parts.map((part, i) => (
+  part.type === 'text' ? part.text : null
+))}
+```
+
+### 3. API Route Changes
+- **Asynchronous Conversion:** `convertToModelMessages` is now an **async** function.
+- **Stream Response:** Use `result.toUIMessageStreamResponse()` instead of `toTextStreamResponse()` to preserve tool calls and rich data.
+
+```typescript
+// route.ts
+const { messages } = await req.json();
+const result = await streamText({
+  model: myModel,
+  messages: await convertToModelMessages(messages),
+  // ...
+});
+return result.toUIMessageStreamResponse();
+```
+
+### 4. Persistence & Tools
+- **UserMemory:** The Jarvis system uses `UserMemory` table for long-term personality storage.
+- **Type Safety:** Use `as any` casting for tool definitions if SDK type-inference fails during build (v6.0.39 quirk).
