@@ -315,14 +315,14 @@ export default function PublicProfilePage() {
                 ) : (
                   <div className="grid md:grid-cols-2 gap-4">
                     {earnedBadges.map((badge) => {
-                      const Icon = iconMap[badge.icon] || Award;
+                      const IconComponent = (iconMap[badge.icon] || Award) as React.ComponentType<{ className?: string }>;
                       return (
                         <div
                           key={badge.key}
                           className={`rounded-2xl border px-4 py-3 flex items-start gap-3 ${categoryTone[badge.category]}`}
                         >
                           <div className="mt-0.5">
-                            <Icon className="w-4 h-4" />
+                            <IconComponent className="w-4 h-4" />
                           </div>
                           <div>
                             <div className="text-xs font-bold uppercase tracking-widest">{badge.title}</div>

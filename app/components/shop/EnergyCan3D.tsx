@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, Suspense, createContext, useContext } from 'react';
 import { Canvas, useFrame, useThree, extend } from '@react-three/fiber';
 import { useGLTF, PresentationControls, shaderMaterial } from '@react-three/drei';
-import { Color, Vector2 } from 'three';
+import * as THREE from 'three';
 import { animate } from 'framer-motion';
 import { easeQuadOut } from 'd3-ease';
 
@@ -159,7 +159,7 @@ const BackgroundMaterial = shaderMaterial(
     u_time: 0,
     u_progress: 0,
     u_aspect: 0,
-    u_color: new Color(colors[0]),
+    u_color: new THREE.Color(colors[0]),
   },
   // vertex shader
   /*glsl*/ `
@@ -239,7 +239,7 @@ const ColorContext = createContext<{
 // Background component
 function Background() {
   const { viewport } = useThree();
-  const materialRef = useRef<any>();
+  const materialRef = useRef<any>(null);
   const context = useContext(ColorContext);
   const [index, setIndex] = useState(0);
 
@@ -271,7 +271,7 @@ function Background() {
       <backgroundMaterial
         ref={materialRef}
         u_aspect={viewport.width / viewport.height}
-        u_color={new Color(colors[index])}
+        u_color={new THREE.Color(colors[index])}
       />
     </mesh>
   );
@@ -282,7 +282,7 @@ function CanModel({ onClick }: { onClick: () => void }) {
   const { viewport } = useThree();
   const context = useContext(ColorContext);
 
-  const modelRef = useRef<any>();
+  const modelRef = useRef<any>(null);
   const [current, setCurrent] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const uniformsRef = useRef<any>(null);
@@ -293,14 +293,14 @@ function CanModel({ onClick }: { onClick: () => void }) {
 
     uniformsRef.current = {
       u_time: { value: 0 },
-      u_color1: { value: new Color(colors[0]) },
-      u_color2: { value: new Color(colors[1]) },
+      u_color1: { value: new THREE.Color(colors[0]) },
+      u_color2: { value: new THREE.Color(colors[1]) },
       u_progress: { value: 0.5 },
       u_width: { value: 0.8 },
       u_scaleX: { value: 50 },
       u_scaleY: { value: 50 },
       u_textureSize: {
-        value: new Vector2(
+        value: new THREE.Vector2(
           materials.Body.map.source.data.width,
           materials.Body.map.source.data.height
         ),
@@ -320,7 +320,7 @@ function CanModel({ onClick }: { onClick: () => void }) {
 
     const len = colors.length;
     const nextIndex = (current + 1) % len;
-    const nextTexture = new Color(colors[nextIndex]);
+    const nextTexture = new THREE.Color(colors[nextIndex]);
 
     uniformsRef.current.u_color2.value = nextTexture;
 
@@ -445,7 +445,7 @@ function CanModel({ onClick }: { onClick: () => void }) {
       ref={modelRef}
       rotation={[-Math.PI / 2, 1.7, Math.PI / 2]}
       position={[0, 0, 5]}
-      onClick={(e) => {
+      onClick={(e: any) => {
         e.stopPropagation();
         handleClick();
       }}
@@ -483,8 +483,7 @@ function Scene({ clickCount, onClickCount }: { clickCount: number; onClickCount:
       <directionalLight position={[5, 5, 5]} intensity={0.5} />
       <Suspense fallback={null}>
         <PresentationControls
-          config={{ mass: 2, tension: 300 }}
-          snap={{ mass: 3, tension: 200 }}
+          snap={true}
           polar={[-Math.PI / 4, Math.PI / 4]}
           azimuth={[-Math.PI / 4, Math.PI / 4]}
         >
