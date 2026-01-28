@@ -56,23 +56,41 @@ export function VeoStudio({ ventureId, brandDNA }: VeoStudioProps) {
     return () => clearInterval(interval);
   }, []);
 
+  const isUnmounted = useRef(false);
+
+  useEffect(() => {
+    return () => {
+      isUnmounted.current = true;
+    };
+  }, []);
+
   const pollPrediction = async (predictionId: string) => {
     const pollStart = Date.now();
     const maxWaitMs = 1000 * 60 * 10; // 10 minutes for video
     let attempt = 0;
 
     while (Date.now() - pollStart < maxWaitMs) {
+      if (isUnmounted.current) throw new Error('Operation aborted');
+      
       await new Promise((resolve) => setTimeout(resolve, attempt === 0 ? 1000 : 2000));
       attempt += 1;
 
-      const res = await fetch(`/api/ventures/${ventureId}/marketing/media?predictionId=${predictionId}`);
-      const data = await res.json().catch(() => ({}));
+      try {
+        const res = await fetch(`/api/ventures/${ventureId}/marketing/media?predictionId=${predictionId}`);
+        const data = await res.json().catch(() => ({}));
 
-      if (!res.ok) throw new Error(data?.error || 'Prediction fehlgeschlagen.');
-      
-      if (data?.status === 'succeeded') return data;
-      if (data?.status === 'failed' || data?.status === 'canceled') {
-        throw new Error(data?.error || 'Generierung fehlgeschlagen.');
+        if (!res.ok) throw new Error(data?.error || 'Prediction fehlgeschlagen.');
+        
+        if (data?.status === 'succeeded') return data;
+        if (data?.status === 'failed' || data?.status === 'canceled') {
+          throw new Error(data?.error || 'Generierung fehlgeschlagen.');
+        }
+      } catch (err: any) {
+        if (err.name === 'AbortError') {
+          console.log('Poll aborted');
+          throw err;
+        }
+        throw err;
       }
     }
     throw new Error('Timeout: Bitte später erneut prüfen.');
@@ -88,6 +106,7 @@ export function VeoStudio({ ventureId, brandDNA }: VeoStudioProps) {
 
       // PHASE 1: ALCHEMY BLENDING (if identity + object provided)
       if (identityFile && objectFile) {
+        if (isUnmounted.current) return;
         setGenerationPhase('blending');
         const blendFormData = new FormData();
         blendFormData.append('mode', 'image-to-image');
@@ -106,21 +125,12 @@ export function VeoStudio({ ventureId, brandDNA }: VeoStudioProps) {
         if (!blendRes.ok) throw new Error(blendData.error || 'Blending fehlgeschlagen');
 
         const blendResult = await pollPrediction(blendData.predictionId);
+        if (isUnmounted.current) return;
         currentImageUrl = blendResult.assets?.[0]?.url || null;
-      } else if (firstFrameFile) {
-        // Direct start frame upload
-        const uploadFormData = new FormData();
-        uploadFormData.append('mode', 'text-to-image'); // Just to reuse upload logic
-        uploadFormData.append('model', 'black-forest-labs/flux-1.1-pro');
-        uploadFormData.append('prompt', 'upload');
-        uploadFormData.append('image', firstFrameFile);
-        
-        // Actually, we can just send the file in the next step, 
-        // but for consistency we might want to upload it first or just pass it to the video call.
-        // Let's just pass it to the video call directly in Phase 2.
       }
 
       // PHASE 2: VEO ANIMATION
+      if (isUnmounted.current) return;
       setGenerationPhase('animating');
       const videoFormData = new FormData();
       videoFormData.append('mode', 'image-to-video');
@@ -129,11 +139,6 @@ export function VeoStudio({ ventureId, brandDNA }: VeoStudioProps) {
       videoFormData.append('aspectRatio', '9:16');
 
       if (currentImageUrl) {
-        // We have a blended image from Nano Banana
-        // Since our API currently expects a 'File' for 'image', we might need to handle URLs.
-        // Wait, route.ts buildReplicateInput uses 'imageUrl'. 
-        // But the POST handler expects a file.
-        // I should update route.ts to accept an existing asset URL too.
         videoFormData.append('existingImageUrl', currentImageUrl);
       } else if (firstFrameFile) {
         videoFormData.append('image', firstFrameFile);
@@ -152,14 +157,22 @@ export function VeoStudio({ ventureId, brandDNA }: VeoStudioProps) {
       if (!videoRes.ok) throw new Error(videoData.error || 'Video-Generierung fehlgeschlagen');
 
       const videoResult = await pollPrediction(videoData.predictionId);
+      if (isUnmounted.current) return;
       setGeneratedVideo(videoResult.assets?.[0]?.url || null);
 
     } catch (err: any) {
+      if (isUnmounted.current) return;
       console.error(err);
-      setErrorMessage(err.message || 'Ein Fehler ist aufgetreten.');
+      if (err.name === 'AbortError') {
+        setErrorMessage('Die Anfrage wurde abgebrochen. Bitte versuche es erneut.');
+      } else {
+        setErrorMessage(err.message || 'Ein Fehler ist aufgetreten.');
+      }
     } finally {
-      setIsGenerating(false);
-      setGenerationPhase('idle');
+      if (!isUnmounted.current) {
+        setIsGenerating(false);
+        setGenerationPhase('idle');
+      }
     }
   };
 

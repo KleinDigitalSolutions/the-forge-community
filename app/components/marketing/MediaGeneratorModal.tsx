@@ -393,36 +393,51 @@ export function MediaGeneratorModal({
     return 'z.B. Studio Shot, natürliche Hauttöne, hochwertige Materialien, cleanes Layout';
   }, [mode]);
 
+  const isUnmounted = useRef(false);
+
+  useEffect(() => {
+    return () => {
+      isUnmounted.current = true;
+    };
+  }, []);
+
   const pollPrediction = async (predictionId: string) => {
     const pollStart = Date.now();
     const maxWaitMs = isVideoMode ? 1000 * 60 * 12 : 1000 * 60 * 4;
     let attempt = 0;
 
     while (Date.now() - pollStart < maxWaitMs) {
+      if (isUnmounted.current) throw new Error('Operation aborted');
       await new Promise((resolve) => setTimeout(resolve, attempt === 0 ? 800 : 1800));
       attempt += 1;
 
-      const res = await fetch(`/api/ventures/${ventureId}/marketing/media?predictionId=${predictionId}`);
-      const data = await res.json().catch(() => ({}));
+      try {
+        const res = await fetch(`/api/ventures/${ventureId}/marketing/media?predictionId=${predictionId}`);
+        const data = await res.json().catch(() => ({}));
 
-      if (!res.ok) {
-        throw new Error(data?.error || 'Prediction fehlgeschlagen.');
-      }
-
-      setPredictionStatus(data?.status || null);
-
-      if (data?.status === 'succeeded') {
-        setAssets(data.assets || []);
-        setCreditsRemaining(data.creditsRemaining ?? null);
-        setSuccessMessage('Generierung abgeschlossen.');
-        if (onAssetCreated && data.assets) {
-          data.assets.forEach((asset: any) => onAssetCreated(asset));
+        if (!res.ok) {
+          throw new Error(data?.error || 'Prediction fehlgeschlagen.');
         }
-        return;
-      }
 
-      if (data?.status === 'failed' || data?.status === 'canceled') {
-        throw new Error(data?.error || 'Generierung fehlgeschlagen.');
+        if (isUnmounted.current) return;
+        setPredictionStatus(data?.status || null);
+
+        if (data?.status === 'succeeded') {
+          setAssets(data.assets || []);
+          setCreditsRemaining(data.creditsRemaining ?? null);
+          setSuccessMessage('Generierung abgeschlossen.');
+          if (onAssetCreated && data.assets) {
+            data.assets.forEach((asset: any) => onAssetCreated(asset));
+          }
+          return;
+        }
+
+        if (data?.status === 'failed' || data?.status === 'canceled') {
+          throw new Error(data?.error || 'Generierung fehlgeschlagen.');
+        }
+      } catch (err: any) {
+        if (err.name === 'AbortError') throw err;
+        throw err;
       }
     }
 
@@ -607,6 +622,7 @@ export function MediaGeneratorModal({
       if (data.predictionId) {
         await pollPrediction(data.predictionId);
       } else if (data.assets) {
+        if (isUnmounted.current) return;
         setAssets(data.assets || []);
         setPredictionStatus('succeeded');
         setSuccessMessage('Generierung abgeschlossen.');
@@ -617,11 +633,18 @@ export function MediaGeneratorModal({
         throw new Error('Keine Prediction-ID erhalten.');
       }
 
-    } catch (error) {
+    } catch (error: any) {
+      if (isUnmounted.current) return;
       console.error('Media generation failed', error);
-      setErrorMessage(error instanceof Error ? error.message : 'Serverfehler. Bitte erneut versuchen.');
+      if (error.name === 'AbortError') {
+        setErrorMessage('Die Anfrage wurde abgebrochen. Bitte versuche es erneut.');
+      } else {
+        setErrorMessage(error instanceof Error ? error.message : 'Serverfehler. Bitte erneut versuchen.');
+      }
     } finally {
-      setIsGenerating(false);
+      if (!isUnmounted.current) {
+        setIsGenerating(false);
+      }
     }
   };
 

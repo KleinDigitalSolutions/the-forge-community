@@ -7,7 +7,7 @@ import { put } from '@vercel/blob';
 import Replicate from 'replicate';
 import { generateUUID } from '@/lib/utils/uuid';
 
-export const maxDuration = 60; // Standard serverless timeout is fine for Replicate
+export const maxDuration = 300; // Increased to 5 minutes for video generation
 
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
