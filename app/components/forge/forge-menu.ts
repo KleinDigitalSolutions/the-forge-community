@@ -36,7 +36,7 @@ export const FORGE_MENU = [
     section: 'MARKETING',
     items: [
       { icon: Megaphone, label: 'Campaigns', href: '/forge/[id]/marketing', tourId: 'menu-marketing' },
-      { icon: User, label: 'Face Swap', href: '/forge/[id]/marketing/faceswap', tourId: 'menu-faceswap' },
+      { icon: User, label: 'AI Avatar', href: '/forge/[id]/marketing/faceswap', tourId: 'menu-faceswap' },
     ],
   },
   {

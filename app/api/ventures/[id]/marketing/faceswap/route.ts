@@ -384,8 +384,8 @@ export async function POST(
     if (error instanceof InsufficientEnergyError) {
       return NextResponse.json({ error: error.message }, { status: 402 });
     }
-    console.error('Face Swap Error:', error);
-    return NextResponse.json({ error: error.message || 'Face Swap fehlgeschlagen' }, { status: 500 });
+    console.error('Avatar Swap Error:', error);
+    return NextResponse.json({ error: error.message || 'Avatar fehlgeschlagen' }, { status: 500 });
   }
 }
 
@@ -499,12 +499,12 @@ export async function GET(
       await refundEnergy(cachedJob.reservationId, 'faceswap-failed');
       await updateJobCache(predictionId, {
         refundedAt: new Date().toISOString(),
-        error: String(prediction.error || 'Face Swap fehlgeschlagen'),
+        error: String(prediction.error || 'Avatar fehlgeschlagen'),
       });
     }
     return NextResponse.json({
       status: prediction.status,
-      error: cachedJob.error || String(prediction.error) || 'Face Swap fehlgeschlagen'
+      error: cachedJob.error || String(prediction.error) || 'Avatar fehlgeschlagen'
     });
   }
 
