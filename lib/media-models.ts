@@ -114,8 +114,37 @@ export const VIDEO_MODELS: Record<string, ModelDefinition> = {
   },
 };
 
+export interface FaceSwapModelDefinition {
+  id: string;
+  provider: MediaProvider;
+  tier: ModelTier;
+  label: string;
+  cost: number;
+  description: string;
+}
+
+export const FACESWAP_MODELS: Record<string, FaceSwapModelDefinition> = {
+  'lucataco-faceswap': {
+    id: 'lucataco/faceswap',
+    provider: 'replicate',
+    tier: 'pro',
+    label: 'Face Swap Pro (Roop)',
+    cost: 50,
+    description: 'High-quality face replacement in videos. Best for ads and content creation.',
+  },
+  'codeplugtech-faceswap': {
+    id: 'codeplugtech/face-swap',
+    provider: 'replicate',
+    tier: 'pro',
+    label: 'CodePlug Face Swap',
+    cost: 45,
+    description: 'Fast face swap with good quality. Ideal for quick iterations.',
+  },
+};
+
 export const DEFAULT_MODELS = {
   forum: IMAGE_MODELS['flux-schnell'],
   studio_image: IMAGE_MODELS['flux-2-pro'],
   studio_video: VIDEO_MODELS['kling-v2.6'], // Updated to latest
+  studio_faceswap: FACESWAP_MODELS['lucataco-faceswap'],
 };
