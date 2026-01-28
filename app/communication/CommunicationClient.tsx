@@ -28,9 +28,25 @@ const providerOptions: ProviderOption[] = [
 ];
 
 export default function CommunicationClient() {
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
+  const { messages, sendMessage, status, setMessages } = useChat({
     api: '/api/communication/chat',
   });
+
+  const [input, setInput] = useState('');
+  const isLoading = status === 'streaming' || status === 'submitted';
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value);
+  };
+
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!input.trim() || isLoading) return;
+    
+    const currentInput = input;
+    setInput('');
+    await sendMessage({ text: currentInput });
+  };
 
   const [selectedProvider, setSelectedProvider] = useState(providerOptions[0].id);
   const isLocked = useMemo(
