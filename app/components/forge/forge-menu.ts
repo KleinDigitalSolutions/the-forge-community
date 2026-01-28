@@ -10,6 +10,7 @@ import {
   TrendingUp,
   Scale,
   Gavel,
+  User,
 } from 'lucide-react';
 
 export const FORGE_MENU = [
@@ -35,6 +36,7 @@ export const FORGE_MENU = [
     section: 'MARKETING',
     items: [
       { icon: Megaphone, label: 'Campaigns', href: '/forge/[id]/marketing', tourId: 'menu-marketing' },
+      { icon: User, label: 'Face Swap', href: '/forge/[id]/marketing/faceswap', tourId: 'menu-faceswap' },
     ],
   },
   {
