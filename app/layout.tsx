@@ -6,7 +6,7 @@ import GlobalAudioPlayer from "@/app/components/visual/GlobalAudioPlayer";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://stakeandscale.de'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://www.stakeandscale.de'),
   title: {
     default: "STAKE & SCALE | Community Venture Studio für ambitionierte Founder",
     template: "%s | STAKE & SCALE"
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   creator: "STAKE & SCALE",
   publisher: "STAKE & SCALE",
   alternates: {
-    canonical: "https://stakeandscale.de",
+    canonical: process.env.NEXT_PUBLIC_APP_URL || 'https://www.stakeandscale.de',
   },
   formatDetection: {
     email: false,
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "STAKE & SCALE | Community Venture Studio",
     description: "Baue deine Brand im Kollektiv. Wir bündeln Ressourcen für maximale Hebelwirkung.",
-    url: "https://stakeandscale.de",
+    url: process.env.NEXT_PUBLIC_APP_URL || 'https://www.stakeandscale.de',
     siteName: "STAKE & SCALE",
     images: [
       {

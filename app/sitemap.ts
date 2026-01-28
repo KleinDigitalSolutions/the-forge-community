@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://stakeandscale.de';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.stakeandscale.de';
 
   // Publicly accessible routes
   const routes = [

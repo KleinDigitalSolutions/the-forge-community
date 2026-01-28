@@ -15,7 +15,8 @@ const { auth } = NextAuth(authConfig);
  * See: lib/security/ip-rate-limit.ts
  */
 const CORS_ENABLED = process.env.ENABLE_CORS_PROTECTION !== 'false';
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://stakeandscale.de,http://localhost:3000')
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.stakeandscale.de';
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || `${APP_URL},http://localhost:3000`)
   .split(',')
   .map((origin) => origin.trim());
 

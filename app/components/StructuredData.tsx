@@ -1,12 +1,13 @@
 import React from 'react';
 
 export default function StructuredData() {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.stakeandscale.de';
   const organizationSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "STAKE & SCALE",
-    "url": "https://stakeandscale.de",
-    "logo": "https://stakeandscale.de/android-chrome-512x512.png",
+    "url": baseUrl,
+    "logo": `${baseUrl}/android-chrome-512x512.png`,
     "description": "Community Venture Studio für ambitionierte Founder. Wir bündeln Kapital und Skills für den Aufbau skalierbarer Brands.",
     "address": {
       "@type": "PostalAddress",
@@ -18,10 +19,10 @@ export default function StructuredData() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "STAKE & SCALE",
-    "url": "https://stakeandscale.de",
+    "url": baseUrl,
     "potentialAction": {
       "@type": "SearchAction",
-      "target": "https://stakeandscale.de/forum?q={search_term_string}",
+      "target": `${baseUrl}/forum?q={search_term_string}`,
       "query-input": "required name=search_term_string"
     }
   };

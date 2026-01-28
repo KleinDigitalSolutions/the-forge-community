@@ -34,9 +34,10 @@ export async function POST(req: Request) {
     }
 
     // Create billing portal session
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.stakeandscale.de';
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: user.stripeCustomerId,
-      return_url: `${process.env.AUTH_URL || 'http://localhost:3000'}/settings/billing`,
+      return_url: `${appUrl}/settings/billing`,
     });
 
     return NextResponse.json({ url: portalSession.url });

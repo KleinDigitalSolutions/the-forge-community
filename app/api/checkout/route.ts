@@ -40,7 +40,7 @@ export async function POST(req: Request) {
       return new NextResponse('User not found', { status: 404 });
     }
 
-    const appUrl = process.env.AUTH_URL || 'http://localhost:3000';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.stakeandscale.de';
 
     // ============================================
     // CREATE CHECKOUT SESSION
