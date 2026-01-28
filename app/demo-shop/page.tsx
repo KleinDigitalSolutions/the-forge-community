@@ -212,16 +212,34 @@ export default function DemoShop() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
                {PRODUCTS.map((product) => (
                   <div key={product.id} className="group cursor-pointer">
-                     <div className={`aspect-[4/5] rounded-xl ${product.image} mb-6 relative overflow-hidden`}>
+                     <div className="aspect-[4/5] rounded-2xl mb-6 relative overflow-hidden border border-white/10 bg-white/[0.02] backdrop-blur-sm shadow-xl">
+                        {/* Noise Texture Overlay */}
+                        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none" />
+
+                        {/* Gradient Background */}
+                        <div className={`absolute inset-0 ${product.image}`} />
+
+                        {/* Center Icon */}
+                        <div className="absolute inset-0 flex items-center justify-center">
+                           <Package className="w-24 h-24 text-white/5 group-hover:text-[var(--accent)]/10 transition-all duration-700 group-hover:scale-110" />
+                        </div>
+
+                        {/* Tag */}
                         {product.tag && (
-                           <div className="absolute top-4 left-4 px-2 py-1 bg-black text-white text-[9px] font-bold uppercase tracking-widest border border-white/10">
+                           <div className="absolute top-4 left-4 px-2 py-1 bg-black/60 border border-white/10 backdrop-blur-sm text-white text-[9px] font-bold uppercase tracking-widest z-10">
                               {product.tag}
                            </div>
                         )}
-                        <button className="absolute bottom-4 right-4 w-10 h-10 bg-white text-black rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all translate-y-4 group-hover:translate-y-0 hover:bg-[var(--accent)]">
+
+                        {/* Add to Cart Button */}
+                        <button className="absolute bottom-4 right-4 w-10 h-10 bg-white text-black rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all translate-y-4 group-hover:translate-y-0 hover:bg-[var(--accent)] z-10 shadow-xl">
                            <ShoppingBag className="w-4 h-4" />
                         </button>
+
+                        {/* Hover Glow */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-[var(--accent)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
                      </div>
+
                      <div className="flex justify-between items-start">
                         <div>
                            <h3 className="text-lg font-instrument-serif text-white mb-1 group-hover:text-[var(--accent)] transition-colors">{product.name}</h3>
