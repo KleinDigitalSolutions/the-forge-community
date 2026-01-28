@@ -126,7 +126,9 @@ export default function CommunicationClient() {
                     {message.role === 'user' ? 'Operator' : 'Orion AI'}
                   </div>
                   <div className="text-sm leading-relaxed text-white/90 whitespace-pre-wrap">
-                    {message.content}
+                    {message.parts.map((part, i) => (
+                      part.type === 'text' ? part.text : null
+                    ))}
                   </div>
                 </div>
               </div>

@@ -422,7 +422,7 @@ export default function Home() {
         <ResponsiveHeroBanner 
           badgeText="BATCH #001 — REKRUTIERUNG LÄUFT"
           title="Viele Founder. 1 Brand."
-          titleLine2="Schließ dich der Community an."
+          titleLine2="Schließ dich der Community an und proftiere von unserem Netwerk von B2B Händlern."
           description="Wir vereinen viele Founder, Kapital und Netwerk zu einer profitablen Einheit."
           backgroundVideoUrl="/hero_loop.mp4"
           backgroundVideoUrlMobile="/hero_loop_mobile.mp4"
