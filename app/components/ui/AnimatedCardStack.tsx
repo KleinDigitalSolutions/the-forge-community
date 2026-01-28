@@ -179,7 +179,7 @@ export default function AnimatedCardStack() {
           onClick={handleAnimate}
           className="btn-shimmer flex h-12 cursor-pointer select-none items-center justify-center gap-3 overflow-hidden rounded-full bg-[var(--foreground)] px-8 text-sm font-bold uppercase tracking-widest text-[var(--background)] transition-all active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
         >
-          NEXT LEVEL FEATURES
+          Next Card
           <Zap className="w-4 h-4 fill-current" />
         </button>
       </div>

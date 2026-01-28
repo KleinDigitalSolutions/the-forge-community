@@ -558,7 +558,7 @@ export default function Home() {
                   href="/ventures"
                   className="rounded-full border border-[#D4AF37]/40 bg-[#D4AF37] px-6 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-black hover:opacity-90 transition-opacity"
                 >
-                  System starten
+                  ACCESS ECOSYSTEM
                 </Link>
               </div>
             </div>
@@ -964,13 +964,9 @@ export default function Home() {
                       <span className="font-caveat text-3xl tracking-normal text-white group-hover:text-(--accent) transition-colors lowercase">stake & scale</span>
                     </Link>
                     <p className="text-sm text-white/40 leading-relaxed">
-                      Das erste Community Venture Studio. Wo Brands gemeinsam geschmiedet werden. 
-                      50 Founders. Eine Mission. Echte Assets.
+                      The Operating System for Digital Ventures. Wir transformieren Ideen in skalierbare Geschäftsmodelle durch integriertes Sourcing, KI-Marketing und rechtliche Infrastruktur.
                     </p>
-                    <div className="flex items-center gap-3 text-[10px] font-bold text-green-500 uppercase tracking-widest">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
-                      System-Status: Operational
-                    </div>
+                   
                  </div>
 
                  {/* Legal Column */}
